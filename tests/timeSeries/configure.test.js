@@ -28,6 +28,7 @@ describe('configuration', () => {
                 'Outcome',
                 'Model',
                 'Score',
+                'ScoreExtra',
                 'Thresholds',
 
                 // time series settings

@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -20246,6 +20247,7 @@ var gsmViz = (() => {
         "Denominator",
         "Metric",
         "Score",
+        "ScoreExtra",
         "Abbreviation"
       ]
     }
@@ -20282,6 +20284,7 @@ var gsmViz = (() => {
       "Metric",
       "Outcome",
       "Score",
+      "ScoreExtra",
       "Abbreviation"
     ],
     properties: {
@@ -20326,6 +20329,13 @@ var gsmViz = (() => {
         key: false
       },
       Score: {
+        title: "Metric Score",
+        description: "Analysis method of metric",
+        type: "string",
+        required: false,
+        key: false
+      },
+      ScoreExtra: {
         title: "Metric Score",
         description: "Analysis method of metric",
         type: "string",
@@ -20390,6 +20400,7 @@ var gsmViz = (() => {
         "Denominator",
         "Metric",
         "Score",
+        "ScoreExtra",
         "Flag",
         "SnapshotDate"
       ],
@@ -20446,6 +20457,13 @@ var gsmViz = (() => {
         Score: {
           title: "Metric Score",
           description: "Metric score",
+          type: "number",
+          required: true,
+          key: false
+        },
+        ScoreExtra: {
+          title: "Metric Score Extra",
+          description: "Metric Score Extra",
           type: "number",
           required: true,
           key: false
@@ -21340,6 +21358,7 @@ var gsmViz = (() => {
   function formatMetricTooltipLabel(result, config) {
     const tooltipKeys = {
       Score: config.Score || "Score",
+      ScoreExtra: config.ScoreExtra || "ScoreExtra",
       Metric: config.Metric || "Metric",
       Numerator: config.Numerator || "Numerator",
       Denominator: config.Denominator || "Denominator"

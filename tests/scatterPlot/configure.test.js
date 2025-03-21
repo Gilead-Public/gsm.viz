@@ -31,6 +31,7 @@ describe('configuration', () => {
                 'Outcome',
                 'Model',
                 'Score',
+                'ScoreExtra',
                 'Thresholds',
 
                 // scatter plot settings
