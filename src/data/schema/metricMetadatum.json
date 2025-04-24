@@ -28,6 +28,7 @@
         "Metric",
         "Outcome",
         "Score",
+        "ScoreExtra",
         "Abbreviation"
     ],
     "properties": {
@@ -72,6 +73,13 @@
             "key": false
         },
         "Score": {
+            "title": "Metric Score",
+            "description": "Analysis method of metric",
+            "type": "string",
+            "required": false,
+            "key": false
+        },
+        "ScoreExtra": {
             "title": "Metric Score",
             "description": "Analysis method of metric",
             "type": "string",

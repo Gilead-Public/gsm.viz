@@ -17,6 +17,7 @@
             "Denominator",
             "Metric",
             "Score",
+            "ScoreExtra",
             "Abbreviation"
         ]
     }

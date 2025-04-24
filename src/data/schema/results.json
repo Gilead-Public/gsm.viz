@@ -31,6 +31,7 @@
             "Denominator",
             "Metric",
             "Score",
+            "ScoreExtra",
             "Flag",
             "SnapshotDate"
         ],
@@ -87,6 +88,13 @@
             "Score": {
                 "title": "Metric Score",
                 "description": "Metric score",
+                "type": "number",
+                "required": true,
+                "key": false
+            },
+            "ScoreExtra": {
+                "title": "Metric Score Extra",
+                "description": "Metric Score Extra",
                 "type": "number",
                 "required": true,
                 "key": false

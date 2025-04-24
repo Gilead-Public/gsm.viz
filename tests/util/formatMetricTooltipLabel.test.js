@@ -16,6 +16,7 @@ describe('result attributes are formatted correctly', () => {
         // - format denominator with commas
         expect(tooltip).toEqual([
             `Score: ${Math.round(parseFloat(result.Score) * 100) / 100}`,
+            `ScoreExtra: ${Math.round(parseFloat(result.ScoreExtra) * 100) / 100}`,
             `Metric: ${Math.round(parseFloat(result.Metric) * 100) / 100}`,
             `Numerator: ${parseInt(result.Numerator).toLocaleString()}`,
             `Denominator: ${parseInt(result.Denominator).toLocaleString()}`,
@@ -32,6 +33,9 @@ describe('result attributes are formatted correctly', () => {
         expect(tooltip).toEqual([
             `${config.Score}: ${
                 Math.round(parseFloat(result.Score) * 100) / 100
+            }`,
+            `${config.ScoreExtra}: ${
+                Math.round(parseFloat(result.ScoreExtra) * 100) / 100
             }`,
             `${config.Metric}: ${
                 Math.round(parseFloat(result.Metric) * 100) / 100

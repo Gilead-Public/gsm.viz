@@ -9,14 +9,17 @@ import falsy from './falsy.js';
  * @returns {Array} The tooltip content.
  */
 export default function formatMetricTooltipLabel(result, config) {
+    
     const tooltipKeys = {
         Score: config.Score || 'Score',
+        ScoreExtra: config.ScoreExtra || 'ScoreExtra',
         Metric: config.Metric || 'Metric',
         Numerator: config.Numerator || 'Numerator',
         Denominator: config.Denominator || 'Denominator',
     };
 
     const tooltipLabel = [];
+        
     for (const [key, label] of Object.entries(tooltipKeys)) {
         if (result[key] !== undefined) {
             let value = result[key];
