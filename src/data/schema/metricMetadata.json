@@ -13,12 +13,12 @@
         "required": [
             "MetricID",
             "GroupLevel",
+            "Abbreviation",
             "Numerator",
             "Denominator",
             "Metric",
             "Score",
-            "ScoreExtra",
-            "Abbreviation"
+            "Thresholds"
         ]
     }
 }

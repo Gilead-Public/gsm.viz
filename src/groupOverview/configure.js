@@ -3,6 +3,12 @@ import configureAll from '../util/configure.js';
 export default function configure(_config_) {
     const defaults = {};
 
+    defaults.setResultTooltipKeys = (metricMetadatum) => ({
+        Score: metricMetadatum?.Score || 'Score',
+        Metric: metricMetadatum?.Metric || 'Metric',
+        Numerator: metricMetadatum?.Numerator || 'Numerator',
+        Denominator: metricMetadatum?.Denominator || 'Denominator',
+    });
     defaults.GroupLevel = 'Site';
     defaults.groupLabelKey = null;
     defaults.groupParticipantCountKey = 'ParticipantCount';

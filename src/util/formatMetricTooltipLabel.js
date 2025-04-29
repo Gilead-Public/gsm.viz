@@ -9,18 +9,19 @@ import falsy from './falsy.js';
  * @returns {Array} The tooltip content.
  */
 export default function formatMetricTooltipLabel(result, config) {
-    
-    const tooltipKeys = {
-        Score: config.Score || 'Score',
-        ScoreExtra: config.ScoreExtra || 'ScoreExtra',
-        Metric: config.Metric || 'Metric',
-        Numerator: config.Numerator || 'Numerator',
-        Denominator: config.Denominator || 'Denominator',
-    };
+    // Check that [ config.resultTooltipKeys ] is an object. If not, return all attributes of
+    // [ result ].
+    const resultTooltipKeys = typeof config.resultTooltipKeys === 'object'
+        ? config.resultTooltipKeys
+        : Object.keys(result).reduce((acc, key) => {
+            acc[key] = key;
+
+            return acc;
+        }, {});
 
     const tooltipLabel = [];
         
-    for (const [key, label] of Object.entries(tooltipKeys)) {
+    for (const [key, label] of Object.entries(resultTooltipKeys)) {
         if (result[key] !== undefined) {
             let value = result[key];
 

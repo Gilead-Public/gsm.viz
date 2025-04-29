@@ -25,7 +25,7 @@ export default function defineColumns(
     config
 ) {
     const groupColumns = defineGroupColumns(groupMetadata, config);
-    const metricColumns = defineMetricColumns(metricMetadata, results);
+    const metricColumns = defineMetricColumns(metricMetadata, results, config);
     const columns = [...groupColumns, ...metricColumns];
 
     columns.forEach((column, i) => {

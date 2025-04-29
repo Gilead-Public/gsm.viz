@@ -23,26 +23,34 @@
     "required": [
         "MetricID",
         "GroupLevel",
+        "Abbreviation",
         "Numerator",
         "Denominator",
         "Metric",
-        "Outcome",
         "Score",
-        "ScoreExtra",
-        "Abbreviation"
+        "Thresholds"
     ],
     "properties": {
         "MetricID": {
             "title": "Metric ID",
             "description": "Unique metric identifier",
             "type": "string",
-            "required": false
+            "required": false,
+            "key": false
         },
         "GroupLevel": {
             "title": "Grouping Variable",
             "description": "Grouping variable of metric, one of 'Site', 'Country', or 'Study'",
             "type": "string",
-            "required": false
+            "required": false,
+            "key": false
+        },
+        "Abbreviation": {
+            "title": "Abbreviation",
+            "description": "Metric Abbreviation",
+            "type": "string",
+            "required": false,
+            "key": false
         },
         "Numerator": {
             "title": "Metric Numerator",
@@ -65,21 +73,7 @@
             "required": false,
             "key": false
         },
-        "Outcome": {
-            "title": "Metric Type",
-            "description": "Type of metric",
-            "type": "string",
-            "required": false,
-            "key": false
-        },
         "Score": {
-            "title": "Metric Score",
-            "description": "Analysis method of metric",
-            "type": "string",
-            "required": false,
-            "key": false
-        },
-        "ScoreExtra": {
             "title": "Metric Score",
             "description": "Analysis method of metric",
             "type": "string",
@@ -88,22 +82,7 @@
         },
         "Thresholds": {
             "title": "Thresholds",
-            "description": "Thresholds with which to flag scores",
-
-            "type": "string",
-            "required": false,
-            "key": false
-        },
-        "Model": {
-            "title": "Metric Score Method",
-            "description": "Statistical model used to evaluate Metric",
-            "type": "string",
-            "required": false,
-            "key": false
-        },
-        "Abbreviation": {
-            "title": "Abbreviation",
-            "description": "Metric Abbreviation",
+            "description": "Thresholds for metric",
             "type": "string",
             "required": false,
             "key": false

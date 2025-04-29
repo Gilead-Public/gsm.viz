@@ -1,4 +1,4 @@
-MetricID,GroupLevel,Abbreviation,Metric,Numerator,Denominator,Outcome,Model,Score,Thresholds,ScoreExtra
+MetricID,GroupLevel,Abbreviation,Metric,Numerator,Denominator,Outcome,Model,Score,Thresholds,ExpectedNumerator
 kri0001,Site,AE,Non-serious AE Reporting Rate,AEs,Days on Treatment,Rate,Normal Approximation (Rate),Adjusted Z-Score,"-2,-1,2,3",Expected Numerator Count
 kri0002,Site,SAE,SAE Reporting Rate,SAEs,Days on Treatment,Rate,Normal Approximation (Rate),Adjusted Z-Score,"-2,-1,2,3",Expected Numerator Count
 kri0003,Site,PD,Non-important PD Rate,Non-important PDs,Days in Study,Rate,Normal Approximation (Rate),Adjusted Z-Score,"-3,-2,2,3",Expected Numerator Count

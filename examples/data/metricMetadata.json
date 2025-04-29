@@ -10,7 +10,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-2,-1,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0002",
@@ -23,7 +23,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-2,-1,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0003",
@@ -36,7 +36,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0004",
@@ -49,7 +49,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0005",
@@ -62,7 +62,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0006",
@@ -75,7 +75,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0007",
@@ -88,7 +88,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0008",
@@ -101,7 +101,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0009",
@@ -114,7 +114,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0010",
@@ -127,7 +127,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0011",
@@ -140,7 +140,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "kri0012",
@@ -153,7 +153,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0001",
@@ -166,7 +166,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-2,-1,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0002",
@@ -179,7 +179,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-2,-1,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0003",
@@ -192,7 +192,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0004",
@@ -205,7 +205,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0005",
@@ -218,7 +218,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0006",
@@ -231,7 +231,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0007",
@@ -244,7 +244,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0008",
@@ -257,7 +257,7 @@
 		"Model": "Normal Approximation (Rate)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0009",
@@ -270,7 +270,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0010",
@@ -283,7 +283,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0011",
@@ -296,7 +296,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "cou0012",
@@ -309,7 +309,7 @@
 		"Model": "Normal Approximation (Percent)",
 		"Score": "Adjusted Z-Score",
 		"Thresholds": "-3,-2,2,3",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "qtl0004",
@@ -322,7 +322,7 @@
 		"Model": "Poisson Test",
 		"Score": "Poisson Confidence Interval - Lower Bound",
 		"Thresholds": "0.01",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	},
 	{
 		"MetricID": "qtl0006",
@@ -335,6 +335,6 @@
 		"Model": "Binomial Test",
 		"Score": "Binomial Confidence Interval - Lower Bound",
 		"Thresholds": "0.2",
-		"ScoreExtra": "Expected Numerator Count"
+		"ExpectedNumerator": "Expected Numerator Count"
 	}
 ]
