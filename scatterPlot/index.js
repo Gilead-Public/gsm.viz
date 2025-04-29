@@ -30,6 +30,13 @@ Promise.all(dataPromises)
             instance.helpers.updateConfig(instance, instance.data.config);
             document.querySelector('#group').value = datum.GroupID;
         };
+        config.resultTooltipKeys = {
+            ExpectedNumerator: config.ExpectedNumerator || 'Expected Numerator',
+            Numerator: config.Numerator || 'Numerator',
+            Denominator: config.Denominator || 'Denominator',
+            Metric: config.Metric || 'Metric',
+            Score: config.Score || 'Score',
+        };
         config.groupTooltipKeys = groupTooltipKeys[config.GroupLevel];
 
         // predicted bounds

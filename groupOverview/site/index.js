@@ -45,6 +45,15 @@ Promise.all(dataPromises)
             document.getElementById('container'),
             results.filter((d) => groupSubset.includes(d.GroupID)),
             {
+                setResultTooltipKeys: (metricMetadatum) => ({
+                    ExpectedNumerator:
+                        metricMetadatum.ExpectedNumerator ||
+                        'ExpectedNumerator',
+                    Numerator: metricMetadatum.Numerator || 'Numerator',
+                    Denominator: metricMetadatum.Denominator || 'Denominator',
+                    Metric: metricMetadatum.Metric || 'Metric',
+                    Score: metricMetadatum.Score || 'Score',
+                }),
                 GroupLevel,
                 groupLabelKey: groupLabelKey[GroupLevel],
                 groupTooltipKeys: groupTooltipKeys[GroupLevel],
