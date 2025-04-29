@@ -1,25 +1,3 @@
-/* ---------------------------------------------------------------------------------------------- */
-/* gsm-viz examples */
-/* ---------------------------------------------------------------------------------------------- */
-
-.gsm-viz--example #controls {
-    display: flex;
-    justify-content: center;
-}
-.gsm-viz--example fieldset {
-    display: flex;
-    justify-content: center;
-}
-.gsm-viz--example #container {
-    margin: auto;
-    width: 100%;
-    height: 40vw;
-}
-
-/* ---------------------------------------------------------------------------------------------- */
-/* groupOverview module */
-/* ---------------------------------------------------------------------------------------------- */
-
 .group-overview {
     border-collapse: separate;
     border-spacing: 0.1em;
