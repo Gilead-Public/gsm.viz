@@ -12,7 +12,7 @@ describe('configuration', () => {
                 'groupLabelKey',
                 'groupParticipantCountKey',
                 'groupTooltipKeys',
-                'setResultTooltipKeys',
+                'resultTooltipKeys',
                 'groupClickCallback',
                 'metricClickCallback',
             ].sort()
