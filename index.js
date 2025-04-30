@@ -20936,12 +20936,12 @@ var gsmViz = (() => {
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
     const defaults3 = {};
-    defaults3.resultTooltipKeys = {
-      Score: _config_?.Score || "Score",
-      Metric: _config_?.Metric || "Metric",
-      Numerator: _config_?.Numerator || "Numerator",
-      Denominator: _config_?.Denominator || "Denominator"
-    };
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -21333,12 +21333,14 @@ var gsmViz = (() => {
 
   // src/util/formatMetricTooltipLabel.js
   function formatMetricTooltipLabel(result, config) {
-    const resultTooltipKeys = typeof config.resultTooltipKeys === "object" ? config.resultTooltipKeys : Object.keys(result).reduce((acc, key) => {
-      acc[key] = key;
+    const resultTooltipKeys = Array.isArray(config.resultTooltipKeys) ? config.resultTooltipKeys : Object.keys(result);
+    const resultTooltipMap = resultTooltipKeys.reduce((acc, key) => {
+      const label = config[key] || key;
+      acc[key] = label;
       return acc;
     }, {});
     const tooltipLabel = [];
-    for (const [key, label] of Object.entries(resultTooltipKeys)) {
+    for (const [key, label] of Object.entries(resultTooltipMap)) {
       if (result[key] !== void 0) {
         let value = result[key];
         value = parseFloat(value);
@@ -21654,12 +21656,12 @@ var gsmViz = (() => {
   // src/groupOverview/configure.js
   function configure4(_config_) {
     const defaults3 = {};
-    defaults3.setResultTooltipKeys = (metricMetadatum) => ({
-      Score: metricMetadatum?.Score || "Score",
-      Metric: metricMetadatum?.Metric || "Metric",
-      Numerator: metricMetadatum?.Numerator || "Numerator",
-      Denominator: metricMetadatum?.Denominator || "Denominator"
-    });
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = null;
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -21836,7 +21838,7 @@ var gsmViz = (() => {
         meta: {
           ...metric,
           ...{
-            resultTooltipKeys: config.setResultTooltipKeys(metric)
+            resultTooltipKeys: config.resultTooltipKeys
           }
         }
       };
@@ -22186,12 +22188,12 @@ var gsmViz = (() => {
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
     const defaults3 = {};
-    defaults3.resultTooltipKeys = {
-      Score: _config_?.Score || "Score",
-      Metric: _config_?.Metric || "Metric",
-      Numerator: _config_?.Numerator || "Numerator",
-      Denominator: _config_?.Denominator || "Denominator"
-    };
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -22977,12 +22979,12 @@ var gsmViz = (() => {
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
     const defaults3 = {};
-    defaults3.resultTooltipKeys = {
-      Score: _config_?.Score || "Score",
-      Metric: _config_?.Metric || "Metric",
-      Numerator: _config_?.Numerator || "Numerator",
-      Denominator: _config_?.Denominator || "Denominator"
-    };
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";

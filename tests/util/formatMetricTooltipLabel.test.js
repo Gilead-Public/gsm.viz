@@ -6,21 +6,21 @@ import formatMetricTooltipLabel from '../../src/util/formatMetricTooltipLabel.js
 describe('result attributes are formatted correctly', () => {
     const result = results.find((result) => parseFloat(result.Metric) > 0.01);
     const config = metricMetadata.find((d) => d.MetricID === result.MetricID);
-    config.resultTooltipKeys = {
-        'Score': config.Score,
-        'Metric': config.Metric,
-        'Numerator': config.Numerator,
-        'Denominator': config.Denominator,
-    };
+    config.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
 
     test('result attributes are formatted correctly without metric metadata', () => {
         const tooltip = formatMetricTooltipLabel(result, {
-            resultTooltipKeys: {
-                'Score': 'Score',
-                'Metric': 'Metric',
-                'Numerator': 'Numerator',
-                'Denominator': 'Denominator',
-            }
+            resultTooltipKeys: [
+                'Score',
+                'Metric',
+                'Numerator',
+                'Denominator',
+            ]
         });
 
         // - round score to 2 decimal places
@@ -60,13 +60,18 @@ describe('result attributes are formatted correctly', () => {
 
     test('result attributes are formatted correctly and can include additional metric metadata with custom labels', () => {
         const tooltip = formatMetricTooltipLabel(result, {
-            resultTooltipKeys: {
-                'Numerator': 'Custom Numerator',
-                'Denominator': 'Custom Denominator',
-                'Metric': 'Custom Metric',
-                'Score': 'Custom Score',
-                'Flag': 'Custom Flag',
-            }
+            Numerator: 'Custom Numerator',
+            Denominator: 'Custom Denominator',
+            Metric: 'Custom Metric',
+            Score: 'Custom Score',
+            Flag: 'Custom Flag',
+            resultTooltipKeys: [
+                'Numerator',
+                'Denominator',
+                'Metric',
+                'Score',
+                'Flag',
+            ]
         });
 
         // - round score to 2 decimal places

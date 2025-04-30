@@ -13,12 +13,12 @@ export default function configure(
 ) {
     const defaults = {};
 
-    defaults.resultTooltipKeys = {
-        Score: _config_?.Score || 'Score',
-        Metric: _config_?.Metric || 'Metric',
-        Numerator: _config_?.Numerator || 'Numerator',
-        Denominator: _config_?.Denominator || 'Denominator',
-    };
+    defaults.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
     defaults.GroupLevel = 'Site';
     defaults.groupLabelKey = 'InvestigatorLastName';
     defaults.groupParticipantCountKey = 'ParticipantCount';

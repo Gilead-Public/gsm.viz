@@ -30,7 +30,7 @@ export default function defineMetricColumns(metricMetadata, results, config) {
             meta: {
                 ...metric,
                 ...{
-                    resultTooltipKeys: config.setResultTooltipKeys(metric),
+                    resultTooltipKeys: config.resultTooltipKeys,
                 },
             },
         };
