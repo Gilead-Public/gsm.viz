@@ -61,6 +61,20 @@ git push -u origin fix-123
 On GitHub, open a [pull request](https://github.com/Gilead-BioStats/rbm-viz/pulls) with `fix-123` as
 the source and `dev` as the target.  The pull request requires a code review prior to merging.
 
+## Update Example Data
+
+- edit csv files in `examples/data/`
+
+```
+node examples/data/helpers/csv-to-json.js
+```
+## Run Unit Tests
+
+```
+npm run test
+```
+
+
 ### Advanced Development Methods
 
 To expedite development the code can be actively bundled as changes are made to the source code. In
@@ -80,3 +94,5 @@ npm run local
 The repository is now accessible via the browser.  Navigate to `./examples` to view a list of
 existing modules.  Each example contains a working instance of each `rbm-viz` module.  Open the
 appropriate example to view changes to the module in real time as you develop.
+
+

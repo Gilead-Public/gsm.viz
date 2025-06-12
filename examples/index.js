@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -20242,11 +20243,12 @@ var gsmViz = (() => {
       required: [
         "MetricID",
         "GroupLevel",
+        "Abbreviation",
         "Numerator",
         "Denominator",
         "Metric",
         "Score",
-        "Abbreviation"
+        "Thresholds"
       ]
     }
   };
@@ -20277,25 +20279,34 @@ var gsmViz = (() => {
     required: [
       "MetricID",
       "GroupLevel",
+      "Abbreviation",
       "Numerator",
       "Denominator",
       "Metric",
-      "Outcome",
       "Score",
-      "Abbreviation"
+      "Thresholds"
     ],
     properties: {
       MetricID: {
         title: "Metric ID",
         description: "Unique metric identifier",
         type: "string",
-        required: false
+        required: false,
+        key: false
       },
       GroupLevel: {
         title: "Grouping Variable",
         description: "Grouping variable of metric, one of 'Site', 'Country', or 'Study'",
         type: "string",
-        required: false
+        required: false,
+        key: false
+      },
+      Abbreviation: {
+        title: "Abbreviation",
+        description: "Metric Abbreviation",
+        type: "string",
+        required: false,
+        key: false
       },
       Numerator: {
         title: "Metric Numerator",
@@ -20318,13 +20329,6 @@ var gsmViz = (() => {
         required: false,
         key: false
       },
-      Outcome: {
-        title: "Metric Type",
-        description: "Type of metric",
-        type: "string",
-        required: false,
-        key: false
-      },
       Score: {
         title: "Metric Score",
         description: "Analysis method of metric",
@@ -20334,21 +20338,7 @@ var gsmViz = (() => {
       },
       Thresholds: {
         title: "Thresholds",
-        description: "Thresholds with which to flag scores",
-        type: "string",
-        required: false,
-        key: false
-      },
-      Model: {
-        title: "Metric Score Method",
-        description: "Statistical model used to evaluate Metric",
-        type: "string",
-        required: false,
-        key: false
-      },
-      Abbreviation: {
-        title: "Abbreviation",
-        description: "Metric Abbreviation",
+        description: "Thresholds for metric",
         type: "string",
         required: false,
         key: false
@@ -20947,6 +20937,12 @@ var gsmViz = (() => {
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
     const defaults3 = {};
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -21338,14 +21334,14 @@ var gsmViz = (() => {
 
   // src/util/formatMetricTooltipLabel.js
   function formatMetricTooltipLabel(result, config) {
-    const tooltipKeys = {
-      Score: config.Score || "Score",
-      Metric: config.Metric || "Metric",
-      Numerator: config.Numerator || "Numerator",
-      Denominator: config.Denominator || "Denominator"
-    };
+    const resultTooltipKeys = Array.isArray(config.resultTooltipKeys) ? config.resultTooltipKeys : Object.keys(result);
+    const resultTooltipMap = resultTooltipKeys.reduce((acc, key) => {
+      const label = config[key] || key;
+      acc[key] = label;
+      return acc;
+    }, {});
     const tooltipLabel = [];
-    for (const [key, label] of Object.entries(tooltipKeys)) {
+    for (const [key, label] of Object.entries(resultTooltipMap)) {
       if (result[key] !== void 0) {
         let value = result[key];
         value = parseFloat(value);
@@ -21661,6 +21657,12 @@ var gsmViz = (() => {
   // src/groupOverview/configure.js
   function configure4(_config_) {
     const defaults3 = {};
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = null;
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -21821,7 +21823,7 @@ var gsmViz = (() => {
   }
 
   // src/groupOverview/defineColumns/defineMetricColumns.js
-  function defineMetricColumns(metricMetadata, results) {
+  function defineMetricColumns(metricMetadata, results, config) {
     const metricColumns = metricMetadata.map((metric) => {
       const column = {
         label: metric.Abbreviation,
@@ -21834,7 +21836,12 @@ var gsmViz = (() => {
         defineTooltip: defineTooltip2,
         type: "metric",
         dataType: "number",
-        meta: metric
+        meta: {
+          ...metric,
+          ...{
+            resultTooltipKeys: config.resultTooltipKeys
+          }
+        }
       };
       return column;
     });
@@ -21844,7 +21851,7 @@ var gsmViz = (() => {
   // src/groupOverview/defineColumns.js
   function defineColumns(groupMetadata, metricMetadata, results, config) {
     const groupColumns = defineGroupColumns(groupMetadata, config);
-    const metricColumns = defineMetricColumns(metricMetadata, results);
+    const metricColumns = defineMetricColumns(metricMetadata, results, config);
     const columns = [...groupColumns, ...metricColumns];
     columns.forEach((column, i) => {
       column.getDatum = (key) => column.data.find((d) => d[column.filterKey] === key);
@@ -22182,6 +22189,12 @@ var gsmViz = (() => {
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
     const defaults3 = {};
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";
@@ -22967,6 +22980,12 @@ var gsmViz = (() => {
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
     const defaults3 = {};
+    defaults3.resultTooltipKeys = [
+      "Score",
+      "Metric",
+      "Numerator",
+      "Denominator"
+    ];
     defaults3.GroupLevel = "Site";
     defaults3.groupLabelKey = "InvestigatorLastName";
     defaults3.groupParticipantCountKey = "ParticipantCount";

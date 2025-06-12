@@ -3,6 +3,12 @@ import configureAll from '../util/configure.js';
 export default function configure(_config_) {
     const defaults = {};
 
+    defaults.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
     defaults.GroupLevel = 'Site';
     defaults.groupLabelKey = null;
     defaults.groupParticipantCountKey = 'ParticipantCount';

@@ -3,21 +3,30 @@ import falsy from './falsy.js';
 /**
  * Format results for tooltip.
  *
- * @param {Object} group - Results.
+ * @param {Object} result - Results.
  * @param {Object} config - Configuration object with result metadata.
  *
  * @returns {Array} The tooltip content.
  */
 export default function formatMetricTooltipLabel(result, config) {
-    const tooltipKeys = {
-        Score: config.Score || 'Score',
-        Metric: config.Metric || 'Metric',
-        Numerator: config.Numerator || 'Numerator',
-        Denominator: config.Denominator || 'Denominator',
-    };
+    // Check that [ config.resultTooltipKeys ] is an array. If not, return all attributes of
+    // [ result ].
+    const resultTooltipKeys = Array.isArray(config.resultTooltipKeys)
+        ? config.resultTooltipKeys
+        : Object.keys(result);
+
+    // Capture result attribute labels from [ config ].
+    const resultTooltipMap = resultTooltipKeys
+        .reduce((acc, key) => {
+            const label = config[key] || key;
+            acc[key] = label;
+
+            return acc;
+        }, {});
 
     const tooltipLabel = [];
-    for (const [key, label] of Object.entries(tooltipKeys)) {
+        
+    for (const [key, label] of Object.entries(resultTooltipMap)) {
         if (result[key] !== undefined) {
             let value = result[key];
 

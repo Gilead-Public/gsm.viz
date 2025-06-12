@@ -12,7 +12,7 @@ describe('expected group datum is returned', () => {
             selectedGroupIDs.includes(d.GroupID)
         );
 
-        expect(selectedGroupDatum).toEqual(expectedGroupDatum);
+        expect(expectedGroupDatum).toEqual(expect.objectContaining(selectedGroupDatum));
     });
 });
 

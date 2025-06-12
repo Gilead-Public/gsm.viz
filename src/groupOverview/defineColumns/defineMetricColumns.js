@@ -7,11 +7,12 @@ import defineMetricTooltip from './defineMetricTooltip';
  *
  * @param {Array} metricMetadata - metric metadata
  * @param {Array} results - analysis results data with one object per group ID per metric ID
+ * @param {Object} config - table configuration
  *
  * @returns {Array} Array of column metadata objects
  */
 
-export default function defineMetricColumns(metricMetadata, results) {
+export default function defineMetricColumns(metricMetadata, results, config) {
     const metricColumns = metricMetadata.map((metric) => {
         const column = {
             label: metric.Abbreviation,
@@ -26,7 +27,12 @@ export default function defineMetricColumns(metricMetadata, results) {
             type: 'metric',
             dataType: 'number',
 
-            meta: metric,
+            meta: {
+                ...metric,
+                ...{
+                    resultTooltipKeys: config.resultTooltipKeys,
+                },
+            },
         };
 
         return column;

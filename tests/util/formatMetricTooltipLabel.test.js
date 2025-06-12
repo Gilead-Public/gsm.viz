@@ -6,9 +6,22 @@ import formatMetricTooltipLabel from '../../src/util/formatMetricTooltipLabel.js
 describe('result attributes are formatted correctly', () => {
     const result = results.find((result) => parseFloat(result.Metric) > 0.01);
     const config = metricMetadata.find((d) => d.MetricID === result.MetricID);
+    config.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
 
     test('result attributes are formatted correctly without metric metadata', () => {
-        const tooltip = formatMetricTooltipLabel(result, {});
+        const tooltip = formatMetricTooltipLabel(result, {
+            resultTooltipKeys: [
+                'Score',
+                'Metric',
+                'Numerator',
+                'Denominator',
+            ]
+        });
 
         // - round score to 2 decimal places
         // - round metric to 2 decimal places
@@ -42,6 +55,35 @@ describe('result attributes are formatted correctly', () => {
             `${config.Denominator}: ${parseInt(
                 result.Denominator
             ).toLocaleString()}`,
+        ]);
+    });
+
+    test('result attributes are formatted correctly and can include additional metric metadata with custom labels', () => {
+        const tooltip = formatMetricTooltipLabel(result, {
+            Numerator: 'Custom Numerator',
+            Denominator: 'Custom Denominator',
+            Metric: 'Custom Metric',
+            Score: 'Custom Score',
+            Flag: 'Custom Flag',
+            resultTooltipKeys: [
+                'Numerator',
+                'Denominator',
+                'Metric',
+                'Score',
+                'Flag',
+            ]
+        });
+
+        // - round score to 2 decimal places
+        // - round metric to 2 decimal places
+        // - format numerator with commas
+        // - format denominator with commas
+        expect(tooltip).toEqual([
+            `Custom Numerator: ${parseInt(result.Numerator).toLocaleString()}`,
+            `Custom Denominator: ${parseInt(result.Denominator).toLocaleString()}`,
+            `Custom Metric: ${Math.round(parseFloat(result.Metric) * 100) / 100}`,
+            `Custom Score: ${Math.round(parseFloat(result.Score) * 100) / 100}`,
+            `Custom Flag: ${result.Flag}`,
         ]);
     });
 });

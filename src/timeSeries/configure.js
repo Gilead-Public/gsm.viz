@@ -13,6 +13,12 @@ export default function configure(
 ) {
     const defaults = {};
 
+    defaults.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
     defaults.GroupLevel = 'Site';
     defaults.groupLabelKey = 'InvestigatorLastName';
     defaults.groupParticipantCountKey = 'ParticipantCount';
