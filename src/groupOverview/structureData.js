@@ -34,6 +34,11 @@ export default function structureData(results, columns, groupMetadata, config) {
             datum.value = datum[column.valueKey];
             datum.text = datum.value;
 
+            // Format siteRiskScore to 3 decimal places
+            if (column.valueKey === 'siteRiskScore' && datum.value !== null && !isNaN(datum.value)) {
+                datum.text = parseFloat(datum.value).toFixed(3);
+            }
+
             datum.sortValue =
                 column.type === 'metric'
                     ? Math.abs(parseFloat(datum.value))

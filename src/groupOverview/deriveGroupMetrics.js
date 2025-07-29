@@ -61,6 +61,11 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
         group.nGreenFlags = groupResults.filter(
             (result) => Math.abs(parseInt(result.Flag)) === 0
         ).length;
+
+        // pull out siteRiskScore from results
+        group.siteRiskScore = groupResults
+            .filter((result) => result.MetricID === "Analysis_srs0001")
+            .map((result) => parseFloat(result.Score));
     });
 
     return groups;

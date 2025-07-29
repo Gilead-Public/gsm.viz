@@ -61,6 +61,18 @@ export default function defineGroupColumns(groupMetadata, config) {
             type: 'group',
             dataType: 'number',
         },
+        {
+            label: 'Risk Score',
+            data: groupMetadata,
+            filterKey: 'GroupID',
+            valueKey: 'siteRiskScore',
+
+            headerTooltip: 'Site risk score across all metrics',
+            sort: sortNumber,
+            tooltip: true,
+            type: 'group',
+            dataType: 'number',
+        },
     ];
 
     columns.forEach((column) => {
