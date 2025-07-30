@@ -64,7 +64,7 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
 
         // pull out siteRiskScore from results
         group.siteRiskScore = groupResults
-            .filter((result) => result.MetricID === "Analysis_srs0001")
+            .filter((result) => result.MetricID === config.SiteRiskMetric)
             .map((result) => parseFloat(result.Score));
     });
 

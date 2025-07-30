@@ -16,16 +16,15 @@ export default function formatMetricTooltipLabel(result, config) {
         : Object.keys(result);
 
     // Capture result attribute labels from [ config ].
-    const resultTooltipMap = resultTooltipKeys
-        .reduce((acc, key) => {
-            const label = config[key] || key;
-            acc[key] = label;
+    const resultTooltipMap = resultTooltipKeys.reduce((acc, key) => {
+        const label = config[key] || key;
+        acc[key] = label;
 
-            return acc;
-        }, {});
+        return acc;
+    }, {});
 
     const tooltipLabel = [];
-        
+
     for (const [key, label] of Object.entries(resultTooltipMap)) {
         if (result[key] !== undefined) {
             let value = result[key];

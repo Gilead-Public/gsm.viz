@@ -21363,7 +21363,15 @@ var gsmViz = (() => {
     if (!group2) {
       return [];
     }
-    const tooltipKeys = ![null, void 0].includes(config.groupTooltipKeys) ? config.groupTooltipKeys : Object.keys(group2).filter((key) => ["groupLabel", "GroupLabel", "nRedFlags", "nAmberFlags", "nGreenFlags"].includes(key) === false).reduce((acc, key) => {
+    const tooltipKeys = ![null, void 0].includes(config.groupTooltipKeys) ? config.groupTooltipKeys : Object.keys(group2).filter(
+      (key) => [
+        "groupLabel",
+        "GroupLabel",
+        "nRedFlags",
+        "nAmberFlags",
+        "nGreenFlags"
+      ].includes(key) === false
+    ).reduce((acc, key) => {
       const label = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (char) => char.toUpperCase()).replace("Id", "ID");
       acc[key] = label;
       return acc;
@@ -21667,6 +21675,7 @@ var gsmViz = (() => {
     defaults3.groupLabelKey = null;
     defaults3.groupParticipantCountKey = "ParticipantCount";
     defaults3.groupTooltipKeys = null;
+    defaults3.SiteRiskMetric = "srs0001";
     defaults3.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
@@ -21711,6 +21720,7 @@ var gsmViz = (() => {
       group2.nGreenFlags = groupResults.filter(
         (result) => Math.abs(parseInt(result.Flag)) === 0
       ).length;
+      group2.siteRiskScore = groupResults.filter((result) => result.MetricID === config.SiteRiskMetric).map((result) => parseFloat(result.Score));
     });
     return groups2;
   }
@@ -21803,6 +21813,17 @@ var gsmViz = (() => {
         tooltip: false,
         type: "group",
         dataType: "number"
+      },
+      {
+        label: "Risk Score",
+        data: groupMetadata,
+        filterKey: "GroupID",
+        valueKey: "siteRiskScore",
+        headerTooltip: "Site risk score across all metrics",
+        sort: sortNumber,
+        tooltip: true,
+        type: "group",
+        dataType: "number"
       }
     ];
     columns.forEach((column) => {
@@ -21892,6 +21913,9 @@ var gsmViz = (() => {
         };
         datum2.value = datum2[column.valueKey];
         datum2.text = datum2.value;
+        if (column.valueKey === "siteRiskScore" && datum2.value !== null && !isNaN(datum2.value)) {
+          datum2.text = parseFloat(datum2.value).toFixed(3);
+        }
         datum2.sortValue = column.type === "metric" ? Math.abs(parseFloat(datum2.value)) : datum2.value;
         datum2.class = [
           `group-overview--${column.type}`,

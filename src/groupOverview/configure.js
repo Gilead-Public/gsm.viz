@@ -13,6 +13,7 @@ export default function configure(_config_) {
     defaults.groupLabelKey = null;
     defaults.groupParticipantCountKey = 'ParticipantCount';
     defaults.groupTooltipKeys = null;
+    defaults.SiteRiskMetric = 'srs0001';
 
     // callbacks
     defaults.groupClickCallback = (datum) => {

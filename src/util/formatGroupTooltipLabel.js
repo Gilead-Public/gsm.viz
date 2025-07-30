@@ -17,24 +17,33 @@ export default function formatGroupTooltipLabel(group, config) {
     const tooltipKeys = ![null, undefined].includes(config.groupTooltipKeys)
         ? config.groupTooltipKeys
         : Object.keys(group)
-            // remove attributes created in gsmViz from the tooltip
-            .filter((key) => ['groupLabel', 'GroupLabel', 'nRedFlags', 'nAmberFlags', 'nGreenFlags'].includes(key) === false)
-            .reduce((acc, key) => {
-                // title-case key:
-                // - replace underscores with spaces
-                // - insert spaces between camelCase words
-                // - capitalize first letter of each word
-                // - replace 'Id' with 'ID'
-                const label = key
-                    .replace(/_/g, ' ')
-                    .replace(/([a-z])([A-Z])/g, '$1 $2')
-                    .replace(/\b\w/g, (char) => char.toUpperCase())
-                    .replace('Id', 'ID');
+              // remove attributes created in gsmViz from the tooltip
+              .filter(
+                  (key) =>
+                      [
+                          'groupLabel',
+                          'GroupLabel',
+                          'nRedFlags',
+                          'nAmberFlags',
+                          'nGreenFlags',
+                      ].includes(key) === false
+              )
+              .reduce((acc, key) => {
+                  // title-case key:
+                  // - replace underscores with spaces
+                  // - insert spaces between camelCase words
+                  // - capitalize first letter of each word
+                  // - replace 'Id' with 'ID'
+                  const label = key
+                      .replace(/_/g, ' ')
+                      .replace(/([a-z])([A-Z])/g, '$1 $2')
+                      .replace(/\b\w/g, (char) => char.toUpperCase())
+                      .replace('Id', 'ID');
 
-                acc[key] = label;
+                  acc[key] = label;
 
-                return acc;
-            }, {});
+                  return acc;
+              }, {});
 
     // Map group attributes to tooltip content.
     const tooltipContent = [];

@@ -25,3 +25,4 @@ cou0011,Country,CDAT,Data Change Rate,Data Points with 1+ Change,Total Data Poin
 cou0012,Country,SF,Screen Failure Rate,Screen Failures,Total Screened,Percent,Normal Approximation (Percent),Adjusted Z-Score,"-3,-2,2,3"
 qtl0004,Study,IPD,Important PD Rate,Important PDs,Days in Study,Rate,Poisson Test,Poisson Confidence Interval - Lower Bound,0.01
 qtl0006,Study,SDSC,Study Discontinuation Rate,Subjects Discontinued - Study,Total Subjects,Percent,Binomial Test,Binomial Confidence Interval - Lower Bound,0.2
+srs0001,Site,SRS,Study Risk Score,Weight,Maximum Weights,Identity,identity,Normalized Risk Score,"60,30"

@@ -310,5 +310,17 @@
 		"Model": "Binomial Test",
 		"Score": "Binomial Confidence Interval - Lower Bound",
 		"Thresholds": "0.2"
+	},
+	{
+		"MetricID": "srs0001",
+		"GroupLevel": "Site",
+		"Abbreviation": "SRS",
+		"Metric": "Study Risk Score",
+		"Numerator": "Weight",
+		"Denominator": "Maximum Weights",
+		"Outcome": "Identity",
+		"Model": "identity",
+		"Score": "Normalized Risk Score",
+		"Thresholds": "60,30"
 	}
 ]
