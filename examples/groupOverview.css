@@ -48,8 +48,9 @@
     background-color: #feaa02;
 }
 .group-overview td.group-overview--siteRiskScore {
-    color: black; 
-    text-shadow: 1px 1px 1px white; /* Text shadow for better readability */
+    font-weight: bold;
+    color: #000; /* Black text for better contrast */
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff; /* White text shadow for readability */
 }
 .group-overview td.group-overview--metric {
     width: 3em;

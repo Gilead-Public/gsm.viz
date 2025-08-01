@@ -63,9 +63,10 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
         ).length;
 
         // pull out siteRiskScore from results
-        group.siteRiskScore = groupResults
-            .filter((result) => result.MetricID === config.SiteRiskMetric)
-            .map((result) => parseFloat(result.Score));
+        const riskScoreResult = groupResults.find(
+            (result) => result.MetricID === config.SiteRiskMetric
+        );
+        group.siteRiskScore = riskScoreResult ? parseFloat(riskScoreResult.Score) : null;
     });
 
     return groups;
