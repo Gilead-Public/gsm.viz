@@ -1,4 +1,4 @@
-import { interpolateYlOrRd } from 'd3-scale-chromatic';
+import { interpolate } from 'd3-interpolate';
 
 /**
  * Add cells to table.
@@ -26,16 +26,18 @@ export default function addCells(bodyRows) {
         .text((d) => (d.text === 'NA' ? '-' : d.text))
         .attr('class', (d) => d.class)
         .classed('group-overview--tooltip', (d) => d.tooltip)
-        .attr('title', (d) => (d.tooltip ? d.tooltipContent : null))
-        .style('background-color', (d) => {
-            // Apply yellow-to-red color scale for Risk Score column
-            if (d.column.valueKey === 'siteRiskScore' && d.value !== null && !isNaN(d.value)) {
-                // Normalize the risk score from 0-100 to 0-1 for the color scale
-                const normalizedValue = d.value / 100;
-                return interpolateYlOrRd(normalizedValue);
-            }
-            return null; // Use default CSS styling for other columns
-        });
+        .attr('title', (d) => (d.tooltip ? d.tooltipContent : null));
+       // .style('background-color', (d) => {
+       //     // Apply white-to-red color scale for Risk Score column
+       //     if (d.column.valueKey === 'siteRiskScore' && d.value !== null && !isNaN(d.value)) {
+       //         // Normalize the risk score from 0-100 to 0-1 for the color scale
+       //         const normalizedValue = Math.max(0, Math.min(100, d.value)) / 100;
+       //         // Create white-to-red interpolation
+       //         const colorInterpolator = interpolate('#ffffff', '#ff5859');
+       //         return colorInterpolator(normalizedValue);
+       //     }
+       //     return null; // Use default CSS styling for other columns
+       // });
 
     return cells;
 }

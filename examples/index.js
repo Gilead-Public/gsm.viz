@@ -18958,29 +18958,6 @@ var gsmViz = (() => {
     return locale;
   }
 
-  // node_modules/d3-scale-chromatic/src/colors.js
-  function colors_default(specifier) {
-    var n = specifier.length / 6 | 0, colors2 = new Array(n), i = 0;
-    while (i < n)
-      colors2[i] = "#" + specifier.slice(i * 6, ++i * 6);
-    return colors2;
-  }
-
-  // node_modules/d3-scale-chromatic/src/ramp.js
-  var ramp_default = (scheme2) => rgbBasis(scheme2[scheme2.length - 1]);
-
-  // node_modules/d3-scale-chromatic/src/sequential-multi/YlOrRd.js
-  var scheme = new Array(3).concat(
-    "ffeda0feb24cf03b20",
-    "ffffb2fecc5cfd8d3ce31a1c",
-    "ffffb2fecc5cfd8d3cf03b20bd0026",
-    "ffffb2fed976feb24cfd8d3cf03b20bd0026",
-    "ffffb2fed976feb24cfd8d3cfc4e2ae31a1cb10026",
-    "ffffccffeda0fed976feb24cfd8d3cfc4e2ae31a1cb10026",
-    "ffffccffeda0fed976feb24cfd8d3cfc4e2ae31a1cbd0026800026"
-  ).map(colors_default);
-  var YlOrRd_default = ramp_default(scheme);
-
   // node_modules/d3-zoom/src/transform.js
   function Transform(k, x, y) {
     this.k = k;
@@ -21811,7 +21788,7 @@ var gsmViz = (() => {
     if (riskScoreResult) {
       const numerator = riskScoreResult.Numerator;
       const denominator = riskScoreResult.Denominator;
-      const score = parseFloat(riskScoreResult.Score).toFixed(3);
+      const score = parseFloat(riskScoreResult.Score).toFixed(2);
       tooltipLines.push(`Risk Score Calculation:`);
       tooltipLines.push(`${numerator} / ${denominator} = ${score}`);
       tooltipLines.push("");
@@ -21992,7 +21969,7 @@ var gsmViz = (() => {
         datum2.value = datum2[column.valueKey];
         datum2.text = datum2.value;
         if (column.valueKey === "siteRiskScore" && datum2.value !== null && !isNaN(datum2.value)) {
-          datum2.text = parseFloat(datum2.value).toFixed(3);
+          datum2.text = parseFloat(datum2.value);
         }
         datum2.sortValue = column.type === "metric" ? Math.abs(parseFloat(datum2.value)) : datum2.value;
         datum2.class = [
@@ -22036,13 +22013,7 @@ var gsmViz = (() => {
         const id2 = d.column.type === "metric" ? `${d.GroupID}-${d.column.meta.MetricID}` : `${d.GroupID}-${d.column.valueKey}`;
         return id2;
       }
-    ).join("td").text((d) => d.text === "NA" ? "-" : d.text).attr("class", (d) => d.class).classed("group-overview--tooltip", (d) => d.tooltip).attr("title", (d) => d.tooltip ? d.tooltipContent : null).style("background-color", (d) => {
-      if (d.column.valueKey === "siteRiskScore" && d.value !== null && !isNaN(d.value)) {
-        const normalizedValue = d.value / 100;
-        return YlOrRd_default(normalizedValue);
-      }
-      return null;
-    });
+    ).join("td").text((d) => d.text === "NA" ? "-" : d.text).attr("class", (d) => d.class).classed("group-overview--tooltip", (d) => d.tooltip).attr("title", (d) => d.tooltip ? d.tooltipContent : null);
     return cells;
   }
 
