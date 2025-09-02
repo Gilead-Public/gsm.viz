@@ -75,5 +75,10 @@ export default function defineRiskScoreTooltip(column, content, config, results,
         tooltipLines.push('No amber or red flags for this group');
     }
     
+    // Add link to risk signal calculation vignette
+    tooltipLines.push('');
+    tooltipLines.push('For more information, see:');
+    tooltipLines.push('https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html');
+    
     return tooltipLines.join('\n');
 }

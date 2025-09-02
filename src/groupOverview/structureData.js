@@ -40,7 +40,7 @@ export default function structureData(results, columns, groupMetadata, config) {
                 datum.value !== null &&
                 !isNaN(datum.value)
             ) {
-                datum.text = parseFloat(datum.value);
+                datum.text = Math.round(parseFloat(datum.value));
             }
 
             datum.sortValue =
