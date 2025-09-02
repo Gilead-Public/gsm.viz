@@ -74,7 +74,7 @@ export default function defineGroupColumns(groupMetadata, config, results = null
             filterKey: 'GroupID',
             valueKey: 'siteRiskScore',
 
-            headerTooltip: 'Site risk score across all metrics',
+            headerTooltip: 'Site risk score across all metrics. Score ranges from 0-100.',
             sort: sortNumber,
             tooltip: true,
             type: 'group',
