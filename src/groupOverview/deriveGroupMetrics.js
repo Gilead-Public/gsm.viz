@@ -62,11 +62,13 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
             (result) => Math.abs(parseInt(result.Flag)) === 0
         ).length;
 
-        // pull out siteRiskScore from results
-        const riskScoreResult = groupResults.find(
-            (result) => result.MetricID === config.SiteRiskMetric
-        );
-        group.siteRiskScore = riskScoreResult ? parseFloat(riskScoreResult.Score) : null;
+        // pull out siteRiskScore from results - only for Site-level groups
+        if (config.GroupLevel === 'Site') {
+            const riskScoreResult = groupResults.find(
+                (result) => result.MetricID === config.SiteRiskMetric
+            );
+            group.siteRiskScore = riskScoreResult ? parseFloat(riskScoreResult.Score) : null;
+        }
     });
 
     return groups;

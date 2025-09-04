@@ -66,9 +66,25 @@ export default function defineGroupColumns(groupMetadata, config, results = null
         },
     ];
 
+    columns.forEach((column) => {
+        column.defineTooltip = defineGroupTooltip;
+    });
+
+    columns = columns.filter((column) =>
+        groupMetadata.some((groupMetadatum) =>
+            groupMetadatum.hasOwnProperty(column.valueKey)
+        )
+    );
+
     // Only add Risk Score column for Site-level data
-    if (config.GroupLevel === 'Site') {
-        columns.push({
+    // Check that config.GroupLevel is 'Site' AND that the actual metricMetadata contains Site-level data
+    const hasSiteLevelData = metricMetadata && metricMetadata.some((metricMetadatum) => 
+        metricMetadatum.GroupLevel === 'Site'
+    );
+    
+    if (config.GroupLevel === 'Site' && hasSiteLevelData &&
+        groupMetadata.some((groupMetadatum) => groupMetadatum.hasOwnProperty('siteRiskScore'))) {
+        const riskScoreColumn = {
             label: 'Risk Score',
             data: groupMetadata,
             filterKey: 'GroupID',
@@ -79,24 +95,18 @@ export default function defineGroupColumns(groupMetadata, config, results = null
             tooltip: true,
             type: 'group',
             dataType: 'number',
-        });
-    }
+        };
 
-    columns.forEach((column) => {
-        if (column.valueKey === 'siteRiskScore' && results) {
-            // Custom tooltip for Risk Score column that shows amber/red flags and calculation
-            column.defineTooltip = (col, content, config) => 
+        // Custom tooltip for Risk Score column that shows amber/red flags and calculation
+        if (results) {
+            riskScoreColumn.defineTooltip = (col, content, config) => 
                 defineRiskScoreTooltip(col, content, config, results, metricMetadata);
         } else {
-            column.defineTooltip = defineGroupTooltip;
+            riskScoreColumn.defineTooltip = defineGroupTooltip;
         }
-    });
 
-    columns = columns.filter((column) =>
-        groupMetadata.some((groupMetadatum) =>
-            groupMetadatum.hasOwnProperty(column.valueKey)
-        )
-    );
+        columns.push(riskScoreColumn);
+    }
 
     return columns;
 }
