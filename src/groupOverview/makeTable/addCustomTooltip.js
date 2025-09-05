@@ -2,7 +2,7 @@ import { select } from 'd3';
 
 /**
  * Add custom tooltip functionality that allows interaction (e.g., clicking links).
- * This replaces the native browser tooltip for specific cells.
+ * Uses click events for Risk Score cells to avoid conflicts with row highlighting.
  *
  * @param {object} cells - The cells of the table.
  *
@@ -29,49 +29,71 @@ export default function addCustomTooltip(cells) {
             .style('z-index', '1000')
             .style('pointer-events', 'auto') // Allow interaction with tooltip
             .style('display', 'none')
-            .style('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+            .style(
+                'font-family',
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            );
     }
 
     // Filter Risk Score cells that need custom tooltips
-    const riskScoreCells = cells.filter((d) => d.column.valueKey === 'siteRiskScore' && d.tooltip);
+    const riskScoreCells = cells.filter(
+        (d) => d.column.valueKey === 'siteRiskScore' && d.tooltip
+    );
 
+    // Add click event to show/hide tooltip for Risk Score cells
     riskScoreCells
-        .on('mouseenter', function(event, d) {
-            // Remove the native title attribute to prevent default tooltip
-            select(this).attr('title', null);
-            
+        .style('cursor', 'pointer') // Indicate clickable
+        .classed('group-overview--tooltip', false) // Explicitly remove conflicting class
+        .on('click.risk-score-tooltip', function (event, d) {
+            // Stop event propagation to prevent other click handlers
+            event.stopPropagation();
+            event.preventDefault();
+
+            // Toggle tooltip visibility
+            const isVisible = tooltip.style('display') === 'block';
+
+            if (isVisible) {
+                tooltip.style('display', 'none');
+                return;
+            }
+
             // Parse the tooltip content to detect links
             const content = d.tooltipContent;
+            if (!content) {
+                return;
+            }
+
             const lines = content.split('\n');
-            
+
             // Clear tooltip
             tooltip.selectAll('*').remove();
-            
+
             // Add content line by line, converting URLs to clickable links
-            lines.forEach(line => {
+            lines.forEach((line) => {
                 const lineElement = tooltip.append('div');
-                
+
                 // Check if line contains a URL
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 const matches = line.match(urlRegex);
-                
+
                 if (matches) {
                     // Split line by URLs and create text/link elements
                     const parts = line.split(urlRegex);
-                    parts.forEach(part => {
+                    parts.forEach((part) => {
                         if (urlRegex.test(part)) {
                             // This is a URL - create a clickable link
-                            lineElement.append('a')
+                            lineElement
+                                .append('a')
                                 .attr('href', part)
                                 .attr('target', '_blank')
                                 .attr('rel', 'noopener noreferrer')
                                 .style('color', '#0066cc')
                                 .style('text-decoration', 'underline')
                                 .text(part)
-                                .on('mouseover', function() {
+                                .on('mouseover', function () {
                                     select(this).style('color', '#004499');
                                 })
-                                .on('mouseout', function() {
+                                .on('mouseout', function () {
                                     select(this).style('color', '#0066cc');
                                 });
                         } else if (part) {
@@ -84,31 +106,27 @@ export default function addCustomTooltip(cells) {
                     lineElement.text(line);
                 }
             });
-            
+
             // Position and show tooltip
             const [mouseX, mouseY] = [event.pageX, event.pageY];
             tooltip
-                .style('left', (mouseX + 10) + 'px')
-                .style('top', (mouseY - 10) + 'px')
+                .style('left', mouseX + 10 + 'px')
+                .style('top', mouseY - 10 + 'px')
                 .style('display', 'block');
-        })
-        .on('mouseleave', function() {
-            // Add delay before hiding to allow moving to tooltip
-            setTimeout(() => {
-                if (!tooltip.node().matches(':hover') && !select(this).node().matches(':hover')) {
-                    tooltip.style('display', 'none');
-                }
-            }, 100);
         });
 
-    // Handle tooltip hover to keep it visible
-    tooltip
-        .on('mouseenter', function() {
-            // Keep tooltip visible when hovering over it
-            select(this).style('display', 'block');
-        })
-        .on('mouseleave', function() {
-            // Hide tooltip when leaving it
-            select(this).style('display', 'none');
-        });
+    // Handle clicking outside to close tooltip
+    select('body').on('click.custom-tooltip', function (event) {
+        // Check if click is outside both the tooltip and risk score cells
+        const clickedElement = event.target;
+        const isTooltipClick =
+            tooltip.node() && tooltip.node().contains(clickedElement);
+        const isRiskScoreClick = riskScoreCells
+            .nodes()
+            .some((node) => node.contains(clickedElement));
+
+        if (!isTooltipClick && !isRiskScoreClick) {
+            tooltip.style('display', 'none');
+        }
+    });
 }

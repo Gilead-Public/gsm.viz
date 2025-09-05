@@ -25,8 +25,20 @@ export default function addCells(bodyRows) {
         .join('td')
         .text((d) => (d.text === 'NA' ? '-' : d.text))
         .attr('class', (d) => d.class)
-        .classed('group-overview--tooltip', (d) => d.tooltip)
-        .attr('title', (d) => (d.tooltip ? d.tooltipContent : null));
+        .classed('group-overview--tooltip', (d) => {
+            // Don't apply tooltip class to Risk Score cells (they use custom click tooltips)
+            if (d.column.valueKey === 'siteRiskScore') {
+                return false;
+            }
+            return d.tooltip;
+        })
+        .attr('title', (d) => {
+            // Don't add native title attribute for Risk Score cells (they use custom tooltips)
+            if (d.column.valueKey === 'siteRiskScore') {
+                return null;
+            }
+            return d.tooltip ? d.tooltipContent : null;
+        });
 
     return cells;
 }

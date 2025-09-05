@@ -27,6 +27,15 @@ export default function groupOverview(
     _groupMetadata_ = null,
     _metricMetadata_ = null
 ) {
+    console.log('DEBUG: groupOverview function called');
+    console.log('DEBUG: Arguments:', {
+        _element_,
+        _results_: _results_.length,
+        _config_,
+        _groupMetadata_: _groupMetadata_?.length,
+        _metricMetadata_: _metricMetadata_?.length,
+    });
+
     // TODO: check config
     // Check input data against data schema.
     checkInputs(_results_, _config_, _groupMetadata_, _metricMetadata_);
