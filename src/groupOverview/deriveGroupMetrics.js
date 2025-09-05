@@ -67,17 +67,23 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
             const riskScoreResult = groupResults.find(
                 (result) => result.MetricID === config.SiteRiskMetric
             );
-            
+
             if (riskScoreResult) {
                 group.siteRiskScore = parseFloat(riskScoreResult.Score);
             } else {
                 // TESTING OVERRIDE: Add mock site risk score data for testing
                 // Generate a mock score between 0-100 based on flag counts
-                const totalFlags = group.nRedFlags + group.nAmberFlags + group.nGreenFlags;
+                const totalFlags =
+                    group.nRedFlags + group.nAmberFlags + group.nGreenFlags;
                 const riskFlags = group.nRedFlags + group.nAmberFlags;
-                const mockScore = totalFlags > 0 ? Math.round((riskFlags / totalFlags) * 100) : 50;
+                const mockScore =
+                    totalFlags > 0
+                        ? Math.round((riskFlags / totalFlags) * 100)
+                        : 50;
                 group.siteRiskScore = mockScore;
-                console.log(`DEBUG: TESTING - Added mock site risk score ${mockScore} for group ${group.GroupID}`);
+                console.log(
+                    `DEBUG: TESTING - Added mock site risk score ${mockScore} for group ${group.GroupID}`
+                );
             }
         }
     });

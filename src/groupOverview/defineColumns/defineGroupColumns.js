@@ -104,7 +104,10 @@ export default function defineGroupColumns(
 
     // OVERRIDE FOR TESTING: Force Risk Score column to appear when GroupLevel is 'Site'
     const shouldAddRiskScoreColumn = config.GroupLevel === 'Site';
-    console.log('DEBUG: TESTING OVERRIDE - shouldAddRiskScoreColumn:', shouldAddRiskScoreColumn);
+    console.log(
+        'DEBUG: TESTING OVERRIDE - shouldAddRiskScoreColumn:',
+        shouldAddRiskScoreColumn
+    );
 
     if (shouldAddRiskScoreColumn) {
         console.log('DEBUG: Creating Risk Score column');
@@ -139,7 +142,11 @@ export default function defineGroupColumns(
         // TESTING: Add mock tooltip content for testing when no real site risk score data exists
         if (!hasSiteRiskScoreData) {
             riskScoreColumn.defineTooltip = (col, content, config) => {
-                return 'TESTING: Mock Risk Score Tooltip\n\nRed Flags:\n• AE - Non-serious AE Reporting Rate: 0.75\n• SAE - SAE Reporting Rate: 0.60\n\nAmber Flags:\n• PD - Non-important PD Rate: 0.45\n\nCalculation: 85 (17 flags / 20 total metrics)\n\nFor more information, see:\n' + (config.SiteRiskScoreURL || 'https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html');
+                return (
+                    'TESTING: Mock Risk Score Tooltip\n\nRed Flags:\n• AE - Non-serious AE Reporting Rate: 0.75\n• SAE - SAE Reporting Rate: 0.60\n\nAmber Flags:\n• PD - Non-important PD Rate: 0.45\n\nCalculation: 85 (17 flags / 20 total metrics)\n\nFor more information, see:\n' +
+                    (config.SiteRiskScoreURL ||
+                        'https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html')
+                );
             };
         }
 

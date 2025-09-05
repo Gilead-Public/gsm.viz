@@ -10,6 +10,7 @@ describe('configuration', () => {
             [
                 'GroupLevel',
                 'SiteRiskMetric',
+                'SiteRiskScoreURL',
                 'groupLabelKey',
                 'groupParticipantCountKey',
                 'groupTooltipKeys',
