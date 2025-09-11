@@ -27,6 +27,7 @@ export default function groupOverview(
     _groupMetadata_ = null,
     _metricMetadata_ = null
 ) {
+
     // TODO: check config
     // Check input data against data schema.
     checkInputs(_results_, _config_, _groupMetadata_, _metricMetadata_);

@@ -6,14 +6,16 @@ import configure from '../../src/timeSeries/configure.js';
 
 const MetricID = 'kri0001';
 const resultsSubset = results.filter((d) => d.MetricID === MetricID);
-const metricMetadatum = Object.keys(metricMetadatumSchema.properties)
-    .reduce((acc, key) => {
+const metricMetadatum = Object.keys(metricMetadatumSchema.properties).reduce(
+    (acc, key) => {
         acc[key] = metricMetadata.find(
             (metric) => metric.MetricID === MetricID
         )[key];
 
         return acc;
-    }, {});
+    },
+    {}
+);
 const thresholds = metricMetadatum.Thresholds.split(',').map((d) => +d);
 
 describe('configuration', () => {

@@ -24,7 +24,12 @@ export default function defineColumns(
     results,
     config
 ) {
-    const groupColumns = defineGroupColumns(groupMetadata, config);
+    const groupColumns = defineGroupColumns(
+        groupMetadata,
+        config,
+        results,
+        metricMetadata
+    );
     const metricColumns = defineMetricColumns(metricMetadata, results, config);
     const columns = [...groupColumns, ...metricColumns];
 

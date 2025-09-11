@@ -8,6 +8,7 @@ import addSorting from './makeTable/addSorting.js';
 import addFlagIcons from './makeTable/addFlagIcons.js';
 import addRowHighlighting from './makeTable/addRowHighlighting.js';
 import addClickEvents from './makeTable/addClickEvents.js';
+import addCustomTooltip from './makeTable/addCustomTooltip.js';
 
 export default function makeTable(_element_, rows, columns, config) {
     // create table
@@ -37,6 +38,9 @@ export default function makeTable(_element_, rows, columns, config) {
 
     // add click events
     addClickEvents(bodyRows, cells, config);
+
+    // add custom tooltips for interactive content (e.g., clickable links)
+    addCustomTooltip(cells);
 
     return table;
 }

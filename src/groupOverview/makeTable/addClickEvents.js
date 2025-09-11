@@ -40,8 +40,8 @@ export default function addClickEvents(bodyRows, cells, config) {
         bubbles: true,
     });
 
-    // add click event to group cells
-    cells.filter('.group-overview--group').on('click', function (event, d) {
+    // add click event to group cells (excluding Risk Score cells)
+    cells.filter('.group-overview--group').filter((d) => d.column.valueKey !== 'siteRiskScore').on('click', function (event, d) {
         config.groupClickCallback({
             GroupLevel: config.GroupLevel,
             GroupID: d.GroupID,
