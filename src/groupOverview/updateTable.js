@@ -10,6 +10,7 @@ import addCells from './makeTable/addCells.js';
 import addFlagIcons from './makeTable/addFlagIcons.js';
 import addRowHighlighting from './makeTable/addRowHighlighting.js';
 import addClickEvents from './makeTable/addClickEvents.js';
+import addCustomTooltip from './makeTable/addCustomTooltip.js';
 
 export default function updateTable(_results_) {
     const groupMetadata = deriveGroupMetrics(
@@ -41,6 +42,9 @@ export default function updateTable(_results_) {
 
     // add click events
     addClickEvents(bodyRows, cells, this.config);
+
+    // add custom tooltips for interactive content (e.g., clickable links)
+    addCustomTooltip(cells);
 
     // preserve existing column sort
     const sortedColumn = this.columns.find((d) => d.activeSort);
