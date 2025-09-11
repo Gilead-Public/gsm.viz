@@ -22344,14 +22344,6 @@ var gsmViz = (() => {
 
   // src/groupOverview.js
   function groupOverview(_element_ = "body", _results_ = [], _config_ = null, _groupMetadata_ = null, _metricMetadata_ = null) {
-    console.log("DEBUG: groupOverview function called");
-    console.log("DEBUG: Arguments:", {
-      _element_,
-      _results_: _results_.length,
-      _config_,
-      _groupMetadata_: _groupMetadata_?.length,
-      _metricMetadata_: _metricMetadata_?.length
-    });
     checkInputs2(_results_, _config_, _groupMetadata_, _metricMetadata_);
     const config = configure4(_config_);
     const groupMetadata = deriveGroupMetrics(
