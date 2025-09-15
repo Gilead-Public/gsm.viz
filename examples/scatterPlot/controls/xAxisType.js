@@ -5,18 +5,8 @@ const xAxisType = function (setup = false) {
     if (setup)
         xAxisToggle.addEventListener('change', (event) => {
             const instance = getChart();
-            instance.helpers.updateOption(
-                instance,
-                'scales.x.type',
-                event.target.value
-            );
-            instance.helpers.updateOption(
-                instance,
-                'scales.x.title.text',
-                event.target.value === 'logarithmic'
-                    ? `${instance.data.config.xLabel} (Log Scale)`
-                    : instance.data.config.xLabel
-            );
+            instance.data.config.xType = event.target.value;
+            instance.helpers.updateConfig(instance, instance.data.config);
         });
 
     return xAxisToggle.querySelector('input:checked').value;
