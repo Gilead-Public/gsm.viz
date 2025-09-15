@@ -27887,7 +27887,7 @@ var gsmViz = (() => {
         scales2.x.ticks = {
             callback: function (value, index3, context) {
                 const tick = context[index3];
-                return config.xType != 'logarithmic' || tick.major
+                return config.xType !== 'logarithmic' || tick.major
                     ? format(',d')(tick.value)
                     : null;
             },

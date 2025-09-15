@@ -9,7 +9,7 @@ export default function getScales(config) {
     scales.x.ticks = {
         callback: function (value, index, context) {
             const tick = context[index];
-            return config.xType != 'logarithmic' || tick.major
+            return config.xType !== 'logarithmic' || tick.major
                 ? format(',d')(tick.value)
                 : null;
         },
