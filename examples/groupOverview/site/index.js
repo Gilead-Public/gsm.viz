@@ -15,7 +15,7 @@ Promise.all(dataPromises)
 
         let metricPrefix;
         if (GroupLevel === 'Site') {
-            metricPrefix = 'kri|srs';
+            metricPrefix = 'kri';
         } else if (GroupLevel === 'Country') {
             metricPrefix = 'cou';
         } else if (GroupLevel === 'Study') {
@@ -28,12 +28,48 @@ Promise.all(dataPromises)
         datasets[0] = datasets[0].filter(
             (d) => d.SnapshotDate === SnapshotDate
         );
-        const results = datasets[0].filter((d) => regex.test(d.MetricID));
+        const results = datasets[0].filter(
+            (d) => regex.test(d.MetricID) || d.MetricID === 'srs0001'
+        );
         const metricMetadata = datasets[1].filter((d) =>
             regex.test(d.MetricID)
         );
         const groupMetadata = datasets[2];
         const groupSubset = getGroups(results);
+
+        // transpose [ metricMetadata ] to one row per:
+        // - MetricID
+        // - GroupLevel
+        // - comma-separated value of Flag and RiskScoreWeights, which contain the same number of values
+        // then merge onto [ results ] by MetricID, GroupLevel, and Flag
+        // to get RiskScoreWeight onto each result row
+        const metricMetadataTransposed = [];
+        metricMetadata.forEach((d) => {
+            const flags = d.Flag.split(',');
+            const weights = d.RiskScoreWeight.split(',');
+            flags.forEach((flag, i) => {
+                metricMetadataTransposed.push({
+                    ...d,
+                    Flag: flag,
+                    Weight: +weights[i],
+                });
+            });
+        });
+
+        // merge transposed metric metadata onto results by MetricID, GroupLevel, and Flag
+        results.forEach((d) => {
+            const metadata = metricMetadataTransposed.find(
+                (m) =>
+                    m.MetricID === d.MetricID &&
+                    m.GroupLevel === GroupLevel &&
+                    m.Flag === d.Flag
+            );
+            if (metadata) {
+                d.Weight = metadata.Weight;
+            } else {
+                d.Weight = NaN;
+            }
+        });
 
         const groupLabelKey = {
             Site: 'InvestigatorLastName',

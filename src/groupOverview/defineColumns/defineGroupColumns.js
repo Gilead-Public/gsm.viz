@@ -86,7 +86,7 @@ export default function defineGroupColumns(
         results &&
         results.some((result) => result.MetricID === config.SiteRiskMetric);
 
-    const shouldAddRiskScoreColumn = 
+    const shouldAddRiskScoreColumn =
         config.GroupLevel === 'Site' && hasSiteRiskScoreData;
 
     if (shouldAddRiskScoreColumn) {
@@ -119,5 +119,6 @@ export default function defineGroupColumns(
         }
 
         columns.push(riskScoreColumn);
-    }    return columns;
+    }
+    return columns;
 }
