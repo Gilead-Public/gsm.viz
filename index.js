@@ -21674,7 +21674,7 @@ var gsmViz = (() => {
     defaults3.groupLabelKey = null;
     defaults3.groupParticipantCountKey = "ParticipantCount";
     defaults3.groupTooltipKeys = null;
-    defaults3.SiteRiskMetric = "srs0001";
+    defaults3.SiteRiskScoreMetricID = "Analysis_srs0001";
     defaults3.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
     defaults3.groupClickCallback = (datum2) => {
       console.log(datum2);
@@ -21722,7 +21722,7 @@ var gsmViz = (() => {
       ).length;
       if (config.GroupLevel === "Site") {
         const riskScoreResult = groupResults.find(
-          (result) => result.MetricID === config.SiteRiskMetric
+          (result) => result.MetricID === config.SiteRiskScoreMetricID
         );
         if (riskScoreResult) {
           group2.siteRiskScore = parseFloat(riskScoreResult.Score);
@@ -21779,10 +21779,10 @@ var gsmViz = (() => {
     const groupID = content.GroupID;
     const groupResults = results.filter((result) => result.GroupID === groupID);
     const riskScoreResult = groupResults.find(
-      (result) => result.MetricID === config.SiteRiskMetric
+      (result) => result.MetricID === config.SiteRiskScoreMetricID
     );
-    const amberFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 1).filter((result) => result.MetricID !== config.SiteRiskMetric);
-    const redFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 2).filter((result) => result.MetricID !== config.SiteRiskMetric);
+    const amberFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 1).filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
+    const redFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 2).filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
     const metricLookup = metricMetadata ? metricMetadata.reduce((acc, metric) => {
       acc[metric.MetricID] = {
         name: metric.Metric,
@@ -21885,7 +21885,7 @@ var gsmViz = (() => {
         (groupMetadatum) => groupMetadatum.hasOwnProperty(column.valueKey)
       )
     );
-    const hasSiteRiskScoreData = results && results.some((result) => result.MetricID === config.SiteRiskMetric);
+    const hasSiteRiskScoreData = results && results.some((result) => result.MetricID === config.SiteRiskScoreMetricID);
     const shouldAddRiskScoreColumn = config.GroupLevel === "Site" && hasSiteRiskScoreData;
     if (shouldAddRiskScoreColumn) {
       const riskScoreColumn = {
@@ -22201,20 +22201,25 @@ var gsmViz = (() => {
     const riskScoreCells = cells.filter(
       (d) => d.column.valueKey === "siteRiskScore" && d.tooltip
     );
+    let activeCell = null;
     riskScoreCells.style("cursor", "pointer").classed("group-overview--tooltip", false).on("click.risk-score-tooltip", function(event, d) {
       event.stopPropagation();
       event.preventDefault();
-      const isVisible = tooltip5.style("display") === "block";
-      if (isVisible) {
+      const currentCell = this;
+      if (activeCell === currentCell) {
         tooltip5.style("display", "none");
+        activeCell = null;
         return;
       }
+      tooltip5.style("display", "none");
       const content = d.tooltipContent;
       if (!content) {
+        activeCell = null;
         return;
       }
-      const lines = content.split("\n");
+      activeCell = currentCell;
       tooltip5.selectAll("*").remove();
+      const lines = content.split("\n");
       lines.forEach((line) => {
         const lineElement = tooltip5.append("div");
         const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -22245,6 +22250,7 @@ var gsmViz = (() => {
       const isRiskScoreClick = riskScoreCells.nodes().some((node) => node.contains(clickedElement));
       if (!isTooltipClick && !isRiskScoreClick) {
         tooltip5.style("display", "none");
+        activeCell = null;
       }
     });
   }

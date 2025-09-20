@@ -63,16 +63,16 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
         ).length;
 
         // pull out siteRiskScore from results - only for Site-level groups
+        // Note: If no risk score result is found, we don't set siteRiskScore
+        // The column will be disabled in defineGroupColumns.js
         if (config.GroupLevel === 'Site') {
             const riskScoreResult = groupResults.find(
-                (result) => result.MetricID === config.SiteRiskMetric
+                (result) => result.MetricID === config.SiteRiskScoreMetricID
             );
 
             if (riskScoreResult) {
                 group.siteRiskScore = parseFloat(riskScoreResult.Score);
             }
-            // Note: If no risk score result is found, we don't set siteRiskScore
-            // The column will be disabled in defineGroupColumns.js
         }
     });
 

@@ -23,16 +23,16 @@ export default function defineRiskScoreTooltip(
 
     // Get the risk score result specifically
     const riskScoreResult = groupResults.find(
-        (result) => result.MetricID === config.SiteRiskMetric
+        (result) => result.MetricID === config.SiteRiskScoreMetricID
     );
 
     // Get amber and red flagged metrics for this group
     const amberFlags = groupResults
         .filter((result) => Math.abs(parseInt(result.Flag)) === 1)
-        .filter((result) => result.MetricID !== config.SiteRiskMetric);
+        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
     const redFlags = groupResults
         .filter((result) => Math.abs(parseInt(result.Flag)) === 2)
-        .filter((result) => result.MetricID !== config.SiteRiskMetric);
+        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
 
     // Create a lookup for metric names
     const metricLookup = metricMetadata
