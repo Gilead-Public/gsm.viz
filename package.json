@@ -8,7 +8,7 @@
     "build-windows": "npm run bundle & npm run format & npm run test & npm run link-bundles",
     "build": "npm run bundle && npm run format && npm run test && npm run link-bundles",
     "bundle": "esbuild src/main.js --banner:js=\"'use strict'\" --bundle --global-name=gsmViz --outfile=index.js --sourcemap && cp index.js examples/ && cp index.js.map examples/",
-    "deploy": "gh-pages -d examples",
+    "deploy": "node -e \"const fs=require('fs'); const html=fs.readFileSync('examples/index.html','utf8'); fs.writeFileSync('examples/index.html', html.replace('DEPLOYMENT_TIMESTAMP_PLACEHOLDER', new Date().toISOString()));\" && gh-pages -d examples",
     "format": "npm run format-src && npm run format-examples && npm run format-tests",
     "format-examples": "npx prettier --single-quote --tab-width=4 --write examples",
     "format-src": "npx prettier --single-quote --tab-width=4 --write src",
