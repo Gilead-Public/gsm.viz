@@ -11,7 +11,6 @@
 "cou0010","Country","ODAT","Delayed Data Entry Rate","Data Pages Entered > 10 Days","Total Data Pages","Normal Approximation","Adjusted Z-Score","2,3",NA,"0,1,2"
 "cou0011","Country","CDAT","Data Change Rate","Data Points with 1+ Change","Total Data Points","Normal Approximation","Adjusted Z-Score","2,3",NA,"0,1,2"
 "cou0012","Country","SF","Screen Failure Rate","Screen Failures","Screened Subjects","Normal Approximation","Adjusted Z-Score","-3,-2,2,3",NA,"-2,-1,0,1,2"
-"cou0013","Country","PK","PK Collection Compliance Rate","PK Samples Collected","PK Samples Expected","Identity","PK Collection Compliance Rate","0.9,0.85",NA,"-2,-1,0"
 "kri0001","Site","AE","Adverse Event Rate","Adverse Events","Days on Study","Normal Approximation","Adjusted Z-Score","-2,-1,2,3","32,16,0,1,2","-2,-1,0,1,2"
 "kri0002","Site","SAE","Serious Adverse Event Rate","Serious Adverse Events","Days on Study","Normal Approximation","Adjusted Z-Score","-2,-1,2,3","8,0,0,4,8","-2,-1,0,1,2"
 "kri0003","Site","PD","Non-Important Protocol Deviation Rate","Non-Important Protocol Deviations","Days on Study","Normal Approximation","Adjusted Z-Score","-3,-2,2,3","8,4,0,8,16","-2,-1,0,1,2"
@@ -24,7 +23,6 @@
 "kri0010","Site","ODAT","Delayed Data Entry Rate","Data Pages Entered > 10 Days","Total Data Pages","Normal Approximation","Adjusted Z-Score","2,3","0,1,2","0,1,2"
 "kri0011","Site","CDAT","Data Change Rate","Data Points with 1+ Change","Total Data Points","Normal Approximation","Adjusted Z-Score","2,3","0,1,2","0,1,2"
 "kri0012","Site","SF","Screen Failure Rate","Screen Failures","Screened Subjects","Normal Approximation","Adjusted Z-Score","-3,-2,2,3","0,0,0,8,16","-2,-1,0,1,2"
-"kri0013","Site","PK","PK Collection Compliance Rate","PK Samples Collected","PK Samples Expected","Identity","PK Collection Compliance Rate","0.9,0.85","2,1,0","-2,-1,0"
 "qtl0004","Study","IPD","Important PD Rate","Important PDs","Days in Study","Poisson Test","Poisson Confidence Interval - Lower Bound","0.01",NA,"0,2"
 "qtl0006","Study","SDSC","Study Discontinuation Rate","Subjects Discontinued - Study","Total Subjects","Binomial Test","Binomial Confidence Interval - Lower Bound","0.2",NA,"0,2"
 "srs0001","Site","SRS","Site Risk Score","Weight","Maximum Weights","Identity","Normalized Risk Score",NA,NA,NA

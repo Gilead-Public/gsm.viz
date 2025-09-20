@@ -36,7 +36,7 @@ Promise.all(dataPromises)
         config.groupTooltipKeys = groupTooltipKeys[config.GroupLevel];
 
         // threshold annotations
-        const thresholds = config.Thresholds.split(',').map((d) => +d);
+        const thresholds = config.Threshold.split(',').map((d) => +d);
 
         // group metadata
         const groupMetadata = datasets[2];

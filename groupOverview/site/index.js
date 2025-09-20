@@ -84,6 +84,7 @@ Promise.all(dataPromises)
                 GroupLevel,
                 groupLabelKey: groupLabelKey[GroupLevel],
                 groupTooltipKeys: groupTooltipKeys[GroupLevel],
+                SiteRiskScoreMetricID: 'srs0001',
                 //groupClickCallback: function (datum) {
                 //},
                 //metricClickCallback: function (datum) {
