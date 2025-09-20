@@ -6,13 +6,20 @@
 name: Build and Deploy
 
 on:
+  pull_request:
+    branches:
+      - dev
+    types: [opened, synchronize, reopened]
+  pull_request:
+    branches:
+      - dev
+      - main
+    types: [closed]
   push:
     branches:
       - main
       - dev
-  pull_request:
-    branches:
-      - dev
+    # This will only trigger if someone has direct push access (admins/maintainers)
 
 permissions:
   contents: write
@@ -45,16 +52,29 @@ jobs:
           # Update the timestamp in index.html
           node -e "const fs=require('fs'); const html=fs.readFileSync('examples/index.html','utf8'); fs.writeFileSync('examples/index.html', html.replace('DEPLOYMENT_TIMESTAMP_PLACEHOLDER', new Date().toISOString()));"
 
-      - name: Deploy to root (main/dev branch) 🚀
-        if: github.event_name == 'push'
+      - name: Deploy to main branch (root) 🚀
+        if: |
+          (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main') ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: examples
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
 
-      - name: Deploy to PR subdirectory 🚀
-        if: github.event_name == 'pull_request'
+      - name: Deploy to dev branch deployment 🚀
+        if: |
+          (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev') ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/dev')
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: examples
+          target-folder: dev
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+
+      - name: Deploy to PR subdirectory (open PRs to dev) 🚀
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.action != 'closed'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: examples
@@ -63,7 +83,7 @@ jobs:
           clean: false
 
       - name: Comment PR with deployment URL
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.action != 'closed'
         uses: actions/github-script@v7
         with:
           script: |
