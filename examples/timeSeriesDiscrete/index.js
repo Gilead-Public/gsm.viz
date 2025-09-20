@@ -1,9 +1,9 @@
 const by = 'Group'; // 'kri'
 
 const dataFiles = [
-    `../data/flag_counts_by_${by}.csv`,
-    '../data/meta_workflow.csv',
-    '../data/status_site_over_time.csv',
+    `../data/deprecated/flag_counts_by_${by}.csv`,
+    '../data/metricMetadata.csv',
+    '../data/groupMetadata.csv',
 ];
 
 const dataPromises = dataFiles.map((dataFile) =>
@@ -38,6 +38,7 @@ Promise.all(dataPromises)
                   }
                 : {
                       selectedGroupIDs: '13',
+                      discreteUnit: 'Site',
                   };
         config.y = 'n_flagged';
         //config.aggregateLabel = 'Country';

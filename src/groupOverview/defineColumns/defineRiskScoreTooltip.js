@@ -23,16 +23,16 @@ export default function defineRiskScoreTooltip(
 
     // Get the risk score result specifically
     const riskScoreResult = groupResults.find(
-        (result) => result.MetricID === config.SiteRiskMetric
+        (result) => result.MetricID === config.SiteRiskScoreMetricID
     );
 
     // Get amber and red flagged metrics for this group
-    const amberFlags = groupResults.filter(
-        (result) => Math.abs(parseInt(result.Flag)) === 1
-    );
-    const redFlags = groupResults.filter(
-        (result) => Math.abs(parseInt(result.Flag)) === 2
-    );
+    const amberFlags = groupResults
+        .filter((result) => Math.abs(parseInt(result.Flag)) === 1)
+        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
+    const redFlags = groupResults
+        .filter((result) => Math.abs(parseInt(result.Flag)) === 2)
+        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
 
     // Create a lookup for metric names
     const metricLookup = metricMetadata
@@ -63,10 +63,11 @@ export default function defineRiskScoreTooltip(
         tooltipLines.push(`Red Flags (${redFlags.length}):`);
         redFlags.forEach((result) => {
             const metricInfo = metricLookup[result.MetricID];
-            const metricName = metricInfo
-                ? `${metricInfo.abbreviation} - ${metricInfo.name}`
-                : result.MetricID;
-            tooltipLines.push(`• ${metricName}: ${result.Weight}`);
+            const metricName = metricInfo ? metricInfo.name : result.MetricID;
+            const metricText = result.Weight
+                ? `• ${metricName}: ${result.Weight}`
+                : `• ${metricName}`;
+            tooltipLines.push(metricText);
         });
         tooltipLines.push(''); // Empty line for spacing
     }
@@ -76,10 +77,11 @@ export default function defineRiskScoreTooltip(
         tooltipLines.push(`Amber Flags (${amberFlags.length}):`);
         amberFlags.forEach((result) => {
             const metricInfo = metricLookup[result.MetricID];
-            const metricName = metricInfo
-                ? `${metricInfo.abbreviation} - ${metricInfo.name}`
-                : result.MetricID;
-            tooltipLines.push(`• ${metricName}: ${result.Weight}`);
+            const metricName = metricInfo ? metricInfo.name : result.MetricID;
+            const metricText = result.Weight
+                ? `• ${metricName}: ${result.Weight}`
+                : `• ${metricName}`;
+            tooltipLines.push(metricText);
         });
     }
 

@@ -43,6 +43,9 @@ export default function addCustomTooltip(cells) {
         (d) => d.column.valueKey === 'siteRiskScore' && d.tooltip
     );
 
+    // Track the currently active cell
+    let activeCell = null;
+
     // Add click event to show/hide tooltip for Risk Score cells
     riskScoreCells
         .style('cursor', 'pointer') // Indicate clickable
@@ -52,26 +55,33 @@ export default function addCustomTooltip(cells) {
             event.stopPropagation();
             event.preventDefault();
 
-            // Toggle tooltip visibility
-            const isVisible = tooltip.style('display') === 'block';
+            const currentCell = this;
 
-            if (isVisible) {
+            // If clicking the same cell that's already active, hide tooltip
+            if (activeCell === currentCell) {
                 tooltip.style('display', 'none');
+                activeCell = null;
                 return;
             }
+
+            // Always hide existing tooltip first
+            tooltip.style('display', 'none');
 
             // Parse the tooltip content to detect links
             const content = d.tooltipContent;
             if (!content) {
+                activeCell = null;
                 return;
             }
 
-            const lines = content.split('\n');
+            // Set this as the active cell
+            activeCell = currentCell;
 
             // Clear tooltip
             tooltip.selectAll('*').remove();
 
             // Add content line by line, converting URLs to clickable links
+            const lines = content.split('\n');
             lines.forEach((line) => {
                 const lineElement = tooltip.append('div');
 
@@ -130,6 +140,7 @@ export default function addCustomTooltip(cells) {
 
         if (!isTooltipClick && !isRiskScoreClick) {
             tooltip.style('display', 'none');
+            activeCell = null;
         }
     });
 }
