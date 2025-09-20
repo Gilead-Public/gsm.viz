@@ -84,7 +84,9 @@ export default function defineGroupColumns(
     // Only add Risk Score column for Site-level data when the site risk score metric exists in the data
     const hasSiteRiskScoreData =
         results &&
-        results.some((result) => result.MetricID === config.SiteRiskScoreMetricID);
+        results.some(
+            (result) => result.MetricID === config.SiteRiskScoreMetricID
+        );
 
     const shouldAddRiskScoreColumn =
         config.GroupLevel === 'Site' && hasSiteRiskScoreData;
