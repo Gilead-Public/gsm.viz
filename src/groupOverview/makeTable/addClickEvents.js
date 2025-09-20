@@ -41,19 +41,22 @@ export default function addClickEvents(bodyRows, cells, config) {
     });
 
     // add click event to group cells (excluding Risk Score cells)
-    cells.filter('.group-overview--group').filter((d) => d.column.valueKey !== 'siteRiskScore').on('click', function (event, d) {
-        config.groupClickCallback({
-            GroupLevel: config.GroupLevel,
-            GroupID: d.GroupID,
-            data: d,
-        });
+    cells
+        .filter('.group-overview--group')
+        .filter((d) => d.column.valueKey !== 'siteRiskScore')
+        .on('click', function (event, d) {
+            config.groupClickCallback({
+                GroupLevel: config.GroupLevel,
+                GroupID: d.GroupID,
+                data: d,
+            });
 
-        groupSelected.data = {
-            //StudyID: d.StudyID,
-            //SnapshotDate: d.SnapshotDate,
-            GroupLevel: d.GroupLevel,
-            GroupID: d.GroupID,
-        };
-        this.dispatchEvent(groupSelected);
-    });
+            groupSelected.data = {
+                //StudyID: d.StudyID,
+                //SnapshotDate: d.SnapshotDate,
+                GroupLevel: d.GroupLevel,
+                GroupID: d.GroupID,
+            };
+            this.dispatchEvent(groupSelected);
+        });
 }

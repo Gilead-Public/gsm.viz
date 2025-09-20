@@ -11,7 +11,7 @@ import { select } from 'd3';
 export default function addCustomTooltip(cells) {
     // Remove any existing custom tooltip event handlers first
     cells.on('click.risk-score-tooltip', null);
-    
+
     // Create tooltip container if it doesn't exist
     let tooltip = select('body').select('.custom-tooltip');
     if (tooltip.empty()) {

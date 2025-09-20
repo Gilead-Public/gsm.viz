@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -22726,7 +22727,7 @@ var gsmViz = (() => {
     scales2.x.ticks = {
       callback: function(value, index3, context) {
         const tick = context[index3];
-        return tick.major ? format(",d")(tick.value) : null;
+        return config.xType !== "logarithmic" || tick.major ? format(",d")(tick.value) : null;
       }
     };
     scales2.x.title.text = config.xType === "logarithmic" ? `${config.xLabel} (Log Scale)` : config.xLabel;
