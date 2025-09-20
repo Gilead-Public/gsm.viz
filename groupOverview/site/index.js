@@ -15,7 +15,7 @@ Promise.all(dataPromises)
 
         let metricPrefix;
         if (GroupLevel === 'Site') {
-            metricPrefix = 'kri|srs';
+            metricPrefix = 'kri';
         } else if (GroupLevel === 'Country') {
             metricPrefix = 'cou';
         } else if (GroupLevel === 'Study') {
