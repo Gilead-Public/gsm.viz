@@ -9,7 +9,9 @@ export default function getScales(config) {
     scales.x.ticks = {
         callback: function (value, index, context) {
             const tick = context[index];
-            return tick.major ? format(',d')(tick.value) : null;
+            return config.xType !== 'logarithmic' || tick.major
+                ? format(',d')(tick.value)
+                : null;
         },
     };
     scales.x.title.text =
