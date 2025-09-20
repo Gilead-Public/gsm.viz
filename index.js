@@ -21532,14 +21532,6 @@ var gsmViz = (() => {
         );
         if (riskScoreResult) {
           group2.siteRiskScore = parseFloat(riskScoreResult.Score);
-        } else {
-          const totalFlags = group2.nRedFlags + group2.nAmberFlags + group2.nGreenFlags;
-          const riskFlags = group2.nRedFlags + group2.nAmberFlags;
-          const mockScore = totalFlags > 0 ? Math.round(riskFlags / totalFlags * 100) : 50;
-          group2.siteRiskScore = mockScore;
-          console.log(
-            `DEBUG: TESTING - Added mock site risk score ${mockScore} for group ${group2.GroupID}`
-          );
         }
       }
     });
@@ -21595,12 +21587,8 @@ var gsmViz = (() => {
     const riskScoreResult = groupResults.find(
       (result) => result.MetricID === config.SiteRiskMetric
     );
-    const amberFlags = groupResults.filter(
-      (result) => Math.abs(parseInt(result.Flag)) === 1
-    );
-    const redFlags = groupResults.filter(
-      (result) => Math.abs(parseInt(result.Flag)) === 2
-    );
+    const amberFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 1).filter((result) => result.MetricID !== config.SiteRiskMetric);
+    const redFlags = groupResults.filter((result) => Math.abs(parseInt(result.Flag)) === 2).filter((result) => result.MetricID !== config.SiteRiskMetric);
     const metricLookup = metricMetadata ? metricMetadata.reduce((acc, metric) => {
       acc[metric.MetricID] = {
         name: metric.Metric,
@@ -21621,8 +21609,9 @@ var gsmViz = (() => {
       tooltipLines.push(`Red Flags (${redFlags.length}):`);
       redFlags.forEach((result) => {
         const metricInfo = metricLookup[result.MetricID];
-        const metricName = metricInfo ? `${metricInfo.abbreviation} - ${metricInfo.name}` : result.MetricID;
-        tooltipLines.push(`\u2022 ${metricName}: ${result.Weight}`);
+        const metricName = metricInfo ? metricInfo.name : result.MetricID;
+        const metricText = result.Weight ? `\u2022 ${metricName}: ${result.Weight}` : `\u2022 ${metricName}`;
+        tooltipLines.push(metricText);
       });
       tooltipLines.push("");
     }
@@ -21630,8 +21619,9 @@ var gsmViz = (() => {
       tooltipLines.push(`Amber Flags (${amberFlags.length}):`);
       amberFlags.forEach((result) => {
         const metricInfo = metricLookup[result.MetricID];
-        const metricName = metricInfo ? `${metricInfo.abbreviation} - ${metricInfo.name}` : result.MetricID;
-        tooltipLines.push(`\u2022 ${metricName}: ${result.Weight}`);
+        const metricName = metricInfo ? metricInfo.name : result.MetricID;
+        const metricText = result.Weight ? `\u2022 ${metricName}: ${result.Weight}` : `\u2022 ${metricName}`;
+        tooltipLines.push(metricText);
       });
     }
     if (redFlags.length === 0 && amberFlags.length === 0) {
@@ -21701,23 +21691,9 @@ var gsmViz = (() => {
         (groupMetadatum) => groupMetadatum.hasOwnProperty(column.valueKey)
       )
     );
-    console.log("DEBUG: Checking Risk Score column conditions");
-    console.log("DEBUG: config.GroupLevel:", config.GroupLevel);
-    console.log("DEBUG: metricMetadata:", metricMetadata);
-    const hasSiteLevelData = metricMetadata && metricMetadata.some(
-      (metricMetadatum) => metricMetadatum.GroupLevel === "Site"
-    );
     const hasSiteRiskScoreData = results && results.some((result) => result.MetricID === config.SiteRiskMetric);
-    console.log("DEBUG: hasSiteLevelData:", hasSiteLevelData);
-    console.log("DEBUG: hasSiteRiskScoreData:", hasSiteRiskScoreData);
-    console.log("DEBUG: config.SiteRiskMetric:", config.SiteRiskMetric);
-    const shouldAddRiskScoreColumn = config.GroupLevel === "Site";
-    console.log(
-      "DEBUG: TESTING OVERRIDE - shouldAddRiskScoreColumn:",
-      shouldAddRiskScoreColumn
-    );
+    const shouldAddRiskScoreColumn = config.GroupLevel === "Site" && hasSiteRiskScoreData;
     if (shouldAddRiskScoreColumn) {
-      console.log("DEBUG: Creating Risk Score column");
       const riskScoreColumn = {
         label: "Risk Score",
         data: groupMetadata,
@@ -21740,20 +21716,8 @@ var gsmViz = (() => {
       } else {
         riskScoreColumn.defineTooltip = defineTooltip;
       }
-      if (!hasSiteRiskScoreData) {
-        riskScoreColumn.defineTooltip = (col, content, config2) => {
-          return "TESTING: Mock Risk Score Tooltip\n\nRed Flags:\n\u2022 AE - Non-serious AE Reporting Rate: 0.75\n\u2022 SAE - SAE Reporting Rate: 0.60\n\nAmber Flags:\n\u2022 PD - Non-important PD Rate: 0.45\n\nCalculation: 85 (17 flags / 20 total metrics)\n\nFor more information, see:\n" + (config2.SiteRiskScoreURL || "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html");
-        };
-      }
       columns.push(riskScoreColumn);
-      console.log("DEBUG: Risk Score column added to columns");
-    } else {
-      console.log("DEBUG: Risk Score column NOT added - conditions not met");
     }
-    console.log(
-      "DEBUG: Final columns:",
-      columns.map((c) => c.label)
-    );
     return columns;
   }
 
