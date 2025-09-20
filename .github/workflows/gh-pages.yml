@@ -9,12 +9,8 @@ on:
   pull_request:
     branches:
       - dev
-    types: [opened, synchronize, reopened]
-  pull_request:
-    branches:
-      - dev
       - main
-    types: [closed]
+    types: [opened, synchronize, reopened, closed]
   push:
     branches:
       - main
