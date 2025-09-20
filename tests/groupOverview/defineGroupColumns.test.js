@@ -51,7 +51,7 @@ describe('defineGroupColumns site risk score column', () => {
         GroupLevel: 'Site',
         groupLabelKey: null,
         groupParticipantCountKey: 'ParticipantCount',
-        SiteRiskMetric: 'srs0001',
+        SiteRiskScoreMetricID: 'srs0001',
     };
 
     const mockMetricMetadata = [

@@ -115,7 +115,7 @@ describe('groupOverview site risk score integration tests', () => {
 
         const config = {
             GroupLevel: 'Site',
-            SiteRiskMetric: 'srs0001',
+            SiteRiskScoreMetricID: 'srs0001',
         };
 
         const instance = groupOverview(
@@ -191,7 +191,7 @@ describe('groupOverview site risk score integration tests', () => {
 
         const config = {
             GroupLevel: 'Site',
-            SiteRiskMetric: 'srs0001',
+            SiteRiskScoreMetricID: 'srs0001',
         };
 
         const instance = groupOverview(
@@ -245,7 +245,7 @@ describe('groupOverview site risk score integration tests', () => {
 
         const config = {
             GroupLevel: 'Country', // Non-site level
-            SiteRiskMetric: 'srs0001',
+            SiteRiskScoreMetricID: 'srs0001',
         };
 
         const instance = groupOverview(
@@ -269,7 +269,7 @@ describe('groupOverview site risk score integration tests', () => {
     test('handles empty results gracefully', () => {
         const config = {
             GroupLevel: 'Site',
-            SiteRiskMetric: 'srs0001',
+            SiteRiskScoreMetricID: 'srs0001',
         };
 
         const instance = groupOverview(
@@ -300,7 +300,7 @@ describe('groupOverview site risk score integration tests', () => {
                 StudyID: 'STUDY01',
                 GroupLevel: 'Site',
                 GroupID: 'Site001',
-                MetricID: 'srs0001',
+                MetricID: 'Analysis_srs0001',
                 Flag: 1,
                 Score: 75.5,
                 SnapshotDate: '2023-01-01',
@@ -358,7 +358,7 @@ describe('groupOverview site risk score integration tests', () => {
 
         const config = {
             GroupLevel: 'Site',
-            SiteRiskMetric: 'srs0001',
+            SiteRiskScoreMetricID: 'srs0001',
         };
 
         const instance = groupOverview(

@@ -1,5 +1,5 @@
-import flagCountsByGroup from '../../examples/data/flag_counts_by_group.json';
-import flagCountsByMetric from '../../examples/data/flag_counts_by_metric.json';
+import flagCountsByGroup from '../../examples/data/deprecated/flag_counts_by_group.json';
+import flagCountsByMetric from '../../examples/data/deprecated/flag_counts_by_metric.json';
 import schema from '../../src/data/schema/flagCounts.json';
 import snapshotDate from '../../src/data/schema/snapshotDate.json';
 import checkInput from '../../src/data/checkInput.js';

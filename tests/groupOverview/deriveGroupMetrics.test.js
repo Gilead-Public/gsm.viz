@@ -23,7 +23,7 @@ describe('deriveGroupMetrics site risk score handling', () => {
     const mockConfig = {
         GroupLevel: 'Site',
         groupLabelKey: null,
-        SiteRiskMetric: 'srs0001',
+        SiteRiskScoreMetricID: 'srs0001',
     };
 
     test('sets siteRiskScore when metric exists in results', () => {
