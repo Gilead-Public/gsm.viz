@@ -16,7 +16,7 @@ const metricMetadatum = Object.keys(metricMetadatumSchema.properties).reduce(
     },
     {}
 );
-const thresholds = metricMetadatum.Thresholds.split(',').map((d) => +d);
+const thresholds = metricMetadatum.Threshold.split(',').map((d) => +d);
 
 describe('configuration', () => {
     const config = configure(metricMetadatum, resultsSubset, thresholds);
@@ -34,7 +34,7 @@ describe('configuration', () => {
                 'Numerator',
                 'Denominator',
                 'Score',
-                'Thresholds',
+                'Threshold',
 
                 // bar chart settings
                 'resultTooltipKeys',

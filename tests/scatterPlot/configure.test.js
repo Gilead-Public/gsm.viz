@@ -37,7 +37,7 @@ describe('configuration', () => {
                 'Numerator',
                 'Denominator',
                 'Score',
-                'Thresholds',
+                'Threshold',
 
                 // scatter plot settings
                 'resultTooltipKeys',
