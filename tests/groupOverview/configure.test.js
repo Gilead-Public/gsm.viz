@@ -9,9 +9,12 @@ describe('configuration', () => {
         expect(settings).toEqual(
             [
                 'GroupLevel',
+                'SiteRiskScoreMetricID',
+                'SiteRiskScoreURL',
                 'groupLabelKey',
                 'groupParticipantCountKey',
                 'groupTooltipKeys',
+                'resultTooltipKeys',
                 'groupClickCallback',
                 'metricClickCallback',
             ].sort()

@@ -13,7 +13,7 @@ const resultsSubset = results.filter((d) => d.MetricID === MetricID);
 const metricMetadatum = metricMetadata.find(
     (metric) => metric.MetricID === MetricID
 );
-const thresholds = metricMetadatum.Thresholds.split(',').map((d) => +d);
+const thresholds = metricMetadatum.Threshold.split(',').map((d) => +d);
 
 describe('bar chart is generated', () => {
     const container = document.createElement('div');

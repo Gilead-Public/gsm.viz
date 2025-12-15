@@ -23,14 +23,13 @@ export default function annotations(config) {
                         color: colorScheme.filter((y) =>
                             y.Flag.includes(+x.Flag)
                         )[0].color,
-                        content:
-                            config.thresholds.descending
-                                ? `${content} ↓`
-                                : Math.sign(+x.Flag) === 1
-                                ? `${content} ↑`
-                                : Math.sign(+x.Flag) === -1
-                                ? `↓ ${content}`
-                                : content,
+                        content: config.thresholds.descending
+                            ? `${content} ↓`
+                            : Math.sign(+x.Flag) === 1
+                            ? `${content} ↑`
+                            : Math.sign(+x.Flag) === -1
+                            ? `↓ ${content}`
+                            : content,
                         display: true,
                         font: {
                             size: 12,

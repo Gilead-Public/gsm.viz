@@ -1,14 +1,22 @@
 import results from '../../examples/data/results.json';
 import metricMetadata from '../../examples/data/metricMetadata.json';
+import metricMetadatumSchema from '../../src/data/schema/metricMetadatum.json';
 
 import configure from '../../src/barChart/configure.js';
 
 const MetricID = 'kri0001';
 const resultsSubset = results.filter((d) => d.MetricID === MetricID);
-const metricMetadatum = metricMetadata.find(
-    (metric) => metric.MetricID === MetricID
+const metricMetadatum = Object.keys(metricMetadatumSchema.properties).reduce(
+    (acc, key) => {
+        acc[key] = metricMetadata.find(
+            (metric) => metric.MetricID === MetricID
+        )[key];
+
+        return acc;
+    },
+    {}
 );
-const thresholds = metricMetadatum.Thresholds.split(',').map((d) => +d);
+const thresholds = metricMetadatum.Threshold.split(',').map((d) => +d);
 
 describe('configuration', () => {
     const config = configure(metricMetadatum, resultsSubset, thresholds);
@@ -25,12 +33,11 @@ describe('configuration', () => {
                 'Metric',
                 'Numerator',
                 'Denominator',
-                'Outcome',
-                'Model',
                 'Score',
-                'Thresholds',
+                'Threshold',
 
                 // bar chart settings
+                'resultTooltipKeys',
                 'groupLabelKey',
                 'groupParticipantCountKey',
                 'groupTooltipKeys',

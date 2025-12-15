@@ -106,3 +106,5 @@ dist
 # User Project files
 .Rproj.user
 rbm-viz.Rproj
+
+.DS_Store

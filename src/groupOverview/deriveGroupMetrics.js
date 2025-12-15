@@ -61,6 +61,19 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
         group.nGreenFlags = groupResults.filter(
             (result) => Math.abs(parseInt(result.Flag)) === 0
         ).length;
+
+        // pull out siteRiskScore from results - only for Site-level groups
+        // Note: If no risk score result is found, we don't set siteRiskScore
+        // The column will be disabled in defineGroupColumns.js
+        if (config.GroupLevel === 'Site') {
+            const riskScoreResult = groupResults.find(
+                (result) => result.MetricID === config.SiteRiskScoreMetricID
+            );
+
+            if (riskScoreResult) {
+                group.siteRiskScore = parseFloat(riskScoreResult.Score);
+            }
+        }
     });
 
     return groups;

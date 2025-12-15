@@ -33,11 +33,11 @@ describe('map thresholds to flags', () => {
 
     test('more than two positive thresholds returns null', () => {
         expect(mapThresholdsToFlags([0, 1, 2, 3])).toBeNull();
-    })
+    });
 
     test('more than two negative thresholds returns null', () => {
         expect(mapThresholdsToFlags([0, -1, -2, -3])).toBeNull();
-    })
+    });
 
     test('zero threshold is mapped appropriately', () => {
         expect(mapThresholdsToFlags([0]).map((Flag) => Flag.Flag)).toEqual([0]);
@@ -45,7 +45,7 @@ describe('map thresholds to flags', () => {
 
     test('thresholds in descending order are mapped appropriately', () => {
         expect(
-            mapThresholdsToFlags([.75, .5]).map((Flag) => Flag.Flag)
+            mapThresholdsToFlags([0.75, 0.5]).map((Flag) => Flag.Flag)
         ).toEqual([1, 2]);
     });
 });

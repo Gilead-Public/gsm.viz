@@ -7,6 +7,12 @@ import getCallbackWrapper from '../util/addCanvas/getCallbackWrapper.js';
 export default function configure(_config_, _results_) {
     const defaults = {};
 
+    defaults.resultTooltipKeys = [
+        'Score',
+        'Metric',
+        'Numerator',
+        'Denominator',
+    ];
     defaults.GroupLevel = 'Site';
     defaults.groupLabelKey = 'InvestigatorLastName';
     defaults.groupParticipantCountKey = 'ParticipantCount';

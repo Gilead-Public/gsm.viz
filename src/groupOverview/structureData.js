@@ -34,6 +34,15 @@ export default function structureData(results, columns, groupMetadata, config) {
             datum.value = datum[column.valueKey];
             datum.text = datum.value;
 
+            // Format siteRiskScore
+            if (
+                column.valueKey === 'siteRiskScore' &&
+                datum.value !== null &&
+                !isNaN(datum.value)
+            ) {
+                datum.text = Math.round(parseFloat(datum.value));
+            }
+
             datum.sortValue =
                 column.type === 'metric'
                     ? Math.abs(parseFloat(datum.value))

@@ -65,7 +65,11 @@ export default function mapThresholdsToFlags(_thresholds_) {
     // order, assume the order matters.
     if (
         negativeThresholds.length === 0 &&
-        thresholds.join(',') !== thresholds.map(threshold => threshold).sort(ascending).join(',')
+        thresholds.join(',') !==
+            thresholds
+                .map((threshold) => threshold)
+                .sort(ascending)
+                .join(',')
     ) {
         flags = thresholds.map((Threshold, i) => {
             return {
