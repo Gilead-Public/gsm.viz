@@ -20070,7 +20070,7 @@ var gsmViz = (() => {
         "Denominator",
         "Metric",
         "Score",
-        "Thresholds"
+        "Threshold"
       ]
     }
   };
@@ -20106,7 +20106,7 @@ var gsmViz = (() => {
       "Denominator",
       "Metric",
       "Score",
-      "Thresholds"
+      "Threshold"
     ],
     properties: {
       MetricID: {
@@ -20158,7 +20158,7 @@ var gsmViz = (() => {
         required: false,
         key: false
       },
-      Thresholds: {
+      Threshold: {
         title: "Thresholds",
         description: "Thresholds for metric",
         type: "string",
