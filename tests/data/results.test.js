@@ -24,6 +24,6 @@ describe('analysis results schema', () => {
         const propsResult = Object.keys(result).sort();
         const propsSchema = Object.keys(schema.items.properties).sort();
 
-        expect(propsResult).toEqual(expect.arrayContaining(propsSchema));
+        expect(propsResult).toEqual(propsSchema);
     });
 });

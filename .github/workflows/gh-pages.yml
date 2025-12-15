@@ -94,3 +94,19 @@ jobs:
               body: `🚀 **Preview Deployment Ready!**\n\nYour changes have been deployed to: ${deploymentUrl}\n\n_This preview will be updated automatically with each new commit to this PR._`
             });
 
+      - name: Clean up PR deployment on close 🧹
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.base.ref == 'dev'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: examples
+          target-folder: pr-${{ github.event.number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: true
+          clean-exclude: |
+            dev/
+            index.html
+            *.js
+            *.css
+            *.map
+          # This will remove the pr-{number} folder entirely
+

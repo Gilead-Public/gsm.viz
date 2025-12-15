@@ -28,7 +28,7 @@
         "Denominator",
         "Metric",
         "Score",
-        "Thresholds"
+        "Threshold"
     ],
     "properties": {
         "MetricID": {
@@ -80,7 +80,7 @@
             "required": false,
             "key": false
         },
-        "Thresholds": {
+        "Threshold": {
             "title": "Thresholds",
             "description": "Thresholds for metric",
             "type": "string",
