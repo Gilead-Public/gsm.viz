@@ -4,6 +4,7 @@ import scriptableOptions from './structureData/scriptableOptions.js';
 import colorScheme from '../util/colorScheme.js';
 import rollupBounds from './structureData/rollupBounds.js';
 import falsy from '../util/falsy.js';
+import predictBounds from './predictBounds.js';
 
 /**
  * Given input data, returns an array of arrays, each of which map to one or more graphical elements
@@ -52,7 +53,8 @@ export default function structureData(
     ];
 
     // Add predicted bounds dataset objects.
-    const bounds = rollupBounds(_bounds_, config);
+    const boundsData = _bounds_ === null ? predictBounds(_results_, config) : _bounds_;
+    const bounds = rollupBounds(boundsData, config);
     if (bounds !== undefined)
         bounds.forEach((bound) => {
             datasets.push(bound);

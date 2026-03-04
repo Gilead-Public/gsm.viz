@@ -31,6 +31,7 @@ describe('scatter plot is generated', () => {
         );
 
         expect(instance).not.toBeNull();
+        expect(instance.data._bounds_).toEqual(resultsPredictedSubset);
     });
 
     test(`scatter plot is generated with missing optional arguments`, () => {
