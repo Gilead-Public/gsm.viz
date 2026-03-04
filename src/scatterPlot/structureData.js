@@ -53,12 +53,10 @@ export default function structureData(
     ];
 
     // Add predicted bounds dataset objects.
-    console.log('_bounds_', _bounds_);
     const boundsData =
         _bounds_ == null || Array.isArray(_bounds_) === false
             ? predictBounds(_results_, config)
             : _bounds_;
-    console.log('boundsData', boundsData);
     const bounds = rollupBounds(boundsData, config);
     if (bounds !== undefined)
         bounds.forEach((bound) => {
