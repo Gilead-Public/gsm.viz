@@ -22489,9 +22489,7 @@ var gsmViz = (() => {
         return dataset;
       })
     ];
-    console.log("_bounds_", _bounds_);
     const boundsData = _bounds_ == null || Array.isArray(_bounds_) === false ? predictBounds(_results_, config) : _bounds_;
-    console.log("boundsData", boundsData);
     const bounds = rollupBounds(boundsData, config);
     if (bounds !== void 0)
       bounds.forEach((bound) => {
