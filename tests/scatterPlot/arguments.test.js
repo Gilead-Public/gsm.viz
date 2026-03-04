@@ -63,6 +63,23 @@ describe('scatter plot is generated', () => {
         expect(instance).not.toBeNull();
     });
 
+    test('scatter plot calculates and renders bounds when bounds is null', () => {
+        const instance = scatterPlot(
+            container,
+            resultsSubset,
+            metricMetadatum,
+            null,
+            groupMetadata
+        );
+
+        const lineDatasets = instance.data.datasets.filter(
+            (dataset) => dataset.type === 'line'
+        );
+
+        expect(instance).not.toBeNull();
+        expect(lineDatasets.length).toBeGreaterThan(0);
+    });
+
     test(`scatter plot is generated with empty group metadata`, () => {
         const instance = scatterPlot(
             container,

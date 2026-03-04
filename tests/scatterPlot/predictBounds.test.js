@@ -3,6 +3,7 @@ import path from 'path';
 
 import results from '../../examples/data/results.json';
 import metricMetadata from '../../examples/data/metricMetadata.json';
+import resultsPredicted from '../../examples/data/resultsPredicted.json';
 
 import predictBounds from '../../src/scatterPlot/predictBounds.js';
 
@@ -103,7 +104,68 @@ describe('predictBounds()', () => {
             AnalysisType: 'binary',
         }).filter((d) => d.Denominator === denominator);
 
-        const expected = metricRows.filter((d) => d.Denominator === denominator);
+        const expected = metricRows.filter(
+            (d) => d.Denominator === denominator
+        );
+
+        expected.forEach((row) => {
+            const match = calculated.find((d) => d.Threshold === row.Threshold);
+
+            expect(match).toBeDefined();
+            expect(match.Numerator).toBeCloseTo(row.Numerator, 6);
+        });
+    });
+
+    test('matches expected bounds values from resultsPredicted.json', () => {
+        const targetMetric = 'cou0001';
+        const metricRows = resultsPredicted
+            .filter((d) => d.MetricID === targetMetric)
+            .map((d) => ({
+                Threshold: Number(d.Threshold),
+                Numerator: Number(d.Numerator),
+                Denominator: Number(d.Denominator),
+            }));
+
+        const anchor0 = metricRows.find(
+            (d) => d.Threshold === 0 && Number.isInteger(d.Denominator)
+        );
+        const anchor3 = metricRows.find(
+            (d) =>
+                d.Threshold === 3 &&
+                d.Denominator === anchor0.Denominator &&
+                Number.isFinite(d.Numerator)
+        );
+
+        const vMu = anchor0.Numerator / anchor0.Denominator;
+        const metric3 = anchor3.Numerator / anchor3.Denominator;
+        const phi =
+            (Math.pow((metric3 - vMu) / 3, 2) * anchor3.Denominator) /
+            (vMu * (1 - vMu));
+
+        const denominator = anchor0.Denominator;
+        const delta = Math.sqrt((phi * vMu * (1 - vMu)) / denominator);
+
+        const syntheticResults = [
+            {
+                Numerator: (vMu + delta) * denominator,
+                Denominator: denominator,
+                Metric: vMu + delta,
+            },
+            {
+                Numerator: (vMu - delta) * denominator,
+                Denominator: denominator,
+                Metric: vMu - delta,
+            },
+        ];
+
+        const calculated = predictBounds(syntheticResults, {
+            Threshold: '-3,-2,2,3',
+            AnalysisType: 'binary',
+        }).filter((d) => d.Denominator === denominator);
+
+        const expected = metricRows.filter(
+            (d) => d.Denominator === denominator
+        );
 
         expected.forEach((row) => {
             const match = calculated.find((d) => d.Threshold === row.Threshold);

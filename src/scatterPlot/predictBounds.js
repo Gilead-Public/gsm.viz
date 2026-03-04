@@ -39,7 +39,11 @@ export default function predictBounds(_results_, config) {
     const rangeStart = denominatorMin - nStep;
     const rangeEnd = denominatorMax + nStep;
 
-    for (let denominator = rangeStart; denominator <= rangeEnd + nStep / 2; denominator += nStep) {
+    for (
+        let denominator = rangeStart;
+        denominator <= rangeEnd + nStep / 2;
+        denominator += nStep
+    ) {
         if (denominator > 0) denominatorRange.push(denominator);
     }
 
