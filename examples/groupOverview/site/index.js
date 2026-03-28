@@ -35,7 +35,6 @@ Promise.all(dataPromises)
             regex.test(d.MetricID)
         );
         const groupMetadata = datasets[2];
-        const groupSubset = getGroups(results);
 
         // transpose [ metricMetadata ] to one row per:
         // - MetricID
@@ -77,9 +76,9 @@ Promise.all(dataPromises)
             Study: 'nickname',
         };
 
-        const instance = gsmViz.default.groupOverview(
+        const groupOverviewTable = gsmViz.default.groupOverview(
             document.getElementById('container'),
-            results.filter((d) => groupSubset.includes(d.GroupID)),
+            results,
             {
                 GroupLevel,
                 groupLabelKey: groupLabelKey[GroupLevel],
@@ -94,15 +93,20 @@ Promise.all(dataPromises)
             metricMetadata
         );
 
+        // Add interactive filter controls to the group overview table.
+        const groupOverviewFilters = gsmViz.default.groupOverviewSubset(
+            groupOverviewTable,
+            {
+                groupCharacteristics: {
+                    Country: 'country',
+                    Status: 'Status',
+                },
+                initialSubset: {
+                    anyFlag: 'red',
+                },
+            }
+        );
+
         addEventListener('riskSignalSelected');
         addEventListener('groupSelected');
-
-        document.querySelector('#group-subset').onchange = function () {
-            const groupSubset = getGroups(results);
-            const updatedResults = results.filter((d) =>
-                groupSubset.includes(d.GroupID)
-            );
-
-            instance.updateTable(updatedResults);
-        };
     });

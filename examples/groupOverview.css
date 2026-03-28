@@ -87,3 +87,52 @@
     color: #004499;
     text-decoration: underline;
 }
+
+/* ── groupOverviewSubset filter controls ────────────────────────────── */
+
+.gsm-viz-filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-bottom: 1em;
+}
+
+.gsm-viz-filter {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.4em 0.6em;
+    font-size: 0.85em;
+    margin: 0;
+}
+
+.gsm-viz-filter legend {
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 0 0.3em;
+}
+
+.gsm-viz-filter select {
+    min-width: 6em;
+    max-height: 6em;
+}
+
+.gsm-viz-filter label {
+    margin-right: 0.4em;
+}
+
+.gsm-viz-filter input[type='number'] {
+    width: 5em;
+}
+
+.gsm-viz-filter input[type='range'] {
+    width: 8em;
+    vertical-align: middle;
+}
+
+.gsm-viz-filter--value {
+    display: inline-block;
+    min-width: 2.5em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    margin-right: 0.5em;
+}

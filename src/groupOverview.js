@@ -48,6 +48,19 @@ export default function groupOverview(
     const rows = structureData(_results_, columns, groupMetadata, config);
     const table = makeTable(_element_, rows, columns, config);
 
+    // Expose context so complementary modules (e.g. groupOverviewSubset) can
+    // access the raw inputs and derived data without relying on internal state.
+    table._context_ = {
+        _results_,
+        _config_,
+        _groupMetadata_,
+        _metricMetadata_,
+        config,
+        groupMetadata,
+        columns,
+        rows,
+    };
+
     table.updateTable = updateTable.bind({
         _results_,
         _config_,
