@@ -20,12 +20,14 @@ export default function checkInputs(
         module: 'scatterPlot',
     });
 
-    checkInput({
-        parameter: '_bounds_',
-        argument: _bounds_,
-        schemaName: 'resultsPredicted',
-        module: 'scatterPlot',
-    });
+    if (_bounds_ !== null && _bounds_ !== undefined) {
+        checkInput({
+            parameter: '_bounds_',
+            argument: _bounds_,
+            schemaName: 'resultsPredicted',
+            module: 'scatterPlot',
+        });
+    }
 
     if (_groupMetadata_ !== null) {
         checkInput({

@@ -43,7 +43,7 @@ Promise.all(dataPromises)
             document.getElementById('container'),
             results,
             config,
-            bounds,
+            null, //bounds,
             groupMetadata
         );
 
