@@ -39,7 +39,7 @@ Data utilities (src/data/)
     │
     ├── Chart module logic
     │       │
-    │       └── React component (JSX)
+    │       └── Chart renderer (Canvas/SVG)
     │               │
     │               └── Example page (examples/)
     │
@@ -55,7 +55,7 @@ Build one complete feature path at a time:
 ```
 Task 1: Data transform function + tests
 Task 2: Chart configuration + tests
-Task 3: React component wrapper + tests
+Task 3: Chart renderer + tests
 Task 4: Example page integration
 ```
 

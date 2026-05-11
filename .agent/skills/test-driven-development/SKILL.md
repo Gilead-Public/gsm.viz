@@ -16,7 +16,7 @@ Write a failing test before writing the code that makes it pass. For bug fixes, 
 - **Framework:** Jest
 - **Environment:** jsdom (`jest-environment-jsdom`)
 - **Canvas mocking:** jest-canvas-mock (required for Chart.js rendering)
-- **Transpilation:** Babel (preset-env, preset-react)
+- **Transpilation:** Babel (preset-env)
 - **Run tests:** `npm test`
 - **Run with coverage:** `npm run test:coverage`
 - **Test location:** `tests/` directory

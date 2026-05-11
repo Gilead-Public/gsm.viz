@@ -53,7 +53,7 @@ npx jest --runInBand --testPathPattern="specific-file"
 Which layer is failing?
 ├── Data transformation    → Check input data shape, utility functions
 ├── Chart configuration    → Check Chart.js config objects
-├── React rendering        → Check component props, state, JSX
+├── Chart rendering       → Check config objects, data flow, canvas output
 ├── Build tooling          → Check esbuild config, imports
 ├── Test environment       → Check jest-canvas-mock, jsdom setup
 └── Test itself            → Check if the test is correct
@@ -133,7 +133,7 @@ Test fails after code change:
 ```
 Build fails (npm run bundle):
 ├── Import error → Check module paths, named exports
-├── JSX error → Check Babel config (preset-react)
+├── Syntax error → Check Babel config, module syntax
 ├── Dependency error → Run npm install
 └── esbuild error → Check esbuild config in package.json
 ```

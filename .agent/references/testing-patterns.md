@@ -108,22 +108,31 @@ Mock these:                    Don't mock these:
 └── Date/time (when needed)    └── Pure business logic
 ```
 
-## React Component Testing
+## Chart Rendering Testing
 
 ```javascript
-import { render, screen } from "@testing-library/react";
+describe("renderBarChart", () => {
+  it("creates a canvas element in the container", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
 
-describe("ScatterPlot", () => {
-  it("renders chart with provided data", () => {
-    const data = [{ x: 1, y: 2 }];
-    render(<ScatterPlot data={data} />);
-    // With jest-canvas-mock, canvas operations are mocked
-    // Test the configuration/data flow, not pixel output
+    renderBarChart(container, testData, testOptions);
+
+    const canvas = container.querySelector("canvas");
+    expect(canvas).toBeDefined();
+
+    document.body.removeChild(container);
   });
 
   it("shows empty state when no data provided", () => {
-    render(<ScatterPlot data={[]} />);
-    expect(screen.getByText(/no data/i)).toBeDefined();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
+    renderBarChart(container, [], testOptions);
+
+    expect(container.textContent).toMatch(/no data/i);
+
+    document.body.removeChild(container);
   });
 });
 ```

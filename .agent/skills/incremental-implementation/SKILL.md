@@ -53,8 +53,8 @@ Slice 1: Data transformation function + tests
 Slice 2: Chart.js configuration builder + tests
     → Tests pass, configuration generates correctly
 
-Slice 3: React component wrapper + tests
-    → Tests pass, component renders with mock data
+Slice 3: Chart renderer + tests
+    → Tests pass, chart renders with mock data
 
 Slice 4: Integration with example page
     → Tests pass, example works in browser

@@ -43,7 +43,7 @@ Multi-dimensional code review with quality gates. Every change gets reviewed bef
 
 ### 5. Performance
 
-- Any unnecessary re-renders in React components?
+- Any unnecessary DOM manipulation or redundant chart redraws?
 - Any unbounded data processing loops?
 - Chart.js configuration optimized for the data size?
 

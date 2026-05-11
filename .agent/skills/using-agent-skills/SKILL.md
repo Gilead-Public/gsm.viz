@@ -11,9 +11,9 @@ Agent Skills is a collection of engineering workflow skills organized by develop
 
 ## Project Context: gsm.viz
 
-This is a React 18 / Chart.js 3 / D3 7 data visualization library for clinical trial risk-based monitoring, built by Gilead BioStats. Key facts:
+This is a Chart.js 3 / D3 7 data visualization library for clinical trial risk-based monitoring, built by Gilead BioStats. Key facts:
 
-- **Language:** JavaScript (ES modules, JSX)
+- **Language:** JavaScript (ES modules)
 - **Build:** esbuild
 - **Test:** Jest with jsdom + jest-canvas-mock
 - **Formatting:** Prettier (single quotes, tab width 4)

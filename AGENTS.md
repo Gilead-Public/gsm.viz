@@ -4,20 +4,19 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-**gsm.viz** (v2.3.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on React, Chart.js, and D3.
+**gsm.viz** (v2.3.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on Chart.js and D3.
 
 ## Tech Stack
 
 | Layer            | Technology                                                                           |
 | ---------------- | ------------------------------------------------------------------------------------ |
-| Language         | JavaScript (ES modules, JSX)                                                         |
-| UI               | React 18, ReactDOM 18                                                                |
-| Charting         | Chart.js 3, react-chartjs-2, D3 7                                                    |
+| Language         | JavaScript (ES modules)                                                              |
+| Charting         | Chart.js 3, D3 7                                                                     |
 | Chart.js Plugins | chartjs-plugin-annotation, chartjs-plugin-datalabels, @sgratzl/chartjs-chart-boxplot |
 | HTML Parsing     | html-react-parser                                                                    |
 | Bundler          | esbuild                                                                              |
 | Testing          | Jest 29, jest-environment-jsdom, jest-canvas-mock                                    |
-| Transpilation    | Babel (preset-env, preset-react)                                                     |
+| Transpilation    | Babel (preset-env)                                                                   |
 | Formatting       | Prettier (single quotes, tab width 4)                                                |
 | Deployment       | gh-pages                                                                             |
 
@@ -65,14 +64,13 @@ Each chart type follows a consistent pattern:
 - **Module directory** (`src/<chartType>/`) — contains internal implementation files
 - **Data transforms** — pure functions that process input data
 - **Config builders** — functions that produce Chart.js or D3 configuration objects
-- **React components** — JSX wrappers that render charts
+- **Chart renderers** — functions that render charts to canvas/SVG via Chart.js or D3
 
 ## Code Conventions
 
 - **Formatting:** Prettier with single quotes, tab width 4
 - **Modules:** ES module syntax (`import`/`export`)
-- **Components:** React functional components with JSX
-- **Naming:** camelCase for files and variables, PascalCase for React components
+- **Naming:** camelCase for files and variables
 - **Global export:** `gsmViz` (via esbuild `--global-name`)
 
 ## Testing Configuration

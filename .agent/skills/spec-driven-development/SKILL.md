@@ -37,7 +37,7 @@ Start with a high-level vision. Ask the human clarifying questions until require
 
 ```
 ASSUMPTIONS I'M MAKING:
-1. This is a new chart type built on Chart.js / react-chartjs-2
+1. This is a new chart type built on Chart.js
 2. Tests will use Jest with jsdom + jest-canvas-mock
 3. The module follows existing src/ directory conventions
 4. We're targeting modern browsers only
@@ -69,7 +69,7 @@ ASSUMPTIONS I'M MAKING:
    examples/      → Example HTML pages and data
    ```
 
-4. **Code Style** — Prettier with single quotes, tab width 4. ES module syntax. React JSX components.
+4. **Code Style** — Prettier with single quotes, tab width 4. ES module syntax.
 
 5. **Testing Strategy** — Jest with jsdom environment and jest-canvas-mock. TDD required: write failing test first, then implement. Test pyramid: 80% unit, 15% integration, 5% E2E.
 
@@ -89,7 +89,7 @@ ASSUMPTIONS I'M MAKING:
 
 ## Tech Stack
 
-React 18, Chart.js 3, D3 7, esbuild, Jest
+Chart.js 3, D3 7, esbuild, Jest
 
 ## Commands
 
@@ -103,7 +103,7 @@ Dev: npm run local
 
 ## Code Style
 
-Prettier (single quotes, tab width 4), ES modules, JSX
+Prettier (single quotes, tab width 4), ES modules
 
 ## Testing Strategy
 
