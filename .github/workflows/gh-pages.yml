@@ -68,7 +68,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: "npm"
 
       # -----------------------------------------------------------------------
@@ -236,7 +236,7 @@ jobs:
           PR_FOLDER="pr-${{ github.event.number }}"
 
           # Clone only the gh-pages branch (shallow for speed).
-          git clone --single-branch --branch gh-pages \
+          git clone --depth 1 --single-branch --branch gh-pages \
             "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
             gh-pages-cleanup
 
