@@ -13,7 +13,6 @@ This file provides guidance to AI coding agents when working with code in this r
 | Language         | JavaScript (ES modules)                                                              |
 | Charting         | Chart.js 3, D3 7                                                                     |
 | Chart.js Plugins | chartjs-plugin-annotation, chartjs-plugin-datalabels, @sgratzl/chartjs-chart-boxplot |
-| HTML Parsing     | html-react-parser                                                                    |
 | Bundler          | esbuild                                                                              |
 | Testing          | Jest 29, jest-environment-jsdom, jest-canvas-mock                                    |
 | Transpilation    | Babel (preset-env)                                                                   |
