@@ -3,7 +3,8 @@ name: "Feature Issue Template"
 about: "Propose and develop new user-facing functionality"
 title: "(fill in)"
 type: Feature
-# Project: Gilead-BioStats/41 (v2 project — auto-assign requires a workflow)
+projects:
+  - Gilead-BioStats/41
 ---
 
 ## Summary

@@ -3,7 +3,8 @@ name: "Technical Task Issue Template"
 about: "Refactor, infrastructure, build, automation, or quality engineering task"
 title: "(fill in)"
 type: Technical Task
-# Project: Gilead-BioStats/41 (v2 project — auto-assign requires a workflow)
+projects:
+  - Gilead-BioStats/41
 ---
 
 ## Task Summary

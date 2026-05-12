@@ -3,7 +3,8 @@ name: "Requirement Issue Template"
 about: "Capture a high-level user / business requirement that spawns feature & task sub-issues"
 title: "(fill in)"
 type: Requirement
-# Project: Gilead-BioStats/41 (v2 project — auto-assign requires a workflow)
+projects:
+  - Gilead-BioStats/41
 ---
 
 <!-- Link/assign related Feature, Bug, Technical, and Documentation sub-issues to this Requirement. -->

@@ -3,7 +3,8 @@ name: "Bugfix Issue Template"
 about: "Fix a bug in the code"
 title: "(fill in)"
 type: Bug
-# Project: Gilead-BioStats/41 (v2 project — auto-assign requires a workflow)
+projects:
+  - Gilead-BioStats/41
 ---
 
 ## Current Behavior
