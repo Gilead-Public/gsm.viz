@@ -1733,8 +1733,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults3 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults3.scriptable, _indexable = defaults3.indexable, _allKeys = defaults3.allKeys } = proxy;
+  function _descriptors(proxy, defaults4 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults4.scriptable, _indexable = defaults4.indexable, _allKeys = defaults4.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -3936,7 +3936,7 @@ var gsmViz = (() => {
       const meta = this._cachedMeta;
       this.updateElements(meta.data, 0, meta.data.length, mode);
     }
-    updateElements(bars, start2, count, mode) {
+    updateElements(bars2, start2, count, mode) {
       const reset = mode === "reset";
       const { index: index3, _cachedMeta: { vScale } } = this;
       const base = vScale.getBasePixel();
@@ -3958,12 +3958,12 @@ var gsmViz = (() => {
           width: horizontal ? Math.abs(vpixels.size) : ipixels.size
         };
         if (includeOptions) {
-          properties.options = sharedOptions || this.resolveDataElementOptions(i, bars[i].active ? "active" : mode);
+          properties.options = sharedOptions || this.resolveDataElementOptions(i, bars2[i].active ? "active" : mode);
         }
-        const options = properties.options || bars[i].options;
+        const options = properties.options || bars2[i].options;
         setBorderSkipped(properties, options, stack, index3);
         setInflateAmount(properties, options, ruler.ratio);
-        this.updateElement(bars[i], i, properties, mode);
+        this.updateElement(bars2[i], i, properties, mode);
       }
     }
     _getStacks(last, dataIndex) {
@@ -20625,10 +20625,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults3, _config_, customSettings = null) {
+  function configure2(defaults4, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults3) {
-      config[key] = coalesce(config[key], defaults3[key]);
+    for (const key in defaults4) {
+      config[key] = coalesce(config[key], defaults4[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -20749,30 +20749,30 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults4 = {};
+    defaults4.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.x = "GroupID";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults4.GroupLevel = "Site";
+    defaults4.groupLabelKey = "InvestigatorLastName";
+    defaults4.groupParticipantCountKey = "ParticipantCount";
+    defaults4.groupTooltipKeys = null;
+    defaults4.x = "GroupID";
+    defaults4.xType = "category";
+    defaults4.y = "Score";
+    defaults4.yType = "linear";
+    defaults4.color = "Flag";
+    defaults4.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults4.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.displayTitle = false;
-    defaults3.maintainAspectRatio = false;
-    const config = configure2(defaults3, _config_ || {}, {
+    defaults4.displayTitle = false;
+    defaults4.maintainAspectRatio = false;
+    const config = configure2(defaults4, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -21254,7 +21254,7 @@ var gsmViz = (() => {
 
   // src/barChart/getPlugins.js
   function getPlugins(config) {
-    const getPlugins5 = {
+    const getPlugins6 = {
       annotation: {
         annotations: annotations(config),
         clip: true
@@ -21264,7 +21264,7 @@ var gsmViz = (() => {
       title: title(config),
       tooltip: tooltip(config)
     };
-    return getPlugins5;
+    return getPlugins6;
   }
 
   // src/util/getDefaultScales.js
@@ -21445,6 +21445,241 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/bars/validateSpec.js
+  function validateSpec(spec) {
+    if (spec === void 0 || spec === null) {
+      throw new Error("spec is required");
+    }
+    if (typeof spec !== "object" || Array.isArray(spec)) {
+      throw new Error("spec must be a plain object");
+    }
+    if (!spec.data) {
+      throw new Error("spec.data is required");
+    }
+    if (!Array.isArray(spec.data)) {
+      throw new Error("spec.data must be an array");
+    }
+    if (!spec.mapping) {
+      throw new Error("spec.mapping is required");
+    }
+    if (!spec.mapping.x) {
+      throw new Error("spec.mapping.x is required");
+    }
+    if (!spec.mapping.y) {
+      throw new Error("spec.mapping.y is required");
+    }
+    if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
+      throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
+    }
+  }
+
+  // src/bars/defaults.js
+  var defaults3 = {
+    orientation: "vertical",
+    scales: {
+      x: {
+        type: "category",
+        label: null
+      },
+      y: {
+        type: "linear",
+        label: null
+      }
+    },
+    labels: {},
+    theme: {
+      maintainAspectRatio: false,
+      animation: false
+    }
+  };
+  var defaults_default = defaults3;
+
+  // src/bars/mergeSpec.js
+  function mergeSpec(spec) {
+    return {
+      data: spec.data,
+      mapping: { ...spec.mapping },
+      orientation: spec.orientation ?? defaults_default.orientation,
+      scales: {
+        x: { ...defaults_default.scales.x, ...spec.scales?.x },
+        y: { ...defaults_default.scales.y, ...spec.scales?.y }
+      },
+      labels: { ...defaults_default.labels, ...spec.labels },
+      theme: { ...defaults_default.theme, ...spec.theme }
+    };
+  }
+
+  // src/bars/structureData.js
+  function resolveCategories(data, xKey, explicitOrder) {
+    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
+    if (explicitOrder) {
+      const dataSet = new Set(dataCategories);
+      const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+      const orderedSet = new Set(ordered);
+      const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
+        (a, b) => String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        })
+      );
+      return [...ordered, ...remaining];
+    }
+    return dataCategories.sort(
+      (a, b) => String(a).localeCompare(String(b), void 0, {
+        sensitivity: "base"
+      })
+    );
+  }
+  function structureData2(spec) {
+    const { data, mapping, scales: scales2 } = spec;
+    const { x: xKey, y: yKey, fill: fillKey } = mapping;
+    const labels = resolveCategories(data, xKey, scales2.x?.order);
+    const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
+    const points = data.map((d) => ({
+      x: d[xKey],
+      y: Number(d[yKey]) || 0,
+      _fill: fillKey ? d[fillKey] : void 0,
+      _datum: d
+    }));
+    let datasets;
+    if (fillKey) {
+      const groups2 = /* @__PURE__ */ new Map();
+      for (const point of points) {
+        const key = point._fill;
+        if (!groups2.has(key)) groups2.set(key, []);
+        groups2.get(key).push(point);
+      }
+      datasets = [...groups2.entries()].map(([fillValue, pts]) => ({
+        label: fillValue,
+        data: pts.sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
+      }));
+    } else {
+      datasets = [
+        {
+          data: points.sort(
+            (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+          )
+        }
+      ];
+    }
+    return { datasets, labels };
+  }
+
+  // src/bars/getScales.js
+  function getScales2(spec) {
+    const { orientation, scales: specScales } = spec;
+    const horizontal = orientation === "horizontal";
+    const categoryScale = {
+      type: specScales.x.type,
+      title: {
+        display: !!specScales.x.label,
+        text: specScales.x.label
+      }
+    };
+    const valueScale = {
+      type: specScales.y.type,
+      title: {
+        display: !!specScales.y.label,
+        text: specScales.y.label
+      },
+      beginAtZero: true
+    };
+    return {
+      x: horizontal ? valueScale : categoryScale,
+      y: horizontal ? categoryScale : valueScale,
+      _indexAxis: horizontal ? "y" : "x"
+    };
+  }
+
+  // src/bars/getPlugins.js
+  function getPlugins2(spec) {
+    const { labels } = spec;
+    return {
+      title: {
+        display: !!labels.title,
+        text: labels.title || ""
+      },
+      tooltip: {
+        enabled: true
+      },
+      legend: {
+        display: !!spec.mapping.fill
+      },
+      datalabels: {
+        display: false
+      }
+    };
+  }
+
+  // src/bars/updateData.js
+  function updateData2(chart, spec) {
+    const merged = mergeSpec(spec);
+    const { datasets, labels } = structureData2(merged);
+    const scalesConfig = getScales2(merged);
+    chart.data.datasets = datasets;
+    chart.data.labels = labels;
+    chart.data._spec_ = merged;
+    chart.options.indexAxis = scalesConfig._indexAxis;
+    chart.options.scales = {
+      x: scalesConfig.x,
+      y: scalesConfig.y
+    };
+    chart.options.plugins = getPlugins2(merged);
+    chart.update();
+  }
+
+  // src/bars/updateSpec.js
+  function updateSpec(chart, spec) {
+    const merged = mergeSpec(spec);
+    const scalesConfig = getScales2(merged);
+    merged.data = chart.data._spec_.data;
+    merged.mapping = chart.data._spec_.mapping;
+    chart.data._spec_ = merged;
+    chart.options.indexAxis = scalesConfig._indexAxis;
+    chart.options.scales = {
+      x: scalesConfig.x,
+      y: scalesConfig.y
+    };
+    chart.options.plugins = getPlugins2(merged);
+    chart.update();
+  }
+
+  // src/bars.js
+  function bars(element = "body", spec = {}) {
+    validateSpec(spec);
+    const merged = mergeSpec(spec);
+    const canvas = addCanvas(element, {
+      maintainAspectRatio: merged.theme.maintainAspectRatio
+    });
+    const { datasets, labels } = structureData2(merged);
+    const scalesConfig = getScales2(merged);
+    const options = {
+      animation: merged.theme.animation,
+      indexAxis: scalesConfig._indexAxis,
+      maintainAspectRatio: merged.theme.maintainAspectRatio,
+      plugins: getPlugins2(merged),
+      scales: {
+        x: scalesConfig.x,
+        y: scalesConfig.y
+      }
+    };
+    const chart = new auto_default(canvas, {
+      type: "bar",
+      data: {
+        datasets,
+        labels,
+        _spec_: merged
+      },
+      options,
+      plugins: [displayWhiteBackground()]
+    });
+    canvas.chart = chart;
+    chart.helpers = {
+      updateData: updateData2,
+      updateSpec
+    };
+    return chart;
+  }
+
   // src/groupOverview/checkInputs.js
   function checkInputs2(_results_, _config_, _groupMetadata_, _metricMetadata_) {
     checkInput({
@@ -21469,26 +21704,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults4 = {};
+    defaults4.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = null;
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults3.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults3.groupClickCallback = (datum2) => {
+    defaults4.GroupLevel = "Site";
+    defaults4.groupLabelKey = null;
+    defaults4.groupParticipantCountKey = "ParticipantCount";
+    defaults4.groupTooltipKeys = null;
+    defaults4.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults4.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults4.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.metricClickCallback = (datum2) => {
+    defaults4.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults3, _config_);
+    const config = configure2(defaults4, _config_);
     return config;
   }
 
@@ -21787,7 +22022,7 @@ var gsmViz = (() => {
   }
 
   // src/groupOverview/structureData.js
-  function structureData2(results, columns, groupMetadata, config) {
+  function structureData3(results, columns, groupMetadata, config) {
     const lookup = group(
       results,
       (d) => d.GroupID,
@@ -22096,7 +22331,7 @@ var gsmViz = (() => {
       _results_,
       this.config
     );
-    const rows = structureData2(_results_, columns, groupMetadata, this.config);
+    const rows = structureData3(_results_, columns, groupMetadata, this.config);
     const tbody = this.table.select("tbody");
     const bodyRows = addBodyRows(tbody, rows);
     const cells = addCells(bodyRows);
@@ -22134,7 +22369,7 @@ var gsmViz = (() => {
       _results_,
       config
     );
-    const rows = structureData2(_results_, columns, groupMetadata, config);
+    const rows = structureData3(_results_, columns, groupMetadata, config);
     const table = makeTable(_element_, rows, columns, config);
     table.updateTable = updateTable.bind({
       _results_,
@@ -22184,34 +22419,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults4 = {};
+    defaults4.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.x = "Denominator";
-    defaults3[defaults3.x] = defaults3.x;
-    defaults3.xType = "logarithmic";
-    defaults3.y = "Numerator";
-    defaults3[defaults3.y] = defaults3.y;
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults4.GroupLevel = "Site";
+    defaults4.groupLabelKey = "InvestigatorLastName";
+    defaults4.groupParticipantCountKey = "ParticipantCount";
+    defaults4.groupTooltipKeys = null;
+    defaults4.x = "Denominator";
+    defaults4[defaults4.x] = defaults4.x;
+    defaults4.xType = "logarithmic";
+    defaults4.y = "Numerator";
+    defaults4[defaults4.y] = defaults4.y;
+    defaults4.yType = "linear";
+    defaults4.color = "Flag";
+    defaults4.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults4.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.displayTitle = false;
-    defaults3.displayLegend = true;
-    defaults3.displayTrendLine = false;
-    defaults3.maintainAspectRatio = false;
-    const config = configure2(defaults3, _config_, {
+    defaults4.displayTitle = false;
+    defaults4.displayLegend = true;
+    defaults4.displayTrendLine = false;
+    defaults4.maintainAspectRatio = false;
+    const config = configure2(defaults4, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -22465,7 +22700,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/structureData.js
-  function structureData3(_results_, config, _bounds_, _groupMetadata_ = null) {
+  function structureData4(_results_, config, _bounds_, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const data = mutate2(_results_, config, groupMetadata);
     let datasets = [
@@ -22585,7 +22820,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getPlugins.js
-  function getPlugins2(config) {
+  function getPlugins3(config) {
     const plugins2 = {
       legend: legend2(config),
       title: title2(config),
@@ -22595,7 +22830,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getScales.js
-  function getScales2(config) {
+  function getScales3(config) {
     const scales2 = getDefaultScales();
     scales2.x.grid.display = true;
     scales2.x.ticks = {
@@ -22618,8 +22853,8 @@ var gsmViz = (() => {
       chart.data.datasets.find((dataset) => dataset.type === "scatter").data
     );
     chart.canvas.riskSignalSelected.data = config.selectedGroupDatum;
-    const plugins2 = getPlugins2(config);
-    const scales2 = getScales2(config);
+    const plugins2 = getPlugins3(config);
+    const scales2 = getScales3(config);
     chart.data.config = config;
     chart.options.plugins = plugins2;
     chart.options.scales = scales2;
@@ -22629,9 +22864,9 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/updateData.js
-  function updateData2(chart, _results_, _config_, _bounds_, _groupMetadata_) {
+  function updateData3(chart, _results_, _config_, _bounds_, _groupMetadata_) {
     const config = updateConfig2(chart, _config_, false, false);
-    const datasets = structureData3(
+    const datasets = structureData4(
       _results_,
       config,
       _bounds_,
@@ -22648,7 +22883,7 @@ var gsmViz = (() => {
     checkInputs3(_results_, _config_, _bounds_, _groupMetadata_);
     const config = configure5(_config_, _results_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData3(
+    const datasets = structureData4(
       _results_,
       config,
       _bounds_,
@@ -22659,8 +22894,8 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins2(config),
-      scales: getScales2(config)
+      plugins: getPlugins3(config),
+      scales: getScales3(config)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -22678,7 +22913,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig2,
-      updateData: updateData2,
+      updateData: updateData3,
       updateOption,
       triggerTooltip
     };
@@ -22711,21 +22946,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults3 = {};
-    defaults3.x = "SnapshotDate";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    const defaults4 = {};
+    defaults4.x = "SnapshotDate";
+    defaults4.xType = "category";
+    defaults4.y = "Score";
+    defaults4.yType = "linear";
+    defaults4.color = "Flag";
+    defaults4.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults4.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.maintainAspectRatio = false;
-    defaults3.nSnapshots = 5;
-    defaults3.displayThresholds = false;
-    const config = configure2(defaults3, _config_, {
+    defaults4.maintainAspectRatio = false;
+    defaults4.nSnapshots = 5;
+    defaults4.displayThresholds = false;
+    const config = configure2(defaults4, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -22783,7 +23018,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/structureData.js
-  function structureData4(_data_, config) {
+  function structureData5(_data_, config) {
     const data = mutate3(_data_, config);
     const labels = data.map((d) => d.SnapshotDate);
     const pointBackgroundColor = data.map((d, i) => {
@@ -22907,7 +23142,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getPlugins.js
-  function getPlugins3(config, _data_) {
+  function getPlugins4(config, _data_) {
     const plugins2 = {
       annotation: annotations3(config, _data_),
       legend: legend3(config),
@@ -22917,7 +23152,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getScales.js
-  function getScales3(config, data) {
+  function getScales4(config, data) {
     const scales2 = getDefaultScales();
     scales2.x.display = false;
     scales2.x.type = config.xType;
@@ -22940,14 +23175,14 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/updateData.js
-  function updateData3(chart, _data_, _config_) {
+  function updateData4(chart, _data_, _config_) {
     chart.data.config = updateConfig3(chart, _config_);
-    chart.data.datasets = structureData4(_data_, chart.data.config);
-    chart.options.plugins = getPlugins3(
+    chart.data.datasets = structureData5(_data_, chart.data.config);
+    chart.options.plugins = getPlugins4(
       chart.data.config,
       chart.data.datasets[0].data
     );
-    chart.options.scales = getScales3(
+    chart.options.scales = getScales4(
       chart.data.config,
       chart.data.datasets[0].data
     );
@@ -22959,7 +23194,7 @@ var gsmViz = (() => {
     checkInputs4(_results_, _config_, _thresholds_);
     const config = configure6(_config_, _results_, _thresholds_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData4(_results_, config);
+    const datasets = structureData5(_results_, config);
     const options = {
       animation: false,
       layout: {
@@ -22968,8 +23203,8 @@ var gsmViz = (() => {
         }
       },
       maintainAspectRatio: config.maintainAspectRatio,
-      plugins: getPlugins3(config, datasets[0].data),
-      scales: getScales3(config, datasets[0].data)
+      plugins: getPlugins4(config, datasets[0].data),
+      scales: getScales4(config, datasets[0].data)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -22988,7 +23223,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig3,
-      updateData: updateData3,
+      updateData: updateData4,
       updateOption
     };
     return chart;
@@ -23033,39 +23268,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults4 = {};
+    defaults4.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.dataType = "continuous";
-    defaults3.discreteUnit = null;
-    defaults3.distributionDisplay = "boxplot";
-    defaults3.x = "SnapshotDate";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults4.GroupLevel = "Site";
+    defaults4.groupLabelKey = "InvestigatorLastName";
+    defaults4.groupParticipantCountKey = "ParticipantCount";
+    defaults4.groupTooltipKeys = null;
+    defaults4.dataType = "continuous";
+    defaults4.discreteUnit = null;
+    defaults4.distributionDisplay = "boxplot";
+    defaults4.x = "SnapshotDate";
+    defaults4.xType = "category";
+    defaults4.y = "Score";
+    defaults4.yType = "linear";
+    defaults4.color = "Flag";
+    defaults4.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults4.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.aggregateLabel = "Study";
-    defaults3.annotateThreshold = _thresholds_ !== null;
-    defaults3.displayTitle = false;
-    defaults3.maintainAspectRatio = false;
+    defaults4.aggregateLabel = "Study";
+    defaults4.annotateThreshold = _thresholds_ !== null;
+    defaults4.displayTitle = false;
+    defaults4.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults3, _config_, {
+    const config = configure2(defaults4, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -23078,7 +23313,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults3.dataType === "discrete")
+    if (defaults4.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -23486,7 +23721,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/structureData.js
-  function structureData5(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function structureData6(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const { results, labels, thresholds: thresholds2, intervals } = mutate4(
       _results_,
@@ -23781,7 +24016,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/getPlugins.js
-  function getPlugins4(config) {
+  function getPlugins5(config) {
     return {
       annotation: {
         annotations: annotations4(config)
@@ -23793,7 +24028,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/getScales.js
-  function getScales4(config) {
+  function getScales5(config) {
     const scales2 = getDefaultScales();
     scales2.x.title.text = config.xLabel;
     scales2.x.type = config.xType;
@@ -23803,9 +24038,9 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/updateData.js
-  function updateData4(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function updateData5(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _thresholds_,
@@ -23822,8 +24057,8 @@ var gsmViz = (() => {
       _intervals_,
       _groupMetadata_
     };
-    chart.options.scales = getScales4(config);
-    chart.options.plugins = getPlugins4(config);
+    chart.options.scales = getScales5(config);
+    chart.options.plugins = getPlugins5(config);
     chart.update();
   }
 
@@ -23838,7 +24073,7 @@ var gsmViz = (() => {
       this.data.config.selectedGroupIDs
     );
     this.canvas.riskSignalSelected.data = this.data.config.selectedGroupDatum;
-    this.data.datasets = structureData5(
+    this.data.datasets = structureData6(
       this.data._results_,
       this.data.config,
       this.data._thresholds_,
@@ -23859,7 +24094,7 @@ var gsmViz = (() => {
     );
     const config = configure7(_config_, _results_, _thresholds_, _intervals_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _thresholds_,
@@ -23871,9 +24106,9 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins4(config),
+      plugins: getPlugins5(config),
       responsive: true,
-      scales: getScales4(config, _results_)
+      scales: getScales5(config, _results_)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -23894,7 +24129,7 @@ var gsmViz = (() => {
     });
     canvas.chart = chart;
     chart.helpers = {
-      updateData: updateData4.bind(chart),
+      updateData: updateData5.bind(chart),
       updateSelectedGroupIDs: updateSelectedGroupIDs.bind(chart)
     };
     return chart;
@@ -23912,6 +24147,7 @@ var gsmViz = (() => {
   );
   var gsmViz = {
     barChart,
+    bars,
     groupOverview,
     scatterPlot,
     sparkline,
