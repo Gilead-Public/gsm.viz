@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Bars</title>
+        <meta charset="utf-8" />
+
+        <link rel="stylesheet" href="../examples.css" />
+
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="../index.js"></script>
+    </head>
+
+    <body>
+        <div class="gsm-viz--example">
+            <div id="controls">
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="orientation">
+                        <option value="vertical">Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Fill</legend>
+                    <select id="fill">
+                        <option value="">None</option>
+                        <option value="Flag" selected>Flag</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div id="container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </body>
+
+    <script src="index.js"></script>
+</html>
