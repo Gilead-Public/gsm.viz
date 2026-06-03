@@ -30,11 +30,20 @@ export default function bars(element = "body", spec = {}) {
   // Validate inputs.
   validateSpec(spec);
 
+  // Resolve string selectors to DOM nodes.
+  let el = element;
+  if (typeof el === "string") {
+    el = document.querySelector(el);
+    if (!el) {
+      throw new Error(`bars: could not find element matching "${element}"`);
+    }
+  }
+
   // Merge user spec with defaults.
   const merged = mergeSpec(spec);
 
   // Add or select canvas element.
-  const canvas = addCanvas(element, {
+  const canvas = addCanvas(el, {
     maintainAspectRatio: merged.theme.maintainAspectRatio,
   });
 

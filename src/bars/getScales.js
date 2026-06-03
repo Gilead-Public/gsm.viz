@@ -11,8 +11,9 @@
  * @returns {Object} Chart.js scales config plus _indexAxis
  */
 export default function getScales(spec) {
-  const { orientation, scales: specScales } = spec;
+  const { orientation, position, scales: specScales } = spec;
   const horizontal = orientation === "horizontal";
+  const stacked = position === "stack";
 
   const categoryScale = {
     type: specScales.x.type,
@@ -20,6 +21,7 @@ export default function getScales(spec) {
       display: !!specScales.x.label,
       text: specScales.x.label,
     },
+    ...(stacked ? { stacked: true } : {}),
   };
 
   const valueScale = {
@@ -29,6 +31,7 @@ export default function getScales(spec) {
       text: specScales.y.label,
     },
     beginAtZero: true,
+    ...(stacked ? { stacked: true } : {}),
   };
 
   return {

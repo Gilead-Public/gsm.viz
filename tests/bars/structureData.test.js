@@ -196,4 +196,243 @@ describe("bars/structureData", () => {
       expect(result.labels).toEqual(["1-Site", "10-Site", "2-Site"]);
     });
   });
+
+  describe("count mode (no y mapping)", () => {
+    test("counts rows per category when y mapping is omitted", () => {
+      const spec = {
+        data: [
+          { cat: "A" },
+          { cat: "A" },
+          { cat: "B" },
+          { cat: "B" },
+          { cat: "B" },
+        ],
+        mapping: { x: "cat" },
+        orientation: "vertical",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.datasets).toHaveLength(1);
+      const data = result.datasets[0].data;
+      expect(data.find((d) => d.x === "A").y).toBe(2);
+      expect(data.find((d) => d.x === "B").y).toBe(3);
+    });
+
+    test("counts rows per category per fill group", () => {
+      const spec = {
+        data: [
+          { cat: "A", grp: "X" },
+          { cat: "A", grp: "X" },
+          { cat: "A", grp: "Y" },
+          { cat: "B", grp: "X" },
+        ],
+        mapping: { x: "cat", fill: "grp" },
+        orientation: "vertical",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.datasets).toHaveLength(2);
+      const xDataset = result.datasets.find((ds) => ds.label === "X");
+      const yDataset = result.datasets.find((ds) => ds.label === "Y");
+      expect(xDataset.data.find((d) => d.x === "A").y).toBe(2);
+      expect(xDataset.data.find((d) => d.x === "B").y).toBe(1);
+      expect(yDataset.data.find((d) => d.x === "A").y).toBe(1);
+    });
+
+    test("respects explicit category order in count mode", () => {
+      const spec = {
+        data: [{ cat: "B" }, { cat: "A" }, { cat: "B" }],
+        mapping: { x: "cat" },
+        orientation: "vertical",
+        scales: { x: { order: ["B", "A"] }, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.labels).toEqual(["B", "A"]);
+      expect(result.datasets[0].data.map((d) => d.x)).toEqual(["B", "A"]);
+    });
+
+    test("preserves _datum array in count mode", () => {
+      const d1 = { cat: "A", extra: 1 };
+      const d2 = { cat: "A", extra: 2 };
+      const spec = {
+        data: [d1, d2],
+        mapping: { x: "cat" },
+        orientation: "vertical",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.datasets[0].data[0]._datum).toEqual([d1, d2]);
+    });
+  });
+
+  describe("horizontal orientation", () => {
+    test("swaps x/y in data points when orientation is horizontal", () => {
+      const spec = {
+        data: [
+          { site: "A", score: 10 },
+          { site: "B", score: 20 },
+        ],
+        mapping: { x: "site", y: "score" },
+        orientation: "horizontal",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      const data = result.datasets[0].data;
+      expect(data[0]).toEqual(expect.objectContaining({ x: 10, y: "A" }));
+      expect(data[1]).toEqual(expect.objectContaining({ x: 20, y: "B" }));
+    });
+
+    test("swaps x/y in count mode with horizontal orientation", () => {
+      const spec = {
+        data: [{ cat: "A" }, { cat: "A" }, { cat: "B" }],
+        mapping: { x: "cat" },
+        orientation: "horizontal",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      const data = result.datasets[0].data;
+      expect(data[0]).toEqual(expect.objectContaining({ x: 2, y: "A" }));
+      expect(data[1]).toEqual(expect.objectContaining({ x: 1, y: "B" }));
+    });
+
+    test("keeps x/y unchanged when orientation is vertical", () => {
+      const spec = {
+        data: [{ site: "A", score: 10 }],
+        mapping: { x: "site", y: "score" },
+        orientation: "vertical",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.datasets[0].data[0]).toEqual(
+        expect.objectContaining({ x: "A", y: 10 })
+      );
+    });
+  });
+
+  describe("fill order (scales.fill.order)", () => {
+    const spec = {
+      data: [
+        { cat: "A", grp: "Z", val: 1 },
+        { cat: "A", grp: "Y", val: 2 },
+        { cat: "A", grp: "X", val: 3 },
+      ],
+      mapping: { x: "cat", y: "val", fill: "grp" },
+      orientation: "vertical",
+      scales: { x: {}, y: {}, fill: { order: ["X", "Y", "Z"] } },
+    };
+
+    test("reorders datasets according to scales.fill.order", () => {
+      const result = structureData(spec);
+      expect(result.datasets.map((ds) => ds.label)).toEqual(["X", "Y", "Z"]);
+    });
+
+    test("drops fill order values with no matching data", () => {
+      const specExtra = {
+        ...spec,
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: ["W", "X", "Y", "Z"] },
+        },
+      };
+      const result = structureData(specExtra);
+      expect(result.datasets.map((ds) => ds.label)).toEqual(["X", "Y", "Z"]);
+    });
+
+    test("appends unordered fill values after ordered ones", () => {
+      const specPartial = {
+        ...spec,
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: ["Z"] },
+        },
+      };
+      const result = structureData(specPartial);
+      expect(result.datasets[0].label).toBe("Z");
+      expect(result.datasets).toHaveLength(3);
+    });
+
+    test("palette colors follow fill order", () => {
+      const specWithPalette = {
+        ...spec,
+        scales: {
+          x: {},
+          y: {},
+          fill: {
+            order: ["X", "Y", "Z"],
+            palette: ["#ff0000", "#00ff00", "#0000ff"],
+          },
+        },
+      };
+      const result = structureData(specWithPalette);
+      expect(result.datasets[0].backgroundColor).toBe("#ff0000");
+      expect(result.datasets[0].label).toBe("X");
+      expect(result.datasets[2].backgroundColor).toBe("#0000ff");
+      expect(result.datasets[2].label).toBe("Z");
+    });
+  });
+
+  describe("fill palette", () => {
+    const spec = {
+      data: [
+        { site: "A", score: 10, group: "X" },
+        { site: "B", score: 20, group: "Y" },
+        { site: "C", score: 30, group: "Z" },
+      ],
+      mapping: { x: "site", y: "score", fill: "group" },
+      orientation: "vertical",
+      scales: {
+        x: {},
+        y: {},
+        fill: { palette: ["#ff0000", "#00ff00", "#0000ff"] },
+      },
+    };
+
+    test("assigns palette colors to datasets as backgroundColor", () => {
+      const result = structureData(spec);
+      expect(result.datasets[0].backgroundColor).toBe("#ff0000");
+      expect(result.datasets[1].backgroundColor).toBe("#00ff00");
+      expect(result.datasets[2].backgroundColor).toBe("#0000ff");
+    });
+
+    test("cycles palette when more groups than colors", () => {
+      const specCycle = {
+        ...spec,
+        scales: {
+          x: {},
+          y: {},
+          fill: { palette: ["#ff0000", "#00ff00"] },
+        },
+      };
+      const result = structureData(specCycle);
+      expect(result.datasets[0].backgroundColor).toBe("#ff0000");
+      expect(result.datasets[1].backgroundColor).toBe("#00ff00");
+      expect(result.datasets[2].backgroundColor).toBe("#ff0000");
+    });
+
+    test("does not set backgroundColor when no palette is provided", () => {
+      const specNoPalette = {
+        ...spec,
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(specNoPalette);
+      expect(result.datasets[0].backgroundColor).toBeUndefined();
+    });
+
+    test("does not set backgroundColor on single series without fill", () => {
+      const specNoFill = {
+        data: [{ site: "A", score: 10 }],
+        mapping: { x: "site", y: "score" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { palette: ["#ff0000"] },
+        },
+      };
+      const result = structureData(specNoFill);
+      expect(result.datasets[0].backgroundColor).toBeUndefined();
+    });
+  });
 });

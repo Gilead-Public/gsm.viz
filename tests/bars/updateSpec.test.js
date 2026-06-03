@@ -1,0 +1,44 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import bars from "../../src/bars.js";
+import updateSpec from "../../src/bars/updateSpec.js";
+
+describe("bars/updateSpec", () => {
+  const container = document.createElement("div");
+
+  const fullSpec = {
+    data: [
+      { category: "A", value: 10 },
+      { category: "B", value: 20 },
+    ],
+    mapping: { x: "category", y: "value" },
+    labels: { title: "Original" },
+  };
+
+  test("accepts a partial spec without data/mapping", () => {
+    const chart = bars(container, fullSpec);
+    expect(() =>
+      updateSpec(chart, { labels: { title: "Updated" } })
+    ).not.toThrow();
+    expect(chart.options.plugins.title.text).toBe("Updated");
+  });
+
+  test("rebuilds data when orientation changes", () => {
+    const chart = bars(container, fullSpec);
+    updateSpec(chart, { orientation: "horizontal" });
+    expect(chart.options.indexAxis).toBe("y");
+    // Points should be swapped for horizontal
+    const point = chart.data.datasets[0].data[0];
+    expect(typeof point.x).toBe("number");
+    expect(typeof point.y).toBe("string");
+  });
+
+  test("preserves existing data and mapping", () => {
+    const chart = bars(container, fullSpec);
+    updateSpec(chart, { labels: { title: "New Title" } });
+    expect(chart.data._spec_.data).toBe(fullSpec.data);
+    expect(chart.data._spec_.mapping.x).toBe("category");
+  });
+});

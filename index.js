@@ -21465,8 +21465,8 @@ var gsmViz = (() => {
     if (!spec.mapping.x) {
       throw new Error("spec.mapping.x is required");
     }
-    if (!spec.mapping.y) {
-      throw new Error("spec.mapping.y is required");
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity") {
+      throw new Error("spec.position must be 'stack', 'dodge', or 'identity'");
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
       throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
@@ -21476,6 +21476,7 @@ var gsmViz = (() => {
   // src/bars/defaults.js
   var defaults3 = {
     orientation: "vertical",
+    position: "stack",
     scales: {
       x: {
         type: "category",
@@ -21484,7 +21485,8 @@ var gsmViz = (() => {
       y: {
         type: "linear",
         label: null
-      }
+      },
+      fill: {}
     },
     labels: {},
     theme: {
@@ -21500,9 +21502,11 @@ var gsmViz = (() => {
       data: spec.data,
       mapping: { ...spec.mapping },
       orientation: spec.orientation ?? defaults_default.orientation,
+      position: spec.position ?? defaults_default.position,
       scales: {
         x: { ...defaults_default.scales.x, ...spec.scales?.x },
-        y: { ...defaults_default.scales.y, ...spec.scales?.y }
+        y: { ...defaults_default.scales.y, ...spec.scales?.y },
+        fill: { ...defaults_default.scales.fill, ...spec.scales?.fill }
       },
       labels: { ...defaults_default.labels, ...spec.labels },
       theme: { ...defaults_default.theme, ...spec.theme }
@@ -21529,51 +21533,125 @@ var gsmViz = (() => {
       })
     );
   }
+  function reorderDatasets(datasets, fillOrder) {
+    const datasetMap = new Map(datasets.map((ds) => [ds.label, ds]));
+    const ordered = fillOrder.filter((val) => datasetMap.has(val)).map((val) => datasetMap.get(val));
+    const orderedSet = new Set(fillOrder);
+    const remaining = datasets.filter((ds) => !orderedSet.has(ds.label));
+    return [...ordered, ...remaining];
+  }
+  function aggregateCounts(data, xKey, fillKey, categoryIndex) {
+    if (fillKey) {
+      const groups2 = /* @__PURE__ */ new Map();
+      for (const d of data) {
+        const key = d[fillKey];
+        if (!groups2.has(key)) groups2.set(key, /* @__PURE__ */ new Map());
+        const catMap2 = groups2.get(key);
+        const cat = d[xKey];
+        if (!catMap2.has(cat)) catMap2.set(cat, []);
+        catMap2.get(cat).push(d);
+      }
+      return [...groups2.entries()].map(([fillValue, catMap2]) => ({
+        label: fillValue,
+        data: [...catMap2.entries()].map(([cat, rows]) => ({
+          x: cat,
+          y: rows.length,
+          _fill: fillValue,
+          _datum: rows
+        })).sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
+      }));
+    }
+    const catMap = /* @__PURE__ */ new Map();
+    for (const d of data) {
+      const cat = d[xKey];
+      if (!catMap.has(cat)) catMap.set(cat, []);
+      catMap.get(cat).push(d);
+    }
+    return [
+      {
+        data: [...catMap.entries()].map(([cat, rows]) => ({
+          x: cat,
+          y: rows.length,
+          _datum: rows
+        })).sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
+      }
+    ];
+  }
+  function swapPointAxes(datasets) {
+    for (const ds of datasets) {
+      for (const point of ds.data) {
+        const tmp = point.x;
+        point.x = point.y;
+        point.y = tmp;
+      }
+    }
+  }
   function structureData2(spec) {
-    const { data, mapping, scales: scales2 } = spec;
+    const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
     const labels = resolveCategories(data, xKey, scales2.x?.order);
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
-    const points = data.map((d) => ({
-      x: d[xKey],
-      y: Number(d[yKey]) || 0,
-      _fill: fillKey ? d[fillKey] : void 0,
-      _datum: d
-    }));
     let datasets;
-    if (fillKey) {
-      const groups2 = /* @__PURE__ */ new Map();
-      for (const point of points) {
-        const key = point._fill;
-        if (!groups2.has(key)) groups2.set(key, []);
-        groups2.get(key).push(point);
-      }
-      datasets = [...groups2.entries()].map(([fillValue, pts]) => ({
-        label: fillValue,
-        data: pts.sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
-      }));
+    if (!yKey) {
+      datasets = aggregateCounts(data, xKey, fillKey, categoryIndex);
     } else {
-      datasets = [
-        {
-          data: points.sort(
+      const points = data.map((d) => ({
+        x: d[xKey],
+        y: Number(d[yKey]) || 0,
+        _fill: fillKey ? d[fillKey] : void 0,
+        _datum: d
+      }));
+      if (fillKey) {
+        const groups2 = /* @__PURE__ */ new Map();
+        for (const point of points) {
+          const key = point._fill;
+          if (!groups2.has(key)) groups2.set(key, []);
+          groups2.get(key).push(point);
+        }
+        datasets = [...groups2.entries()].map(([fillValue, pts]) => ({
+          label: fillValue,
+          data: pts.sort(
             (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
           )
-        }
-      ];
+        }));
+      } else {
+        datasets = [
+          {
+            data: points.sort(
+              (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+            )
+          }
+        ];
+      }
+    }
+    const fillOrder = scales2.fill?.order;
+    if (fillOrder && fillKey) {
+      datasets = reorderDatasets(datasets, fillOrder);
+    }
+    const palette = scales2.fill?.palette;
+    if (palette && fillKey) {
+      datasets.forEach((ds, i) => {
+        ds.backgroundColor = palette[i % palette.length];
+      });
+    }
+    if (orientation === "horizontal") {
+      swapPointAxes(datasets);
     }
     return { datasets, labels };
   }
 
   // src/bars/getScales.js
   function getScales2(spec) {
-    const { orientation, scales: specScales } = spec;
+    const { orientation, position, scales: specScales } = spec;
     const horizontal = orientation === "horizontal";
+    const stacked = position === "stack";
     const categoryScale = {
       type: specScales.x.type,
       title: {
         display: !!specScales.x.label,
         text: specScales.x.label
-      }
+      },
+      ...stacked ? { stacked: true } : {}
     };
     const valueScale = {
       type: specScales.y.type,
@@ -21581,7 +21659,8 @@ var gsmViz = (() => {
         display: !!specScales.y.label,
         text: specScales.y.label
       },
-      beginAtZero: true
+      beginAtZero: true,
+      ...stacked ? { stacked: true } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -21629,10 +21708,24 @@ var gsmViz = (() => {
 
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
-    const merged = mergeSpec(spec);
+    const existing = chart.data._spec_;
+    const combined = {
+      ...existing,
+      ...spec,
+      mapping: { ...existing.mapping, ...spec.mapping },
+      scales: {
+        x: { ...existing.scales?.x, ...spec.scales?.x },
+        y: { ...existing.scales?.y, ...spec.scales?.y },
+        fill: { ...existing.scales?.fill, ...spec.scales?.fill }
+      },
+      labels: { ...existing.labels, ...spec.labels },
+      theme: { ...existing.theme, ...spec.theme }
+    };
+    const merged = mergeSpec(combined);
+    const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
-    merged.data = chart.data._spec_.data;
-    merged.mapping = chart.data._spec_.mapping;
+    chart.data.datasets = datasets;
+    chart.data.labels = labels;
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -21646,8 +21739,15 @@ var gsmViz = (() => {
   // src/bars.js
   function bars(element = "body", spec = {}) {
     validateSpec(spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(`bars: could not find element matching "${element}"`);
+      }
+    }
     const merged = mergeSpec(spec);
-    const canvas = addCanvas(element, {
+    const canvas = addCanvas(el, {
       maintainAspectRatio: merged.theme.maintainAspectRatio
     });
     const { datasets, labels } = structureData2(merged);

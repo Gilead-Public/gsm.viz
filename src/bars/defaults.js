@@ -4,6 +4,7 @@
  */
 const defaults = {
   orientation: "vertical",
+  position: "stack",
   scales: {
     x: {
       type: "category",
@@ -13,6 +14,7 @@ const defaults = {
       type: "linear",
       label: null,
     },
+    fill: {},
   },
   labels: {},
   theme: {
