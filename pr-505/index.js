@@ -27,12 +27,12 @@ var gsmViz = (() => {
   // node_modules/chart.js/dist/chunks/helpers.segment.mjs
   function noop() {
   }
-  var uid = /* @__PURE__ */ function() {
+  var uid = /* @__PURE__ */ (function() {
     let id2 = 0;
     return function() {
       return id2++;
     };
-  }();
+  })();
   function isNullOrUndef(value) {
     return value === null || typeof value === "undefined";
   }
@@ -420,14 +420,14 @@ var gsmViz = (() => {
     }
     return Array.from(set4);
   }
-  var requestAnimFrame = function() {
+  var requestAnimFrame = (function() {
     if (typeof window === "undefined") {
       return function(callback2) {
         return callback2();
       };
     }
     return window.requestAnimationFrame;
-  }();
+  })();
   function throttled(fn, thisArg, updateFn) {
     const updateArgs = updateFn || ((args2) => Array.prototype.slice.call(args2));
     let ticking = false;
@@ -1745,11 +1745,11 @@ var gsmViz = (() => {
   }
   var readKey = (prefix, name) => prefix ? prefix + _capitalize(name) : name;
   var needsSubResolver = (prop, value) => isObject(value) && prop !== "adapters" && (Object.getPrototypeOf(value) === null || value.constructor === Object);
-  function _cached(target, prop, resolve2) {
+  function _cached(target, prop, resolve3) {
     if (Object.prototype.hasOwnProperty.call(target, prop)) {
       return target[prop];
     }
-    const value = resolve2();
+    const value = resolve3();
     target[prop] = value;
     return value;
   }
@@ -1780,9 +1780,9 @@ var gsmViz = (() => {
     }
     return value;
   }
-  function _resolveArray(prop, value, target, isIndexable) {
+  function _resolveArray(prop, value, target, isIndexable2) {
     const { _proxy, _context, _subProxy, _descriptors: descriptors2 } = target;
-    if (defined(_context.index) && isIndexable(prop)) {
+    if (defined(_context.index) && isIndexable2(prop)) {
       value = value[_context.index % value.length];
     } else if (isObject(value[0])) {
       const arr = value;
@@ -2206,7 +2206,7 @@ var gsmViz = (() => {
     }
     return false;
   }
-  var supportsEventListenerOptions = function() {
+  var supportsEventListenerOptions = (function() {
     let passiveSupported = false;
     try {
       const options = {
@@ -2220,7 +2220,7 @@ var gsmViz = (() => {
     } catch (e) {
     }
     return passiveSupported;
-  }();
+  })();
   function readUsedSize(element, property) {
     const value = getStyle(element, property);
     const matches = value && value.match(/^(\d+)(\.\d+)?px$/);
@@ -7841,10 +7841,10 @@ var gsmViz = (() => {
   }
   var hasFunction = (value) => isObject(value) && Object.getOwnPropertyNames(value).reduce((acc, key) => acc || isFunction(value[key]), false);
   function needContext(proxy, names2) {
-    const { isScriptable, isIndexable } = _descriptors(proxy);
+    const { isScriptable, isIndexable: isIndexable2 } = _descriptors(proxy);
     for (const prop of names2) {
       const scriptable = isScriptable(prop);
-      const indexable = isIndexable(prop);
+      const indexable = isIndexable2(prop);
       const value = (indexable || scriptable) && proxy[prop];
       if (scriptable && (isFunction(value) || hasFunction(value)) || indexable && isArray(value)) {
         return true;
@@ -13266,89 +13266,6 @@ var gsmViz = (() => {
       return nearestItems;
     }, []).sort((a, b) => a._index - b._index).slice(0, 1);
   }
-  var moveHooks = ["enter", "leave"];
-  var hooks = moveHooks.concat("click");
-  function updateListeners(chart, state, options) {
-    state.listened = false;
-    state.moveListened = false;
-    state._getElements = getElements;
-    hooks.forEach((hook) => {
-      if (typeof options[hook] === "function") {
-        state.listened = true;
-        state.listeners[hook] = options[hook];
-      } else if (defined(state.listeners[hook])) {
-        delete state.listeners[hook];
-      }
-    });
-    moveHooks.forEach((hook) => {
-      if (typeof options[hook] === "function") {
-        state.moveListened = true;
-      }
-    });
-    if (!state.listened || !state.moveListened) {
-      state.annotations.forEach((scope) => {
-        if (!state.listened && typeof scope.click === "function") {
-          state.listened = true;
-        }
-        if (!state.moveListened) {
-          moveHooks.forEach((hook) => {
-            if (typeof scope[hook] === "function") {
-              state.listened = true;
-              state.moveListened = true;
-            }
-          });
-        }
-      });
-    }
-  }
-  function handleEvent(state, event, options) {
-    if (state.listened) {
-      switch (event.type) {
-        case "mousemove":
-        case "mouseout":
-          return handleMoveEvents(state, event, options);
-        case "click":
-          return handleClickEvents(state, event, options);
-      }
-    }
-  }
-  function handleMoveEvents(state, event, options) {
-    if (!state.moveListened) {
-      return;
-    }
-    let elements2;
-    if (event.type === "mousemove") {
-      elements2 = getElements(state, event, options.interaction);
-    } else {
-      elements2 = [];
-    }
-    const previous = state.hovered;
-    state.hovered = elements2;
-    const context = { state, event };
-    let changed = dispatchMoveEvents(context, "leave", previous, elements2);
-    return dispatchMoveEvents(context, "enter", elements2, previous) || changed;
-  }
-  function dispatchMoveEvents({ state, event }, hook, elements2, checkElements) {
-    let changed;
-    for (const element of elements2) {
-      if (checkElements.indexOf(element) < 0) {
-        changed = dispatchEvent(element.options[hook] || state.listeners[hook], element, event) || changed;
-      }
-    }
-    return changed;
-  }
-  function handleClickEvents(state, event, options) {
-    const listeners = state.listeners;
-    const elements2 = getElements(state, event, options.interaction);
-    let changed;
-    for (const element of elements2) {
-      changed = dispatchEvent(element.options.click || listeners.click, element, event) || changed;
-    }
-    return changed;
-  }
-  function dispatchEvent(handler, element, event) {
-    return callback(handler, [element.$context, event]) === true;
-  }
   var isOlderPart = (act, req) => req > act || act.length > req.length && act.slice(0, req.length) === req;
   var EPSILON2 = 1e-3;
   var clamp = (x, from2, to2) => Math.min(to2, Math.max(from2, x));
@@ -13399,7 +13316,8 @@ var gsmViz = (() => {
     return true;
   }
   var isPercentString = (s) => typeof s === "string" && s.endsWith("%");
-  var toPercent = (s) => clamp(parseFloat(s) / 100, 0, 1);
+  var toPercent = (s) => parseFloat(s) / 100;
+  var toPositivePercent = (s) => clamp(toPercent(s), 0, 1);
   function getRelativePosition2(size, position) {
     if (position === "start") {
       return 0;
@@ -13408,15 +13326,15 @@ var gsmViz = (() => {
       return size;
     }
     if (isPercentString(position)) {
-      return toPercent(position) * size;
+      return toPositivePercent(position) * size;
     }
     return size / 2;
   }
-  function getSize(size, value) {
+  function getSize(size, value, positivePercent = true) {
     if (typeof value === "number") {
       return value;
     } else if (isPercentString(value)) {
-      return toPercent(value) * size;
+      return (positivePercent ? toPositivePercent(value) : toPercent(value)) * size;
     }
     return size;
   }
@@ -13430,14 +13348,14 @@ var gsmViz = (() => {
     }
     return x;
   }
-  function toPosition(value) {
+  function toPosition(value, defaultValue = "center") {
     if (isObject(value)) {
       return {
-        x: valueOrDefault(value.x, "center"),
-        y: valueOrDefault(value.y, "center")
+        x: valueOrDefault(value.x, defaultValue),
+        y: valueOrDefault(value.y, defaultValue)
       };
     }
-    value = valueOrDefault(value, "center");
+    value = valueOrDefault(value, defaultValue);
     return {
       x: value,
       y: value
@@ -13446,7 +13364,46 @@ var gsmViz = (() => {
   function isBoundToPoint(options) {
     return options && (defined(options.xValue) || defined(options.yValue));
   }
+  function initAnimationProperties(chart, properties, options, centerBased = false) {
+    const initAnim = options.init;
+    if (!initAnim) {
+      return;
+    } else if (initAnim === true) {
+      return applyDefault(properties, centerBased);
+    }
+    return checkCallbackResult(properties, centerBased, callback(initAnim, [{ chart, properties, options }]));
+  }
+  function loadHooks(options, hooks2, hooksContainer) {
+    let activated = false;
+    hooks2.forEach((hook) => {
+      if (isFunction(options[hook])) {
+        activated = true;
+        hooksContainer[hook] = options[hook];
+      } else if (defined(hooksContainer[hook])) {
+        delete hooksContainer[hook];
+      }
+    });
+    return activated;
+  }
+  function applyDefault({ centerX, centerY }, centerBased) {
+    if (centerBased) {
+      return { centerX, centerY, radius: 0, width: 0, height: 0 };
+    }
+    return { x: centerX, y: centerY, x2: centerX, y2: centerY, width: 0, height: 0 };
+  }
+  function checkCallbackResult(properties, centerBased, result) {
+    if (result === true) {
+      return applyDefault(properties, centerBased);
+    } else if (isObject(result)) {
+      return result;
+    }
+  }
   var widthCache = /* @__PURE__ */ new Map();
+  var notRadius = (radius3) => isNaN(radius3) || radius3 <= 0;
+  var fontsKey = (fonts) => fonts.reduce(function(prev, item) {
+    prev += item.string;
+    return prev;
+  }, "");
   function isImageOrCanvas(content) {
     if (content && typeof content === "object") {
       const type2 = content.toString();
@@ -13485,22 +13442,13 @@ var gsmViz = (() => {
         height: getSize(content.height, options.height)
       };
     }
-    const font = toFont(options.font);
+    const optFont = options.font;
+    const fonts = isArray(optFont) ? optFont.map((f) => toFont(f)) : [toFont(optFont)];
     const strokeWidth = options.textStrokeWidth;
     const lines = isArray(content) ? content : [content];
-    const mapKey = lines.join() + font.string + strokeWidth + (ctx._measureText ? "-spriting" : "");
+    const mapKey = lines.join() + fontsKey(fonts) + strokeWidth + (ctx._measureText ? "-spriting" : "");
     if (!widthCache.has(mapKey)) {
-      ctx.save();
-      ctx.font = font.string;
-      const count = lines.length;
-      let width = 0;
-      for (let i = 0; i < count; i++) {
-        const text = lines[i];
-        width = Math.max(width, ctx.measureText(text).width + strokeWidth);
-      }
-      ctx.restore();
-      const height = count * font.lineHeight + strokeWidth;
-      widthCache.set(mapKey, { width, height });
+      widthCache.set(mapKey, calculateLabelSize(ctx, lines, fonts, strokeWidth));
     }
     return widthCache.get(mapKey);
   }
@@ -13529,23 +13477,26 @@ var gsmViz = (() => {
   function drawLabel(ctx, rect, options) {
     const content = options.content;
     if (isImageOrCanvas(content)) {
+      ctx.save();
+      ctx.globalAlpha = getOpacity(options.opacity, content.style.opacity);
       ctx.drawImage(content, rect.x, rect.y, rect.width, rect.height);
+      ctx.restore();
       return;
     }
     const labels = isArray(content) ? content : [content];
-    const font = toFont(options.font);
-    const lh = font.lineHeight;
+    const optFont = options.font;
+    const fonts = isArray(optFont) ? optFont.map((f) => toFont(f)) : [toFont(optFont)];
+    const optColor = options.color;
+    const colors2 = isArray(optColor) ? optColor : [optColor];
     const x = calculateTextAlignment(rect, options);
-    const y = rect.y + lh / 2 + options.textStrokeWidth / 2;
+    const y = rect.y + options.textStrokeWidth / 2;
     ctx.save();
-    ctx.font = font.string;
     ctx.textBaseline = "middle";
     ctx.textAlign = options.textAlign;
     if (setTextStrokeStyle(ctx, options)) {
-      labels.forEach((l, i) => ctx.strokeText(l, x, y + i * lh));
+      applyLabelDecoration(ctx, { x, y }, labels, fonts);
     }
-    ctx.fillStyle = options.color;
-    labels.forEach((l, i) => ctx.fillText(l, x, y + i * lh));
+    applyLabelContent(ctx, { x, y }, labels, { fonts, colors: colors2 });
     ctx.restore();
   }
   function setTextStrokeStyle(ctx, options) {
@@ -13557,6 +13508,157 @@ var gsmViz = (() => {
       return true;
     }
   }
+  function drawPoint2(ctx, element, x, y) {
+    const { radius: radius3, options } = element;
+    const style = options.pointStyle;
+    const rotation = options.rotation;
+    let rad = (rotation || 0) * RAD_PER_DEG;
+    if (isImageOrCanvas(style)) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rad);
+      ctx.drawImage(style, -style.width / 2, -style.height / 2, style.width, style.height);
+      ctx.restore();
+      return;
+    }
+    if (notRadius(radius3)) {
+      return;
+    }
+    drawPointStyle(ctx, { x, y, radius: radius3, rotation, style, rad });
+  }
+  function drawPointStyle(ctx, { x, y, radius: radius3, rotation, style, rad }) {
+    let xOffset, yOffset, size, cornerRadius;
+    ctx.beginPath();
+    switch (style) {
+      // Default includes circle
+      default:
+        ctx.arc(x, y, radius3, 0, TAU);
+        ctx.closePath();
+        break;
+      case "triangle":
+        ctx.moveTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        rad += TWO_THIRDS_PI;
+        ctx.lineTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        rad += TWO_THIRDS_PI;
+        ctx.lineTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        ctx.closePath();
+        break;
+      case "rectRounded":
+        cornerRadius = radius3 * 0.516;
+        size = radius3 - cornerRadius;
+        xOffset = Math.cos(rad + QUARTER_PI) * size;
+        yOffset = Math.sin(rad + QUARTER_PI) * size;
+        ctx.arc(x - xOffset, y - yOffset, cornerRadius, rad - PI, rad - HALF_PI);
+        ctx.arc(x + yOffset, y - xOffset, cornerRadius, rad - HALF_PI, rad);
+        ctx.arc(x + xOffset, y + yOffset, cornerRadius, rad, rad + HALF_PI);
+        ctx.arc(x - yOffset, y + xOffset, cornerRadius, rad + HALF_PI, rad + PI);
+        ctx.closePath();
+        break;
+      case "rect":
+        if (!rotation) {
+          size = Math.SQRT1_2 * radius3;
+          ctx.rect(x - size, y - size, 2 * size, 2 * size);
+          break;
+        }
+        rad += QUARTER_PI;
+      /* falls through */
+      case "rectRot":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        ctx.closePath();
+        break;
+      case "crossRot":
+        rad += QUARTER_PI;
+      /* falls through */
+      case "cross":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        break;
+      case "star":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        rad += QUARTER_PI;
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        break;
+      case "line":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        break;
+      case "dash":
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(rad) * radius3, y + Math.sin(rad) * radius3);
+        break;
+    }
+    ctx.fill();
+  }
+  function calculateLabelSize(ctx, lines, fonts, strokeWidth) {
+    ctx.save();
+    const count = lines.length;
+    let width = 0;
+    let height = strokeWidth;
+    for (let i = 0; i < count; i++) {
+      const font = fonts[Math.min(i, fonts.length - 1)];
+      ctx.font = font.string;
+      const text = lines[i];
+      width = Math.max(width, ctx.measureText(text).width + strokeWidth);
+      height += font.lineHeight;
+    }
+    ctx.restore();
+    return { width, height };
+  }
+  function applyLabelDecoration(ctx, { x, y }, labels, fonts) {
+    ctx.beginPath();
+    let lhs = 0;
+    labels.forEach(function(l, i) {
+      const f = fonts[Math.min(i, fonts.length - 1)];
+      const lh = f.lineHeight;
+      ctx.font = f.string;
+      ctx.strokeText(l, x, y + lh / 2 + lhs);
+      lhs += lh;
+    });
+    ctx.stroke();
+  }
+  function applyLabelContent(ctx, { x, y }, labels, { fonts, colors: colors2 }) {
+    let lhs = 0;
+    labels.forEach(function(l, i) {
+      const c = colors2[Math.min(i, colors2.length - 1)];
+      const f = fonts[Math.min(i, fonts.length - 1)];
+      const lh = f.lineHeight;
+      ctx.beginPath();
+      ctx.font = f.string;
+      ctx.fillStyle = c;
+      ctx.fillText(l, x, y + lh / 2 + lhs);
+      lhs += lh;
+      ctx.fill();
+    });
+  }
+  function getOpacity(value, elementValue) {
+    const opacity = isNumber(value) ? value : elementValue;
+    return isNumber(opacity) ? clamp(opacity, 0, 1) : 1;
+  }
+  var limitedLineScale = {
+    xScaleID: { min: "xMin", max: "xMax", start: "left", end: "right", startProp: "x", endProp: "x2" },
+    yScaleID: { min: "yMin", max: "yMax", start: "bottom", end: "top", startProp: "y", endProp: "y2" }
+  };
   function scaleValue(scale, value, fallback) {
     value = typeof value === "number" ? value : scale.parse(value);
     return isNumberFinite(value) ? scale.getPixelForValue(value) : fallback;
@@ -13633,18 +13735,43 @@ var gsmViz = (() => {
         options.radius = radius3;
       }
       const size = radius3 * 2;
+      const adjustCenterX = box.centerX + options.xAdjust;
+      const adjustCenterY = box.centerY + options.yAdjust;
       return {
-        x: box.x + options.xAdjust,
-        y: box.y + options.yAdjust,
-        x2: box.x + size + options.xAdjust,
-        y2: box.y + size + options.yAdjust,
-        centerX: box.centerX + options.xAdjust,
-        centerY: box.centerY + options.yAdjust,
+        x: adjustCenterX - radius3,
+        y: adjustCenterY - radius3,
+        x2: adjustCenterX + radius3,
+        y2: adjustCenterY + radius3,
+        centerX: adjustCenterX,
+        centerY: adjustCenterY,
         width: size,
-        height: size
+        height: size,
+        radius: radius3
       };
     }
     return getChartCircle(chart, options);
+  }
+  function resolveLineProperties(chart, options) {
+    const { scales: scales2, chartArea } = chart;
+    const scale = scales2[options.scaleID];
+    const area = { x: chartArea.left, y: chartArea.top, x2: chartArea.right, y2: chartArea.bottom };
+    if (scale) {
+      resolveFullLineProperties(scale, area, options);
+    } else {
+      resolveLimitedLineProperties(scales2, area, options);
+    }
+    return area;
+  }
+  function resolveBoxAndLabelProperties(chart, options, centerBased) {
+    const properties = resolveBoxProperties(chart, options);
+    properties.initProperties = initAnimationProperties(chart, properties, options, centerBased);
+    properties.elements = [{
+      type: "label",
+      optionScope: "label",
+      properties: resolveLabelElementProperties$1(chart, properties, options),
+      initProperties: properties.initProperties
+    }];
+    return properties;
   }
   function getChartCircle(chart, options) {
     const point = getChartPoint(chart, options);
@@ -13656,6 +13783,7 @@ var gsmViz = (() => {
       y2: point.y + options.radius + options.yAdjust,
       centerX: point.x + options.xAdjust,
       centerY: point.y + options.yAdjust,
+      radius: options.radius,
       width: size,
       height: size
     };
@@ -13665,6 +13793,75 @@ var gsmViz = (() => {
     return {
       start: Math.min(result.start, result.end),
       end: Math.max(result.start, result.end)
+    };
+  }
+  function resolveFullLineProperties(scale, area, options) {
+    const min3 = scaleValue(scale, options.value, NaN);
+    const max3 = scaleValue(scale, options.endValue, min3);
+    if (scale.isHorizontal()) {
+      area.x = min3;
+      area.x2 = max3;
+    } else {
+      area.y = min3;
+      area.y2 = max3;
+    }
+  }
+  function resolveLimitedLineProperties(scales2, area, options) {
+    for (const scaleId of Object.keys(limitedLineScale)) {
+      const scale = scales2[retrieveScaleID(scales2, options, scaleId)];
+      if (scale) {
+        const { min: min3, max: max3, start: start2, end, startProp, endProp } = limitedLineScale[scaleId];
+        const dim = getDimensionByScale(scale, { min: options[min3], max: options[max3], start: scale[start2], end: scale[end] });
+        area[startProp] = dim.start;
+        area[endProp] = dim.end;
+      }
+    }
+  }
+  function calculateX({ properties, options }, labelSize, position, padding) {
+    const { x: start2, x2: end, width: size } = properties;
+    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
+      position: position.x,
+      padding: { start: padding.left, end: padding.right },
+      adjust: options.label.xAdjust,
+      size: labelSize.width
+    });
+  }
+  function calculateY({ properties, options }, labelSize, position, padding) {
+    const { y: start2, y2: end, height: size } = properties;
+    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
+      position: position.y,
+      padding: { start: padding.top, end: padding.bottom },
+      adjust: options.label.yAdjust,
+      size: labelSize.height
+    });
+  }
+  function calculatePosition$1(boxOpts, labelOpts) {
+    const { start: start2, end, borderWidth: borderWidth3 } = boxOpts;
+    const { position, padding: { start: padStart, end: padEnd }, adjust } = labelOpts;
+    const availableSize = end - borderWidth3 - start2 - padStart - padEnd - labelOpts.size;
+    return start2 + borderWidth3 / 2 + adjust + getRelativePosition2(availableSize, position);
+  }
+  function resolveLabelElementProperties$1(chart, properties, options) {
+    const label = options.label;
+    label.backgroundColor = "transparent";
+    label.callout.display = false;
+    const position = toPosition(label.position);
+    const padding = toPadding(label.padding);
+    const labelSize = measureLabelSize2(chart.ctx, label);
+    const x = calculateX({ properties, options }, labelSize, position, padding);
+    const y = calculateY({ properties, options }, labelSize, position, padding);
+    const width = labelSize.width + padding.width;
+    const height = labelSize.height + padding.height;
+    return {
+      x,
+      y,
+      x2: x + width,
+      y2: y + height,
+      width,
+      height,
+      centerX: x + width / 2,
+      centerY: y + height / 2,
+      rotation: label.rotation
     };
   }
   function rotated(point, center, angle) {
@@ -13677,11 +13874,108 @@ var gsmViz = (() => {
       y: cy + sin * (point.x - cx) + cos * (point.y - cy)
     };
   }
+  var moveHooks = ["enter", "leave"];
+  var eventHooks = moveHooks.concat("click");
+  function updateListeners(chart, state, options) {
+    state.listened = loadHooks(options, eventHooks, state.listeners);
+    state.moveListened = false;
+    state._getElements = getElements;
+    moveHooks.forEach((hook) => {
+      if (isFunction(options[hook])) {
+        state.moveListened = true;
+      }
+    });
+    if (!state.listened || !state.moveListened) {
+      state.annotations.forEach((scope) => {
+        if (!state.listened && isFunction(scope.click)) {
+          state.listened = true;
+        }
+        if (!state.moveListened) {
+          moveHooks.forEach((hook) => {
+            if (isFunction(scope[hook])) {
+              state.listened = true;
+              state.moveListened = true;
+            }
+          });
+        }
+      });
+    }
+  }
+  function handleEvent(state, event, options) {
+    if (state.listened) {
+      switch (event.type) {
+        case "mousemove":
+        case "mouseout":
+          return handleMoveEvents(state, event, options);
+        case "click":
+          return handleClickEvents(state, event, options);
+      }
+    }
+  }
+  function handleMoveEvents(state, event, options) {
+    if (!state.moveListened) {
+      return;
+    }
+    let elements2;
+    if (event.type === "mousemove") {
+      elements2 = getElements(state, event, options.interaction);
+    } else {
+      elements2 = [];
+    }
+    const previous = state.hovered;
+    state.hovered = elements2;
+    const context = { state, event };
+    let changed = dispatchMoveEvents(context, "leave", previous, elements2);
+    return dispatchMoveEvents(context, "enter", elements2, previous) || changed;
+  }
+  function dispatchMoveEvents({ state, event }, hook, elements2, checkElements) {
+    let changed;
+    for (const element of elements2) {
+      if (checkElements.indexOf(element) < 0) {
+        changed = dispatchEvent(element.options[hook] || state.listeners[hook], element, event) || changed;
+      }
+    }
+    return changed;
+  }
+  function handleClickEvents(state, event, options) {
+    const listeners = state.listeners;
+    const elements2 = getElements(state, event, options.interaction);
+    let changed;
+    for (const element of elements2) {
+      changed = dispatchEvent(element.options.click || listeners.click, element, event) || changed;
+    }
+    return changed;
+  }
+  function dispatchEvent(handler, element, event) {
+    return callback(handler, [element.$context, event]) === true;
+  }
+  var elementHooks = ["afterDraw", "beforeDraw"];
+  function updateHooks(chart, state, options) {
+    const visibleElements = state.visibleElements;
+    state.hooked = loadHooks(options, elementHooks, state.hooks);
+    if (!state.hooked) {
+      visibleElements.forEach((scope) => {
+        if (!state.hooked) {
+          elementHooks.forEach((hook) => {
+            if (isFunction(scope.options[hook])) {
+              state.hooked = true;
+            }
+          });
+        }
+      });
+    }
+  }
+  function invokeHook(state, element, hook) {
+    if (state.hooked) {
+      const callbackHook = element.options[hook] || state.hooks[hook];
+      return callback(callbackHook, [element.$context]);
+    }
+  }
   function adjustScaleRange(chart, scale, annotations5) {
     const range = getScaleLimits(chart.scales, scale, annotations5);
     let changed = changeScaleLimit(scale, range, "min", "suggestedMin");
     changed = changeScaleLimit(scale, range, "max", "suggestedMax") || changed;
-    if (changed && typeof scale.handleTickRangeOptions === "function") {
+    if (changed && isFunction(scale.handleTickRangeOptions)) {
       scale.handleTickRangeOptions();
     }
   }
@@ -13765,15 +14059,7 @@ var gsmViz = (() => {
       return this.elements && this.elements[0];
     }
     resolveElementProperties(chart, options) {
-      const properties = resolveBoxProperties(chart, options);
-      const { x, y } = properties;
-      properties.elements = [{
-        type: "label",
-        optionScope: "label",
-        properties: resolveLabelElementProperties$1(chart, properties, options)
-      }];
-      properties.initProperties = { x, y };
-      return properties;
+      return resolveBoxAndLabelProperties(chart, options);
     }
   };
   BoxAnnotation.id = "boxAnnotation";
@@ -13788,6 +14074,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     label: {
       backgroundColor: "transparent",
       borderWidth: 0,
@@ -13806,6 +14093,7 @@ var gsmViz = (() => {
         weight: "bold"
       },
       height: void 0,
+      opacity: void 0,
       padding: 6,
       position: "center",
       rotation: void 0,
@@ -13838,504 +14126,6 @@ var gsmViz = (() => {
       _fallback: true
     }
   };
-  function calculateX({ properties, options }, labelSize, position, padding) {
-    const { x: start2, x2: end, width: size } = properties;
-    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
-      position: position.x,
-      padding: { start: padding.left, end: padding.right },
-      adjust: options.label.xAdjust,
-      size: labelSize.width
-    });
-  }
-  function calculateY({ properties, options }, labelSize, position, padding) {
-    const { y: start2, y2: end, height: size } = properties;
-    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
-      position: position.y,
-      padding: { start: padding.top, end: padding.bottom },
-      adjust: options.label.yAdjust,
-      size: labelSize.height
-    });
-  }
-  function calculatePosition$1(boxOpts, labelOpts) {
-    const { start: start2, end, borderWidth: borderWidth3 } = boxOpts;
-    const { position, padding: { start: padStart, end: padEnd }, adjust } = labelOpts;
-    const availableSize = end - borderWidth3 - start2 - padStart - padEnd - labelOpts.size;
-    return start2 + borderWidth3 / 2 + adjust + getRelativePosition2(availableSize, position);
-  }
-  function resolveLabelElementProperties$1(chart, properties, options) {
-    const label = options.label;
-    label.backgroundColor = "transparent";
-    label.callout.display = false;
-    const position = toPosition(label.position);
-    const padding = toPadding(label.padding);
-    const labelSize = measureLabelSize2(chart.ctx, label);
-    const x = calculateX({ properties, options }, labelSize, position, padding);
-    const y = calculateY({ properties, options }, labelSize, position, padding);
-    const width = labelSize.width + padding.width;
-    const height = labelSize.height + padding.height;
-    return {
-      x,
-      y,
-      x2: x + width,
-      y2: y + height,
-      width,
-      height,
-      centerX: x + width / 2,
-      centerY: y + height / 2,
-      rotation: label.rotation
-    };
-  }
-  var pointInLine = (p1, p2, t) => ({ x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) });
-  var interpolateX = (y, p1, p2) => pointInLine(p1, p2, Math.abs((y - p1.y) / (p2.y - p1.y))).x;
-  var interpolateY = (x, p1, p2) => pointInLine(p1, p2, Math.abs((x - p1.x) / (p2.x - p1.x))).y;
-  var sqr = (v) => v * v;
-  var rangeLimit = (mouseX, mouseY, { x, y, x2, y2 }, axis) => axis === "y" ? { start: Math.min(y, y2), end: Math.max(y, y2), value: mouseY } : { start: Math.min(x, x2), end: Math.max(x, x2), value: mouseX };
-  var LineAnnotation = class extends Element {
-    inRange(mouseX, mouseY, axis, useFinalPosition) {
-      const hBorderWidth = this.options.borderWidth / 2;
-      if (axis !== "x" && axis !== "y") {
-        const epsilon = sqr(hBorderWidth);
-        const point = { mouseX, mouseY };
-        return intersects(this, point, epsilon, useFinalPosition) || isOnLabel(this, point, useFinalPosition);
-      }
-      const limit = rangeLimit(mouseX, mouseY, this.getProps(["x", "y", "x2", "y2"], useFinalPosition), axis);
-      return limit.value >= limit.start - hBorderWidth && limit.value <= limit.end + hBorderWidth || isOnLabel(this, { mouseX, mouseY }, useFinalPosition, axis);
-    }
-    getCenterPoint(useFinalPosition) {
-      return getElementCenterPoint(this, useFinalPosition);
-    }
-    draw(ctx) {
-      const { x, y, x2, y2, options } = this;
-      ctx.save();
-      if (!setBorderStyle(ctx, options)) {
-        return ctx.restore();
-      }
-      setShadowStyle(ctx, options);
-      const angle = Math.atan2(y2 - y, x2 - x);
-      const length = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
-      const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(this);
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(0 + startAdjust, 0);
-      ctx.lineTo(length - endAdjust, 0);
-      ctx.shadowColor = options.borderShadowColor;
-      ctx.stroke();
-      drawArrowHead(ctx, 0, startAdjust, startOpts);
-      drawArrowHead(ctx, length, -endAdjust, endOpts);
-      ctx.restore();
-    }
-    get label() {
-      return this.elements && this.elements[0];
-    }
-    resolveElementProperties(chart, options) {
-      const { scales: scales2, chartArea } = chart;
-      const scale = scales2[options.scaleID];
-      const area = { x: chartArea.left, y: chartArea.top, x2: chartArea.right, y2: chartArea.bottom };
-      let min3, max3;
-      if (scale) {
-        min3 = scaleValue(scale, options.value, NaN);
-        max3 = scaleValue(scale, options.endValue, min3);
-        if (scale.isHorizontal()) {
-          area.x = min3;
-          area.x2 = max3;
-        } else {
-          area.y = min3;
-          area.y2 = max3;
-        }
-      } else {
-        const xScale = scales2[retrieveScaleID(scales2, options, "xScaleID")];
-        const yScale = scales2[retrieveScaleID(scales2, options, "yScaleID")];
-        if (xScale) {
-          applyScaleValueToDimension(area, xScale, { min: options.xMin, max: options.xMax, start: xScale.left, end: xScale.right, startProp: "x", endProp: "x2" });
-        }
-        if (yScale) {
-          applyScaleValueToDimension(area, yScale, { min: options.yMin, max: options.yMax, start: yScale.bottom, end: yScale.top, startProp: "y", endProp: "y2" });
-        }
-      }
-      const { x, y, x2, y2 } = area;
-      const inside = isLineInArea(area, chart.chartArea);
-      const properties = inside ? limitLineToArea({ x, y }, { x: x2, y: y2 }, chart.chartArea) : { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
-      properties.centerX = (x2 + x) / 2;
-      properties.centerY = (y2 + y) / 2;
-      const labelProperties = resolveLabelElementProperties(chart, properties, options.label);
-      labelProperties._visible = inside;
-      properties.elements = [{
-        type: "label",
-        optionScope: "label",
-        properties: labelProperties
-      }];
-      return properties;
-    }
-  };
-  LineAnnotation.id = "lineAnnotation";
-  var arrowHeadsDefaults = {
-    backgroundColor: void 0,
-    backgroundShadowColor: void 0,
-    borderColor: void 0,
-    borderDash: void 0,
-    borderDashOffset: void 0,
-    borderShadowColor: void 0,
-    borderWidth: void 0,
-    display: void 0,
-    fill: void 0,
-    length: void 0,
-    shadowBlur: void 0,
-    shadowOffsetX: void 0,
-    shadowOffsetY: void 0,
-    width: void 0
-  };
-  LineAnnotation.defaults = {
-    adjustScaleRange: true,
-    arrowHeads: {
-      display: false,
-      end: Object.assign({}, arrowHeadsDefaults),
-      fill: false,
-      length: 12,
-      start: Object.assign({}, arrowHeadsDefaults),
-      width: 6
-    },
-    borderDash: [],
-    borderDashOffset: 0,
-    borderShadowColor: "transparent",
-    borderWidth: 2,
-    display: true,
-    endValue: void 0,
-    label: {
-      backgroundColor: "rgba(0,0,0,0.8)",
-      backgroundShadowColor: "transparent",
-      borderCapStyle: "butt",
-      borderColor: "black",
-      borderDash: [],
-      borderDashOffset: 0,
-      borderJoinStyle: "miter",
-      borderRadius: 6,
-      borderShadowColor: "transparent",
-      borderWidth: 0,
-      callout: {
-        display: false
-      },
-      color: "#fff",
-      content: null,
-      display: false,
-      drawTime: void 0,
-      font: {
-        family: void 0,
-        lineHeight: void 0,
-        size: void 0,
-        style: void 0,
-        weight: "bold"
-      },
-      height: void 0,
-      padding: 6,
-      position: "center",
-      rotation: 0,
-      shadowBlur: 0,
-      shadowOffsetX: 0,
-      shadowOffsetY: 0,
-      textAlign: "center",
-      textStrokeColor: void 0,
-      textStrokeWidth: 0,
-      width: void 0,
-      xAdjust: 0,
-      yAdjust: 0,
-      z: void 0
-    },
-    scaleID: void 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    value: void 0,
-    xMax: void 0,
-    xMin: void 0,
-    xScaleID: void 0,
-    yMax: void 0,
-    yMin: void 0,
-    yScaleID: void 0,
-    z: 0
-  };
-  LineAnnotation.descriptors = {
-    arrowHeads: {
-      start: {
-        _fallback: true
-      },
-      end: {
-        _fallback: true
-      },
-      _fallback: true
-    }
-  };
-  LineAnnotation.defaultRoutes = {
-    borderColor: "color"
-  };
-  function isLineInArea({ x, y, x2, y2 }, { top, right, bottom, left }) {
-    return !(x < left && x2 < left || x > right && x2 > right || y < top && y2 < top || y > bottom && y2 > bottom);
-  }
-  function limitPointToArea({ x, y }, p2, { top, right, bottom, left }) {
-    if (x < left) {
-      y = interpolateY(left, { x, y }, p2);
-      x = left;
-    }
-    if (x > right) {
-      y = interpolateY(right, { x, y }, p2);
-      x = right;
-    }
-    if (y < top) {
-      x = interpolateX(top, { x, y }, p2);
-      y = top;
-    }
-    if (y > bottom) {
-      x = interpolateX(bottom, { x, y }, p2);
-      y = bottom;
-    }
-    return { x, y };
-  }
-  function limitLineToArea(p1, p2, area) {
-    const { x, y } = limitPointToArea(p1, p2, area);
-    const { x: x2, y: y2 } = limitPointToArea(p2, p1, area);
-    return { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
-  }
-  function intersects(element, { mouseX, mouseY }, epsilon = EPSILON2, useFinalPosition) {
-    const { x: x1, y: y1, x2, y2 } = element.getProps(["x", "y", "x2", "y2"], useFinalPosition);
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const lenSq = sqr(dx) + sqr(dy);
-    const t = lenSq === 0 ? -1 : ((mouseX - x1) * dx + (mouseY - y1) * dy) / lenSq;
-    let xx, yy;
-    if (t < 0) {
-      xx = x1;
-      yy = y1;
-    } else if (t > 1) {
-      xx = x2;
-      yy = y2;
-    } else {
-      xx = x1 + t * dx;
-      yy = y1 + t * dy;
-    }
-    return sqr(mouseX - xx) + sqr(mouseY - yy) <= epsilon;
-  }
-  function isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis) {
-    const label = element.label;
-    return label.options.display && label.inRange(mouseX, mouseY, axis, useFinalPosition);
-  }
-  function applyScaleValueToDimension(area, scale, options) {
-    const dim = getDimensionByScale(scale, options);
-    area[options.startProp] = dim.start;
-    area[options.endProp] = dim.end;
-  }
-  function resolveLabelElementProperties(chart, properties, options) {
-    options.callout.display = false;
-    const borderWidth3 = options.borderWidth;
-    const padding = toPadding(options.padding);
-    const textSize = measureLabelSize2(chart.ctx, options);
-    const width = textSize.width + padding.width + borderWidth3;
-    const height = textSize.height + padding.height + borderWidth3;
-    return calculateLabelPosition(properties, options, { width, height, padding }, chart.chartArea);
-  }
-  function calculateAutoRotation(properties) {
-    const { x, y, x2, y2 } = properties;
-    const rotation = Math.atan2(y2 - y, x2 - x);
-    return rotation > PI / 2 ? rotation - PI : rotation < PI / -2 ? rotation + PI : rotation;
-  }
-  function calculateLabelPosition(properties, label, sizes, chartArea) {
-    const { width, height, padding } = sizes;
-    const { xAdjust, yAdjust } = label;
-    const p1 = { x: properties.x, y: properties.y };
-    const p2 = { x: properties.x2, y: properties.y2 };
-    const rotation = label.rotation === "auto" ? calculateAutoRotation(properties) : toRadians(label.rotation);
-    const size = rotatedSize(width, height, rotation);
-    const t = calculateT(properties, label, { labelSize: size, padding }, chartArea);
-    const pt = pointInLine(p1, p2, t);
-    const xCoordinateSizes = { size: size.w, min: chartArea.left, max: chartArea.right, padding: padding.left };
-    const yCoordinateSizes = { size: size.h, min: chartArea.top, max: chartArea.bottom, padding: padding.top };
-    const centerX = adjustLabelCoordinate(pt.x, xCoordinateSizes) + xAdjust;
-    const centerY = adjustLabelCoordinate(pt.y, yCoordinateSizes) + yAdjust;
-    return {
-      x: centerX - width / 2,
-      y: centerY - height / 2,
-      x2: centerX + width / 2,
-      y2: centerY + height / 2,
-      centerX,
-      centerY,
-      width,
-      height,
-      rotation: toDegrees(rotation)
-    };
-  }
-  function rotatedSize(width, height, rotation) {
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    return {
-      w: Math.abs(width * cos) + Math.abs(height * sin),
-      h: Math.abs(width * sin) + Math.abs(height * cos)
-    };
-  }
-  function calculateT(properties, label, sizes, chartArea) {
-    let t;
-    const space = spaceAround(properties, chartArea);
-    if (label.position === "start") {
-      t = calculateTAdjust({ w: properties.x2 - properties.x, h: properties.y2 - properties.y }, sizes, label, space);
-    } else if (label.position === "end") {
-      t = 1 - calculateTAdjust({ w: properties.x - properties.x2, h: properties.y - properties.y2 }, sizes, label, space);
-    } else {
-      t = getRelativePosition2(1, label.position);
-    }
-    return t;
-  }
-  function calculateTAdjust(lineSize, sizes, label, space) {
-    const { labelSize, padding } = sizes;
-    const lineW = lineSize.w * space.dx;
-    const lineH = lineSize.h * space.dy;
-    const x = lineW > 0 && (labelSize.w / 2 + padding.left - space.x) / lineW;
-    const y = lineH > 0 && (labelSize.h / 2 + padding.top - space.y) / lineH;
-    return clamp(Math.max(x, y), 0, 0.25);
-  }
-  function spaceAround(properties, chartArea) {
-    const { x, x2, y, y2 } = properties;
-    const t = Math.min(y, y2) - chartArea.top;
-    const l = Math.min(x, x2) - chartArea.left;
-    const b = chartArea.bottom - Math.max(y, y2);
-    const r = chartArea.right - Math.max(x, x2);
-    return {
-      x: Math.min(l, r),
-      y: Math.min(t, b),
-      dx: l <= r ? 1 : -1,
-      dy: t <= b ? 1 : -1
-    };
-  }
-  function adjustLabelCoordinate(coordinate, labelSizes) {
-    const { size, min: min3, max: max3, padding } = labelSizes;
-    const halfSize = size / 2;
-    if (size > max3 - min3) {
-      return (max3 + min3) / 2;
-    }
-    if (min3 >= coordinate - padding - halfSize) {
-      coordinate = min3 + padding + halfSize;
-    }
-    if (max3 <= coordinate + padding + halfSize) {
-      coordinate = max3 - padding - halfSize;
-    }
-    return coordinate;
-  }
-  function getArrowHeads(line) {
-    const options = line.options;
-    const arrowStartOpts = options.arrowHeads && options.arrowHeads.start;
-    const arrowEndOpts = options.arrowHeads && options.arrowHeads.end;
-    return {
-      startOpts: arrowStartOpts,
-      endOpts: arrowEndOpts,
-      startAdjust: getLineAdjust(line, arrowStartOpts),
-      endAdjust: getLineAdjust(line, arrowEndOpts)
-    };
-  }
-  function getLineAdjust(line, arrowOpts) {
-    if (!arrowOpts || !arrowOpts.display) {
-      return 0;
-    }
-    const { length, width } = arrowOpts;
-    const adjust = line.options.borderWidth / 2;
-    const p1 = { x: length, y: width + adjust };
-    const p2 = { x: 0, y: adjust };
-    return Math.abs(interpolateX(0, p1, p2));
-  }
-  function drawArrowHead(ctx, offset, adjust, arrowOpts) {
-    if (!arrowOpts || !arrowOpts.display) {
-      return;
-    }
-    const { length, width, fill: fill2, backgroundColor: backgroundColor4, borderColor: borderColor4 } = arrowOpts;
-    const arrowOffsetX = Math.abs(offset - length) + adjust;
-    ctx.beginPath();
-    setShadowStyle(ctx, arrowOpts);
-    setBorderStyle(ctx, arrowOpts);
-    ctx.moveTo(arrowOffsetX, -width);
-    ctx.lineTo(offset + adjust, 0);
-    ctx.lineTo(arrowOffsetX, width);
-    if (fill2 === true) {
-      ctx.fillStyle = backgroundColor4 || borderColor4;
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowColor = "transparent";
-    } else {
-      ctx.shadowColor = arrowOpts.borderShadowColor;
-    }
-    ctx.stroke();
-  }
-  var EllipseAnnotation = class extends Element {
-    inRange(mouseX, mouseY, axis, useFinalPosition) {
-      const rotation = this.options.rotation;
-      const borderWidth3 = this.options.borderWidth;
-      if (axis !== "x" && axis !== "y") {
-        return pointInEllipse({ x: mouseX, y: mouseY }, this.getProps(["width", "height", "centerX", "centerY"], useFinalPosition), rotation, borderWidth3);
-      }
-      const { x, y, x2, y2 } = this.getProps(["x", "y", "x2", "y2"], useFinalPosition);
-      const hBorderWidth = borderWidth3 / 2;
-      const limit = axis === "y" ? { start: y, end: y2 } : { start: x, end: x2 };
-      const rotatedPoint = rotated({ x: mouseX, y: mouseY }, this.getCenterPoint(useFinalPosition), toRadians(-rotation));
-      return rotatedPoint[axis] >= limit.start - hBorderWidth - EPSILON2 && rotatedPoint[axis] <= limit.end + hBorderWidth + EPSILON2;
-    }
-    getCenterPoint(useFinalPosition) {
-      return getElementCenterPoint(this, useFinalPosition);
-    }
-    draw(ctx) {
-      const { width, height, centerX, centerY, options } = this;
-      ctx.save();
-      translate(ctx, this.getCenterPoint(), options.rotation);
-      setShadowStyle(ctx, this.options);
-      ctx.beginPath();
-      ctx.fillStyle = options.backgroundColor;
-      const stroke = setBorderStyle(ctx, options);
-      ctx.ellipse(centerX, centerY, height / 2, width / 2, PI / 2, 0, 2 * PI);
-      ctx.fill();
-      if (stroke) {
-        ctx.shadowColor = options.borderShadowColor;
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-    resolveElementProperties(chart, options) {
-      return resolveBoxProperties(chart, options);
-    }
-  };
-  EllipseAnnotation.id = "ellipseAnnotation";
-  EllipseAnnotation.defaults = {
-    adjustScaleRange: true,
-    backgroundShadowColor: "transparent",
-    borderDash: [],
-    borderDashOffset: 0,
-    borderShadowColor: "transparent",
-    borderWidth: 1,
-    display: true,
-    rotation: 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    xMax: void 0,
-    xMin: void 0,
-    xScaleID: void 0,
-    yMax: void 0,
-    yMin: void 0,
-    yScaleID: void 0,
-    z: 0
-  };
-  EllipseAnnotation.defaultRoutes = {
-    borderColor: "color",
-    backgroundColor: "color"
-  };
-  function pointInEllipse(p, ellipse, rotation, borderWidth3) {
-    const { width, height, centerX, centerY } = ellipse;
-    const xRadius = width / 2;
-    const yRadius = height / 2;
-    if (xRadius <= 0 || yRadius <= 0) {
-      return false;
-    }
-    const angle = toRadians(rotation || 0);
-    const hBorderWidth = borderWidth3 / 2 || 0;
-    const cosAngle = Math.cos(angle);
-    const sinAngle = Math.sin(angle);
-    const a = Math.pow(cosAngle * (p.x - centerX) + sinAngle * (p.y - centerY), 2);
-    const b = Math.pow(sinAngle * (p.x - centerX) - cosAngle * (p.y - centerY), 2);
-    return a / Math.pow(xRadius + hBorderWidth, 2) + b / Math.pow(yRadius + hBorderWidth, 2) <= 1.0001;
-  }
   var positions2 = ["left", "bottom", "top", "right"];
   var LabelAnnotation = class extends Element {
     inRange(mouseX, mouseY, axis, useFinalPosition) {
@@ -14370,6 +14160,7 @@ var gsmViz = (() => {
       const labelSize = measureLabelSize2(chart.ctx, options);
       const boxSize = measureRect(point, labelSize, options, padding);
       return {
+        initProperties: initAnimationProperties(chart, boxSize, options),
         pointX: point.x,
         pointY: point.y,
         ...boxSize,
@@ -14413,6 +14204,8 @@ var gsmViz = (() => {
       weight: void 0
     },
     height: void 0,
+    init: void 0,
+    opacity: void 0,
     padding: 6,
     position: "center",
     rotation: 0,
@@ -14441,7 +14234,7 @@ var gsmViz = (() => {
   function measureRect(point, size, options, padding) {
     const width = size.width + padding.width + options.borderWidth;
     const height = size.height + padding.height + options.borderWidth;
-    const position = toPosition(options.position);
+    const position = toPosition(options.position, "center");
     const x = calculatePosition(point.x, width, options.xAdjust, position.x);
     const y = calculatePosition(point.y, height, options.yAdjust, position.y);
     return {
@@ -14579,6 +14372,512 @@ var gsmViz = (() => {
     }
     return element.inRange(x, y);
   }
+  var pointInLine = (p1, p2, t) => ({ x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) });
+  var interpolateX = (y, p1, p2) => pointInLine(p1, p2, Math.abs((y - p1.y) / (p2.y - p1.y))).x;
+  var interpolateY = (x, p1, p2) => pointInLine(p1, p2, Math.abs((x - p1.x) / (p2.x - p1.x))).y;
+  var sqr = (v) => v * v;
+  var rangeLimit = (mouseX, mouseY, { x, y, x2, y2 }, axis) => axis === "y" ? { start: Math.min(y, y2), end: Math.max(y, y2), value: mouseY } : { start: Math.min(x, x2), end: Math.max(x, x2), value: mouseX };
+  var coordInCurve = (start2, cp, end, t) => (1 - t) * (1 - t) * start2 + 2 * (1 - t) * t * cp + t * t * end;
+  var pointInCurve = (start2, cp, end, t) => ({ x: coordInCurve(start2.x, cp.x, end.x, t), y: coordInCurve(start2.y, cp.y, end.y, t) });
+  var coordAngleInCurve = (start2, cp, end, t) => 2 * (1 - t) * (cp - start2) + 2 * t * (end - cp);
+  var angleInCurve = (start2, cp, end, t) => -Math.atan2(coordAngleInCurve(start2.x, cp.x, end.x, t), coordAngleInCurve(start2.y, cp.y, end.y, t)) + 0.5 * PI;
+  var LineAnnotation = class extends Element {
+    inRange(mouseX, mouseY, axis, useFinalPosition) {
+      const hBorderWidth = this.options.borderWidth / 2;
+      if (axis !== "x" && axis !== "y") {
+        const point = { mouseX, mouseY };
+        const { path, ctx } = this;
+        if (path) {
+          setBorderStyle(ctx, this.options);
+          const { chart } = this.$context;
+          const mx = mouseX * chart.currentDevicePixelRatio;
+          const my = mouseY * chart.currentDevicePixelRatio;
+          const result = ctx.isPointInStroke(path, mx, my) || isOnLabel(this, point, useFinalPosition);
+          ctx.restore();
+          return result;
+        }
+        const epsilon = sqr(hBorderWidth);
+        return intersects(this, point, epsilon, useFinalPosition) || isOnLabel(this, point, useFinalPosition);
+      }
+      return inAxisRange(this, { mouseX, mouseY }, axis, { hBorderWidth, useFinalPosition });
+    }
+    getCenterPoint(useFinalPosition) {
+      return getElementCenterPoint(this, useFinalPosition);
+    }
+    draw(ctx) {
+      const { x, y, x2, y2, cp, options } = this;
+      ctx.save();
+      if (!setBorderStyle(ctx, options)) {
+        return ctx.restore();
+      }
+      setShadowStyle(ctx, options);
+      const length = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
+      if (options.curve && cp) {
+        drawCurve(ctx, this, cp, length);
+        return ctx.restore();
+      }
+      const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(this);
+      const angle = Math.atan2(y2 - y, x2 - x);
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0 + startAdjust, 0);
+      ctx.lineTo(length - endAdjust, 0);
+      ctx.shadowColor = options.borderShadowColor;
+      ctx.stroke();
+      drawArrowHead(ctx, 0, startAdjust, startOpts);
+      drawArrowHead(ctx, length, -endAdjust, endOpts);
+      ctx.restore();
+    }
+    get label() {
+      return this.elements && this.elements[0];
+    }
+    resolveElementProperties(chart, options) {
+      const area = resolveLineProperties(chart, options);
+      const { x, y, x2, y2 } = area;
+      const inside = isLineInArea(area, chart.chartArea);
+      const properties = inside ? limitLineToArea({ x, y }, { x: x2, y: y2 }, chart.chartArea) : { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
+      properties.centerX = (x2 + x) / 2;
+      properties.centerY = (y2 + y) / 2;
+      properties.initProperties = initAnimationProperties(chart, properties, options);
+      if (options.curve) {
+        const p1 = { x: properties.x, y: properties.y };
+        const p2 = { x: properties.x2, y: properties.y2 };
+        properties.cp = getControlPoint(properties, options, distanceBetweenPoints(p1, p2));
+      }
+      const labelProperties = resolveLabelElementProperties(chart, properties, options.label);
+      labelProperties._visible = inside;
+      properties.elements = [{
+        type: "label",
+        optionScope: "label",
+        properties: labelProperties,
+        initProperties: properties.initProperties
+      }];
+      return properties;
+    }
+  };
+  LineAnnotation.id = "lineAnnotation";
+  var arrowHeadsDefaults = {
+    backgroundColor: void 0,
+    backgroundShadowColor: void 0,
+    borderColor: void 0,
+    borderDash: void 0,
+    borderDashOffset: void 0,
+    borderShadowColor: void 0,
+    borderWidth: void 0,
+    display: void 0,
+    fill: void 0,
+    length: void 0,
+    shadowBlur: void 0,
+    shadowOffsetX: void 0,
+    shadowOffsetY: void 0,
+    width: void 0
+  };
+  LineAnnotation.defaults = {
+    adjustScaleRange: true,
+    arrowHeads: {
+      display: false,
+      end: Object.assign({}, arrowHeadsDefaults),
+      fill: false,
+      length: 12,
+      start: Object.assign({}, arrowHeadsDefaults),
+      width: 6
+    },
+    borderDash: [],
+    borderDashOffset: 0,
+    borderShadowColor: "transparent",
+    borderWidth: 2,
+    curve: false,
+    controlPoint: {
+      y: "-50%"
+    },
+    display: true,
+    endValue: void 0,
+    init: void 0,
+    label: {
+      backgroundColor: "rgba(0,0,0,0.8)",
+      backgroundShadowColor: "transparent",
+      borderCapStyle: "butt",
+      borderColor: "black",
+      borderDash: [],
+      borderDashOffset: 0,
+      borderJoinStyle: "miter",
+      borderRadius: 6,
+      borderShadowColor: "transparent",
+      borderWidth: 0,
+      callout: Object.assign({}, LabelAnnotation.defaults.callout),
+      color: "#fff",
+      content: null,
+      display: false,
+      drawTime: void 0,
+      font: {
+        family: void 0,
+        lineHeight: void 0,
+        size: void 0,
+        style: void 0,
+        weight: "bold"
+      },
+      height: void 0,
+      opacity: void 0,
+      padding: 6,
+      position: "center",
+      rotation: 0,
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      textAlign: "center",
+      textStrokeColor: void 0,
+      textStrokeWidth: 0,
+      width: void 0,
+      xAdjust: 0,
+      yAdjust: 0,
+      z: void 0
+    },
+    scaleID: void 0,
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    value: void 0,
+    xMax: void 0,
+    xMin: void 0,
+    xScaleID: void 0,
+    yMax: void 0,
+    yMin: void 0,
+    yScaleID: void 0,
+    z: 0
+  };
+  LineAnnotation.descriptors = {
+    arrowHeads: {
+      start: {
+        _fallback: true
+      },
+      end: {
+        _fallback: true
+      },
+      _fallback: true
+    }
+  };
+  LineAnnotation.defaultRoutes = {
+    borderColor: "color"
+  };
+  function inAxisRange(element, { mouseX, mouseY }, axis, { hBorderWidth, useFinalPosition }) {
+    const limit = rangeLimit(mouseX, mouseY, element.getProps(["x", "y", "x2", "y2"], useFinalPosition), axis);
+    return limit.value >= limit.start - hBorderWidth && limit.value <= limit.end + hBorderWidth || isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis);
+  }
+  function isLineInArea({ x, y, x2, y2 }, { top, right, bottom, left }) {
+    return !(x < left && x2 < left || x > right && x2 > right || y < top && y2 < top || y > bottom && y2 > bottom);
+  }
+  function limitPointToArea({ x, y }, p2, { top, right, bottom, left }) {
+    if (x < left) {
+      y = interpolateY(left, { x, y }, p2);
+      x = left;
+    }
+    if (x > right) {
+      y = interpolateY(right, { x, y }, p2);
+      x = right;
+    }
+    if (y < top) {
+      x = interpolateX(top, { x, y }, p2);
+      y = top;
+    }
+    if (y > bottom) {
+      x = interpolateX(bottom, { x, y }, p2);
+      y = bottom;
+    }
+    return { x, y };
+  }
+  function limitLineToArea(p1, p2, area) {
+    const { x, y } = limitPointToArea(p1, p2, area);
+    const { x: x2, y: y2 } = limitPointToArea(p2, p1, area);
+    return { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
+  }
+  function intersects(element, { mouseX, mouseY }, epsilon = EPSILON2, useFinalPosition) {
+    const { x: x1, y: y1, x2, y2 } = element.getProps(["x", "y", "x2", "y2"], useFinalPosition);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lenSq = sqr(dx) + sqr(dy);
+    const t = lenSq === 0 ? -1 : ((mouseX - x1) * dx + (mouseY - y1) * dy) / lenSq;
+    let xx, yy;
+    if (t < 0) {
+      xx = x1;
+      yy = y1;
+    } else if (t > 1) {
+      xx = x2;
+      yy = y2;
+    } else {
+      xx = x1 + t * dx;
+      yy = y1 + t * dy;
+    }
+    return sqr(mouseX - xx) + sqr(mouseY - yy) <= epsilon;
+  }
+  function isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis) {
+    const label = element.label;
+    return label.options.display && label.inRange(mouseX, mouseY, axis, useFinalPosition);
+  }
+  function resolveLabelElementProperties(chart, properties, options) {
+    const borderWidth3 = options.borderWidth;
+    const padding = toPadding(options.padding);
+    const textSize = measureLabelSize2(chart.ctx, options);
+    const width = textSize.width + padding.width + borderWidth3;
+    const height = textSize.height + padding.height + borderWidth3;
+    return calculateLabelPosition(properties, options, { width, height, padding }, chart.chartArea);
+  }
+  function calculateAutoRotation(properties) {
+    const { x, y, x2, y2 } = properties;
+    const rotation = Math.atan2(y2 - y, x2 - x);
+    return rotation > PI / 2 ? rotation - PI : rotation < PI / -2 ? rotation + PI : rotation;
+  }
+  function calculateLabelPosition(properties, label, sizes, chartArea) {
+    const { width, height, padding } = sizes;
+    const { xAdjust, yAdjust } = label;
+    const p1 = { x: properties.x, y: properties.y };
+    const p2 = { x: properties.x2, y: properties.y2 };
+    const rotation = label.rotation === "auto" ? calculateAutoRotation(properties) : toRadians(label.rotation);
+    const size = rotatedSize(width, height, rotation);
+    const t = calculateT(properties, label, { labelSize: size, padding }, chartArea);
+    const pt = properties.cp ? pointInCurve(p1, properties.cp, p2, t) : pointInLine(p1, p2, t);
+    const xCoordinateSizes = { size: size.w, min: chartArea.left, max: chartArea.right, padding: padding.left };
+    const yCoordinateSizes = { size: size.h, min: chartArea.top, max: chartArea.bottom, padding: padding.top };
+    const centerX = adjustLabelCoordinate(pt.x, xCoordinateSizes) + xAdjust;
+    const centerY = adjustLabelCoordinate(pt.y, yCoordinateSizes) + yAdjust;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      x2: centerX + width / 2,
+      y2: centerY + height / 2,
+      centerX,
+      centerY,
+      pointX: pt.x,
+      pointY: pt.y,
+      width,
+      height,
+      rotation: toDegrees(rotation)
+    };
+  }
+  function rotatedSize(width, height, rotation) {
+    const cos = Math.cos(rotation);
+    const sin = Math.sin(rotation);
+    return {
+      w: Math.abs(width * cos) + Math.abs(height * sin),
+      h: Math.abs(width * sin) + Math.abs(height * cos)
+    };
+  }
+  function calculateT(properties, label, sizes, chartArea) {
+    let t;
+    const space = spaceAround(properties, chartArea);
+    if (label.position === "start") {
+      t = calculateTAdjust({ w: properties.x2 - properties.x, h: properties.y2 - properties.y }, sizes, label, space);
+    } else if (label.position === "end") {
+      t = 1 - calculateTAdjust({ w: properties.x - properties.x2, h: properties.y - properties.y2 }, sizes, label, space);
+    } else {
+      t = getRelativePosition2(1, label.position);
+    }
+    return t;
+  }
+  function calculateTAdjust(lineSize, sizes, label, space) {
+    const { labelSize, padding } = sizes;
+    const lineW = lineSize.w * space.dx;
+    const lineH = lineSize.h * space.dy;
+    const x = lineW > 0 && (labelSize.w / 2 + padding.left - space.x) / lineW;
+    const y = lineH > 0 && (labelSize.h / 2 + padding.top - space.y) / lineH;
+    return clamp(Math.max(x, y), 0, 0.25);
+  }
+  function spaceAround(properties, chartArea) {
+    const { x, x2, y, y2 } = properties;
+    const t = Math.min(y, y2) - chartArea.top;
+    const l = Math.min(x, x2) - chartArea.left;
+    const b = chartArea.bottom - Math.max(y, y2);
+    const r = chartArea.right - Math.max(x, x2);
+    return {
+      x: Math.min(l, r),
+      y: Math.min(t, b),
+      dx: l <= r ? 1 : -1,
+      dy: t <= b ? 1 : -1
+    };
+  }
+  function adjustLabelCoordinate(coordinate, labelSizes) {
+    const { size, min: min3, max: max3, padding } = labelSizes;
+    const halfSize = size / 2;
+    if (size > max3 - min3) {
+      return (max3 + min3) / 2;
+    }
+    if (min3 >= coordinate - padding - halfSize) {
+      coordinate = min3 + padding + halfSize;
+    }
+    if (max3 <= coordinate + padding + halfSize) {
+      coordinate = max3 - padding - halfSize;
+    }
+    return coordinate;
+  }
+  function getArrowHeads(line) {
+    const options = line.options;
+    const arrowStartOpts = options.arrowHeads && options.arrowHeads.start;
+    const arrowEndOpts = options.arrowHeads && options.arrowHeads.end;
+    return {
+      startOpts: arrowStartOpts,
+      endOpts: arrowEndOpts,
+      startAdjust: getLineAdjust(line, arrowStartOpts),
+      endAdjust: getLineAdjust(line, arrowEndOpts)
+    };
+  }
+  function getLineAdjust(line, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return 0;
+    }
+    const { length, width } = arrowOpts;
+    const adjust = line.options.borderWidth / 2;
+    const p1 = { x: length, y: width + adjust };
+    const p2 = { x: 0, y: adjust };
+    return Math.abs(interpolateX(0, p1, p2));
+  }
+  function drawArrowHead(ctx, offset, adjust, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return;
+    }
+    const { length, width, fill: fill2, backgroundColor: backgroundColor4, borderColor: borderColor4 } = arrowOpts;
+    const arrowOffsetX = Math.abs(offset - length) + adjust;
+    ctx.beginPath();
+    setShadowStyle(ctx, arrowOpts);
+    setBorderStyle(ctx, arrowOpts);
+    ctx.moveTo(arrowOffsetX, -width);
+    ctx.lineTo(offset + adjust, 0);
+    ctx.lineTo(arrowOffsetX, width);
+    if (fill2 === true) {
+      ctx.fillStyle = backgroundColor4 || borderColor4;
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+    } else {
+      ctx.shadowColor = arrowOpts.borderShadowColor;
+    }
+    ctx.stroke();
+  }
+  function getControlPoint(properties, options, distance) {
+    const { x, y, x2, y2, centerX, centerY } = properties;
+    const angle = Math.atan2(y2 - y, x2 - x);
+    const cp = toPosition(options.controlPoint, 0);
+    const point = {
+      x: centerX + getSize(distance, cp.x, false),
+      y: centerY + getSize(distance, cp.y, false)
+    };
+    return rotated(point, { x: centerX, y: centerY }, angle);
+  }
+  function drawArrowHeadOnCurve(ctx, { x, y }, { angle, adjust }, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return;
+    }
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    drawArrowHead(ctx, 0, -adjust, arrowOpts);
+    ctx.restore();
+  }
+  function drawCurve(ctx, element, cp, length) {
+    const { x, y, x2, y2, options } = element;
+    const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(element);
+    const p1 = { x, y };
+    const p2 = { x: x2, y: y2 };
+    const startAngle = angleInCurve(p1, cp, p2, 0);
+    const endAngle = angleInCurve(p1, cp, p2, 1) - PI;
+    const ps = pointInCurve(p1, cp, p2, startAdjust / length);
+    const pe = pointInCurve(p1, cp, p2, 1 - endAdjust / length);
+    const path = new Path2D();
+    ctx.beginPath();
+    path.moveTo(ps.x, ps.y);
+    path.quadraticCurveTo(cp.x, cp.y, pe.x, pe.y);
+    ctx.shadowColor = options.borderShadowColor;
+    ctx.stroke(path);
+    element.path = path;
+    element.ctx = ctx;
+    drawArrowHeadOnCurve(ctx, ps, { angle: startAngle, adjust: startAdjust }, startOpts);
+    drawArrowHeadOnCurve(ctx, pe, { angle: endAngle, adjust: endAdjust }, endOpts);
+  }
+  var EllipseAnnotation = class extends Element {
+    inRange(mouseX, mouseY, axis, useFinalPosition) {
+      const rotation = this.options.rotation;
+      const borderWidth3 = this.options.borderWidth;
+      if (axis !== "x" && axis !== "y") {
+        return pointInEllipse({ x: mouseX, y: mouseY }, this.getProps(["width", "height", "centerX", "centerY"], useFinalPosition), rotation, borderWidth3);
+      }
+      const { x, y, x2, y2 } = this.getProps(["x", "y", "x2", "y2"], useFinalPosition);
+      const hBorderWidth = borderWidth3 / 2;
+      const limit = axis === "y" ? { start: y, end: y2 } : { start: x, end: x2 };
+      const rotatedPoint = rotated({ x: mouseX, y: mouseY }, this.getCenterPoint(useFinalPosition), toRadians(-rotation));
+      return rotatedPoint[axis] >= limit.start - hBorderWidth - EPSILON2 && rotatedPoint[axis] <= limit.end + hBorderWidth + EPSILON2;
+    }
+    getCenterPoint(useFinalPosition) {
+      return getElementCenterPoint(this, useFinalPosition);
+    }
+    draw(ctx) {
+      const { width, height, centerX, centerY, options } = this;
+      ctx.save();
+      translate(ctx, this.getCenterPoint(), options.rotation);
+      setShadowStyle(ctx, this.options);
+      ctx.beginPath();
+      ctx.fillStyle = options.backgroundColor;
+      const stroke = setBorderStyle(ctx, options);
+      ctx.ellipse(centerX, centerY, height / 2, width / 2, PI / 2, 0, 2 * PI);
+      ctx.fill();
+      if (stroke) {
+        ctx.shadowColor = options.borderShadowColor;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    get label() {
+      return this.elements && this.elements[0];
+    }
+    resolveElementProperties(chart, options) {
+      return resolveBoxAndLabelProperties(chart, options, true);
+    }
+  };
+  EllipseAnnotation.id = "ellipseAnnotation";
+  EllipseAnnotation.defaults = {
+    adjustScaleRange: true,
+    backgroundShadowColor: "transparent",
+    borderDash: [],
+    borderDashOffset: 0,
+    borderShadowColor: "transparent",
+    borderWidth: 1,
+    display: true,
+    init: void 0,
+    label: Object.assign({}, BoxAnnotation.defaults.label),
+    rotation: 0,
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    xMax: void 0,
+    xMin: void 0,
+    xScaleID: void 0,
+    yMax: void 0,
+    yMin: void 0,
+    yScaleID: void 0,
+    z: 0
+  };
+  EllipseAnnotation.defaultRoutes = {
+    borderColor: "color",
+    backgroundColor: "color"
+  };
+  EllipseAnnotation.descriptors = {
+    label: {
+      _fallback: true
+    }
+  };
+  function pointInEllipse(p, ellipse, rotation, borderWidth3) {
+    const { width, height, centerX, centerY } = ellipse;
+    const xRadius = width / 2;
+    const yRadius = height / 2;
+    if (xRadius <= 0 || yRadius <= 0) {
+      return false;
+    }
+    const angle = toRadians(rotation || 0);
+    const hBorderWidth = borderWidth3 / 2 || 0;
+    const cosAngle = Math.cos(angle);
+    const sinAngle = Math.sin(angle);
+    const a = Math.pow(cosAngle * (p.x - centerX) + sinAngle * (p.y - centerY), 2);
+    const b = Math.pow(sinAngle * (p.x - centerX) - cosAngle * (p.y - centerY), 2);
+    return a / Math.pow(xRadius + hBorderWidth, 2) + b / Math.pow(yRadius + hBorderWidth, 2) <= 1.0001;
+  }
   var PointAnnotation = class extends Element {
     inRange(mouseX, mouseY, axis, useFinalPosition) {
       const { x, y, x2, y2, width } = this.getProps(["x", "y", "x2", "y2", "width"], useFinalPosition);
@@ -14603,8 +14902,7 @@ var gsmViz = (() => {
       ctx.fillStyle = options.backgroundColor;
       setShadowStyle(ctx, options);
       const stroke = setBorderStyle(ctx, options);
-      options.borderWidth = 0;
-      drawPoint(ctx, options, this.centerX, this.centerY);
+      drawPoint2(ctx, this, this.centerX, this.centerY);
       if (stroke && !isImageOrCanvas(options.pointStyle)) {
         ctx.shadowColor = options.borderShadowColor;
         ctx.stroke();
@@ -14613,7 +14911,9 @@ var gsmViz = (() => {
       options.borderWidth = borderWidth3;
     }
     resolveElementProperties(chart, options) {
-      return resolvePointProperties(chart, options);
+      const properties = resolvePointProperties(chart, options);
+      properties.initProperties = initAnimationProperties(chart, properties, options, true);
+      return properties;
     }
   };
   PointAnnotation.id = "pointAnnotation";
@@ -14625,6 +14925,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     pointStyle: "circle",
     radius: 10,
     rotation: 0,
@@ -14687,16 +14988,16 @@ var gsmViz = (() => {
     }
     resolveElementProperties(chart, options) {
       const properties = resolvePointProperties(chart, options);
-      const { x, y } = properties;
       const { sides, rotation } = options;
       const elements2 = [];
       const angle = 2 * PI / sides;
       let rad = rotation * RAD_PER_DEG;
       for (let i = 0; i < sides; i++, rad += angle) {
-        elements2.push(buildPointElement(properties, options, rad));
+        const elProps = buildPointElement(properties, options, rad);
+        elProps.initProperties = initAnimationProperties(chart, properties, options);
+        elements2.push(elProps);
       }
       properties.elements = elements2;
-      properties.initProperties = { x, y };
       return properties;
     }
   };
@@ -14711,6 +15012,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     point: {
       radius: 0
     },
@@ -14782,6 +15084,9 @@ var gsmViz = (() => {
   var directUpdater = {
     update: Object.assign
   };
+  var hooks$1 = eventHooks.concat(elementHooks);
+  var resolve2 = (value, optDefs) => isObject(optDefs) ? resolveObj(value, optDefs) : value;
+  var isIndexable = (prop) => prop === "color" || prop === "font";
   function resolveType(type2 = "line") {
     if (annotationTypes[type2]) {
       return type2;
@@ -14800,12 +15105,13 @@ var gsmViz = (() => {
       const properties = element.resolveElementProperties(chart, resolver);
       properties.skip = toSkip(properties);
       if ("elements" in properties) {
-        updateSubElements(element, properties, resolver, animations);
+        updateSubElements(element, properties.elements, resolver, animations);
         delete properties.elements;
       }
       if (!defined(element.x)) {
         Object.assign(element, properties);
       }
+      Object.assign(element, properties.initProperties);
       properties.options = resolveAnnotationOptions(resolver);
       animations.update(element, properties);
     }
@@ -14819,13 +15125,13 @@ var gsmViz = (() => {
     }
     return new Animations(chart, animOpts);
   }
-  function updateSubElements(mainElement, { elements: elements2, initProperties }, resolver, animations) {
+  function updateSubElements(mainElement, elements2, resolver, animations) {
     const subElements = mainElement.elements || (mainElement.elements = []);
     subElements.length = elements2.length;
     for (let i = 0; i < elements2.length; i++) {
       const definition = elements2[i];
       const properties = definition.properties;
-      const subElement = getOrCreateElement(subElements, i, definition.type, initProperties);
+      const subElement = getOrCreateElement(subElements, i, definition.type, definition.initProperties);
       const subResolver = resolver[definition.optionScope].override(definition);
       properties.options = resolveAnnotationOptions(subResolver);
       animations.update(subElement, properties);
@@ -14836,9 +15142,7 @@ var gsmViz = (() => {
     let element = elements2[index3];
     if (!element || !(element instanceof elementClass)) {
       element = elements2[index3] = new elementClass();
-      if (isObject(initProperties)) {
-        Object.assign(element, initProperties);
-      }
+      Object.assign(element, initProperties);
     }
     return element;
   }
@@ -14853,7 +15157,7 @@ var gsmViz = (() => {
       resolveObj(resolver, elementClass.defaults),
       resolveObj(resolver, elementClass.defaultRoutes)
     );
-    for (const hook of hooks) {
+    for (const hook of hooks$1) {
       result[hook] = resolver[hook];
     }
     return result;
@@ -14863,7 +15167,11 @@ var gsmViz = (() => {
     for (const prop of Object.keys(defs)) {
       const optDefs = defs[prop];
       const value = resolver[prop];
-      result[prop] = isObject(optDefs) ? resolveObj(value, optDefs) : value;
+      if (isIndexable(prop) && isArray(value)) {
+        result[prop] = value.map((item) => resolve2(item, optDefs));
+      } else {
+        result[prop] = resolve2(value, optDefs);
+      }
     }
     return result;
   }
@@ -14885,8 +15193,9 @@ var gsmViz = (() => {
     }
     return elements2;
   }
-  var version2 = "2.0.1";
+  var version2 = "2.2.1";
   var chartStates = /* @__PURE__ */ new Map();
+  var hooks = eventHooks.concat(elementHooks);
   var annotation = {
     id: "annotation",
     version: version2,
@@ -14907,6 +15216,8 @@ var gsmViz = (() => {
         listeners: {},
         listened: false,
         moveListened: false,
+        hooks: {},
+        hooked: false,
         hovered: []
       });
     },
@@ -14936,6 +15247,7 @@ var gsmViz = (() => {
       updateListeners(chart, state, options);
       updateElements(chart, state, options, args.mode);
       state.visibleElements = state.elements.filter((el) => !el.skip && el.options.display);
+      updateHooks(chart, state, options);
     },
     beforeDatasetsDraw(chart, _args, options) {
       draw2(chart, "beforeDatasetsDraw", options.clip);
@@ -14955,7 +15267,7 @@ var gsmViz = (() => {
         args.changed = true;
       }
     },
-    destroy(chart) {
+    afterDestroy(chart) {
       chartStates.delete(chart);
     },
     _getState(chart) {
@@ -14976,12 +15288,13 @@ var gsmViz = (() => {
       },
       common: {
         drawTime: "afterDatasetsDraw",
+        init: false,
         label: {}
       }
     },
     descriptors: {
       _indexable: false,
-      _scriptable: (prop) => !hooks.includes(prop),
+      _scriptable: (prop) => !hooks.includes(prop) && prop !== "init",
       annotations: {
         _allKeys: false,
         _fallback: (prop, opts) => `elements.${annotationTypes[resolveType(opts.type)].id}`
@@ -14991,21 +15304,23 @@ var gsmViz = (() => {
       },
       common: {
         label: {
+          _indexable: isIndexable,
           _fallback: true
-        }
+        },
+        _indexable: isIndexable
       }
     },
     additionalOptionScopes: [""]
   };
   function draw2(chart, caller, clip) {
     const { ctx, chartArea } = chart;
-    const { visibleElements } = chartStates.get(chart);
+    const state = chartStates.get(chart);
     if (clip) {
       clipArea(ctx, chartArea);
     }
-    const drawableElements = getDrawableElements(visibleElements, caller).sort((a, b) => a.options.z - b.options.z);
-    for (const element of drawableElements) {
-      element.draw(chart.ctx, chartArea);
+    const drawableElements = getDrawableElements(state.visibleElements, caller).sort((a, b) => a.element.options.z - b.element.options.z);
+    for (const item of drawableElements) {
+      drawElement(ctx, chartArea, state, item);
     }
     if (clip) {
       unclipArea(ctx);
@@ -15015,17 +15330,27 @@ var gsmViz = (() => {
     const drawableElements = [];
     for (const el of elements2) {
       if (el.options.drawTime === caller) {
-        drawableElements.push(el);
+        drawableElements.push({ element: el, main: true });
       }
       if (el.elements && el.elements.length) {
         for (const sub of el.elements) {
           if (sub.options.display && sub.options.drawTime === caller) {
-            drawableElements.push(sub);
+            drawableElements.push({ element: sub });
           }
         }
       }
     }
     return drawableElements;
+  }
+  function drawElement(ctx, chartArea, state, item) {
+    const el = item.element;
+    if (item.main) {
+      invokeHook(state, el, "beforeDraw");
+      el.draw(ctx, chartArea);
+      invokeHook(state, el, "afterDraw");
+    } else {
+      el.draw(ctx, chartArea);
+    }
   }
 
   // node_modules/@sgratzl/boxplots/build/index.js
@@ -16195,7 +16520,7 @@ var gsmViz = (() => {
     return nest(values, Array.from, reduce, keys);
   }
   function nest(values, map4, reduce, keys) {
-    return function regroup(values2, i) {
+    return (function regroup(values2, i) {
       if (i >= keys.length) return reduce(values2);
       const groups2 = new InternMap();
       const keyof2 = keys[i++];
@@ -16210,7 +16535,7 @@ var gsmViz = (() => {
         groups2.set(key, regroup(values3, i));
       }
       return map4(groups2);
-    }(values, 0);
+    })(values, 0);
   }
 
   // node_modules/d3-array/src/max.js
@@ -17527,7 +17852,7 @@ var gsmViz = (() => {
   }
 
   // node_modules/d3-interpolate/src/rgb.js
-  var rgb_default = function rgbGamma(y) {
+  var rgb_default = (function rgbGamma(y) {
     var color3 = gamma(y);
     function rgb2(start2, end) {
       var r = color3((start2 = rgb(start2)).r, (end = rgb(end)).r), g = color3(start2.g, end.g), b = color3(start2.b, end.b), opacity = nogamma(start2.opacity, end.opacity);
@@ -17541,7 +17866,7 @@ var gsmViz = (() => {
     }
     rgb2.gamma = rgbGamma;
     return rgb2;
-  }(1);
+  })(1);
   function rgbSpline(spline) {
     return function(colors2) {
       var n = colors2.length, r = new Array(n), g = new Array(n), b = new Array(n), i, color3;
@@ -18406,9 +18731,9 @@ var gsmViz = (() => {
   // node_modules/d3-transition/src/transition/end.js
   function end_default() {
     var on0, on1, that = this, id2 = that._id, size = that.size();
-    return new Promise(function(resolve2, reject) {
+    return new Promise(function(resolve3, reject) {
       var cancel = { value: reject }, end = { value: function() {
-        if (--size === 0) resolve2();
+        if (--size === 0) resolve3();
       } };
       that.each(function() {
         var schedule = set3(this, id2), on = schedule.on;
@@ -18420,7 +18745,7 @@ var gsmViz = (() => {
         }
         schedule.on = on1;
       });
-      if (size === 0) resolve2();
+      if (size === 0) resolve3();
     });
   }
 
@@ -18562,8 +18887,8 @@ var gsmViz = (() => {
     return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
   }
   function formatDecimalParts(x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null;
-    var i, coefficient = x.slice(0, i);
+    if (!isFinite(x) || x === 0) return null;
+    var i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e"), coefficient = x.slice(0, i);
     return [
       coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
       +x.slice(i + 1)
@@ -18657,7 +18982,7 @@ var gsmViz = (() => {
   var prefixExponent;
   function formatPrefixAuto_default(x, p) {
     var d = formatDecimalParts(x, p);
-    if (!d) return x + "";
+    if (!d) return prefixExponent = void 0, x.toPrecision(p);
     var coefficient = d[0], exponent = d[1], i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1, n = coefficient.length;
     return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0];
   }
@@ -18697,13 +19022,13 @@ var gsmViz = (() => {
   var prefixes = ["y", "z", "a", "f", "p", "n", "\xB5", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
   function locale_default(locale2) {
     var group2 = locale2.grouping === void 0 || locale2.thousands === void 0 ? identity_default : formatGroup_default(map3.call(locale2.grouping, Number), locale2.thousands + ""), currencyPrefix = locale2.currency === void 0 ? "" : locale2.currency[0] + "", currencySuffix = locale2.currency === void 0 ? "" : locale2.currency[1] + "", decimal = locale2.decimal === void 0 ? "." : locale2.decimal + "", numerals = locale2.numerals === void 0 ? identity_default : formatNumerals_default(map3.call(locale2.numerals, String)), percent = locale2.percent === void 0 ? "%" : locale2.percent + "", minus = locale2.minus === void 0 ? "\u2212" : locale2.minus + "", nan = locale2.nan === void 0 ? "NaN" : locale2.nan + "";
-    function newFormat(specifier) {
+    function newFormat(specifier, options) {
       specifier = formatSpecifier(specifier);
       var fill2 = specifier.fill, align = specifier.align, sign2 = specifier.sign, symbol = specifier.symbol, zero2 = specifier.zero, width = specifier.width, comma = specifier.comma, precision = specifier.precision, trim = specifier.trim, type2 = specifier.type;
       if (type2 === "n") comma = true, type2 = "g";
       else if (!formatTypes_default[type2]) precision === void 0 && (precision = 12), trim = true, type2 = "g";
       if (zero2 || fill2 === "0" && align === "=") zero2 = true, fill2 = "0", align = "=";
-      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type2) ? "0" + type2.toLowerCase() : "", suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type2) ? percent : "";
+      var prefix = (options && options.prefix !== void 0 ? options.prefix : "") + (symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type2) ? "0" + type2.toLowerCase() : ""), suffix = (symbol === "$" ? currencySuffix : /[%p]/.test(type2) ? percent : "") + (options && options.suffix !== void 0 ? options.suffix : "");
       var formatType = formatTypes_default[type2], maybeSuffix = /[defgprs%]/.test(type2);
       precision = precision === void 0 ? 6 : /[gprs]/.test(type2) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
       function format2(value) {
@@ -18718,7 +19043,7 @@ var gsmViz = (() => {
           if (trim) value = formatTrim_default(value);
           if (valueNegative && +value === 0 && sign2 !== "+") valueNegative = false;
           valuePrefix = (valueNegative ? sign2 === "(" ? sign2 : minus : sign2 === "-" || sign2 === "(" ? "" : sign2) + valuePrefix;
-          valueSuffix = (type2 === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign2 === "(" ? ")" : "");
+          valueSuffix = (type2 === "s" && !isNaN(value) && prefixExponent !== void 0 ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign2 === "(" ? ")" : "");
           if (maybeSuffix) {
             i = -1, n = value.length;
             while (++i < n) {
@@ -18755,9 +19080,9 @@ var gsmViz = (() => {
       return format2;
     }
     function formatPrefix2(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)), e = Math.max(-8, Math.min(8, Math.floor(exponent_default(value) / 3))) * 3, k = Math.pow(10, -e), prefix = prefixes[8 + e / 3];
+      var e = Math.max(-8, Math.min(8, Math.floor(exponent_default(value) / 3))) * 3, k = Math.pow(10, -e), f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), { suffix: prefixes[8 + e / 3] });
       return function(value2) {
-        return f(k * value2) + prefix;
+        return f(k * value2);
       };
     }
     return {
@@ -18836,7 +19161,7 @@ var gsmViz = (() => {
   var auto_default = Chart;
 
   // node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js
-  var devicePixelRatio = function() {
+  var devicePixelRatio = (function() {
     if (typeof window !== "undefined") {
       if (window.devicePixelRatio) {
         return window.devicePixelRatio;
@@ -18847,7 +19172,7 @@ var gsmViz = (() => {
       }
     }
     return 1;
-  }();
+  })();
   var utils = {
     // @todo move this in Chart.helpers.toTextLines
     toTextLines: function(inputs) {
@@ -24259,6 +24584,8 @@ var gsmViz = (() => {
 /*! Bundled license information:
 
 chart.js/dist/chunks/helpers.segment.mjs:
+chart.js/dist/chart.mjs:
+chart.js/dist/helpers.mjs:
   (*!
    * Chart.js v3.9.1
    * https://www.chartjs.org
@@ -24274,33 +24601,17 @@ chart.js/dist/chunks/helpers.segment.mjs:
    * Released under the MIT License
    *)
 
-chart.js/dist/chart.mjs:
-  (*!
-   * Chart.js v3.9.1
-   * https://www.chartjs.org
-   * (c) 2022 Chart.js Contributors
-   * Released under the MIT License
-   *)
-
-chart.js/dist/helpers.mjs:
-  (*!
-   * Chart.js v3.9.1
-   * https://www.chartjs.org
-   * (c) 2022 Chart.js Contributors
-   * Released under the MIT License
-   *)
-
 chartjs-plugin-annotation/dist/chartjs-plugin-annotation.esm.js:
   (*!
-  * chartjs-plugin-annotation v2.0.1
+  * chartjs-plugin-annotation v2.2.1
   * https://www.chartjs.org/chartjs-plugin-annotation/index
-   * (c) 2022 chartjs-plugin-annotation Contributors
+   * (c) 2023 chartjs-plugin-annotation Contributors
    * Released under the MIT License
    *)
 
 chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js:
   (*!
-   * chartjs-plugin-datalabels v2.1.0
+   * chartjs-plugin-datalabels v2.2.0
    * https://chartjs-plugin-datalabels.netlify.app
    * (c) 2017-2022 chartjs-plugin-datalabels contributors
    * Released under the MIT license
