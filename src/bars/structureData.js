@@ -185,10 +185,17 @@ export default function structureData(spec) {
   }
 
   // Apply fill palette colors if provided.
+  // When fill.order is present, use each dataset's position in that order
+  // as the palette index so colors remain semantically aligned even when
+  // some fill values are absent from the data.
   const palette = scales.fill?.palette;
   if (palette && fillKey) {
     datasets.forEach((ds, i) => {
-      ds.backgroundColor = palette[i % palette.length];
+      const colorIndex = fillOrder
+        ? fillOrder.indexOf(String(ds.label))
+        : -1;
+      ds.backgroundColor =
+        palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
     });
   }
 

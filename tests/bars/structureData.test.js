@@ -371,6 +371,92 @@ describe("bars/structureData", () => {
       expect(result.datasets[2].backgroundColor).toBe("#0000ff");
       expect(result.datasets[2].label).toBe("Z");
     });
+
+    test("assigns palette colors by fill.order position when some fill values are absent from data", () => {
+      // fill.order has 5 slots; data only has 3 of the 5 fill values.
+      // Colors must track the value's position in fill.order, not the
+      // dataset's position in the (shorter) reordered array.
+      const specMissing = {
+        data: [
+          { cat: "A", grp: "Z", val: 1 },
+          { cat: "A", grp: "X", val: 3 },
+          // "Y" is absent from data
+        ],
+        mapping: { x: "cat", y: "val", fill: "grp" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: {
+            order: ["X", "Y", "Z"],
+            palette: ["#ff0000", "#00ff00", "#0000ff"],
+          },
+        },
+      };
+      const result = structureData(specMissing);
+      // Only X and Z datasets should be present
+      expect(result.datasets).toHaveLength(2);
+      const xDs = result.datasets.find((ds) => ds.label === "X");
+      const zDs = result.datasets.find((ds) => ds.label === "Z");
+      // X is at fill.order index 0 → palette[0] = #ff0000
+      expect(xDs.backgroundColor).toBe("#ff0000");
+      // Z is at fill.order index 2 → palette[2] = #0000ff
+      expect(zDs.backgroundColor).toBe("#0000ff");
+    });
+  });
+
+  describe("flag color alignment", () => {
+    const FLAG_ORDER = ["-2", "-1", "0", "1", "2"];
+    // Red, Amber, Green, Amber, Red — symmetric traffic-light palette
+    const FLAG_PALETTE = ["#FF5859", "#FEAA02", "#3DAF06", "#FEAA02", "#FF5859"];
+
+    test("all five flag values present → correct traffic-light colors", () => {
+      const spec = {
+        data: FLAG_ORDER.map((flag) => ({ cat: "A", flag })),
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      const byFlag = Object.fromEntries(
+        result.datasets.map((ds) => [ds.label, ds.backgroundColor])
+      );
+      expect(byFlag["-2"]).toBe("#FF5859"); // red
+      expect(byFlag["-1"]).toBe("#FEAA02"); // amber
+      expect(byFlag["0"]).toBe("#3DAF06");  // green
+      expect(byFlag["1"]).toBe("#FEAA02");  // amber
+      expect(byFlag["2"]).toBe("#FF5859");  // red
+    });
+
+    test("only some flag values present → each flag still gets its designated color", () => {
+      // Only flags -2, 0, and 2 appear in the data (no amber rows).
+      const spec = {
+        data: [
+          { cat: "A", flag: "-2" },
+          { cat: "B", flag: "0" },
+          { cat: "C", flag: "2" },
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      expect(result.datasets).toHaveLength(3);
+      const byFlag = Object.fromEntries(
+        result.datasets.map((ds) => [ds.label, ds.backgroundColor])
+      );
+      expect(byFlag["-2"]).toBe("#FF5859"); // red  (fill.order index 0)
+      expect(byFlag["0"]).toBe("#3DAF06");  // green (fill.order index 2)
+      expect(byFlag["2"]).toBe("#FF5859");  // red  (fill.order index 4)
+    });
   });
 
   describe("fill palette", () => {
