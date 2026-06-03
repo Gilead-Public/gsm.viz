@@ -4,73 +4,84 @@ const dataPromises = dataFiles.map((dataFile) =>
     fetch(dataFile).then((response) => response.text())
 );
 
+// Symmetric traffic-light palette: Red, Amber, Green, Amber, Red
+// Maps to flag order: -2, -1, 0, 1, 2
+const FLAG_PALETTE = ['#FF5859', '#FEAA02', '#3DAF06', '#FEAA02', '#FF5859'];
+const FLAG_ORDER = ['-2', '-1', '0', '1', '2'];
+
+// Exclude country, qtl, and srs metrics — keep only KRI metrics.
+const EXCLUDED_PREFIXES = ['cou', 'qtl', 'srs'];
+
 Promise.all(dataPromises)
     .then((texts) => texts.map((text) => d3.csvParse(text)))
     .then((datasets) => {
-        const MetricID = 'kri0001';
-
-        // Filter to latest snapshot and selected metric.
+        // Use the latest snapshot across all metrics.
         const SnapshotDate = d3.max(datasets[0], (d) => d.SnapshotDate);
         const results = datasets[0].filter(
-            (d) => d.SnapshotDate === SnapshotDate && d.MetricID === MetricID
-        );
-
-        // Get metric metadata for labels.
-        const metricMetadatum = datasets[1].find(
-            (d) => d.MetricID === MetricID
+            (d) =>
+                d.SnapshotDate === SnapshotDate &&
+                !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
         // Build ggplot2-style spec.
-        function buildSpec(orientation, fillKey) {
+        function buildSpec(orientation, fillKey, position) {
             const spec = {
                 data: results,
                 mapping: {
-                    x: 'GroupID',
-                    y: 'Score',
+                    x: 'MetricID',
                 },
                 orientation: orientation,
+                position: position,
                 scales: {
-                    x: { label: metricMetadatum?.Group || 'Group' },
-                    y: { label: 'Score' },
+                    x: { label: 'Metric ID' },
+                    y: { label: 'Count' },
                 },
                 labels: {
-                    title: metricMetadatum?.Metric || 'Bar Chart',
+                    title: 'Record Count by Metric ID',
                 },
             };
 
             if (fillKey) {
                 spec.mapping.fill = fillKey;
+                spec.scales.fill = {
+                    order: FLAG_ORDER,
+                    palette: FLAG_PALETTE,
+                };
             }
 
             return spec;
         }
 
+        // Read initial control values.
+        const orientationSelect = document.getElementById('orientation');
+        const fillSelect = document.getElementById('fill');
+        const positionSelect = document.getElementById('position');
+
         // Initial render.
         const container = document.getElementById('container');
         let instance = gsmViz.default.bars(
             container,
-            buildSpec('vertical', 'Flag')
+            buildSpec(
+                orientationSelect.value,
+                fillSelect.value || undefined,
+                positionSelect.value
+            )
         );
 
-        // Orientation control.
-        document
-            .getElementById('orientation')
-            .addEventListener('change', function () {
-                const fillSelect = document.getElementById('fill');
-                instance.destroy();
-                instance = gsmViz.default.bars(
-                    container,
-                    buildSpec(this.value, fillSelect.value || undefined)
-                );
-            });
-
-        // Fill control.
-        document.getElementById('fill').addEventListener('change', function () {
-            const orientationSelect = document.getElementById('orientation');
+        // Re-render on any control change.
+        function rerender() {
             instance.destroy();
             instance = gsmViz.default.bars(
                 container,
-                buildSpec(orientationSelect.value, this.value || undefined)
+                buildSpec(
+                    orientationSelect.value,
+                    fillSelect.value || undefined,
+                    positionSelect.value
+                )
             );
-        });
+        }
+
+        orientationSelect.addEventListener('change', rerender);
+        fillSelect.addEventListener('change', rerender);
+        positionSelect.addEventListener('change', rerender);
     });
