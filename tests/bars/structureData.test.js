@@ -339,7 +339,10 @@ describe("bars/structureData", () => {
       expect(result.datasets.map((ds) => ds.label)).toEqual(["X", "Y", "Z"]);
     });
 
-    test("appends unordered fill values after ordered ones", () => {
+    test("fill values not in fill.order are excluded (not appended)", () => {
+      // When fill.order is provided it acts as an allowlist: only the listed
+      // fill values are rendered. Values present in data but absent from
+      // fill.order are dropped rather than appended at the end.
       const specPartial = {
         ...spec,
         scales: {
@@ -349,8 +352,8 @@ describe("bars/structureData", () => {
         },
       };
       const result = structureData(specPartial);
+      expect(result.datasets).toHaveLength(1);
       expect(result.datasets[0].label).toBe("Z");
-      expect(result.datasets).toHaveLength(3);
     });
 
     test("palette colors follow fill order", () => {
@@ -531,6 +534,108 @@ describe("bars/structureData", () => {
       expect(byFlag["-2"]).toBe("#FF5859"); // red
       expect(byFlag["0"]).toBe("#3DAF06");  // green
       expect(byFlag["2"]).toBe("#FF5859");  // red
+    });
+  });
+
+  describe("unknown fill-value filtering (fill.order provided)", () => {
+    const FLAG_ORDER = ["-2", "-1", "0", "1", "2"];
+    const FLAG_PALETTE = ["#FF5859", "#FEAA02", "#3DAF06", "#FEAA02", "#FF5859"];
+
+    test("rows with fill values absent from fill.order are excluded", () => {
+      const spec = {
+        data: [
+          { cat: "A", flag: "-2" },
+          { cat: "B", flag: "" },   // unknown — should be dropped
+          { cat: "C", flag: "0" },
+          { cat: "D", flag: null }, // unknown — should be dropped
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: { x: {}, y: {}, fill: { order: FLAG_ORDER } },
+      };
+      const result = structureData(spec);
+      const labels = result.datasets.map((ds) => String(ds.label));
+      expect(labels).not.toContain("");
+      expect(labels).not.toContain("null");
+      expect(labels).toContain("-2");
+      expect(labels).toContain("0");
+    });
+
+    test("unknown fill values do not appear in the legend (dataset list)", () => {
+      const spec = {
+        data: [
+          { cat: "A", flag: "2" },
+          { cat: "A", flag: "" },
+          { cat: "B", flag: "0" },
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: { x: {}, y: {}, fill: { order: FLAG_ORDER } },
+      };
+      const result = structureData(spec);
+      expect(result.datasets).toHaveLength(2); // "0" and "2" only
+    });
+
+    test("count mode: unknown fill rows are excluded from counts", () => {
+      // "A" has 2 valid flag rows and 1 unknown; count should be 2, not 3.
+      const spec = {
+        data: [
+          { cat: "A", flag: "-2" },
+          { cat: "A", flag: "-2" },
+          { cat: "A", flag: "" }, // should not count
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: { x: {}, y: {}, fill: { order: FLAG_ORDER } },
+      };
+      const result = structureData(spec);
+      const ds = result.datasets.find((d) => String(d.label) === "-2");
+      expect(ds.data.find((p) => p.x === "A" || p.y === "A")).toBeTruthy();
+      const point =
+        ds.data.find((p) => p.x === "A") ??
+        ds.data.find((p) => p.y === "A");
+      // Only the 2 valid rows should be counted
+      expect(point.x === "A" ? point.y : point.x).toBe(2);
+    });
+
+    test("colors and order are unaffected by the presence of unknown fill values", () => {
+      const spec = {
+        data: [
+          { cat: "C", flag: "2" },
+          { cat: "A", flag: "" }, // unknown
+          { cat: "B", flag: "-2" },
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      expect(result.datasets.map((ds) => ds.label)).toEqual(["-2", "2"]);
+      const byFlag = Object.fromEntries(
+        result.datasets.map((ds) => [ds.label, ds.backgroundColor])
+      );
+      expect(byFlag["-2"]).toBe("#FF5859"); // red (index 0)
+      expect(byFlag["2"]).toBe("#FF5859");  // red (index 4)
+    });
+
+    test("no filtering when fill.order is absent", () => {
+      // Without fill.order, all fill values (including "") should be kept.
+      const spec = {
+        data: [
+          { cat: "A", group: "X" },
+          { cat: "B", group: "" },
+          { cat: "C", group: "Y" },
+        ],
+        mapping: { x: "cat", fill: "group" },
+        orientation: "vertical",
+        scales: { x: {}, y: {} },
+      };
+      const result = structureData(spec);
+      expect(result.datasets).toHaveLength(3); // X, "", Y all kept
     });
   });
 

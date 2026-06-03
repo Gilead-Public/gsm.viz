@@ -17,8 +17,11 @@ function resolveCategories(data, xKey, explicitOrder) {
 
   if (explicitOrder) {
     const dataSet = new Set(dataCategories);
+    console.log("dataCategories", dataCategories);
     const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+    console.log("ordered", ordered);
     const orderedSet = new Set(ordered);
+    console.log("orderedSet", orderedSet);
     const remaining = dataCategories
       .filter((cat) => !orderedSet.has(cat))
       .sort((a, b) =>
@@ -26,6 +29,7 @@ function resolveCategories(data, xKey, explicitOrder) {
           sensitivity: "base",
         })
       );
+    console.log("remaining", remaining);
     return [...ordered, ...remaining];
   }
 
@@ -137,18 +141,30 @@ export default function structureData(spec) {
   const { data, mapping, scales, orientation } = spec;
   const { x: xKey, y: yKey, fill: fillKey } = mapping;
 
+  // When fill.order is provided, drop rows whose fill value is not in the
+  // order. This keeps unknown/empty values (e.g. Flag="") out of the chart
+  // and ensures counts are accurate.
+  const fillOrder = scales.fill?.order;
+  const activeData =
+    fillKey && fillOrder
+      ? (() => {
+          const allowed = new Set(fillOrder.map(String));
+          return data.filter((d) => allowed.has(String(d[fillKey])));
+        })()
+      : data;
+
   // Resolve category ordering.
-  const labels = resolveCategories(data, xKey, scales.x?.order);
+  const labels = resolveCategories(activeData, xKey, scales.x?.order);
   const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
 
   let datasets;
 
   if (!yKey) {
     // Count mode — aggregate rows per category.
-    datasets = aggregateCounts(data, xKey, fillKey, categoryIndex);
+    datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
   } else {
     // Value mode — use y mapping directly.
-    const points = data.map((d) => ({
+    const points = activeData.map((d) => ({
       x: d[xKey],
       y: Number(d[yKey]) || 0,
       _fill: fillKey ? d[fillKey] : undefined,
@@ -181,7 +197,6 @@ export default function structureData(spec) {
   }
 
   // Reorder datasets by fill order if specified.
-  const fillOrder = scales.fill?.order;
   if (fillOrder && fillKey) {
     datasets = reorderDatasets(datasets, fillOrder);
   }
