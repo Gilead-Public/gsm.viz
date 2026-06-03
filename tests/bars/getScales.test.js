@@ -91,4 +91,62 @@ describe("bars/getScales", () => {
       expect(result._indexAxis).toBe("y");
     });
   });
+
+  describe("position / stacking", () => {
+    test("sets stacked: true on both axes when position is stack", () => {
+      const spec = {
+        orientation: "vertical",
+        position: "stack",
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.stacked).toBe(true);
+      expect(scales.y.stacked).toBe(true);
+    });
+
+    test("does not set stacked when position is dodge", () => {
+      const spec = {
+        orientation: "vertical",
+        position: "dodge",
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.stacked).toBeUndefined();
+      expect(scales.y.stacked).toBeUndefined();
+    });
+
+    test("does not set stacked when position is identity", () => {
+      const spec = {
+        orientation: "vertical",
+        position: "identity",
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.stacked).toBeUndefined();
+      expect(scales.y.stacked).toBeUndefined();
+    });
+
+    test("stacking works with horizontal orientation", () => {
+      const spec = {
+        orientation: "horizontal",
+        position: "stack",
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.stacked).toBe(true);
+      expect(scales.y.stacked).toBe(true);
+    });
+  });
 });

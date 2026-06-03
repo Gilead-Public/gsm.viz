@@ -65,4 +65,27 @@ describe("bars/mergeSpec", () => {
     });
     expect(merged.labels.title).toBe("My Chart");
   });
+
+  test("applies default position of stack", () => {
+    const merged = mergeSpec(minimalSpec);
+    expect(merged.position).toBe("stack");
+  });
+
+  test("preserves user-supplied position", () => {
+    const merged = mergeSpec({ ...minimalSpec, position: "dodge" });
+    expect(merged.position).toBe("dodge");
+  });
+
+  test("merges scales.fill when provided", () => {
+    const merged = mergeSpec({
+      ...minimalSpec,
+      scales: { fill: { palette: ["#ff0000"] } },
+    });
+    expect(merged.scales.fill.palette).toEqual(["#ff0000"]);
+  });
+
+  test("defaults scales.fill to empty object", () => {
+    const merged = mergeSpec(minimalSpec);
+    expect(merged.scales.fill).toEqual({});
+  });
 });

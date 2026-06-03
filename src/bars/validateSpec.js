@@ -29,8 +29,13 @@ export default function validateSpec(spec) {
     throw new Error("spec.mapping.x is required");
   }
 
-  if (!spec.mapping.y) {
-    throw new Error("spec.mapping.y is required");
+  if (
+    spec.position !== undefined &&
+    spec.position !== "stack" &&
+    spec.position !== "dodge" &&
+    spec.position !== "identity"
+  ) {
+    throw new Error("spec.position must be 'stack', 'dodge', or 'identity'");
   }
 
   if (

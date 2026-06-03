@@ -4,6 +4,13 @@
 
 import bars from "../../src/bars.js";
 
+// Mock ResizeObserver for tests that attach elements to document.body.
+global.ResizeObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 const singleSeriesSpec = {
   data: [
     { category: "A", value: 10 },
@@ -87,5 +94,75 @@ describe("bars entry point", () => {
       scales: { x: { order: ["C", "B", "A"] } },
     });
     expect(instance.data.labels).toEqual(["C", "B", "A"]);
+  });
+
+  test("renders count mode when mapping.y is omitted", () => {
+    const instance = bars(container, {
+      data: [{ cat: "A" }, { cat: "A" }, { cat: "B" }],
+      mapping: { x: "cat" },
+    });
+    expect(instance.data.datasets).toHaveLength(1);
+    const data = instance.data.datasets[0].data;
+    expect(data.find((d) => d.x === "A").y).toBe(2);
+    expect(data.find((d) => d.x === "B").y).toBe(1);
+  });
+
+  test("renders stacked bars with position stack", () => {
+    const instance = bars(container, {
+      ...multiSeriesSpec,
+      position: "stack",
+    });
+    expect(instance.options.scales.x.stacked).toBe(true);
+    expect(instance.options.scales.y.stacked).toBe(true);
+  });
+
+  test("renders grouped bars with position dodge", () => {
+    const instance = bars(container, {
+      ...multiSeriesSpec,
+      position: "dodge",
+    });
+    expect(instance.options.scales.x.stacked).toBeUndefined();
+    expect(instance.options.scales.y.stacked).toBeUndefined();
+  });
+
+  test("defaults to stacked position", () => {
+    const instance = bars(container, multiSeriesSpec);
+    expect(instance.options.scales.x.stacked).toBe(true);
+    expect(instance.options.scales.y.stacked).toBe(true);
+  });
+
+  test("applies fill palette colors to datasets", () => {
+    const instance = bars(container, {
+      ...multiSeriesSpec,
+      scales: { fill: { palette: ["#ff0000", "#00ff00"] } },
+    });
+    expect(instance.data.datasets[0].backgroundColor).toBe("#ff0000");
+    expect(instance.data.datasets[1].backgroundColor).toBe("#00ff00");
+  });
+
+  test("resolves a CSS selector string to a DOM element", () => {
+    const div = document.createElement("div");
+    div.id = "bars-test-selector";
+    document.body.appendChild(div);
+    const instance = bars("#bars-test-selector", singleSeriesSpec);
+    expect(instance).not.toBeNull();
+    expect(instance.data.datasets).toHaveLength(1);
+    document.body.removeChild(div);
+  });
+
+  test("throws when a CSS selector matches nothing", () => {
+    expect(() => bars("#nonexistent", singleSeriesSpec)).toThrow(
+      "could not find element"
+    );
+  });
+
+  test("horizontal orientation produces correct data point shape", () => {
+    const instance = bars(container, {
+      ...singleSeriesSpec,
+      orientation: "horizontal",
+    });
+    const point = instance.data.datasets[0].data[0];
+    expect(typeof point.x).toBe("number");
+    expect(typeof point.y).toBe("string");
   });
 });
