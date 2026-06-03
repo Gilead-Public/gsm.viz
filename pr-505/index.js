@@ -21859,10 +21859,10 @@ var gsmViz = (() => {
     );
   }
   function reorderDatasets(datasets, fillOrder) {
-    const datasetMap = new Map(datasets.map((ds) => [ds.label, ds]));
-    const ordered = fillOrder.filter((val) => datasetMap.has(val)).map((val) => datasetMap.get(val));
-    const orderedSet = new Set(fillOrder);
-    const remaining = datasets.filter((ds) => !orderedSet.has(ds.label));
+    const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
+    const ordered = fillOrder.filter((val) => datasetMap.has(String(val))).map((val) => datasetMap.get(String(val)));
+    const orderedSet = new Set(fillOrder.map(String));
+    const remaining = datasets.filter((ds) => !orderedSet.has(String(ds.label)));
     return [...ordered, ...remaining];
   }
   function aggregateCounts(data, xKey, fillKey, categoryIndex) {
@@ -21956,7 +21956,8 @@ var gsmViz = (() => {
     const palette = scales2.fill?.palette;
     if (palette && fillKey) {
       datasets.forEach((ds, i) => {
-        ds.backgroundColor = palette[i % palette.length];
+        const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
+        ds.backgroundColor = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
       });
     }
     if (orientation === "horizontal") {
