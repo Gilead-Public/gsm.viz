@@ -432,6 +432,28 @@ describe("bars/structureData", () => {
       expect(byFlag["2"]).toBe("#FF5859");  // red
     });
 
+    test("all five flag values present → datasets ordered -2 to 2 (legend order)", () => {
+      const spec = {
+        // Data intentionally in reverse order to verify reordering.
+        data: [...FLAG_ORDER].reverse().map((flag) => ({ cat: "A", flag })),
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      expect(result.datasets.map((ds) => ds.label)).toEqual([
+        "-2",
+        "-1",
+        "0",
+        "1",
+        "2",
+      ]);
+    });
+
     test("only some flag values present → each flag still gets its designated color", () => {
       // Only flags -2, 0, and 2 appear in the data (no amber rows).
       const spec = {
@@ -456,6 +478,59 @@ describe("bars/structureData", () => {
       expect(byFlag["-2"]).toBe("#FF5859"); // red  (fill.order index 0)
       expect(byFlag["0"]).toBe("#3DAF06");  // green (fill.order index 2)
       expect(byFlag["2"]).toBe("#FF5859");  // red  (fill.order index 4)
+    });
+
+    test("only some flag values present → datasets ordered by fill.order (legend order)", () => {
+      // Data arrives in scrambled order; only -2, 0, 2 present.
+      const spec = {
+        data: [
+          { cat: "C", flag: "2" },
+          { cat: "A", flag: "-2" },
+          { cat: "B", flag: "0" },
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      expect(result.datasets.map((ds) => ds.label)).toEqual(["-2", "0", "2"]);
+    });
+
+    test("numeric flag labels match string fill.order (type coercion)", () => {
+      // Caller passes numeric flag values; fill.order uses strings.
+      // reorderDatasets must coerce to string for comparison.
+      const spec = {
+        data: [
+          { cat: "C", flag: 2 },
+          { cat: "A", flag: -2 },
+          { cat: "B", flag: 0 },
+        ],
+        mapping: { x: "cat", fill: "flag" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { order: FLAG_ORDER, palette: FLAG_PALETTE },
+        },
+      };
+      const result = structureData(spec);
+      // Should be ordered by fill.order even though labels are numbers
+      expect(result.datasets.map((ds) => String(ds.label))).toEqual([
+        "-2",
+        "0",
+        "2",
+      ]);
+      // Colors must still align
+      const byFlag = Object.fromEntries(
+        result.datasets.map((ds) => [String(ds.label), ds.backgroundColor])
+      );
+      expect(byFlag["-2"]).toBe("#FF5859"); // red
+      expect(byFlag["0"]).toBe("#3DAF06");  // green
+      expect(byFlag["2"]).toBe("#FF5859");  // red
     });
   });
 
