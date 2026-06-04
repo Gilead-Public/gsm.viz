@@ -1,0 +1,21 @@
+- [Home](README)
+
+- **Examples**
+  - Charts
+    - [Bar Chart](barChart/ ':ignore')
+    - [Bars](bars/ ':ignore')
+    - [Scatter Plot](scatterPlot/ ':ignore')
+    - [Time Series](timeSeriesContinuous/ ':ignore')
+    - [Time Series (with CI)](timeSeriesWithCI/ ':ignore')
+    - [Sparkline](sparkline/ ':ignore')
+  - Tables
+    - [Group Overview — Site](groupOverview/site ':ignore')
+    - [Group Overview — Country](groupOverview/country ':ignore')
+
+- **API Reference**
+  - [scatterPlot](docs/scatterPlot)
+  - [barChart](docs/barChart)
+  - [timeSeries](docs/timeSeries)
+  - [sparkline](docs/sparkline)
+  - [groupOverview](docs/groupOverview)
+  - [bars](docs/bars)
