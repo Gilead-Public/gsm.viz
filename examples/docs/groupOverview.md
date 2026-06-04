@@ -10,16 +10,16 @@ thumbnails. Clicking a cell or group row fires configurable callbacks.
 ## Signature
 
 ```js
-gsmViz.groupOverview(element, results, config, groupMetadata, metricMetadata)
+gsmViz.groupOverview(element, results, config, groupMetadata, metricMetadata);
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `element` | `Node \| string` | `'body'` | DOM element or CSS selector in which to render the table |
-| `results` | `Array` | `[]` | Analysis results — one object per group ID per metric ID |
-| `config` | `Object` | `null` | Table configuration (see [Config options](#config-options)) |
-| `groupMetadata` | `Array` | `null` | Optional group-level metadata (name, country, etc.) |
-| `metricMetadata` | `Array` | `null` | Optional metric-level metadata (label, description, etc.) |
+| Parameter        | Type             | Default  | Description                                                 |
+| ---------------- | ---------------- | -------- | ----------------------------------------------------------- |
+| `element`        | `Node \| string` | `'body'` | DOM element or CSS selector in which to render the table    |
+| `results`        | `Array`          | `[]`     | Analysis results — one object per group ID per metric ID    |
+| `config`         | `Object`         | `null`   | Table configuration (see [Config options](#config-options)) |
+| `groupMetadata`  | `Array`          | `null`   | Optional group-level metadata (name, country, etc.)         |
+| `metricMetadata` | `Array`          | `null`   | Optional metric-level metadata (label, description, etc.)   |
 
 **Returns** an HTML table element with an `updateTable` method attached.
 
@@ -29,21 +29,21 @@ gsmViz.groupOverview(element, results, config, groupMetadata, metricMetadata)
 
 All properties are optional and merged with the defaults shown below.
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `GroupLevel` | `string` | `'Site'` | Group level label — drives table heading and row labels |
-| `groupLabelKey` | `string\|null` | `null` | Field in `groupMetadata` used as the group display label |
-| `groupParticipantCountKey` | `string` | `'ParticipantCount'` | Field holding participant count |
-| `groupTooltipKeys` | `Array\|null` | `null` | Extra fields shown in the group tooltip |
-| `resultTooltipKeys` | `Array` | `['Score','Metric','Numerator','Denominator']` | Fields shown in the metric cell tooltip |
-| `SiteRiskScoreMetricID` | `string` | `'Analysis_srs0001'` | Metric ID used to compute the site risk score column |
-| `SiteRiskScoreURL` | `string` | *(Gilead docs URL)* | Link target for the site risk score column header |
+| Key                        | Type           | Default                                        | Description                                              |
+| -------------------------- | -------------- | ---------------------------------------------- | -------------------------------------------------------- |
+| `GroupLevel`               | `string`       | `'Site'`                                       | Group level label — drives table heading and row labels  |
+| `groupLabelKey`            | `string\|null` | `null`                                         | Field in `groupMetadata` used as the group display label |
+| `groupParticipantCountKey` | `string`       | `'ParticipantCount'`                           | Field holding participant count                          |
+| `groupTooltipKeys`         | `Array\|null`  | `null`                                         | Extra fields shown in the group tooltip                  |
+| `resultTooltipKeys`        | `Array`        | `['Score','Metric','Numerator','Denominator']` | Fields shown in the metric cell tooltip                  |
+| `SiteRiskScoreMetricID`    | `string`       | `'Analysis_srs0001'`                           | Metric ID used to compute the site risk score column     |
+| `SiteRiskScoreURL`         | `string`       | _(Gilead docs URL)_                            | Link target for the site risk score column header        |
 
 ### Callbacks
 
-| Key | Signature | Default behaviour |
-|-----|-----------|-------------------|
-| `groupClickCallback` | `(datum) => void` | `console.log(datum)` |
+| Key                   | Signature         | Default behaviour    |
+| --------------------- | ----------------- | -------------------- |
+| `groupClickCallback`  | `(datum) => void` | `console.log(datum)` |
 | `metricClickCallback` | `(datum) => void` | `console.log(datum)` |
 
 ---
@@ -52,8 +52,8 @@ All properties are optional and merged with the defaults shown below.
 
 After instantiation the table exposes `table.updateTable`:
 
-| Method | Description |
-|--------|-------------|
+| Method                                                        | Description                                     |
+| ------------------------------------------------------------- | ----------------------------------------------- |
 | `updateTable(results, config, groupMetadata, metricMetadata)` | Re-render the table with updated data or config |
 
 ---
@@ -95,5 +95,5 @@ table.updateTable(newResults, table.config, groupMetadata, metricMetadata);
 
 ## Live examples
 
-- [Group Overview — Site](../groupOverview/site ':ignore')
-- [Group Overview — Country](../groupOverview/country ':ignore')
+-   [Group Overview — Site](../groupOverview/site ':ignore')
+-   [Group Overview — Country](../groupOverview/country ':ignore')

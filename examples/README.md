@@ -10,29 +10,29 @@
 
 ## Modules
 
-| Module | Description |
-|--------|-------------|
-| [scatterPlot](docs/scatterPlot) | Scatter plot of two numeric KRI metrics, coloured by flag status |
-| [barChart](docs/barChart) | Bar chart of a single KRI metric across groups |
-| [timeSeries](docs/timeSeries) | Time-series chart of metric trends across snapshot dates |
-| [sparkline](docs/sparkline) | Compact sparkline for embedding in tables and dashboards |
-| [groupOverview](docs/groupOverview) | Sortable summary table of all groups across all metrics |
-| [bars](docs/bars) | ggplot2-inspired bar chart with flexible spec-based API |
+| Module                              | Description                                                      |
+| ----------------------------------- | ---------------------------------------------------------------- |
+| [scatterPlot](docs/scatterPlot)     | Scatter plot of two numeric KRI metrics, coloured by flag status |
+| [barChart](docs/barChart)           | Bar chart of a single KRI metric across groups                   |
+| [timeSeries](docs/timeSeries)       | Time-series chart of metric trends across snapshot dates         |
+| [sparkline](docs/sparkline)         | Compact sparkline for embedding in tables and dashboards         |
+| [groupOverview](docs/groupOverview) | Sortable summary table of all groups across all metrics          |
+| [bars](docs/bars)                   | ggplot2-inspired bar chart with flexible spec-based API          |
 
 ---
 
 ## Interactive Examples
 
-- Charts
-  - [Bar Chart](barChart/ ':ignore')
-  - [Bars](bars/ ':ignore')
-  - [Scatter Plot](scatterPlot/ ':ignore')
-  - [Time Series](timeSeriesContinuous/ ':ignore')
-  - [Time Series (with CI)](timeSeriesWithCI/ ':ignore')
-  - [Sparkline](sparkline/ ':ignore')
-- Tables
-  - [Group Overview — Site](groupOverview/site ':ignore')
-  - [Group Overview — Country](groupOverview/country ':ignore')
+-   Charts
+    -   [Bar Chart](barChart/ ':ignore')
+    -   [Bars](bars/ ':ignore')
+    -   [Scatter Plot](scatterPlot/ ':ignore')
+    -   [Time Series](timeSeriesContinuous/ ':ignore')
+    -   [Time Series (with CI)](timeSeriesWithCI/ ':ignore')
+    -   [Sparkline](sparkline/ ':ignore')
+-   Tables
+    -   [Group Overview — Site](groupOverview/site ':ignore')
+    -   [Group Overview — Country](groupOverview/country ':ignore')
 
 ---
 
@@ -58,16 +58,15 @@ Include the bundled library and D3 in your HTML, then call any module:
 
 <script>
     d3.csv('results.csv').then(function (results) {
-        gsmViz.default.scatterPlot(
-            document.getElementById('chart'),
-            results,
-            { displayTitle: true }
-        );
+        gsmViz.default.scatterPlot(document.getElementById('chart'), results, {
+            displayTitle: true,
+        });
     });
 </script>
 ```
 
 Each module follows the same call signature:
+
 ```
 gsmViz.default.<module>(element, data, config, ...optional)
 ```
@@ -82,4 +81,3 @@ the sidebar for full parameter and config documentation.
 
 See the [repository README](https://github.com/Gilead-BioStats/gsm.viz#readme)
 for contributor guidelines, development setup, and version-control conventions.
-
