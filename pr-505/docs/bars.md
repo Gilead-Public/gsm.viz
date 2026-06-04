@@ -36,7 +36,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         fill: 'fieldName',   // optional — groups bars by colour
     },
     orientation: 'vertical',   // 'vertical' | 'horizontal'
-    position: 'stack',         // 'stack' | 'group'
+    position: 'stack',         // 'stack' | 'dodge' | 'identity'
     scales: {
         x: {
             type: 'category',  // Chart.js scale type
@@ -79,10 +79,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 After instantiation the chart exposes `chart.helpers`:
 
-| Method                    | Description                                     |
-| ------------------------- | ----------------------------------------------- |
-| `updateData(chart, data)` | Replace the underlying data array and re-render |
-| `updateSpec(chart, spec)` | Apply a partial spec update and re-render       |
+| Method                          | Description                                     |
+| ------------------------------- | ----------------------------------------------- |
+| `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
+| `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
 
 ---
 
@@ -104,7 +104,7 @@ After instantiation the chart exposes `chart.helpers`:
     const chart = gsmViz.default.bars(document.getElementById('chart'), data, {
         mapping: { x: 'country', y: 'value', fill: 'metric' },
         orientation: 'vertical',
-        position: 'group',
+        position: 'dodge',
         labels: { title: 'Metric Rates by Country' },
     });
 </script>
@@ -114,7 +114,7 @@ After instantiation the chart exposes `chart.helpers`:
 
 ```js
 // Replace data
-chart.helpers.updateData(chart, newData);
+chart.helpers.updateData(chart, newData, chart.data._spec_);
 
 // Apply a partial spec update (merges into existing spec)
 chart.helpers.updateSpec(chart, {

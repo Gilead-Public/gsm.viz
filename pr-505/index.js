@@ -21791,7 +21791,9 @@ var gsmViz = (() => {
       throw new Error("spec.mapping.x is required");
     }
     if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity") {
-      throw new Error("spec.position must be 'stack', 'dodge', or 'identity'");
+      throw new Error(
+        "spec.position must be 'stack', 'dodge', or 'identity'"
+      );
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
       throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
@@ -21857,17 +21859,13 @@ var gsmViz = (() => {
     const dataCategories = [...new Set(data.map((d) => d[xKey]))];
     if (explicitOrder) {
       const dataSet = new Set(dataCategories);
-      console.log("dataCategories", dataCategories);
       const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
-      console.log("ordered", ordered);
       const orderedSet = new Set(ordered);
-      console.log("orderedSet", orderedSet);
       const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
         (a, b) => String(a).localeCompare(String(b), void 0, {
           sensitivity: "base"
         })
       );
-      console.log("remaining", remaining);
       return [...ordered, ...remaining];
     }
     return dataCategories.sort(
@@ -21880,7 +21878,9 @@ var gsmViz = (() => {
     const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
     const ordered = fillOrder.filter((val) => datasetMap.has(String(val))).map((val) => datasetMap.get(String(val)));
     const orderedSet = new Set(fillOrder.map(String));
-    const remaining = datasets.filter((ds) => !orderedSet.has(String(ds.label)));
+    const remaining = datasets.filter(
+      (ds) => !orderedSet.has(String(ds.label))
+    );
     return [...ordered, ...remaining];
   }
   function aggregateCounts(data, xKey, fillKey, categoryIndex) {
@@ -21901,7 +21901,9 @@ var gsmViz = (() => {
           y: rows.length,
           _fill: fillValue,
           _datum: rows
-        })).sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
+        })).sort(
+          (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+        )
       }));
     }
     const catMap = /* @__PURE__ */ new Map();
@@ -21916,7 +21918,9 @@ var gsmViz = (() => {
           x: cat,
           y: rows.length,
           _datum: rows
-        })).sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x))
+        })).sort(
+          (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+        )
       }
     ];
   }
@@ -22098,7 +22102,9 @@ var gsmViz = (() => {
     if (typeof el === "string") {
       el = document.querySelector(el);
       if (!el) {
-        throw new Error(`bars: could not find element matching "${element}"`);
+        throw new Error(
+          `bars: could not find element matching "${element}"`
+        );
       }
     }
     const merged = mergeSpec(data, spec);

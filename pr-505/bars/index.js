@@ -74,7 +74,6 @@ Promise.all(dataPromises)
                 positionSelect.value
             )
         );
-        console.log(instance);
 
         // Re-render on any control change.
         function rerender() {
