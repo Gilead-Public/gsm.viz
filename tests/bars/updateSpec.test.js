@@ -8,17 +8,17 @@ import updateSpec from "../../src/bars/updateSpec.js";
 describe("bars/updateSpec", () => {
   const container = document.createElement("div");
 
-  const fullSpec = {
-    data: [
-      { category: "A", value: 10 },
-      { category: "B", value: 20 },
-    ],
+  const data = [
+    { category: "A", value: 10 },
+    { category: "B", value: 20 },
+  ];
+  const spec = {
     mapping: { x: "category", y: "value" },
     labels: { title: "Original" },
   };
 
   test("accepts a partial spec without data/mapping", () => {
-    const chart = bars(container, fullSpec);
+    const chart = bars(container, data, spec);
     expect(() =>
       updateSpec(chart, { labels: { title: "Updated" } })
     ).not.toThrow();
@@ -26,7 +26,7 @@ describe("bars/updateSpec", () => {
   });
 
   test("rebuilds data when orientation changes", () => {
-    const chart = bars(container, fullSpec);
+    const chart = bars(container, data, spec);
     updateSpec(chart, { orientation: "horizontal" });
     expect(chart.options.indexAxis).toBe("y");
     // Points should be swapped for horizontal
@@ -36,9 +36,9 @@ describe("bars/updateSpec", () => {
   });
 
   test("preserves existing data and mapping", () => {
-    const chart = bars(container, fullSpec);
+    const chart = bars(container, data, spec);
     updateSpec(chart, { labels: { title: "New Title" } });
-    expect(chart.data._spec_.data).toBe(fullSpec.data);
+    expect(chart.data._spec_.data).toBe(data);
     expect(chart.data._spec_.mapping.x).toBe("category");
   });
 });

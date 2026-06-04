@@ -28,7 +28,7 @@ export default function updateSpec(chart, spec) {
     theme: { ...existing.theme, ...spec.theme },
   };
 
-  const merged = mergeSpec(combined);
+  const merged = mergeSpec(existing.data, combined);
   const { datasets, labels } = structureData(merged);
   const scalesConfig = getScales(merged);
 

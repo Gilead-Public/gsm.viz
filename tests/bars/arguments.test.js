@@ -11,50 +11,43 @@ global.ResizeObserver = class {
   disconnect() {}
 };
 
-const singleSeriesSpec = {
-  data: [
-    { category: "A", value: 10 },
-    { category: "B", value: 20 },
-    { category: "C", value: 30 },
-  ],
-  mapping: { x: "category", y: "value" },
-};
+const singleSeriesData = [
+  { category: "A", value: 10 },
+  { category: "B", value: 20 },
+  { category: "C", value: 30 },
+];
+const singleSeriesSpec = { mapping: { x: "category", y: "value" } };
 
-const multiSeriesSpec = {
-  data: [
-    { category: "A", value: 10, group: "X" },
-    { category: "A", value: 5, group: "Y" },
-    { category: "B", value: 20, group: "X" },
-    { category: "B", value: 15, group: "Y" },
-  ],
-  mapping: { x: "category", y: "value", fill: "group" },
-};
+const multiSeriesData = [
+  { category: "A", value: 10, group: "X" },
+  { category: "A", value: 5, group: "Y" },
+  { category: "B", value: 20, group: "X" },
+  { category: "B", value: 15, group: "Y" },
+];
+const multiSeriesSpec = { mapping: { x: "category", y: "value", fill: "group" } };
 
 describe("bars entry point", () => {
   const container = document.createElement("div");
 
   test("renders with minimal spec", () => {
-    const instance = bars(container, singleSeriesSpec);
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
     expect(instance).not.toBeNull();
     expect(instance.data.datasets).toHaveLength(1);
   });
 
   test("renders with multi-series spec", () => {
-    const instance = bars(container, multiSeriesSpec);
+    const instance = bars(container, multiSeriesData, multiSeriesSpec);
     expect(instance).not.toBeNull();
     expect(instance.data.datasets).toHaveLength(2);
   });
 
   test("renders with empty data", () => {
-    const instance = bars(container, {
-      data: [],
-      mapping: { x: "a", y: "b" },
-    });
+    const instance = bars(container, [], { mapping: { x: "a", y: "b" } });
     expect(instance).not.toBeNull();
   });
 
   test("renders horizontal bars", () => {
-    const instance = bars(container, {
+    const instance = bars(container, singleSeriesData, {
       ...singleSeriesSpec,
       orientation: "horizontal",
     });
@@ -62,12 +55,12 @@ describe("bars entry point", () => {
   });
 
   test("renders vertical bars by default", () => {
-    const instance = bars(container, singleSeriesSpec);
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
     expect(instance.options.indexAxis).toBe("x");
   });
 
   test("applies labels.title as chart title", () => {
-    const instance = bars(container, {
+    const instance = bars(container, singleSeriesData, {
       ...singleSeriesSpec,
       labels: { title: "Test Title" },
     });
@@ -76,20 +69,20 @@ describe("bars entry point", () => {
   });
 
   test("attaches helpers to chart instance", () => {
-    const instance = bars(container, singleSeriesSpec);
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
     expect(instance.helpers).toBeDefined();
     expect(typeof instance.helpers.updateData).toBe("function");
     expect(typeof instance.helpers.updateSpec).toBe("function");
   });
 
   test("stores the merged spec on chart.data._spec_", () => {
-    const instance = bars(container, singleSeriesSpec);
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
     expect(instance.data._spec_).toBeDefined();
     expect(instance.data._spec_.orientation).toBe("vertical");
   });
 
   test("respects explicit category order", () => {
-    const instance = bars(container, {
+    const instance = bars(container, singleSeriesData, {
       ...singleSeriesSpec,
       scales: { x: { order: ["C", "B", "A"] } },
     });
@@ -97,10 +90,11 @@ describe("bars entry point", () => {
   });
 
   test("renders count mode when mapping.y is omitted", () => {
-    const instance = bars(container, {
-      data: [{ cat: "A" }, { cat: "A" }, { cat: "B" }],
-      mapping: { x: "cat" },
-    });
+    const instance = bars(
+      container,
+      [{ cat: "A" }, { cat: "A" }, { cat: "B" }],
+      { mapping: { x: "cat" } }
+    );
     expect(instance.data.datasets).toHaveLength(1);
     const data = instance.data.datasets[0].data;
     expect(data.find((d) => d.x === "A").y).toBe(2);
@@ -108,7 +102,7 @@ describe("bars entry point", () => {
   });
 
   test("renders stacked bars with position stack", () => {
-    const instance = bars(container, {
+    const instance = bars(container, multiSeriesData, {
       ...multiSeriesSpec,
       position: "stack",
     });
@@ -117,7 +111,7 @@ describe("bars entry point", () => {
   });
 
   test("renders grouped bars with position dodge", () => {
-    const instance = bars(container, {
+    const instance = bars(container, multiSeriesData, {
       ...multiSeriesSpec,
       position: "dodge",
     });
@@ -126,13 +120,13 @@ describe("bars entry point", () => {
   });
 
   test("defaults to stacked position", () => {
-    const instance = bars(container, multiSeriesSpec);
+    const instance = bars(container, multiSeriesData, multiSeriesSpec);
     expect(instance.options.scales.x.stacked).toBe(true);
     expect(instance.options.scales.y.stacked).toBe(true);
   });
 
   test("applies fill palette colors to datasets", () => {
-    const instance = bars(container, {
+    const instance = bars(container, multiSeriesData, {
       ...multiSeriesSpec,
       scales: { fill: { palette: ["#ff0000", "#00ff00"] } },
     });
@@ -144,25 +138,75 @@ describe("bars entry point", () => {
     const div = document.createElement("div");
     div.id = "bars-test-selector";
     document.body.appendChild(div);
-    const instance = bars("#bars-test-selector", singleSeriesSpec);
+    const instance = bars("#bars-test-selector", singleSeriesData, singleSeriesSpec);
     expect(instance).not.toBeNull();
     expect(instance.data.datasets).toHaveLength(1);
     document.body.removeChild(div);
   });
 
   test("throws when a CSS selector matches nothing", () => {
-    expect(() => bars("#nonexistent", singleSeriesSpec)).toThrow(
+    expect(() => bars("#nonexistent", singleSeriesData, singleSeriesSpec)).toThrow(
       "could not find element"
     );
   });
 
   test("horizontal orientation produces correct data point shape", () => {
-    const instance = bars(container, {
+    const instance = bars(container, singleSeriesData, {
       ...singleSeriesSpec,
       orientation: "horizontal",
     });
     const point = instance.data.datasets[0].data[0];
     expect(typeof point.x).toBe("number");
     expect(typeof point.y).toBe("string");
+  });
+
+  test("defaults x-axis label to mapping.x variable name", () => {
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
+    expect(instance.options.scales.x.title.text).toBe("category");
+    expect(instance.options.scales.x.title.display).toBe(true);
+  });
+
+  test("defaults y-axis label to mapping.y variable name", () => {
+    const instance = bars(container, singleSeriesData, singleSeriesSpec);
+    expect(instance.options.scales.y.title.text).toBe("value");
+    expect(instance.options.scales.y.title.display).toBe(true);
+  });
+
+  test("disables x-axis label when scales.x.label is null", () => {
+    const instance = bars(container, singleSeriesData, {
+      ...singleSeriesSpec,
+      scales: { x: { label: null } },
+    });
+    expect(instance.options.scales.x.title.display).toBe(false);
+  });
+
+  test("uses explicit x-axis label when provided", () => {
+    const instance = bars(container, singleSeriesData, {
+      ...singleSeriesSpec,
+      scales: { x: { label: "Site" } },
+    });
+    expect(instance.options.scales.x.title.text).toBe("Site");
+  });
+
+  test("defaults legend title to mapping.fill variable name", () => {
+    const instance = bars(container, multiSeriesData, multiSeriesSpec);
+    expect(instance.options.plugins.legend.title.display).toBe(true);
+    expect(instance.options.plugins.legend.title.text).toBe("group");
+  });
+
+  test("disables legend title when scales.fill.label is null", () => {
+    const instance = bars(container, multiSeriesData, {
+      ...multiSeriesSpec,
+      scales: { fill: { label: null } },
+    });
+    expect(instance.options.plugins.legend.title.display).toBe(false);
+  });
+
+  test("uses explicit fill label when scales.fill.label is set", () => {
+    const instance = bars(container, multiSeriesData, {
+      ...multiSeriesSpec,
+      scales: { fill: { label: "Treatment Arm" } },
+    });
+    expect(instance.options.plugins.legend.title.text).toBe("Treatment Arm");
   });
 });

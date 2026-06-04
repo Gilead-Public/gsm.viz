@@ -4,6 +4,7 @@ describe("bars/getScales", () => {
   describe("vertical orientation", () => {
     const spec = {
       orientation: "vertical",
+      mapping: { x: "category", y: "value" },
       scales: {
         x: { type: "category", label: "Site" },
         y: { type: "linear", label: "Score" },
@@ -32,6 +33,7 @@ describe("bars/getScales", () => {
   describe("horizontal orientation", () => {
     const spec = {
       orientation: "horizontal",
+      mapping: { x: "category", y: "value" },
       scales: {
         x: { type: "category", label: "Site" },
         y: { type: "linear", label: "Score" },
@@ -55,6 +57,7 @@ describe("bars/getScales", () => {
     test("does not display axis title when label is null", () => {
       const spec = {
         orientation: "vertical",
+        mapping: { x: "category", y: "value" },
         scales: {
           x: { type: "category", label: null },
           y: { type: "linear", label: null },
@@ -62,6 +65,77 @@ describe("bars/getScales", () => {
       };
       const scales = getScales(spec);
       expect(scales.x.title.display).toBe(false);
+      expect(scales.y.title.display).toBe(false);
+    });
+
+    test("does not display axis title when label is empty string", () => {
+      const spec = {
+        orientation: "vertical",
+        mapping: { x: "category", y: "value" },
+        scales: {
+          x: { type: "category", label: "" },
+          y: { type: "linear", label: "" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.title.display).toBe(false);
+      expect(scales.y.title.display).toBe(false);
+    });
+  });
+
+  describe("default labels from mapping", () => {
+    test("uses mapping.x as x-axis label when scales.x.label is undefined", () => {
+      const spec = {
+        orientation: "vertical",
+        mapping: { x: "category", y: "value" },
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.title.text).toBe("category");
+      expect(scales.x.title.display).toBe(true);
+    });
+
+    test("uses mapping.y as y-axis label when scales.y.label is undefined", () => {
+      const spec = {
+        orientation: "vertical",
+        mapping: { x: "category", y: "value" },
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.y.title.text).toBe("value");
+      expect(scales.y.title.display).toBe(true);
+    });
+
+    test("explicit label overrides mapping default", () => {
+      const spec = {
+        orientation: "vertical",
+        mapping: { x: "category", y: "value" },
+        scales: {
+          x: { type: "category", label: "Site" },
+          y: { type: "linear", label: "Score" },
+        },
+      };
+      const scales = getScales(spec);
+      expect(scales.x.title.text).toBe("Site");
+      expect(scales.y.title.text).toBe("Score");
+    });
+
+    test("no default label when mapping.y is absent (count mode)", () => {
+      const spec = {
+        orientation: "vertical",
+        mapping: { x: "category" },
+        scales: {
+          x: { type: "category" },
+          y: { type: "linear" },
+        },
+      };
+      const scales = getScales(spec);
       expect(scales.y.title.display).toBe(false);
     });
   });

@@ -4,13 +4,14 @@ import getScales from "./getScales.js";
 import getPlugins from "./getPlugins.js";
 
 /**
- * Re-run the full data pipeline on an existing chart with a new spec.
+ * Re-run the full data pipeline on an existing chart with new data and spec.
  *
  * @param {Object} chart - Chart.js instance
- * @param {Object} spec - new user-supplied spec (raw, not merged)
+ * @param {Array}  data  - new data array
+ * @param {Object} spec  - new user-supplied spec (raw, not merged)
  */
-export default function updateData(chart, spec) {
-  const merged = mergeSpec(spec);
+export default function updateData(chart, data, spec) {
+  const merged = mergeSpec(data, spec);
   const { datasets, labels } = structureData(merged);
   const scalesConfig = getScales(merged);
 

@@ -6,8 +6,8 @@ const dataPromises = dataFiles.map((dataFile) =>
 
 // Symmetric traffic-light palette: Red, Amber, Green, Amber, Red
 // Maps to flag order: -2, -1, 0, 1, 2
-const FLAG_PALETTE = ["#FF5859", "#FEAA02", "#3DAF06", "#FEAA02", "#FF5859"];
-const FLAG_ORDER = ["-2", "-1", "0", "1", "2"];
+const FLAG_PALETTE = ["#FF5859", "#FEAA02", "#3DAF06", "#FEAA02", "#FF5859", "#CCCCCC"];
+const FLAG_ORDER = ["-2", "-1", "0", "1", "2", ""];
 
 // Exclude country, qtl, and srs metrics — keep only KRI metrics.
 const EXCLUDED_PREFIXES = ["cou", "qtl", "srs"];
@@ -23,10 +23,9 @@ Promise.all(dataPromises)
         !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
     );
 
-    // Build ggplot2-style spec.
+    // Build ggplot2-style spec (without data).
     function buildSpec(orientation, fillKey, position) {
       const spec = {
-        data: results,
         mapping: {
           x: "MetricID",
         },
@@ -61,18 +60,21 @@ Promise.all(dataPromises)
     const container = document.getElementById("container");
     let instance = gsmViz.default.bars(
       container,
+      results,
       buildSpec(
         orientationSelect.value,
         fillSelect.value || undefined,
         positionSelect.value
       )
     );
+    console.log(instance);
 
     // Re-render on any control change.
     function rerender() {
       instance.destroy();
       instance = gsmViz.default.bars(
         container,
+        results,
         buildSpec(
           orientationSelect.value,
           fillSelect.value || undefined,

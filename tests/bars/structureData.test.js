@@ -1,4 +1,5 @@
 import structureData from "../../src/bars/structureData.js";
+import defaults from "../../src/bars/defaults.js";
 
 describe("bars/structureData", () => {
   describe("single series (no fill mapping)", () => {
@@ -677,7 +678,7 @@ describe("bars/structureData", () => {
       expect(result.datasets[2].backgroundColor).toBe("#ff0000");
     });
 
-    test("does not set backgroundColor when no palette is provided", () => {
+    test("does not set backgroundColor when no palette is provided (raw structureData call)", () => {
       const specNoPalette = {
         ...spec,
         scales: { x: {}, y: {} },
@@ -699,6 +700,46 @@ describe("bars/structureData", () => {
       };
       const result = structureData(specNoFill);
       expect(result.datasets[0].backgroundColor).toBeUndefined();
+    });
+
+    test("applies default palette when fill is mapped but no explicit palette is given (simulating mergeSpec)", () => {
+      const specWithDefaultPalette = {
+        data: [
+          { site: "A", score: 10, group: "X" },
+          { site: "B", score: 20, group: "Y" },
+          { site: "C", score: 30, group: "Z" },
+        ],
+        mapping: { x: "site", y: "score", fill: "group" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { palette: defaults.scales.fill.palette },
+        },
+      };
+      const result = structureData(specWithDefaultPalette);
+      expect(result.datasets[0].backgroundColor).toBe(defaults.scales.fill.palette[0]);
+      expect(result.datasets[1].backgroundColor).toBe(defaults.scales.fill.palette[1]);
+      expect(result.datasets[2].backgroundColor).toBe(defaults.scales.fill.palette[2]);
+    });
+
+    test("explicit palette overrides default palette", () => {
+      const specExplicit = {
+        data: [
+          { site: "A", score: 10, group: "X" },
+          { site: "B", score: 20, group: "Y" },
+        ],
+        mapping: { x: "site", y: "score", fill: "group" },
+        orientation: "vertical",
+        scales: {
+          x: {},
+          y: {},
+          fill: { palette: ["#aabbcc", "#ddeeff"] },
+        },
+      };
+      const result = structureData(specExplicit);
+      expect(result.datasets[0].backgroundColor).toBe("#aabbcc");
+      expect(result.datasets[1].backgroundColor).toBe("#ddeeff");
     });
   });
 });

@@ -16,8 +16,8 @@ import updateSpec from "./bars/updateSpec.js";
  * Render a bar chart using a ggplot2-inspired spec.
  *
  * @param {(Node|string)} element - DOM element or selector
+ * @param {Array}  data - array of data objects
  * @param {Object} spec - chart specification
- * @param {Array}  spec.data - array of data objects
  * @param {Object} spec.mapping - aesthetic mappings (x, y, fill)
  * @param {string} [spec.orientation='vertical'] - 'vertical' or 'horizontal'
  * @param {Object} [spec.scales] - axis scale configuration
@@ -26,9 +26,9 @@ import updateSpec from "./bars/updateSpec.js";
  *
  * @returns {Object} Chart.js chart instance
  */
-export default function bars(element = "body", spec = {}) {
+export default function bars(element = "body", data = [], spec = {}) {
   // Validate inputs.
-  validateSpec(spec);
+  validateSpec(data, spec);
 
   // Resolve string selectors to DOM nodes.
   let el = element;
@@ -40,7 +40,7 @@ export default function bars(element = "body", spec = {}) {
   }
 
   // Merge user spec with defaults.
-  const merged = mergeSpec(spec);
+  const merged = mergeSpec(data, spec);
 
   // Add or select canvas element.
   const canvas = addCanvas(el, {
