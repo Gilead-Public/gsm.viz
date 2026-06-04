@@ -21771,18 +21771,18 @@ var gsmViz = (() => {
   }
 
   // src/bars/validateSpec.js
-  function validateSpec(spec) {
+  function validateSpec(data, spec) {
+    if (data === void 0 || data === null) {
+      throw new Error("data is required");
+    }
+    if (!Array.isArray(data)) {
+      throw new Error("data must be an array");
+    }
     if (spec === void 0 || spec === null) {
       throw new Error("spec is required");
     }
     if (typeof spec !== "object" || Array.isArray(spec)) {
       throw new Error("spec must be a plain object");
-    }
-    if (!spec.data) {
-      throw new Error("spec.data is required");
-    }
-    if (!Array.isArray(spec.data)) {
-      throw new Error("spec.data must be an array");
     }
     if (!spec.mapping) {
       throw new Error("spec.mapping is required");
@@ -21799,19 +21799,33 @@ var gsmViz = (() => {
   }
 
   // src/bars/defaults.js
+  var DEFAULT_PALETTE = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac"
+  ];
   var defaults3 = {
     orientation: "vertical",
     position: "stack",
     scales: {
       x: {
         type: "category",
-        label: null
+        label: void 0
       },
       y: {
         type: "linear",
-        label: null
+        label: void 0
       },
-      fill: {}
+      fill: {
+        palette: DEFAULT_PALETTE
+      }
     },
     labels: {},
     theme: {
@@ -21822,9 +21836,9 @@ var gsmViz = (() => {
   var defaults_default = defaults3;
 
   // src/bars/mergeSpec.js
-  function mergeSpec(spec) {
+  function mergeSpec(data, spec) {
     return {
-      data: spec.data,
+      data,
       mapping: { ...spec.mapping },
       orientation: spec.orientation ?? defaults_default.orientation,
       position: spec.position ?? defaults_default.position,
@@ -21843,13 +21857,17 @@ var gsmViz = (() => {
     const dataCategories = [...new Set(data.map((d) => d[xKey]))];
     if (explicitOrder) {
       const dataSet = new Set(dataCategories);
+      console.log("dataCategories", dataCategories);
       const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+      console.log("ordered", ordered);
       const orderedSet = new Set(ordered);
+      console.log("orderedSet", orderedSet);
       const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
         (a, b) => String(a).localeCompare(String(b), void 0, {
           sensitivity: "base"
         })
       );
+      console.log("remaining", remaining);
       return [...ordered, ...remaining];
     }
     return dataCategories.sort(
@@ -21914,13 +21932,18 @@ var gsmViz = (() => {
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
-    const labels = resolveCategories(data, xKey, scales2.x?.order);
+    const fillOrder = scales2.fill?.order;
+    const activeData = fillKey && fillOrder ? (() => {
+      const allowed = new Set(fillOrder.map(String));
+      return data.filter((d) => allowed.has(String(d[fillKey])));
+    })() : data;
+    const labels = resolveCategories(activeData, xKey, scales2.x?.order);
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
     let datasets;
     if (!yKey) {
-      datasets = aggregateCounts(data, xKey, fillKey, categoryIndex);
+      datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
     } else {
-      const points = data.map((d) => ({
+      const points = activeData.map((d) => ({
         x: d[xKey],
         y: Number(d[yKey]) || 0,
         _fill: fillKey ? d[fillKey] : void 0,
@@ -21949,7 +21972,6 @@ var gsmViz = (() => {
         ];
       }
     }
-    const fillOrder = scales2.fill?.order;
     if (fillOrder && fillKey) {
       datasets = reorderDatasets(datasets, fillOrder);
     }
@@ -21968,22 +21990,24 @@ var gsmViz = (() => {
 
   // src/bars/getScales.js
   function getScales2(spec) {
-    const { orientation, position, scales: specScales } = spec;
+    const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === "horizontal";
     const stacked = position === "stack";
+    const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
+    const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const categoryScale = {
       type: specScales.x.type,
       title: {
-        display: !!specScales.x.label,
-        text: specScales.x.label
+        display: !!xLabel,
+        text: xLabel
       },
       ...stacked ? { stacked: true } : {}
     };
     const valueScale = {
       type: specScales.y.type,
       title: {
-        display: !!specScales.y.label,
-        text: specScales.y.label
+        display: !!yLabel,
+        text: yLabel
       },
       beginAtZero: true,
       ...stacked ? { stacked: true } : {}
@@ -21997,7 +22021,8 @@ var gsmViz = (() => {
 
   // src/bars/getPlugins.js
   function getPlugins2(spec) {
-    const { labels } = spec;
+    const { labels, mapping, scales: scales2 } = spec;
+    const fillLabel = scales2.fill?.label !== void 0 ? scales2.fill.label : mapping?.fill;
     return {
       title: {
         display: !!labels.title,
@@ -22007,7 +22032,11 @@ var gsmViz = (() => {
         enabled: true
       },
       legend: {
-        display: !!spec.mapping.fill
+        display: !!mapping.fill,
+        title: {
+          display: !!fillLabel,
+          text: fillLabel || ""
+        }
       },
       datalabels: {
         display: false
@@ -22016,8 +22045,8 @@ var gsmViz = (() => {
   }
 
   // src/bars/updateData.js
-  function updateData2(chart, spec) {
-    const merged = mergeSpec(spec);
+  function updateData2(chart, data, spec) {
+    const merged = mergeSpec(data, spec);
     const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
@@ -22047,7 +22076,7 @@ var gsmViz = (() => {
       labels: { ...existing.labels, ...spec.labels },
       theme: { ...existing.theme, ...spec.theme }
     };
-    const merged = mergeSpec(combined);
+    const merged = mergeSpec(existing.data, combined);
     const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
@@ -22063,8 +22092,8 @@ var gsmViz = (() => {
   }
 
   // src/bars.js
-  function bars(element = "body", spec = {}) {
-    validateSpec(spec);
+  function bars(element = "body", data = [], spec = {}) {
+    validateSpec(data, spec);
     let el = element;
     if (typeof el === "string") {
       el = document.querySelector(el);
@@ -22072,7 +22101,7 @@ var gsmViz = (() => {
         throw new Error(`bars: could not find element matching "${element}"`);
       }
     }
-    const merged = mergeSpec(spec);
+    const merged = mergeSpec(data, spec);
     const canvas = addCanvas(el, {
       maintainAspectRatio: merged.theme.maintainAspectRatio
     });
