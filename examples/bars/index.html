@@ -41,18 +41,19 @@
 
   <body>
     <nav class="tab-nav">
-      <button data-tab="kri">KRI by Flag</button>
-      <button class="active" data-tab="bites">Animal Bites</button>
+      <button class="active" data-tab="kri">KRI by Flag</button>
+      <button data-tab="bites">Animal Bites</button>
+      <button data-tab="retention">Retention</button>
     </nav>
 
     <!-- KRI tab -->
-    <div id="kri" class="tab-panel gsm-viz--example">
+    <div id="kri" class="tab-panel active gsm-viz--example">
       <div id="controls">
         <fieldset>
           <legend>Orientation</legend>
           <select id="orientation">
-            <option value="vertical">Vertical</option>
-            <option value="horizontal" selected>Horizontal</option>
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
           </select>
         </fieldset>
 
@@ -67,9 +68,9 @@
         <fieldset>
           <legend>Position</legend>
           <select id="position">
-            <option value="stack">Stack</option>
-            <option value="dodge" selected>Dodge</option>
-            <option value="identity">Identity</option>
+            <option value="stack" selected>Stack</option>
+            <option value="dodge">Dodge</option>
+            <!--option value="identity">Identity</option-->
           </select>
         </fieldset>
       </div>
@@ -80,7 +81,7 @@
     </div>
 
     <!-- Animal Bites tab -->
-    <div id="bites" class="tab-panel active gsm-viz--example">
+    <div id="bites" class="tab-panel gsm-viz--example">
       <div id="bites-controls">
         <fieldset>
           <legend>Orientation</legend>
@@ -95,12 +96,36 @@
           <select id="bites-position">
             <option value="stack">Stack</option>
             <option value="dodge" selected>Dodge</option>
-            <option value="identity">Identity</option>
+            <!--option value="identity">Identity</option-->
           </select>
         </fieldset>
       </div>
 
       <div id="bites-container"></div>
+    </div>
+
+    <!-- Retention tab -->
+    <div id="retention" class="tab-panel gsm-viz--example">
+      <div id="retention-controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="retention-orientation">
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Position</legend>
+          <select id="retention-position">
+            <option value="stack" selected>Stack</option>
+            <option value="dodge">Dodge</option>
+            <!--option value="identity">Identity</option-->
+          </select>
+        </fieldset>
+      </div>
+
+      <div id="retention-container"></div>
     </div>
 
     <script>
@@ -119,6 +144,7 @@
 
     <script src="kriChart.js"></script>
     <script src="animalBitesChart.js"></script>
+    <script src="retentionChart.js"></script>
     <script src="../nav.js"></script>
   </body>
 </html>
