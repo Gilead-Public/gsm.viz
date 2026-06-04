@@ -1,5 +1,6 @@
 .gsm-viz--example #controls,
-.gsm-viz--example #bites-controls {
+.gsm-viz--example #bites-controls,
+.gsm-viz--example #retention-controls {
     display: flex;
     justify-content: center;
 }
@@ -9,7 +10,8 @@
 }
 .gsm-viz--example #container,
 .gsm-viz--example #kri-container,
-.gsm-viz--example #bites-container {
+.gsm-viz--example #bites-container,
+.gsm-viz--example #retention-container {
     margin: auto;
     width: 100%;
     height: 40vw;
