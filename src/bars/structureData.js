@@ -13,31 +13,27 @@
  * @returns {Array} ordered category labels
  */
 function resolveCategories(data, xKey, explicitOrder) {
-  const dataCategories = [...new Set(data.map((d) => d[xKey]))];
+    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
 
-  if (explicitOrder) {
-    const dataSet = new Set(dataCategories);
-    console.log("dataCategories", dataCategories);
-    const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
-    console.log("ordered", ordered);
-    const orderedSet = new Set(ordered);
-    console.log("orderedSet", orderedSet);
-    const remaining = dataCategories
-      .filter((cat) => !orderedSet.has(cat))
-      .sort((a, b) =>
+    if (explicitOrder) {
+        const dataSet = new Set(dataCategories);
+        const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+        const orderedSet = new Set(ordered);
+        const remaining = dataCategories
+            .filter((cat) => !orderedSet.has(cat))
+            .sort((a, b) =>
+                String(a).localeCompare(String(b), undefined, {
+                    sensitivity: 'base',
+                })
+            );
+        return [...ordered, ...remaining];
+    }
+
+    return dataCategories.sort((a, b) =>
         String(a).localeCompare(String(b), undefined, {
-          sensitivity: "base",
+            sensitivity: 'base',
         })
-      );
-    console.log("remaining", remaining);
-    return [...ordered, ...remaining];
-  }
-
-  return dataCategories.sort((a, b) =>
-    String(a).localeCompare(String(b), undefined, {
-      sensitivity: "base",
-    })
-  );
+    );
 }
 
 /**
@@ -52,13 +48,15 @@ function resolveCategories(data, xKey, explicitOrder) {
  * @returns {Array} reordered datasets
  */
 function reorderDatasets(datasets, fillOrder) {
-  const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
-  const ordered = fillOrder
-    .filter((val) => datasetMap.has(String(val)))
-    .map((val) => datasetMap.get(String(val)));
-  const orderedSet = new Set(fillOrder.map(String));
-  const remaining = datasets.filter((ds) => !orderedSet.has(String(ds.label)));
-  return [...ordered, ...remaining];
+    const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
+    const ordered = fillOrder
+        .filter((val) => datasetMap.has(String(val)))
+        .map((val) => datasetMap.get(String(val)));
+    const orderedSet = new Set(fillOrder.map(String));
+    const remaining = datasets.filter(
+        (ds) => !orderedSet.has(String(ds.label))
+    );
+    return [...ordered, ...remaining];
 }
 
 /**
@@ -66,48 +64,52 @@ function reorderDatasets(datasets, fillOrder) {
  * optionally per fill group), where y = number of rows.
  */
 function aggregateCounts(data, xKey, fillKey, categoryIndex) {
-  if (fillKey) {
-    const groups = new Map();
-    for (const d of data) {
-      const key = d[fillKey];
-      if (!groups.has(key)) groups.set(key, new Map());
-      const catMap = groups.get(key);
-      const cat = d[xKey];
-      if (!catMap.has(cat)) catMap.set(cat, []);
-      catMap.get(cat).push(d);
+    if (fillKey) {
+        const groups = new Map();
+        for (const d of data) {
+            const key = d[fillKey];
+            if (!groups.has(key)) groups.set(key, new Map());
+            const catMap = groups.get(key);
+            const cat = d[xKey];
+            if (!catMap.has(cat)) catMap.set(cat, []);
+            catMap.get(cat).push(d);
+        }
+
+        return [...groups.entries()].map(([fillValue, catMap]) => ({
+            label: fillValue,
+            data: [...catMap.entries()]
+                .map(([cat, rows]) => ({
+                    x: cat,
+                    y: rows.length,
+                    _fill: fillValue,
+                    _datum: rows,
+                }))
+                .sort(
+                    (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+                ),
+        }));
     }
 
-    return [...groups.entries()].map(([fillValue, catMap]) => ({
-      label: fillValue,
-      data: [...catMap.entries()]
-        .map(([cat, rows]) => ({
-          x: cat,
-          y: rows.length,
-          _fill: fillValue,
-          _datum: rows,
-        }))
-        .sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)),
-    }));
-  }
+    const catMap = new Map();
+    for (const d of data) {
+        const cat = d[xKey];
+        if (!catMap.has(cat)) catMap.set(cat, []);
+        catMap.get(cat).push(d);
+    }
 
-  const catMap = new Map();
-  for (const d of data) {
-    const cat = d[xKey];
-    if (!catMap.has(cat)) catMap.set(cat, []);
-    catMap.get(cat).push(d);
-  }
-
-  return [
-    {
-      data: [...catMap.entries()]
-        .map(([cat, rows]) => ({
-          x: cat,
-          y: rows.length,
-          _datum: rows,
-        }))
-        .sort((a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)),
-    },
-  ];
+    return [
+        {
+            data: [...catMap.entries()]
+                .map(([cat, rows]) => ({
+                    x: cat,
+                    y: rows.length,
+                    _datum: rows,
+                }))
+                .sort(
+                    (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+                ),
+        },
+    ];
 }
 
 /**
@@ -116,13 +118,13 @@ function aggregateCounts(data, xKey, fillKey, categoryIndex) {
  * { x: value, y: category } when indexAxis is 'y'.
  */
 function swapPointAxes(datasets) {
-  for (const ds of datasets) {
-    for (const point of ds.data) {
-      const tmp = point.x;
-      point.x = point.y;
-      point.y = tmp;
+    for (const ds of datasets) {
+        for (const point of ds.data) {
+            const tmp = point.x;
+            point.x = point.y;
+            point.y = tmp;
+        }
     }
-  }
 }
 
 /**
@@ -138,88 +140,89 @@ function swapPointAxes(datasets) {
  * @returns {{ datasets: Array, labels: Array }}
  */
 export default function structureData(spec) {
-  const { data, mapping, scales, orientation } = spec;
-  const { x: xKey, y: yKey, fill: fillKey } = mapping;
+    const { data, mapping, scales, orientation } = spec;
+    const { x: xKey, y: yKey, fill: fillKey } = mapping;
 
-  // When fill.order is provided, drop rows whose fill value is not in the
-  // order. This keeps unknown/empty values (e.g. Flag="") out of the chart
-  // and ensures counts are accurate.
-  const fillOrder = scales.fill?.order;
-  const activeData =
-    fillKey && fillOrder
-      ? (() => {
-          const allowed = new Set(fillOrder.map(String));
-          return data.filter((d) => allowed.has(String(d[fillKey])));
-        })()
-      : data;
+    // When fill.order is provided, drop rows whose fill value is not in the
+    // order. This keeps unknown/empty values (e.g. Flag="") out of the chart
+    // and ensures counts are accurate.
+    const fillOrder = scales.fill?.order;
+    const activeData =
+        fillKey && fillOrder
+            ? (() => {
+                  const allowed = new Set(fillOrder.map(String));
+                  return data.filter((d) => allowed.has(String(d[fillKey])));
+              })()
+            : data;
 
-  // Resolve category ordering.
-  const labels = resolveCategories(activeData, xKey, scales.x?.order);
-  const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
+    // Resolve category ordering.
+    const labels = resolveCategories(activeData, xKey, scales.x?.order);
+    const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
 
-  let datasets;
+    let datasets;
 
-  if (!yKey) {
-    // Count mode — aggregate rows per category.
-    datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
-  } else {
-    // Value mode — use y mapping directly.
-    const points = activeData.map((d) => ({
-      x: d[xKey],
-      y: Number(d[yKey]) || 0,
-      _fill: fillKey ? d[fillKey] : undefined,
-      _datum: d,
-    }));
-
-    if (fillKey) {
-      const groups = new Map();
-      for (const point of points) {
-        const key = point._fill;
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(point);
-      }
-
-      datasets = [...groups.entries()].map(([fillValue, pts]) => ({
-        label: fillValue,
-        data: pts.sort(
-          (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
-        ),
-      }));
+    if (!yKey) {
+        // Count mode — aggregate rows per category.
+        datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
     } else {
-      datasets = [
-        {
-          data: points.sort(
-            (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
-          ),
-        },
-      ];
+        // Value mode — use y mapping directly.
+        const points = activeData.map((d) => ({
+            x: d[xKey],
+            y: Number(d[yKey]) || 0,
+            _fill: fillKey ? d[fillKey] : undefined,
+            _datum: d,
+        }));
+
+        if (fillKey) {
+            const groups = new Map();
+            for (const point of points) {
+                const key = point._fill;
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(point);
+            }
+
+            datasets = [...groups.entries()].map(([fillValue, pts]) => ({
+                label: fillValue,
+                data: pts.sort(
+                    (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+                ),
+            }));
+        } else {
+            datasets = [
+                {
+                    data: points.sort(
+                        (a, b) =>
+                            categoryIndex.get(a.x) - categoryIndex.get(b.x)
+                    ),
+                },
+            ];
+        }
     }
-  }
 
-  // Reorder datasets by fill order if specified.
-  if (fillOrder && fillKey) {
-    datasets = reorderDatasets(datasets, fillOrder);
-  }
+    // Reorder datasets by fill order if specified.
+    if (fillOrder && fillKey) {
+        datasets = reorderDatasets(datasets, fillOrder);
+    }
 
-  // Apply fill palette colors if provided.
-  // When fill.order is present, use each dataset's position in that order
-  // as the palette index so colors remain semantically aligned even when
-  // some fill values are absent from the data.
-  const palette = scales.fill?.palette;
-  if (palette && fillKey) {
-    datasets.forEach((ds, i) => {
-      const colorIndex = fillOrder
-        ? fillOrder.indexOf(String(ds.label))
-        : -1;
-      ds.backgroundColor =
-        palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
-    });
-  }
+    // Apply fill palette colors if provided.
+    // When fill.order is present, use each dataset's position in that order
+    // as the palette index so colors remain semantically aligned even when
+    // some fill values are absent from the data.
+    const palette = scales.fill?.palette;
+    if (palette && fillKey) {
+        datasets.forEach((ds, i) => {
+            const colorIndex = fillOrder
+                ? fillOrder.indexOf(String(ds.label))
+                : -1;
+            ds.backgroundColor =
+                palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
+        });
+    }
 
-  // Swap point axes for horizontal orientation.
-  if (orientation === "horizontal") {
-    swapPointAxes(datasets);
-  }
+    // Swap point axes for horizontal orientation.
+    if (orientation === 'horizontal') {
+        swapPointAxes(datasets);
+    }
 
-  return { datasets, labels };
+    return { datasets, labels };
 }

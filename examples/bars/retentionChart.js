@@ -10,7 +10,9 @@ fetch('data/retention.csv')
             .sort((a, b) => a[1] - b[1])
             .map(([reason]) => reason);
 
-        const orientationSelect = document.getElementById('retention-orientation');
+        const orientationSelect = document.getElementById(
+            'retention-orientation'
+        );
         const positionSelect = document.getElementById('retention-position');
         const container = document.getElementById('retention-container');
 

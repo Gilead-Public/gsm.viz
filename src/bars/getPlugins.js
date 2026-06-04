@@ -8,28 +8,28 @@
  * @returns {Object} Chart.js plugins config
  */
 export default function getPlugins(spec) {
-  const { labels, mapping, scales } = spec;
+    const { labels, mapping, scales } = spec;
 
-  const fillLabel =
-    scales.fill?.label !== undefined ? scales.fill.label : mapping?.fill;
+    const fillLabel =
+        scales.fill?.label !== undefined ? scales.fill.label : mapping?.fill;
 
-  return {
-    title: {
-      display: !!labels.title,
-      text: labels.title || "",
-    },
-    tooltip: {
-      enabled: true,
-    },
-    legend: {
-      display: !!mapping.fill,
-      title: {
-        display: !!fillLabel,
-        text: fillLabel || "",
-      },
-    },
-    datalabels: {
-      display: false,
-    },
-  };
+    return {
+        title: {
+            display: !!labels.title,
+            text: labels.title || '',
+        },
+        tooltip: {
+            enabled: true,
+        },
+        legend: {
+            display: !!mapping.fill,
+            title: {
+                display: !!fillLabel,
+                text: fillLabel || '',
+            },
+        },
+        datalabels: {
+            display: false,
+        },
+    };
 }

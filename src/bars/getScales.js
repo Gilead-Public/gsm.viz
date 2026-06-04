@@ -14,37 +14,37 @@
  * @returns {Object} Chart.js scales config plus _indexAxis
  */
 export default function getScales(spec) {
-  const { orientation, position, scales: specScales, mapping } = spec;
-  const horizontal = orientation === "horizontal";
-  const stacked = position === "stack";
+    const { orientation, position, scales: specScales, mapping } = spec;
+    const horizontal = orientation === 'horizontal';
+    const stacked = position === 'stack';
 
-  const xLabel =
-    specScales.x.label !== undefined ? specScales.x.label : mapping?.x;
-  const yLabel =
-    specScales.y.label !== undefined ? specScales.y.label : mapping?.y;
+    const xLabel =
+        specScales.x.label !== undefined ? specScales.x.label : mapping?.x;
+    const yLabel =
+        specScales.y.label !== undefined ? specScales.y.label : mapping?.y;
 
-  const categoryScale = {
-    type: specScales.x.type,
-    title: {
-      display: !!xLabel,
-      text: xLabel,
-    },
-    ...(stacked ? { stacked: true } : {}),
-  };
+    const categoryScale = {
+        type: specScales.x.type,
+        title: {
+            display: !!xLabel,
+            text: xLabel,
+        },
+        ...(stacked ? { stacked: true } : {}),
+    };
 
-  const valueScale = {
-    type: specScales.y.type,
-    title: {
-      display: !!yLabel,
-      text: yLabel,
-    },
-    beginAtZero: true,
-    ...(stacked ? { stacked: true } : {}),
-  };
+    const valueScale = {
+        type: specScales.y.type,
+        title: {
+            display: !!yLabel,
+            text: yLabel,
+        },
+        beginAtZero: true,
+        ...(stacked ? { stacked: true } : {}),
+    };
 
-  return {
-    x: horizontal ? valueScale : categoryScale,
-    y: horizontal ? categoryScale : valueScale,
-    _indexAxis: horizontal ? "y" : "x",
-  };
+    return {
+        x: horizontal ? valueScale : categoryScale,
+        y: horizontal ? categoryScale : valueScale,
+        _indexAxis: horizontal ? 'y' : 'x',
+    };
 }

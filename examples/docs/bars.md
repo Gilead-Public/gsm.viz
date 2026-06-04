@@ -11,14 +11,14 @@ and per-axis scale configuration.
 ## Signature
 
 ```js
-gsmViz.bars(element, data, spec)
+gsmViz.bars(element, data, spec);
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
+| Parameter | Type             | Default  | Description                                              |
+| --------- | ---------------- | -------- | -------------------------------------------------------- |
 | `element` | `Node \| string` | `'body'` | DOM element or CSS selector in which to render the chart |
-| `data` | `Array` | `[]` | Array of plain data objects |
-| `spec` | `Object` | `{}` | Chart specification (see [Spec](#spec)) |
+| `data`    | `Array`          | `[]`     | Array of plain data objects                              |
+| `spec`    | `Object`         | `{}`     | Chart specification (see [Spec](#spec))                  |
 
 **Returns** a Chart.js chart instance.
 
@@ -36,7 +36,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         fill: 'fieldName',   // optional — groups bars by colour
     },
     orientation: 'vertical',   // 'vertical' | 'horizontal'
-    position: 'stack',         // 'stack' | 'group'
+    position: 'stack',         // 'stack' | 'dodge' | 'identity'
     scales: {
         x: {
             type: 'category',  // Chart.js scale type
@@ -63,15 +63,15 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 ### Defaults
 
-| Key | Default |
-|-----|---------|
-| `orientation` | `'vertical'` |
-| `position` | `'stack'` |
-| `scales.x.type` | `'category'` |
-| `scales.y.type` | `'linear'` |
-| `scales.fill.palette` | Tableau-10 categorical palette |
-| `theme.maintainAspectRatio` | `false` |
-| `theme.animation` | `false` |
+| Key                         | Default                        |
+| --------------------------- | ------------------------------ |
+| `orientation`               | `'vertical'`                   |
+| `position`                  | `'stack'`                      |
+| `scales.x.type`             | `'category'`                   |
+| `scales.y.type`             | `'linear'`                     |
+| `scales.fill.palette`       | Tableau-10 categorical palette |
+| `theme.maintainAspectRatio` | `false`                        |
+| `theme.animation`           | `false`                        |
 
 ---
 
@@ -79,10 +79,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 After instantiation the chart exposes `chart.helpers`:
 
-| Method | Description |
-|--------|-------------|
-| `updateData(chart, data)` | Replace the underlying data array and re-render |
-| `updateSpec(chart, spec)` | Apply a partial spec update and re-render |
+| Method                          | Description                                     |
+| ------------------------------- | ----------------------------------------------- |
+| `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
+| `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
 
 ---
 
@@ -95,22 +95,18 @@ After instantiation the chart exposes `chart.helpers`:
 
 <script>
     const data = [
-        { country: 'US',  metric: 'AE Rate',    value: 0.12 },
-        { country: 'US',  metric: 'Query Rate',  value: 0.34 },
-        { country: 'EU',  metric: 'AE Rate',     value: 0.09 },
-        { country: 'EU',  metric: 'Query Rate',  value: 0.28 },
+        { country: 'US', metric: 'AE Rate', value: 0.12 },
+        { country: 'US', metric: 'Query Rate', value: 0.34 },
+        { country: 'EU', metric: 'AE Rate', value: 0.09 },
+        { country: 'EU', metric: 'Query Rate', value: 0.28 },
     ];
 
-    const chart = gsmViz.default.bars(
-        document.getElementById('chart'),
-        data,
-        {
-            mapping: { x: 'country', y: 'value', fill: 'metric' },
-            orientation: 'vertical',
-            position: 'group',
-            labels: { title: 'Metric Rates by Country' },
-        }
-    );
+    const chart = gsmViz.default.bars(document.getElementById('chart'), data, {
+        mapping: { x: 'country', y: 'value', fill: 'metric' },
+        orientation: 'vertical',
+        position: 'dodge',
+        labels: { title: 'Metric Rates by Country' },
+    });
 </script>
 ```
 
@@ -118,7 +114,7 @@ After instantiation the chart exposes `chart.helpers`:
 
 ```js
 // Replace data
-chart.helpers.updateData(chart, newData);
+chart.helpers.updateData(chart, newData, chart.data._spec_);
 
 // Apply a partial spec update (merges into existing spec)
 chart.helpers.updateSpec(chart, {
