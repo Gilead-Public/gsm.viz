@@ -44,6 +44,7 @@
             <button class="active" data-tab="kri">KRI by Flag</button>
             <button data-tab="bites">Animal Bites</button>
             <button data-tab="retention">Retention</button>
+            <button data-tab="gini">World Gini Index</button>
         </nav>
 
         <!-- KRI tab -->
@@ -71,6 +72,14 @@
                         <option value="stack" selected>Stack</option>
                         <option value="dodge">Dodge</option>
                         <!--option value="identity">Identity</option-->
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Sizing</legend>
+                    <select id="dynamic-sizing">
+                        <option value="no" selected>No</option>
+                        <option value="yes">Yes</option>
                     </select>
                 </fieldset>
             </div>
@@ -144,9 +153,22 @@
             });
         </script>
 
+        <!-- World Gini Index tab -->
+        <div id="gini" class="tab-panel gsm-viz--example">
+            <div id="gini-controls">
+                <fieldset>
+                    <legend>Year</legend>
+                    <select id="gini-year"></select>
+                </fieldset>
+            </div>
+
+            <div id="gini-container"></div>
+        </div>
+
         <script src="kriChart.js"></script>
         <script src="animalBitesChart.js"></script>
         <script src="retentionChart.js"></script>
+        <script src="giniChart.js"></script>
         <script src="../nav.js"></script>
     </body>
 </html>
