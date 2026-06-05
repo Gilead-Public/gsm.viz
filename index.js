@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21658,11 +21659,6 @@ var gsmViz = (() => {
     return plugin2;
   }
 
-  // src/util/getDynamicSize.js
-  function getDynamicSize(numCategories, pxPerCategory = 30) {
-    return numCategories * pxPerCategory;
-  }
-
   // src/util/triggerTooltip.js
   function triggerTooltip(chart) {
     const tooltip5 = chart.tooltip;
@@ -21767,7 +21763,12 @@ var gsmViz = (() => {
     canvas.chart = chart;
     canvas.parentNode.style.width = "";
     if (config.dynamicSizing) {
-      canvas.parentNode.style.width = getDynamicSize(datasets[0].data.length) + "px";
+      const numCategories = datasets[0].data.length;
+      const pxPerCategory = 30;
+      const area = chart.chartArea;
+      const chartAreaWidth = area ? area.right - area.left : 0;
+      const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+      canvas.parentNode.style.width = numCategories * pxPerCategory + overhead + "px";
     }
     chart.helpers = {
       updateConfig,
@@ -22167,25 +22168,26 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const size = getDynamicSize(numCategories) + "px";
+      const pxPerCategory = 30;
       if (merged.orientation === "horizontal") {
-        el.style.height = size;
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.height = corrected + "px";
         console.log(
-          `[dynamicSizing] horizontal \u2014 ${numCategories} categories \u2192 container height: ${size}`
+          `[dynamicSizing] horizontal \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container height: ${corrected}px`
         );
       } else {
-        el.style.width = size;
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.width = corrected + "px";
         console.log(
-          `[dynamicSizing] vertical \u2014 ${numCategories} categories \u2192 container width: ${size}`
+          `[dynamicSizing] vertical \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container width: ${corrected}px`
         );
       }
-      console.log("[dynamicSizing] container el:", el);
-      console.log(
-        "[dynamicSizing] container computed style \u2014 height:",
-        el.style.height,
-        "width:",
-        el.style.width
-      );
     }
     chart.helpers = {
       updateData: updateData2,
