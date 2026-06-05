@@ -98,7 +98,28 @@ jobs:
           "
 
       # -----------------------------------------------------------------------
-      # 5. PRODUCTION DEPLOY — push/merge to main → deploy to root (/)
+      # 5. Ensure .nojekyll lives at the gh-pages ROOT so Jekyll never strips
+      #    underscore-prefixed files (e.g. Docsify's _sidebar.md).
+      #
+      #    The main-branch deploy already lands examples/.nojekyll at the repo
+      #    root, but dev and PR-preview deploys target subdirectories and leave
+      #    the root untouched.  We fix that by deploying a single-file folder
+      #    containing only .nojekyll to the root on every non-cleanup run.
+      # -----------------------------------------------------------------------
+      - name: Prepare .nojekyll root folder
+        if: github.event.action != 'closed'
+        run: mkdir gh-root && touch gh-root/.nojekyll
+
+      - name: Plant .nojekyll at gh-pages root 🔒
+        if: github.event.action != 'closed'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: gh-root
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+
+      # -----------------------------------------------------------------------
+      # 6. PRODUCTION DEPLOY — push/merge to main → deploy to root (/)
       #
       #    Triggers on:
       #      a) A PR merged into main (pull_request.closed + merged == true)
@@ -118,7 +139,7 @@ jobs:
           clean: false
 
       # -----------------------------------------------------------------------
-      # 6. DEV STAGING DEPLOY — push/merge to dev → deploy to /dev
+      # 7. DEV STAGING DEPLOY — push/merge to dev → deploy to /dev
       #
       #    Same logic as production but targets the /dev subdirectory.
       #    This gives a stable preview of the dev branch at:
@@ -136,7 +157,7 @@ jobs:
           clean: false
 
       # -----------------------------------------------------------------------
-      # 7. PR PREVIEW DEPLOY — open/updated PRs to dev → deploy to /pr-{number}
+      # 8. PR PREVIEW DEPLOY — open/updated PRs to dev → deploy to /pr-{number}
       #
       #    Every PR targeting dev gets its own subdirectory so reviewers can
       #    preview changes at:
@@ -158,7 +179,7 @@ jobs:
           clean: false
 
       # -----------------------------------------------------------------------
-      # 8. POST/UPDATE PR COMMENT with the preview URL
+      # 9. POST/UPDATE PR COMMENT with the preview URL
       #
       #    Uses a find-and-update pattern: on the first deploy it creates a
       #    comment; on subsequent pushes it finds the existing comment (by
@@ -218,7 +239,7 @@ jobs:
             }
 
       # -----------------------------------------------------------------------
-      # 9. CLEAN UP PR PREVIEW on close
+      # 10. CLEAN UP PR PREVIEW on close
       #
       #    When a PR targeting dev is closed (merged or not), we delete the
       #    /pr-{number} directory from the gh-pages branch.

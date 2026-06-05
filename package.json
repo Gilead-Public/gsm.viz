@@ -1,6 +1,6 @@
 {
   "name": "gsm.viz",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "web-based data visualization for risk-based monitoring",
   "module": "src/main.js",
   "main": "index.js",
@@ -60,7 +60,7 @@
     "jest-canvas-mock": "^2.5.2",
     "jest-environment-jsdom": "^29.7.0",
     "jsdoc": "^4.0.5",
-    "live-server": "^1.2.2",
+    "live-server": "^1.2.0",
     "prettier": "^2.7.1"
   }
 }

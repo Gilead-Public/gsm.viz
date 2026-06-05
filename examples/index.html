@@ -1,54 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>gsm.viz Examples</title>
+        <meta charset="UTF-8" />
+        <title>gsm.viz</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="gsm.viz — data visualization library for risk-based monitoring in clinical trials"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"
+        />
+        <style>
+            :root {
+                --theme-color: #0969da;
+                --sidebar-width: 260px;
+                --base-font-size: 15px;
+                --code-theme-background: #f6f8fa;
+                --code-theme-text: #24292f;
+                --mono-font: 'SFMono-Regular', Consolas, 'Liberation Mono',
+                    Menlo, monospace;
+            }
+            .app-nav {
+                right: 1rem;
+            }
+            /* Deployment footer rendered via Docsify footer plugin */
+            .docsify-footer {
+                color: #666;
+                font-size: 0.85em;
+                border-top: 1px solid #eaecef;
+                padding-top: 0.75rem;
+                margin-top: 2rem;
+            }
+        </style>
     </head>
 
     <body>
-        <h1>gsm.viz Examples</h1>
-        <ul>
-            <li>
-                Charts
-                <ul>
-                    <li><a href="barChart">Bar Chart</a></li>
-                    <li><a href="scatterPlot">Scatter Plot</a></li>
-                    <li><a href="timeSeriesContinuous">Time Series</a></li>
-                    <li>
-                        <a href="timeSeriesWithCI">Time Series (with CI)</a>
-                    </li>
-                    <li><a href="sparkline">Spark Line</a></li>
-                </ul>
-            </li>
-            <li>
-                Tables
-                <ul>
-                    <li>
-                        <a href="groupOverview/site">Group Overview by Site</a>
-                    </li>
-                    <li>
-                        <a href="groupOverview/country"
-                            >Group Overview by Country</a
-                        >
-                    </li>
-                </ul>
-            </li>
-        </ul>
+        <nav>
+            <a href="https://github.com/Gilead-BioStats/gsm.viz">GitHub</a>
+        </nav>
 
-        <footer
-            style="
-                margin-top: 2rem;
-                padding-top: 1rem;
-                border-top: 1px solid #ccc;
-                color: #666;
-                font-size: 0.9em;
-            "
-        >
-            <p>
-                Last deployed:
-                <span id="deployment-timestamp"
-                    >DEPLOYMENT_TIMESTAMP_PLACEHOLDER</span
-                >
-            </p>
-        </footer>
+        <div id="app">Loading…</div>
+
+        <script>
+            window.$docsify = {
+                name: 'gsm.viz',
+                repo: 'https://github.com/Gilead-BioStats/gsm.viz',
+                loadSidebar: true,
+                subMaxLevel: 2,
+                search: {
+                    placeholder: 'Search docs',
+                    noData: 'No results.',
+                },
+                // Render a footer on every page showing the deployment timestamp.
+                plugins: [
+                    function (hook) {
+                        hook.afterEach(function (html) {
+                            return (
+                                html +
+                                '<footer class="docsify-footer">' +
+                                '<p>Last deployed: <span>DEPLOYMENT_TIMESTAMP_PLACEHOLDER</span></p>' +
+                                '</footer>'
+                            );
+                        });
+                    },
+                ],
+            };
+        </script>
+
+        <!-- Docsify core -->
+        <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+        <!-- Search plugin -->
+        <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+        <!-- Code copy button -->
+        <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
+        <!-- Syntax highlighting -->
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
     </body>
 </html>

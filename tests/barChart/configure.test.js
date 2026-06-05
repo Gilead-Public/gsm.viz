@@ -59,6 +59,7 @@ describe('configuration', () => {
 
                 'chartName',
                 'displayTitle',
+                'dynamicSizing',
                 'maintainAspectRatio',
                 'selectedGroupIDs',
                 'selectedGroupDatum',

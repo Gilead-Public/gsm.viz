@@ -10,6 +10,7 @@ import {
 
 // modules
 import barChart from './barChart.js';
+import bars from './bars.js';
 import groupOverview from './groupOverview.js';
 import scatterPlot from './scatterPlot.js';
 import sparkline from './sparkline.js';
@@ -28,6 +29,7 @@ Chart.register(
 // TODO: implement class-based modules
 const gsmViz = {
     barChart,
+    bars,
     groupOverview,
     scatterPlot,
     sparkline,
