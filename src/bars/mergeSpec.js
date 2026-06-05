@@ -22,5 +22,6 @@ export default function mergeSpec(data, spec) {
         },
         labels: { ...defaults.labels, ...spec.labels },
         theme: { ...defaults.theme, ...spec.theme },
+        tooltip: { ...defaults.tooltip, ...spec.tooltip },
     };
 }

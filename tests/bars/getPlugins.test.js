@@ -99,4 +99,40 @@ describe('bars/getPlugins', () => {
             expect(plugins.legend.title.display).toBe(false);
         });
     });
+
+    describe('tooltip', () => {
+        test('tooltip is enabled by default', () => {
+            const spec = {
+                mapping: {},
+                scales: { fill: {} },
+                labels: {},
+                tooltip: {},
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.tooltip.enabled).toBe(true);
+        });
+
+        test('passes through tooltip callbacks from spec', () => {
+            const afterLabel = jest.fn();
+            const spec = {
+                mapping: {},
+                scales: { fill: {} },
+                labels: {},
+                tooltip: { callbacks: { afterLabel } },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.tooltip.callbacks.afterLabel).toBe(afterLabel);
+        });
+
+        test('tooltip callbacks are undefined when not specified', () => {
+            const spec = {
+                mapping: {},
+                scales: { fill: {} },
+                labels: {},
+                tooltip: {},
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.tooltip.callbacks).toBeUndefined();
+        });
+    });
 });

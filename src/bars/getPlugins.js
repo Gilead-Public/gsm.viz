@@ -8,7 +8,7 @@
  * @returns {Object} Chart.js plugins config
  */
 export default function getPlugins(spec) {
-    const { labels, mapping, scales } = spec;
+    const { labels, mapping, scales, tooltip } = spec;
 
     const fillLabel =
         scales.fill?.label !== undefined ? scales.fill.label : mapping?.fill;
@@ -20,6 +20,7 @@ export default function getPlugins(spec) {
         },
         tooltip: {
             enabled: true,
+            ...tooltip,
         },
         legend: {
             display: !!mapping.fill,

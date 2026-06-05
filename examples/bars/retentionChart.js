@@ -34,6 +34,18 @@ fetch('data/retention.csv')
                 theme: {
                     dynamicSizing,
                 },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: (context) => {
+                            const rows = context.raw._datum;
+                            if (!rows || !rows.length) return [];
+                            return rows.map(
+                                (d) =>
+                                    `${d.subjid} (Last Known Date: ${d.last_known_date})`
+                            );
+                        },
+                    },
+                },
             };
         }
 

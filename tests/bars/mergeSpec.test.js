@@ -107,4 +107,29 @@ describe('bars/mergeSpec', () => {
         expect(Array.isArray(merged.scales.fill.palette)).toBe(true);
         expect(merged.scales.fill.palette.length).toBeGreaterThan(0);
     });
+
+    describe('tooltip', () => {
+        test('defaults tooltip to empty object when not specified', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.tooltip).toEqual({});
+        });
+
+        test('passes through tooltip callbacks from spec', () => {
+            const myCallback = () => [];
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                tooltip: { callbacks: { afterLabel: myCallback } },
+            });
+            expect(merged.tooltip.callbacks.afterLabel).toBe(myCallback);
+        });
+
+        test('preserves tooltip.callbacks when provided', () => {
+            const callbacks = { label: jest.fn(), afterLabel: jest.fn() };
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                tooltip: { callbacks },
+            });
+            expect(merged.tooltip.callbacks).toBe(callbacks);
+        });
+    });
 });
