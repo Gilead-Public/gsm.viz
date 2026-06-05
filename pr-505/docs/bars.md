@@ -57,6 +57,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     theme: {
         maintainAspectRatio: false,
         animation: false,
+        dynamicSizing: false,   // set canvas height (horizontal) or width (vertical) to fit all categories
     },
 }
 ```
@@ -72,6 +73,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `scales.fill.palette`       | Tableau-10 categorical palette |
 | `theme.maintainAspectRatio` | `false`                        |
 | `theme.animation`           | `false`                        |
+| `theme.dynamicSizing`       | `false`                        |
 
 ---
 

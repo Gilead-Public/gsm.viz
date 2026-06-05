@@ -21096,6 +21096,7 @@ var gsmViz = (() => {
       console.log(datum2);
     };
     defaults4.displayTitle = false;
+    defaults4.dynamicSizing = false;
     defaults4.maintainAspectRatio = false;
     const config = configure2(defaults4, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
@@ -21658,6 +21659,11 @@ var gsmViz = (() => {
     return plugin2;
   }
 
+  // src/util/getDynamicSize.js
+  function getDynamicSize(numCategories, pxPerCategory = 30) {
+    return numCategories * pxPerCategory;
+  }
+
   // src/util/triggerTooltip.js
   function triggerTooltip(chart) {
     const tooltip5 = chart.tooltip;
@@ -21760,6 +21766,10 @@ var gsmViz = (() => {
       plugins: [plugin, displayWhiteBackground()]
     });
     canvas.chart = chart;
+    canvas.parentNode.style.width = "";
+    if (config.dynamicSizing) {
+      canvas.parentNode.style.width = getDynamicSize(datasets[0].data.length) + "px";
+    }
     chart.helpers = {
       updateConfig,
       updateData,
@@ -21830,9 +21840,11 @@ var gsmViz = (() => {
       }
     },
     labels: {},
+    tooltip: {},
     theme: {
       maintainAspectRatio: false,
-      animation: false
+      animation: false,
+      dynamicSizing: false
     }
   };
   var defaults_default = defaults3;
@@ -22005,6 +22017,7 @@ var gsmViz = (() => {
         display: !!xLabel,
         text: xLabel
       },
+      ...spec.theme?.dynamicSizing ? { ticks: { autoSkip: false } } : {},
       ...stacked ? { stacked: true } : {}
     };
     const valueScale = {
@@ -22134,6 +22147,30 @@ var gsmViz = (() => {
       plugins: [displayWhiteBackground()]
     });
     canvas.chart = chart;
+    el.style.height = "";
+    el.style.width = "";
+    if (merged.theme.dynamicSizing) {
+      const numCategories = labels.length;
+      const size = getDynamicSize(numCategories) + "px";
+      if (merged.orientation === "horizontal") {
+        el.style.height = size;
+        console.log(
+          `[dynamicSizing] horizontal \u2014 ${numCategories} categories \u2192 container height: ${size}`
+        );
+      } else {
+        el.style.width = size;
+        console.log(
+          `[dynamicSizing] vertical \u2014 ${numCategories} categories \u2192 container width: ${size}`
+        );
+      }
+      console.log("[dynamicSizing] container el:", el);
+      console.log(
+        "[dynamicSizing] container computed style \u2014 height:",
+        el.style.height,
+        "width:",
+        el.style.width
+      );
+    }
     chart.helpers = {
       updateData: updateData2,
       updateSpec

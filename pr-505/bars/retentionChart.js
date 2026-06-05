@@ -14,9 +14,12 @@ fetch('data/retention.csv')
             'retention-orientation'
         );
         const positionSelect = document.getElementById('retention-position');
+        const dynamicSizingSelect = document.getElementById(
+            'retention-dynamic-sizing'
+        );
         const container = document.getElementById('retention-container');
 
-        function buildSpec(orientation, position) {
+        function buildSpec(orientation, position, dynamicSizing) {
             return {
                 mapping: {
                     x: 'invid',
@@ -35,13 +38,20 @@ fetch('data/retention.csv')
                 labels: {
                     title: 'Retention Status by Site',
                 },
+                theme: {
+                    dynamicSizing,
+                },
             };
         }
 
         let instance = gsmViz.default.bars(
             container,
             data,
-            buildSpec(orientationSelect.value, positionSelect.value)
+            buildSpec(
+                orientationSelect.value,
+                positionSelect.value,
+                dynamicSizingSelect.value === 'yes'
+            )
         );
 
         function rerender() {
@@ -49,10 +59,15 @@ fetch('data/retention.csv')
             instance = gsmViz.default.bars(
                 container,
                 data,
-                buildSpec(orientationSelect.value, positionSelect.value)
+                buildSpec(
+                    orientationSelect.value,
+                    positionSelect.value,
+                    dynamicSizingSelect.value === 'yes'
+                )
             );
         }
 
         orientationSelect.addEventListener('change', rerender);
         positionSelect.addEventListener('change', rerender);
+        dynamicSizingSelect.addEventListener('change', rerender);
     });

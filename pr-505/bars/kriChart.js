@@ -22,7 +22,7 @@ Promise.all(dataPromises)
                 !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
-        function buildSpec(orientation, fillKey, position) {
+        function buildSpec(orientation, fillKey, position, dynamicSizing) {
             const spec = {
                 mapping: {
                     x: 'MetricID',
@@ -35,6 +35,9 @@ Promise.all(dataPromises)
                 },
                 labels: {
                     title: 'Record Count by Metric ID',
+                },
+                theme: {
+                    dynamicSizing,
                 },
             };
 
@@ -52,6 +55,7 @@ Promise.all(dataPromises)
         const orientationSelect = document.getElementById('orientation');
         const fillSelect = document.getElementById('fill');
         const positionSelect = document.getElementById('position');
+        const dynamicSizingSelect = document.getElementById('dynamic-sizing');
         const container = document.getElementById('kri-container');
 
         let instance = gsmViz.default.bars(
@@ -60,7 +64,8 @@ Promise.all(dataPromises)
             buildSpec(
                 orientationSelect.value,
                 fillSelect.value || undefined,
-                positionSelect.value
+                positionSelect.value,
+                dynamicSizingSelect.value === 'yes'
             )
         );
 
@@ -72,7 +77,8 @@ Promise.all(dataPromises)
                 buildSpec(
                     orientationSelect.value,
                     fillSelect.value || undefined,
-                    positionSelect.value
+                    positionSelect.value,
+                    dynamicSizingSelect.value === 'yes'
                 )
             );
         }
@@ -80,4 +86,5 @@ Promise.all(dataPromises)
         orientationSelect.addEventListener('change', rerender);
         fillSelect.addEventListener('change', rerender);
         positionSelect.addEventListener('change', rerender);
+        dynamicSizingSelect.addEventListener('change', rerender);
     });
