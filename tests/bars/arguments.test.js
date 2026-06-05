@@ -217,4 +217,47 @@ describe('bars entry point', () => {
             'Treatment Arm'
         );
     });
+
+    describe('dynamicSizing', () => {
+        test('sets canvas height for horizontal bars when dynamicSizing is true', () => {
+            const c = document.createElement('div');
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true },
+            });
+            const canvas = c.getElementsByTagName('canvas')[0];
+            // 3 categories × 30px
+            expect(canvas.style.height).toBe('90px');
+        });
+
+        test('sets canvas width for vertical bars when dynamicSizing is true', () => {
+            const c = document.createElement('div');
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'vertical',
+                theme: { dynamicSizing: true },
+            });
+            const canvas = c.getElementsByTagName('canvas')[0];
+            // 3 categories × 30px
+            expect(canvas.style.width).toBe('90px');
+        });
+
+        test('does not set canvas height when dynamicSizing is false', () => {
+            const c = document.createElement('div');
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+            });
+            const canvas = c.getElementsByTagName('canvas')[0];
+            expect(canvas.style.height).not.toBe('90px');
+        });
+
+        test('does not set canvas width when dynamicSizing is false', () => {
+            const c = document.createElement('div');
+            bars(c, singleSeriesData, singleSeriesSpec);
+            const canvas = c.getElementsByTagName('canvas')[0];
+            expect(canvas.style.width).not.toBe('90px');
+        });
+    });
 });

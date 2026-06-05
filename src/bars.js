@@ -7,6 +7,7 @@ import getScales from './bars/getScales.js';
 import getPlugins from './bars/getPlugins.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
+import getDynamicSize from './util/getDynamicSize.js';
 
 // update methods
 import updateData from './bars/updateData.js';
@@ -80,6 +81,17 @@ export default function bars(element = 'body', data = [], spec = {}) {
 
     // Attach chart to canvas element.
     canvas.chart = chart;
+
+    // Apply dynamic canvas dimension when enabled (set after Chart.js init).
+    if (merged.theme.dynamicSizing) {
+        const numCategories = labels.length;
+        const size = getDynamicSize(numCategories) + 'px';
+        if (merged.orientation === 'horizontal') {
+            canvas.style.height = size;
+        } else {
+            canvas.style.width = size;
+        }
+    }
 
     // Attach update helpers.
     chart.helpers = {

@@ -45,6 +45,7 @@ All properties are optional and merged with the defaults shown below.
 | `resultTooltipKeys`        | `Array`               | `['Score','Metric','Numerator','Denominator']` | Fields shown in the result tooltip                                        |
 | `selectedGroupIDs`         | `string\|Array\|null` | `null`                                         | Pre-selected group ID(s) to highlight                                     |
 | `displayTitle`             | `boolean`             | `false`                                        | Show the auto-generated chart title                                       |
+| `dynamicSizing`            | `boolean`             | `false`                                        | Dynamically set canvas width so every category bar has adequate space (30 px each); eliminates axis-label thinning when there are many groups |
 | `maintainAspectRatio`      | `boolean`             | `false`                                        | Passed to Chart.js                                                        |
 
 ### Callbacks

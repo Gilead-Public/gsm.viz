@@ -48,6 +48,19 @@ describe('bars/mergeSpec', () => {
         expect(merged.theme.animation).toBe(false);
     });
 
+    test('theme.dynamicSizing defaults to false', () => {
+        const merged = mergeSpec(data, minimalSpec);
+        expect(merged.theme.dynamicSizing).toBe(false);
+    });
+
+    test('preserves user-supplied theme.dynamicSizing true', () => {
+        const merged = mergeSpec(data, {
+            ...minimalSpec,
+            theme: { dynamicSizing: true },
+        });
+        expect(merged.theme.dynamicSizing).toBe(true);
+    });
+
     test('stores the data array on the merged spec', () => {
         const merged = mergeSpec(data, minimalSpec);
         expect(merged.data).toBe(data);

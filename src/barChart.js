@@ -19,6 +19,9 @@ import getScales from './barChart/getScales.js';
 // custom plugins
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
+// dynamic sizing utility
+import getDynamicSize from './util/getDynamicSize.js';
+
 // update methods
 import updateData from './barChart/updateData.js';
 import updateConfig from './barChart/updateConfig.js';
@@ -96,6 +99,11 @@ export default function barChart(
 
     // Attach chart to canvas element.
     canvas.chart = chart;
+
+    // Apply dynamic canvas width when enabled (set after Chart.js init).
+    if (config.dynamicSizing) {
+        canvas.style.width = getDynamicSize(datasets[0].data.length) + 'px';
+    }
 
     // Attach update methods to chart.
     chart.helpers = {

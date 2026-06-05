@@ -223,4 +223,45 @@ describe('bars/getScales', () => {
             expect(scales.y.stacked).toBe(true);
         });
     });
+
+    describe('dynamicSizing / autoSkip', () => {
+        test('sets autoSkip false on category (x) axis for vertical when dynamicSizing is true', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+                theme: { dynamicSizing: true },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks?.autoSkip).toBe(false);
+        });
+
+        test('sets autoSkip false on category (y) axis for horizontal when dynamicSizing is true', () => {
+            const spec = {
+                orientation: 'horizontal',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+                theme: { dynamicSizing: true },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.ticks?.autoSkip).toBe(false);
+        });
+
+        test('does not set autoSkip when dynamicSizing is false', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+                theme: { dynamicSizing: false },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks?.autoSkip).toBeUndefined();
+        });
+
+        test('does not set autoSkip when theme is absent', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks?.autoSkip).toBeUndefined();
+        });
+    });
 });

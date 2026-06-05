@@ -33,9 +33,11 @@ const defaults = {
         },
     },
     labels: {},
+    tooltip: {},
     theme: {
         maintainAspectRatio: false,
         animation: false,
+        dynamicSizing: false,
     },
 };
 

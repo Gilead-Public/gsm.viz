@@ -29,6 +29,7 @@ export default function getScales(spec) {
             display: !!xLabel,
             text: xLabel,
         },
+        ...(spec.theme?.dynamicSizing ? { ticks: { autoSkip: false } } : {}),
         ...(stacked ? { stacked: true } : {}),
     };
 
