@@ -128,6 +128,24 @@ function swapPointAxes(datasets) {
 }
 
 /**
+ * Darken a hex color by reducing each RGB channel by 20%.
+ *
+ * @param {string} hex - 6-digit hex color string (e.g. '#4e79a7')
+ * @returns {string} darkened hex color
+ */
+function darkenHex(hex) {
+    const r = Math.round(parseInt(hex.slice(1, 3), 16) * 0.8);
+    const g = Math.round(parseInt(hex.slice(3, 5), 16) * 0.8);
+    const b = Math.round(parseInt(hex.slice(5, 7), 16) * 0.8);
+    return (
+        '#' +
+        r.toString(16).padStart(2, '0') +
+        g.toString(16).padStart(2, '0') +
+        b.toString(16).padStart(2, '0')
+    );
+}
+
+/**
  * Transform spec data + mapping into Chart.js-compatible datasets and labels.
  *
  * When mapping.y is omitted, operates in count mode: each bar's height
@@ -205,18 +223,35 @@ export default function structureData(spec) {
     }
 
     // Apply fill palette colors if provided.
+    // For grouped charts (fillKey present), each dataset gets the palette color
+    // corresponding to its fill value or position. For ungrouped single-series
+    // charts, the first palette color is used.
     // When fill.order is present, use each dataset's position in that order
     // as the palette index so colors remain semantically aligned even when
     // some fill values are absent from the data.
     const palette = scales.fill?.palette;
-    if (palette && fillKey) {
-        datasets.forEach((ds, i) => {
-            const colorIndex = fillOrder
-                ? fillOrder.indexOf(String(ds.label))
-                : -1;
-            ds.backgroundColor =
-                palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
-        });
+    if (palette) {
+        if (fillKey) {
+            datasets.forEach((ds, i) => {
+                const colorIndex = fillOrder
+                    ? fillOrder.indexOf(String(ds.label))
+                    : -1;
+                const bg =
+                    palette[
+                        (colorIndex >= 0 ? colorIndex : i) % palette.length
+                    ];
+                ds.backgroundColor = bg;
+                ds.borderColor = darkenHex(bg);
+                ds.borderWidth = 2;
+                ds.borderRadius = 4;
+            });
+        } else {
+            // Single-series ungrouped: use the first palette color.
+            datasets[0].backgroundColor = palette[0];
+            datasets[0].borderColor = darkenHex(palette[0]);
+            datasets[0].borderWidth = 2;
+            datasets[0].borderRadius = 4;
+        }
     }
 
     // Swap point axes for horizontal orientation.

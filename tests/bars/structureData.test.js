@@ -718,7 +718,7 @@ describe('bars/structureData', () => {
             expect(result.datasets[0].backgroundColor).toBeUndefined();
         });
 
-        test('does not set backgroundColor on single series without fill', () => {
+        test('uses first palette color as backgroundColor on single series without fill', () => {
             const specNoFill = {
                 data: [{ site: 'A', score: 10 }],
                 mapping: { x: 'site', y: 'score' },
@@ -730,6 +730,17 @@ describe('bars/structureData', () => {
                 },
             };
             const result = structureData(specNoFill);
+            expect(result.datasets[0].backgroundColor).toBe('#ff0000');
+        });
+
+        test('does not set backgroundColor on single series when no palette provided', () => {
+            const specNoFillNoPalette = {
+                data: [{ site: 'A', score: 10 }],
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(specNoFillNoPalette);
             expect(result.datasets[0].backgroundColor).toBeUndefined();
         });
 
@@ -777,6 +788,112 @@ describe('bars/structureData', () => {
             const result = structureData(specExplicit);
             expect(result.datasets[0].backgroundColor).toBe('#aabbcc');
             expect(result.datasets[1].backgroundColor).toBe('#ddeeff');
+        });
+    });
+
+    describe('borders', () => {
+        test('ungrouped chart with palette sets borderWidth to 2', () => {
+            const spec = {
+                data: [{ site: 'A', score: 10 }],
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {}, fill: { palette: ['#4e79a7'] } },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderWidth).toBe(2);
+        });
+
+        test('ungrouped chart with palette sets borderRadius to 4', () => {
+            const spec = {
+                data: [{ site: 'A', score: 10 }],
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {}, fill: { palette: ['#4e79a7'] } },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderRadius).toBe(4);
+        });
+
+        test('ungrouped chart with palette sets borderColor to a darker shade', () => {
+            const spec = {
+                data: [{ site: 'A', score: 10 }],
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {}, fill: { palette: ['#4e79a7'] } },
+            };
+            const result = structureData(spec);
+            expect(typeof result.datasets[0].borderColor).toBe('string');
+            expect(result.datasets[0].borderColor).not.toBe('#4e79a7');
+        });
+
+        test('grouped chart with palette sets borderWidth to 2 on all datasets', () => {
+            const spec = {
+                data: [
+                    { site: 'A', score: 10, grp: 'X' },
+                    { site: 'B', score: 20, grp: 'Y' },
+                ],
+                mapping: { x: 'site', y: 'score', fill: 'grp' },
+                orientation: 'vertical',
+                scales: {
+                    x: {},
+                    y: {},
+                    fill: { palette: ['#ff0000', '#00ff00'] },
+                },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderWidth).toBe(2);
+            expect(result.datasets[1].borderWidth).toBe(2);
+        });
+
+        test('grouped chart with palette sets borderRadius to 4 on all datasets', () => {
+            const spec = {
+                data: [
+                    { site: 'A', score: 10, grp: 'X' },
+                    { site: 'B', score: 20, grp: 'Y' },
+                ],
+                mapping: { x: 'site', y: 'score', fill: 'grp' },
+                orientation: 'vertical',
+                scales: {
+                    x: {},
+                    y: {},
+                    fill: { palette: ['#ff0000', '#00ff00'] },
+                },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderRadius).toBe(4);
+            expect(result.datasets[1].borderRadius).toBe(4);
+        });
+
+        test('grouped chart with palette sets borderColor to a darker shade of each fill color', () => {
+            const spec = {
+                data: [
+                    { site: 'A', score: 10, grp: 'X' },
+                    { site: 'B', score: 20, grp: 'Y' },
+                ],
+                mapping: { x: 'site', y: 'score', fill: 'grp' },
+                orientation: 'vertical',
+                scales: {
+                    x: {},
+                    y: {},
+                    fill: { palette: ['#ff0000', '#00ff00'] },
+                },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderColor).not.toBe('#ff0000');
+            expect(result.datasets[1].borderColor).not.toBe('#00ff00');
+        });
+
+        test('no border properties when no palette provided', () => {
+            const spec = {
+                data: [{ site: 'A', score: 10 }],
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            expect(result.datasets[0].borderWidth).toBeUndefined();
+            expect(result.datasets[0].borderColor).toBeUndefined();
+            expect(result.datasets[0].borderRadius).toBeUndefined();
         });
     });
 });

@@ -1,4 +1,3 @@
-'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21945,6 +21944,12 @@ var gsmViz = (() => {
       }
     }
   }
+  function darkenHex(hex3) {
+    const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
+    const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
+    const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
+    return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
+  }
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
@@ -21992,11 +21997,22 @@ var gsmViz = (() => {
       datasets = reorderDatasets(datasets, fillOrder);
     }
     const palette = scales2.fill?.palette;
-    if (palette && fillKey) {
-      datasets.forEach((ds, i) => {
-        const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
-        ds.backgroundColor = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
-      });
+    if (palette) {
+      if (fillKey) {
+        datasets.forEach((ds, i) => {
+          const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
+          const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
+          ds.backgroundColor = bg;
+          ds.borderColor = darkenHex(bg);
+          ds.borderWidth = 2;
+          ds.borderRadius = 4;
+        });
+      } else {
+        datasets[0].backgroundColor = palette[0];
+        datasets[0].borderColor = darkenHex(palette[0]);
+        datasets[0].borderWidth = 2;
+        datasets[0].borderRadius = 4;
+      }
     }
     if (orientation === "horizontal") {
       swapPointAxes(datasets);
