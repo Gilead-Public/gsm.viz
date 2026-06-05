@@ -23,17 +23,15 @@ describe('bar chart is generated', () => {
             ...metricMetadatum,
             dynamicSizing: true,
         });
-        const canvas = container.getElementsByTagName('canvas')[0];
         const numCategories = resultsSubset.length;
-        expect(canvas.style.width).toBe(`${numCategories * 30}px`);
+        expect(container.style.width).toBe(`${numCategories * 30}px`);
     });
 
     test('dynamicSizing false does not set canvas width', () => {
         const container2 = document.createElement('div');
         barChart(container2, resultsSubset, metricMetadatum);
-        const canvas = container2.getElementsByTagName('canvas')[0];
         const numCategories = resultsSubset.length;
-        expect(canvas.style.width).not.toBe(`${numCategories * 30}px`);
+        expect(container2.style.width).not.toBe(`${numCategories * 30}px`);
     });
 
     test('bar chart is generated with all arguments', () => {

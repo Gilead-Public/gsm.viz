@@ -82,14 +82,16 @@ export default function bars(element = 'body', data = [], spec = {}) {
     // Attach chart to canvas element.
     canvas.chart = chart;
 
-    // Apply dynamic canvas dimension when enabled (set after Chart.js init).
+    // Apply dynamic container dimension when enabled (set after Chart.js init).
+    // Chart.js observes the container via ResizeObserver; sizing the container
+    // rather than the canvas ensures Chart.js reflects the new dimension.
     if (merged.theme.dynamicSizing) {
         const numCategories = labels.length;
         const size = getDynamicSize(numCategories) + 'px';
         if (merged.orientation === 'horizontal') {
-            canvas.style.height = size;
+            el.style.height = size;
         } else {
-            canvas.style.width = size;
+            el.style.width = size;
         }
     }
 
