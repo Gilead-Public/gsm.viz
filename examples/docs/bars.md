@@ -36,7 +36,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         fill: 'fieldName',   // optional — groups bars by colour
     },
     orientation: 'vertical',   // 'vertical' | 'horizontal'
-    position: 'stack',         // 'stack' | 'dodge' | 'identity'
+    position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity'
     scales: {
         x: {
             type: 'category',  // Chart.js scale type
