@@ -3,11 +3,9 @@ fetch('data/Health_AnimalBites.csv')
     .then((text) => {
         const data = d3.csvParse(text);
 
-        const orientationSelect = document.getElementById('bites-orientation');
-        const positionSelect = document.getElementById('bites-position');
         const container = document.getElementById('bites-container');
 
-        function buildSpec(orientation, position) {
+        function buildSpec(orientation, position, dynamicSizing) {
             return {
                 mapping: {
                     x: 'SpeciesIDDesc',
@@ -23,13 +21,20 @@ fetch('data/Health_AnimalBites.csv')
                 labels: {
                     title: 'Animal Bites by Species and Location',
                 },
+                theme: {
+                    dynamicSizing,
+                },
             };
         }
 
         let instance = gsmViz.default.bars(
             container,
             data,
-            buildSpec(orientationSelect.value, positionSelect.value)
+            buildSpec(
+                getValue('bites-orientation'),
+                getValue('bites-position'),
+                getDynamicSizing('bites-dynamic-sizing')
+            )
         );
 
         function rerender() {
@@ -37,10 +42,16 @@ fetch('data/Health_AnimalBites.csv')
             instance = gsmViz.default.bars(
                 container,
                 data,
-                buildSpec(orientationSelect.value, positionSelect.value)
+                buildSpec(
+                    getValue('bites-orientation'),
+                    getValue('bites-position'),
+                    getDynamicSizing('bites-dynamic-sizing')
+                )
             );
         }
 
-        orientationSelect.addEventListener('change', rerender);
-        positionSelect.addEventListener('change', rerender);
+        onAnyChange(
+            ['bites-orientation', 'bites-position', 'bites-dynamic-sizing'],
+            rerender
+        );
     });

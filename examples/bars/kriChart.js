@@ -52,20 +52,16 @@ Promise.all(dataPromises)
             return spec;
         }
 
-        const orientationSelect = document.getElementById('orientation');
-        const fillSelect = document.getElementById('fill');
-        const positionSelect = document.getElementById('position');
-        const dynamicSizingSelect = document.getElementById('dynamic-sizing');
         const container = document.getElementById('kri-container');
 
         let instance = gsmViz.default.bars(
             container,
             results,
             buildSpec(
-                orientationSelect.value,
-                fillSelect.value || undefined,
-                positionSelect.value,
-                dynamicSizingSelect.value === 'yes'
+                getValue('orientation'),
+                getValue('fill') || undefined,
+                getValue('position'),
+                getDynamicSizing('dynamic-sizing')
             )
         );
 
@@ -75,16 +71,16 @@ Promise.all(dataPromises)
                 container,
                 results,
                 buildSpec(
-                    orientationSelect.value,
-                    fillSelect.value || undefined,
-                    positionSelect.value,
-                    dynamicSizingSelect.value === 'yes'
+                    getValue('orientation'),
+                    getValue('fill') || undefined,
+                    getValue('position'),
+                    getDynamicSizing('dynamic-sizing')
                 )
             );
         }
 
-        orientationSelect.addEventListener('change', rerender);
-        fillSelect.addEventListener('change', rerender);
-        positionSelect.addEventListener('change', rerender);
-        dynamicSizingSelect.addEventListener('change', rerender);
+        onAnyChange(
+            ['orientation', 'fill', 'position', 'dynamic-sizing'],
+            rerender
+        );
     });
