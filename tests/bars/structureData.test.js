@@ -792,7 +792,7 @@ describe('bars/structureData', () => {
     });
 
     describe('borders', () => {
-        test('ungrouped chart with palette sets borderWidth to 2', () => {
+        test('ungrouped chart with palette sets borderWidth to 1', () => {
             const spec = {
                 data: [{ site: 'A', score: 10 }],
                 mapping: { x: 'site', y: 'score' },
@@ -800,10 +800,10 @@ describe('bars/structureData', () => {
                 scales: { x: {}, y: {}, fill: { palette: ['#4e79a7'] } },
             };
             const result = structureData(spec);
-            expect(result.datasets[0].borderWidth).toBe(2);
+            expect(result.datasets[0].borderWidth).toBe(1);
         });
 
-        test('ungrouped chart with palette sets borderRadius to 4', () => {
+        test('ungrouped chart with palette sets borderRadius to 2', () => {
             const spec = {
                 data: [{ site: 'A', score: 10 }],
                 mapping: { x: 'site', y: 'score' },
@@ -811,7 +811,7 @@ describe('bars/structureData', () => {
                 scales: { x: {}, y: {}, fill: { palette: ['#4e79a7'] } },
             };
             const result = structureData(spec);
-            expect(result.datasets[0].borderRadius).toBe(4);
+            expect(result.datasets[0].borderRadius).toBe(2);
         });
 
         test('ungrouped chart with palette sets borderColor to a darker shade', () => {
@@ -826,7 +826,7 @@ describe('bars/structureData', () => {
             expect(result.datasets[0].borderColor).not.toBe('#4e79a7');
         });
 
-        test('grouped chart with palette sets borderWidth to 2 on all datasets', () => {
+        test('grouped chart with palette sets borderWidth to 1 on all datasets', () => {
             const spec = {
                 data: [
                     { site: 'A', score: 10, grp: 'X' },
@@ -841,11 +841,11 @@ describe('bars/structureData', () => {
                 },
             };
             const result = structureData(spec);
-            expect(result.datasets[0].borderWidth).toBe(2);
-            expect(result.datasets[1].borderWidth).toBe(2);
+            expect(result.datasets[0].borderWidth).toBe(1);
+            expect(result.datasets[1].borderWidth).toBe(1);
         });
 
-        test('grouped chart with palette sets borderRadius to 4 on all datasets', () => {
+        test('grouped chart with palette sets borderRadius to 2 on all datasets', () => {
             const spec = {
                 data: [
                     { site: 'A', score: 10, grp: 'X' },
@@ -860,8 +860,8 @@ describe('bars/structureData', () => {
                 },
             };
             const result = structureData(spec);
-            expect(result.datasets[0].borderRadius).toBe(4);
-            expect(result.datasets[1].borderRadius).toBe(4);
+            expect(result.datasets[0].borderRadius).toBe(2);
+            expect(result.datasets[1].borderRadius).toBe(2);
         });
 
         test('grouped chart with palette sets borderColor to a darker shade of each fill color', () => {
