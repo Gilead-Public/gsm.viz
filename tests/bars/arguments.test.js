@@ -241,19 +241,55 @@ describe('bars entry point', () => {
             expect(c.style.width).toBe('90px');
         });
 
-        test('does not set container height when dynamicSizing is false', () => {
+        test('clears container height when dynamicSizing is false', () => {
             const c = document.createElement('div');
             bars(c, singleSeriesData, {
                 ...singleSeriesSpec,
                 orientation: 'horizontal',
             });
-            expect(c.style.height).not.toBe('90px');
+            expect(c.style.height).toBe('');
         });
 
-        test('does not set container width when dynamicSizing is false', () => {
+        test('clears container width when dynamicSizing is false', () => {
             const c = document.createElement('div');
             bars(c, singleSeriesData, singleSeriesSpec);
-            expect(c.style.width).not.toBe('90px');
+            expect(c.style.width).toBe('');
+        });
+
+        test('clears height when switching from horizontal to vertical', () => {
+            const c = document.createElement('div');
+            // First render: horizontal + dynamicSizing
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true },
+            });
+            expect(c.style.height).toBe('90px');
+            // Second render: vertical + dynamicSizing — height should be cleared
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'vertical',
+                theme: { dynamicSizing: true },
+            });
+            expect(c.style.height).toBe('');
+            expect(c.style.width).toBe('90px');
+        });
+
+        test('clears dynamic dimension when dynamicSizing is disabled', () => {
+            const c = document.createElement('div');
+            // First render: horizontal + dynamicSizing
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true },
+            });
+            expect(c.style.height).toBe('90px');
+            // Second render: dynamicSizing disabled — height should be cleared
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+            });
+            expect(c.style.height).toBe('');
         });
     });
 });

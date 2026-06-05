@@ -100,9 +100,8 @@ export default function barChart(
     // Attach chart to canvas element.
     canvas.chart = chart;
 
-    // Apply dynamic container width when enabled (set after Chart.js init).
-    // Chart.js observes the container via ResizeObserver; sizing the container
-    // rather than the canvas ensures Chart.js reflects the new dimension.
+    // Reset any previously applied dynamic sizing, then re-apply if enabled.
+    canvas.parentNode.style.width = '';
     if (config.dynamicSizing) {
         canvas.parentNode.style.width =
             getDynamicSize(datasets[0].data.length) + 'px';

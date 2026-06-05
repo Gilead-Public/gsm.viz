@@ -82,6 +82,12 @@ export default function bars(element = 'body', data = [], spec = {}) {
     // Attach chart to canvas element.
     canvas.chart = chart;
 
+    // Reset any previously applied dynamic sizing before re-evaluating.
+    // This ensures switching orientation or disabling dynamicSizing restores
+    // the CSS-controlled container dimensions.
+    el.style.height = '';
+    el.style.width = '';
+
     // Apply dynamic container dimension when enabled (set after Chart.js init).
     // Chart.js observes the container via ResizeObserver; sizing the container
     // rather than the canvas ensures Chart.js reflects the new dimension.
@@ -90,9 +96,22 @@ export default function bars(element = 'body', data = [], spec = {}) {
         const size = getDynamicSize(numCategories) + 'px';
         if (merged.orientation === 'horizontal') {
             el.style.height = size;
+            console.log(
+                `[dynamicSizing] horizontal — ${numCategories} categories → container height: ${size}`
+            );
         } else {
             el.style.width = size;
+            console.log(
+                `[dynamicSizing] vertical — ${numCategories} categories → container width: ${size}`
+            );
         }
+        console.log('[dynamicSizing] container el:', el);
+        console.log(
+            '[dynamicSizing] container computed style — height:',
+            el.style.height,
+            'width:',
+            el.style.width
+        );
     }
 
     // Attach update helpers.
