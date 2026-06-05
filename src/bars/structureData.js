@@ -242,15 +242,15 @@ export default function structureData(spec) {
                     ];
                 ds.backgroundColor = bg;
                 ds.borderColor = darkenHex(bg);
-                ds.borderWidth = 2;
-                ds.borderRadius = 4;
+                ds.borderWidth = 1;
+                ds.borderRadius = 2;
             });
         } else {
             // Single-series ungrouped: use the first palette color.
             datasets[0].backgroundColor = palette[0];
             datasets[0].borderColor = darkenHex(palette[0]);
-            datasets[0].borderWidth = 2;
-            datasets[0].borderRadius = 4;
+            datasets[0].borderWidth = 1;
+            datasets[0].borderRadius = 2;
         }
     }
 
