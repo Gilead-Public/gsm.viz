@@ -108,6 +108,14 @@
                         <!--option value="identity">Identity</option-->
                     </select>
                 </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Sizing</legend>
+                    <select id="bites-dynamic-sizing">
+                        <option value="no" selected>No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </fieldset>
             </div>
 
             <div id="bites-container"></div>
@@ -152,6 +160,22 @@
                     <legend>Year</legend>
                     <select id="gini-year"></select>
                 </fieldset>
+
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="gini-orientation">
+                        <option value="vertical" selected>Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Sizing</legend>
+                    <select id="gini-dynamic-sizing">
+                        <option value="no" selected>No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </fieldset>
             </div>
 
             <div id="gini-container"></div>
@@ -173,6 +197,7 @@
             });
         </script>
 
+        <script src="controls.js"></script>
         <script src="kriChart.js"></script>
         <script src="animalBitesChart.js"></script>
         <script src="retentionChart.js"></script>

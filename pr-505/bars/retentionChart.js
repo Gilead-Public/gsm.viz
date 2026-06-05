@@ -10,13 +10,6 @@ fetch('data/retention.csv')
             .sort((a, b) => a[1] - b[1])
             .map(([reason]) => reason);
 
-        const orientationSelect = document.getElementById(
-            'retention-orientation'
-        );
-        const positionSelect = document.getElementById('retention-position');
-        const dynamicSizingSelect = document.getElementById(
-            'retention-dynamic-sizing'
-        );
         const container = document.getElementById('retention-container');
 
         function buildSpec(orientation, position, dynamicSizing) {
@@ -48,9 +41,9 @@ fetch('data/retention.csv')
             container,
             data,
             buildSpec(
-                orientationSelect.value,
-                positionSelect.value,
-                dynamicSizingSelect.value === 'yes'
+                getValue('retention-orientation'),
+                getValue('retention-position'),
+                getDynamicSizing('retention-dynamic-sizing')
             )
         );
 
@@ -60,14 +53,19 @@ fetch('data/retention.csv')
                 container,
                 data,
                 buildSpec(
-                    orientationSelect.value,
-                    positionSelect.value,
-                    dynamicSizingSelect.value === 'yes'
+                    getValue('retention-orientation'),
+                    getValue('retention-position'),
+                    getDynamicSizing('retention-dynamic-sizing')
                 )
             );
         }
 
-        orientationSelect.addEventListener('change', rerender);
-        positionSelect.addEventListener('change', rerender);
-        dynamicSizingSelect.addEventListener('change', rerender);
+        onAnyChange(
+            [
+                'retention-orientation',
+                'retention-position',
+                'retention-dynamic-sizing',
+            ],
+            rerender
+        );
     });

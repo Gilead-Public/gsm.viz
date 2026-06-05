@@ -21659,11 +21659,6 @@ var gsmViz = (() => {
     return plugin2;
   }
 
-  // src/util/getDynamicSize.js
-  function getDynamicSize(numCategories, pxPerCategory = 30) {
-    return numCategories * pxPerCategory;
-  }
-
   // src/util/triggerTooltip.js
   function triggerTooltip(chart) {
     const tooltip5 = chart.tooltip;
@@ -21768,7 +21763,12 @@ var gsmViz = (() => {
     canvas.chart = chart;
     canvas.parentNode.style.width = "";
     if (config.dynamicSizing) {
-      canvas.parentNode.style.width = getDynamicSize(datasets[0].data.length) + "px";
+      const numCategories = datasets[0].data.length;
+      const pxPerCategory = 30;
+      const area = chart.chartArea;
+      const chartAreaWidth = area ? area.right - area.left : 0;
+      const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+      canvas.parentNode.style.width = numCategories * pxPerCategory + overhead + "px";
     }
     chart.helpers = {
       updateConfig,
@@ -21945,6 +21945,12 @@ var gsmViz = (() => {
       }
     }
   }
+  function darkenHex(hex3) {
+    const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
+    const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
+    const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
+    return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
+  }
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
@@ -21992,11 +21998,22 @@ var gsmViz = (() => {
       datasets = reorderDatasets(datasets, fillOrder);
     }
     const palette = scales2.fill?.palette;
-    if (palette && fillKey) {
-      datasets.forEach((ds, i) => {
-        const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
-        ds.backgroundColor = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
-      });
+    if (palette) {
+      if (fillKey) {
+        datasets.forEach((ds, i) => {
+          const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
+          const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
+          ds.backgroundColor = bg;
+          ds.borderColor = darkenHex(bg);
+          ds.borderWidth = 2;
+          ds.borderRadius = 4;
+        });
+      } else {
+        datasets[0].backgroundColor = palette[0];
+        datasets[0].borderColor = darkenHex(palette[0]);
+        datasets[0].borderWidth = 2;
+        datasets[0].borderRadius = 4;
+      }
     }
     if (orientation === "horizontal") {
       swapPointAxes(datasets);
@@ -22151,25 +22168,26 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const size = getDynamicSize(numCategories) + "px";
+      const pxPerCategory = 30;
       if (merged.orientation === "horizontal") {
-        el.style.height = size;
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.height = corrected + "px";
         console.log(
-          `[dynamicSizing] horizontal \u2014 ${numCategories} categories \u2192 container height: ${size}`
+          `[dynamicSizing] horizontal \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container height: ${corrected}px`
         );
       } else {
-        el.style.width = size;
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.width = corrected + "px";
         console.log(
-          `[dynamicSizing] vertical \u2014 ${numCategories} categories \u2192 container width: ${size}`
+          `[dynamicSizing] vertical \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container width: ${corrected}px`
         );
       }
-      console.log("[dynamicSizing] container el:", el);
-      console.log(
-        "[dynamicSizing] container computed style \u2014 height:",
-        el.style.height,
-        "width:",
-        el.style.width
-      );
     }
     chart.helpers = {
       updateData: updateData2,

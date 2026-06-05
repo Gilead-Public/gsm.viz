@@ -37,19 +37,15 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 .sort((a, b) => Number(b.gini) - Number(a.gini));
         }
 
-        function render() {
-            const year = yearSelect.value;
-            const data = getDataForYear(year);
-
-            // Pass explicit descending order so bars respect sort.
+        function buildSpec(year, data, orientation, dynamicSizing) {
             const countryOrder = data.map((d) => d.country);
 
-            const spec = {
+            return {
                 mapping: {
                     x: 'country',
                     y: 'gini',
                 },
-                orientation: 'vertical',
+                orientation,
                 scales: {
                     x: {
                         label: 'Country',
@@ -62,12 +58,28 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 labels: {
                     title: `Gini Index by Country (${year})`,
                 },
+                theme: {
+                    dynamicSizing,
+                },
             };
+        }
 
+        function render() {
+            const year = getValue('gini-year');
+            const data = getDataForYear(year);
+            const spec = buildSpec(
+                year,
+                data,
+                getValue('gini-orientation'),
+                getDynamicSizing('gini-dynamic-sizing')
+            );
             if (instance) instance.destroy();
             instance = gsmViz.default.bars(container, data, spec);
         }
 
         render();
-        yearSelect.addEventListener('change', render);
+        onAnyChange(
+            ['gini-year', 'gini-orientation', 'gini-dynamic-sizing'],
+            render
+        );
     });
