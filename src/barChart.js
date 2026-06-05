@@ -19,9 +19,6 @@ import getScales from './barChart/getScales.js';
 // custom plugins
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
-// dynamic sizing utility
-import getDynamicSize from './util/getDynamicSize.js';
-
 // update methods
 import updateData from './barChart/updateData.js';
 import updateConfig from './barChart/updateConfig.js';
@@ -101,10 +98,19 @@ export default function barChart(
     canvas.chart = chart;
 
     // Reset any previously applied dynamic sizing, then re-apply if enabled.
+    // Two-pass: measure Chart.js overhead from the initial render and correct
+    // the container width so the chart area is exactly numCategories × 30px.
     canvas.parentNode.style.width = '';
     if (config.dynamicSizing) {
+        const numCategories = datasets[0].data.length;
+        const pxPerCategory = 30;
+        const area = chart.chartArea;
+        const chartAreaWidth =
+            area ? area.right - area.left : 0;
+        const overhead =
+            chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
         canvas.parentNode.style.width =
-            getDynamicSize(datasets[0].data.length) + 'px';
+            numCategories * pxPerCategory + overhead + 'px';
     }
 
     // Attach update methods to chart.

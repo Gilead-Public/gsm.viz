@@ -7,7 +7,6 @@ import getScales from './bars/getScales.js';
 import getPlugins from './bars/getPlugins.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
-import getDynamicSize from './util/getDynamicSize.js';
 
 // update methods
 import updateData from './bars/updateData.js';
@@ -89,29 +88,37 @@ export default function bars(element = 'body', data = [], spec = {}) {
     el.style.width = '';
 
     // Apply dynamic container dimension when enabled (set after Chart.js init).
-    // Chart.js observes the container via ResizeObserver; sizing the container
-    // rather than the canvas ensures Chart.js reflects the new dimension.
+    // Two-pass approach: measure Chart.js overhead from the initial render, then
+    // set the corrected container size so the chart area is exactly
+    // numCategories × pxPerCategory — giving consistent per-bar space across
+    // charts with different legends, titles, and axis configurations.
     if (merged.theme.dynamicSizing) {
         const numCategories = labels.length;
-        const size = getDynamicSize(numCategories) + 'px';
+        const pxPerCategory = 30;
+
         if (merged.orientation === 'horizontal') {
-            el.style.height = size;
+            const area = chart.chartArea;
+            const chartAreaHeight =
+                area ? area.bottom - area.top : 0;
+            const overhead =
+                chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+            const corrected = numCategories * pxPerCategory + overhead;
+            el.style.height = corrected + 'px';
             console.log(
-                `[dynamicSizing] horizontal — ${numCategories} categories → container height: ${size}`
+                `[dynamicSizing] horizontal — ${numCategories} categories, overhead ${overhead}px → container height: ${corrected}px`
             );
         } else {
-            el.style.width = size;
+            const area = chart.chartArea;
+            const chartAreaWidth =
+                area ? area.right - area.left : 0;
+            const overhead =
+                chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+            const corrected = numCategories * pxPerCategory + overhead;
+            el.style.width = corrected + 'px';
             console.log(
-                `[dynamicSizing] vertical — ${numCategories} categories → container width: ${size}`
+                `[dynamicSizing] vertical — ${numCategories} categories, overhead ${overhead}px → container width: ${corrected}px`
             );
         }
-        console.log('[dynamicSizing] container el:', el);
-        console.log(
-            '[dynamicSizing] container computed style — height:',
-            el.style.height,
-            'width:',
-            el.style.width
-        );
     }
 
     // Attach update helpers.
