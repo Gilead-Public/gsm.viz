@@ -21862,7 +21862,8 @@ var gsmViz = (() => {
         fill: { ...defaults_default.scales.fill, ...spec.scales?.fill }
       },
       labels: { ...defaults_default.labels, ...spec.labels },
-      theme: { ...defaults_default.theme, ...spec.theme }
+      theme: { ...defaults_default.theme, ...spec.theme },
+      tooltip: { ...defaults_default.tooltip, ...spec.tooltip }
     };
   }
 
@@ -22055,7 +22056,7 @@ var gsmViz = (() => {
 
   // src/bars/getPlugins.js
   function getPlugins2(spec) {
-    const { labels, mapping, scales: scales2 } = spec;
+    const { labels, mapping, scales: scales2, tooltip: tooltip5 } = spec;
     const fillLabel = scales2.fill?.label !== void 0 ? scales2.fill.label : mapping?.fill;
     return {
       title: {
@@ -22063,7 +22064,8 @@ var gsmViz = (() => {
         text: labels.title || ""
       },
       tooltip: {
-        enabled: true
+        enabled: true,
+        ...tooltip5
       },
       legend: {
         display: !!mapping.fill,
