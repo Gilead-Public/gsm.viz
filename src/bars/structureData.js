@@ -146,6 +146,41 @@ function darkenHex(hex) {
 }
 
 /**
+ * Normalize y values within each x-category to percentages of the category
+ * total. For each point, stores the original value as `_rawY` then replaces
+ * `y` with `(rawY / categoryTotal) * 100`. Zero-total categories are left at 0.
+ *
+ * @param {Array} datasets - structured datasets (point objects with x/y)
+ * @param {boolean} horizontal - true when orientation is horizontal
+ */
+function normalizeFill(datasets, horizontal) {
+    // In horizontal mode the axes are already swapped so the "value" is on x.
+    const catKey = horizontal ? 'x' : 'y';
+    const valKey = horizontal ? 'y' : 'x';
+
+    // Build a map of category → total across all datasets.
+    const totals = new Map();
+    for (const ds of datasets) {
+        for (const pt of ds.data) {
+            const cat = pt[valKey];
+            const val = pt[catKey];
+            totals.set(cat, (totals.get(cat) || 0) + val);
+        }
+    }
+
+    // Replace values with percentages, storing originals as _rawY.
+    for (const ds of datasets) {
+        for (const pt of ds.data) {
+            const cat = pt[valKey];
+            const total = totals.get(cat) || 0;
+            pt._rawY = pt[catKey];
+            pt[catKey] = total === 0 ? 0 : (pt._rawY / total) * 100;
+        }
+    }
+}
+
+
+/**
  * Transform spec data + mapping into Chart.js-compatible datasets and labels.
  *
  * When mapping.y is omitted, operates in count mode: each bar's height
@@ -257,6 +292,11 @@ export default function structureData(spec) {
     // Swap point axes for horizontal orientation.
     if (orientation === 'horizontal') {
         swapPointAxes(datasets);
+    }
+
+    // Apply within-category percentage normalization for position='fill'.
+    if (spec.position === 'fill') {
+        normalizeFill(datasets, orientation === 'horizontal');
     }
 
     return { datasets, labels };
