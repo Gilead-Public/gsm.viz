@@ -22005,14 +22005,14 @@ var gsmViz = (() => {
           const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
           ds.backgroundColor = bg;
           ds.borderColor = darkenHex(bg);
-          ds.borderWidth = 2;
-          ds.borderRadius = 4;
+          ds.borderWidth = 1;
+          ds.borderRadius = 2;
         });
       } else {
         datasets[0].backgroundColor = palette[0];
         datasets[0].borderColor = darkenHex(palette[0]);
-        datasets[0].borderWidth = 2;
-        datasets[0].borderRadius = 4;
+        datasets[0].borderWidth = 1;
+        datasets[0].borderRadius = 2;
       }
     }
     if (orientation === "horizontal") {
