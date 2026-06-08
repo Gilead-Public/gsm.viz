@@ -82,6 +82,36 @@ export default function getPlugins(spec) {
             );
 
             chart.update();
+
+            // Reapply dynamic container sizing if enabled, using the post-update
+            // chart area measurements and the new (possibly smaller) label count.
+            if (chart.data._spec_?.theme?.dynamicSizing) {
+                const container = chart.canvas?.parentElement;
+                if (container) {
+                    const numCategories = chart.data.labels.length;
+                    const pxPerCategory = 30;
+                    const horizontal =
+                        chart.data._spec_?.orientation === 'horizontal';
+
+                    if (horizontal) {
+                        const area = chart.chartArea;
+                        const chartAreaHeight = area ? area.bottom - area.top : 0;
+                        const overhead =
+                            chartAreaHeight > 0
+                                ? chart.height - chartAreaHeight
+                                : 0;
+                        container.style.height =
+                            numCategories * pxPerCategory + overhead + 'px';
+                    } else {
+                        const area = chart.chartArea;
+                        const chartAreaWidth = area ? area.right - area.left : 0;
+                        const overhead =
+                            chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+                        container.style.width =
+                            numCategories * pxPerCategory + overhead + 'px';
+                    }
+                }
+            }
         };
     }
 

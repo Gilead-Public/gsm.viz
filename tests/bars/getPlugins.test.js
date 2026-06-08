@@ -275,6 +275,102 @@ describe('bars/getPlugins', () => {
                 expect(chart.update).toHaveBeenCalledTimes(1);
             });
 
+            describe('dynamicSizing integration', () => {
+                function makeChartWithSizing(datasets, allLabels, orientation, chartArea, chartDim, theme = { dynamicSizing: true }) {
+                    const chart = makeChart(datasets, allLabels, orientation);
+                    chart.data._spec_.theme = theme;
+                    chart.chartArea = chartArea;
+                    chart.height = chartDim;
+                    chart.width = chartDim;
+                    chart.canvas = { parentElement: { style: { width: '', height: '' } } };
+                    return chart;
+                }
+
+                test('updates container width for vertical chart after hide', () => {
+                    const spec = {
+                        ...baseSpec,
+                        theme: { dynamicCategoryAxis: true, dynamicSizing: true },
+                    };
+                    const plugins = getPlugins(spec);
+
+                    // Simulate a chart with 3 categories; after hiding ds0 only 2 remain.
+                    // chartArea: left=40, right=340 → chartAreaWidth=300; chart.width=400 → overhead=100
+                    const ds0 = makeDataset('A', ['cat1']);
+                    const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                    const chart = makeChartWithSizing(
+                        [ds0, ds1],
+                        ['cat1', 'cat2', 'cat3'],
+                        'vertical',
+                        { left: 40, right: 340, top: 10, bottom: 210 },
+                        400
+                    );
+
+                    clickLegend(plugins, chart, 0); // hides ds0, labels → ['cat2','cat3']
+
+                    // 2 categories × 30 + 100 overhead = 160
+                    expect(chart.canvas.parentElement.style.width).toBe('160px');
+                });
+
+                test('updates container height for horizontal chart after hide', () => {
+                    const spec = {
+                        ...baseSpec,
+                        theme: {
+                            dynamicCategoryAxis: true,
+                            dynamicSizing: true,
+                            orientation: 'horizontal',
+                        },
+                    };
+                    const plugins = getPlugins(spec);
+
+                    // category key is y for horizontal datasets
+                    const ds0 = { label: 'A', data: [{ x: 1, y: 'cat1' }] };
+                    const ds1 = {
+                        label: 'B',
+                        data: [
+                            { x: 2, y: 'cat2' },
+                            { x: 3, y: 'cat3' },
+                        ],
+                    };
+                    // chartArea: top=20, bottom=320 → chartAreaHeight=300; chart.height=400 → overhead=100
+                    const chart = makeChartWithSizing(
+                        [ds0, ds1],
+                        ['cat1', 'cat2', 'cat3'],
+                        'horizontal',
+                        { top: 20, bottom: 320, left: 40, right: 340 },
+                        400
+                    );
+
+                    clickLegend(plugins, chart, 0); // hides ds0, labels → ['cat2','cat3']
+
+                    // 2 categories × 30 + 100 overhead = 160
+                    expect(chart.canvas.parentElement.style.height).toBe('160px');
+                });
+
+                test('does not set container dimensions when dynamicSizing is false', () => {
+                    const spec = {
+                        ...baseSpec,
+                        theme: { dynamicCategoryAxis: true, dynamicSizing: false },
+                    };
+                    const plugins = getPlugins(spec);
+
+                    const ds0 = makeDataset('A', ['cat1']);
+                    const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                    const chart = makeChartWithSizing(
+                        [ds0, ds1],
+                        ['cat1', 'cat2', 'cat3'],
+                        'vertical',
+                        { left: 40, right: 340, top: 10, bottom: 210 },
+                        400,
+                        { dynamicSizing: false }
+                    );
+
+                    clickLegend(plugins, chart, 0);
+
+                    expect(chart.canvas.parentElement.style.width).toBe('');
+                    expect(chart.canvas.parentElement.style.height).toBe('');
+                });
+            });
+
             test('uses y key for category values in horizontal orientation', () => {
                 const spec = {
                     ...baseSpec,
