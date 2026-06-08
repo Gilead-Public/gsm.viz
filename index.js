@@ -21799,9 +21799,9 @@ var gsmViz = (() => {
     if (!spec.mapping.x) {
       throw new Error("spec.mapping.x is required");
     }
-    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity") {
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill") {
       throw new Error(
-        "spec.position must be 'stack', 'dodge', or 'identity'"
+        "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
       );
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
@@ -21843,7 +21843,8 @@ var gsmViz = (() => {
     theme: {
       maintainAspectRatio: false,
       animation: false,
-      dynamicSizing: false
+      dynamicSizing: false,
+      dynamicCategoryAxis: false
     }
   };
   var defaults_default = defaults3;
@@ -21951,6 +21952,26 @@ var gsmViz = (() => {
     const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
     return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
   }
+  function normalizeFill(datasets, horizontal) {
+    const catKey = horizontal ? "x" : "y";
+    const valKey = horizontal ? "y" : "x";
+    const totals = /* @__PURE__ */ new Map();
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const cat = pt[valKey];
+        const val = pt[catKey];
+        totals.set(cat, (totals.get(cat) || 0) + val);
+      }
+    }
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const cat = pt[valKey];
+        const total = totals.get(cat) || 0;
+        pt._rawY = pt[catKey];
+        pt[catKey] = total === 0 ? 0 : pt._rawY / total * 100;
+      }
+    }
+  }
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
@@ -22018,6 +22039,9 @@ var gsmViz = (() => {
     if (orientation === "horizontal") {
       swapPointAxes(datasets);
     }
+    if (spec.position === "fill") {
+      normalizeFill(datasets, orientation === "horizontal");
+    }
     return { datasets, labels };
   }
 
@@ -22025,9 +22049,11 @@ var gsmViz = (() => {
   function getScales2(spec) {
     const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === "horizontal";
-    const stacked = position === "stack";
+    const stacked = position === "stack" || position === "fill";
+    const fill2 = position === "fill";
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
+    const percentageTicks = { callback: (v) => `${v}%` };
     const categoryScale = {
       type: specScales.x.type,
       title: {
@@ -22044,7 +22070,8 @@ var gsmViz = (() => {
         text: yLabel
       },
       beginAtZero: true,
-      ...stacked ? { stacked: true } : {}
+      ...stacked ? { stacked: true } : {},
+      ...fill2 ? { max: 100, ticks: percentageTicks } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -22055,8 +22082,69 @@ var gsmViz = (() => {
 
   // src/bars/getPlugins.js
   function getPlugins2(spec) {
-    const { labels, mapping, scales: scales2, tooltip: tooltip5 } = spec;
+    const { labels, mapping, scales: scales2, tooltip: tooltip5, theme } = spec;
     const fillLabel = scales2.fill?.label !== void 0 ? scales2.fill.label : mapping?.fill;
+    const legend5 = {
+      display: !!mapping.fill,
+      title: {
+        display: !!fillLabel,
+        text: fillLabel || ""
+      }
+    };
+    if (theme?.dynamicCategoryAxis) {
+      legend5.onClick = function(e, legendItem, legendRef) {
+        const chart = legendRef.chart;
+        const { datasetIndex } = legendItem;
+        const dataset = chart.data.datasets[datasetIndex];
+        if (chart.isDatasetVisible(datasetIndex)) {
+          dataset._backup_ = dataset.data;
+          dataset.data = [];
+          chart.setDatasetVisibility(datasetIndex, false);
+        } else {
+          if (dataset._backup_) {
+            dataset.data = dataset._backup_;
+            delete dataset._backup_;
+          }
+          chart.setDatasetVisibility(datasetIndex, true);
+        }
+        const catKey = chart.data._spec_?.orientation === "horizontal" ? "y" : "x";
+        const visibleCats = /* @__PURE__ */ new Set();
+        for (let i = 0; i < chart.data.datasets.length; i++) {
+          if (chart.isDatasetVisible(i) && Array.isArray(chart.data.datasets[i].data)) {
+            for (const point of chart.data.datasets[i].data) {
+              visibleCats.add(point[catKey]);
+            }
+          }
+        }
+        chart.data.labels = (chart.data._allLabels_ || []).filter(
+          (cat) => visibleCats.has(cat)
+        );
+        console.log(
+          "[dynamicCategoryAxis] labels after toggle:",
+          chart.data.labels
+        );
+        chart.update();
+        if (chart.data._spec_?.theme?.dynamicSizing) {
+          const container = chart.canvas?.parentElement;
+          if (container) {
+            const numCategories = chart.data.labels.length;
+            const pxPerCategory = 30;
+            const horizontal = chart.data._spec_?.orientation === "horizontal";
+            if (horizontal) {
+              const area = chart.chartArea;
+              const chartAreaHeight = area ? area.bottom - area.top : 0;
+              const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+              container.style.height = numCategories * pxPerCategory + overhead + "px";
+            } else {
+              const area = chart.chartArea;
+              const chartAreaWidth = area ? area.right - area.left : 0;
+              const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+              container.style.width = numCategories * pxPerCategory + overhead + "px";
+            }
+          }
+        }
+      };
+    }
     return {
       title: {
         display: !!labels.title,
@@ -22066,13 +22154,7 @@ var gsmViz = (() => {
         enabled: true,
         ...tooltip5
       },
-      legend: {
-        display: !!mapping.fill,
-        title: {
-          display: !!fillLabel,
-          text: fillLabel || ""
-        }
-      },
+      legend: legend5,
       datalabels: {
         display: false
       }
@@ -22086,6 +22168,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
+    chart.data._allLabels_ = labels;
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22116,6 +22199,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
+    chart.data._allLabels_ = labels;
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22159,6 +22243,7 @@ var gsmViz = (() => {
       data: {
         datasets,
         labels,
+        _allLabels_: labels,
         _spec_: merged
       },
       options,
@@ -22176,18 +22261,12 @@ var gsmViz = (() => {
         const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
         const corrected = numCategories * pxPerCategory + overhead;
         el.style.height = corrected + "px";
-        console.log(
-          `[dynamicSizing] horizontal \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container height: ${corrected}px`
-        );
       } else {
         const area = chart.chartArea;
         const chartAreaWidth = area ? area.right - area.left : 0;
         const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
         const corrected = numCategories * pxPerCategory + overhead;
         el.style.width = corrected + "px";
-        console.log(
-          `[dynamicSizing] vertical \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container width: ${corrected}px`
-        );
       }
     }
     chart.helpers = {

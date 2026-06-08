@@ -105,9 +105,6 @@ export default function bars(element = 'body', data = [], spec = {}) {
                 chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
             const corrected = numCategories * pxPerCategory + overhead;
             el.style.height = corrected + 'px';
-            console.log(
-                `[dynamicSizing] horizontal — ${numCategories} categories, overhead ${overhead}px → container height: ${corrected}px`
-            );
         } else {
             const area = chart.chartArea;
             const chartAreaWidth =
@@ -116,9 +113,6 @@ export default function bars(element = 'body', data = [], spec = {}) {
                 chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
             const corrected = numCategories * pxPerCategory + overhead;
             el.style.width = corrected + 'px';
-            console.log(
-                `[dynamicSizing] vertical — ${numCategories} categories, overhead ${overhead}px → container width: ${corrected}px`
-            );
         }
     }
 
