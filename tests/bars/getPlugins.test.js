@@ -100,6 +100,194 @@ describe('bars/getPlugins', () => {
         });
     });
 
+    describe('dynamicCategoryAxis', () => {
+        const baseSpec = {
+            mapping: { fill: 'group' },
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+        };
+
+        test('no onClick on legend when dynamicCategoryAxis is absent', () => {
+            const plugins = getPlugins(baseSpec);
+            expect(plugins.legend.onClick).toBeUndefined();
+        });
+
+        test('no onClick on legend when dynamicCategoryAxis is false', () => {
+            const spec = { ...baseSpec, theme: { dynamicCategoryAxis: false } };
+            const plugins = getPlugins(spec);
+            expect(plugins.legend.onClick).toBeUndefined();
+        });
+
+        test('onClick is a function when dynamicCategoryAxis is true', () => {
+            const spec = { ...baseSpec, theme: { dynamicCategoryAxis: true } };
+            const plugins = getPlugins(spec);
+            expect(typeof plugins.legend.onClick).toBe('function');
+        });
+
+        describe('onClick behavior', () => {
+            function makeChart(datasets, allLabels, orientation = 'vertical') {
+                return {
+                    data: {
+                        datasets,
+                        labels: [...allLabels],
+                        _allLabels_: [...allLabels],
+                        _spec_: { orientation },
+                    },
+                    update: jest.fn(),
+                };
+            }
+
+            function makeDataset(label, categories, hidden = false) {
+                return {
+                    label,
+                    hidden,
+                    data: categories.map((cat) => ({ x: cat, y: 1 })),
+                };
+            }
+
+            function clickLegend(plugins, chart, datasetIndex) {
+                const legendItem = { datasetIndex };
+                const legend = { chart };
+                plugins.legend.onClick({}, legendItem, legend);
+            }
+
+            test('toggles the clicked dataset hidden state from visible to hidden', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1', 'cat2']);
+                const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.data.datasets[0].hidden).toBe(true);
+            });
+
+            test('toggles the clicked dataset hidden state from hidden to visible', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1', 'cat2'], true);
+                const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.data.datasets[0].hidden).toBe(false);
+            });
+
+            test('filters labels to categories in visible datasets only', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1', 'cat2']);
+                const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+
+                // Hide dataset A — cat1 is only in A, so it should be removed
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.data.labels).toEqual(['cat2', 'cat3']);
+            });
+
+            test('restores full labels when a hidden dataset is re-selected', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1', 'cat2'], true);
+                const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+
+                // Re-show dataset A — cat1 should come back
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.data.labels).toEqual(['cat1', 'cat2', 'cat3']);
+            });
+
+            test('preserves original category order from _allLabels_', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat3', 'cat1']);
+                const ds1 = makeDataset('B', ['cat2']);
+                const allLabels = ['cat1', 'cat2', 'cat3'];
+                const chart = makeChart([ds0, ds1], allLabels);
+
+                // Hide dataset B — only cat1 and cat3 remain
+                clickLegend(plugins, chart, 1);
+
+                // Order must follow _allLabels_, not dataset data order
+                expect(chart.data.labels).toEqual(['cat1', 'cat3']);
+            });
+
+            test('calls chart.update() after adjusting labels', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1']);
+                const ds1 = makeDataset('B', ['cat2']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2']);
+
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.update).toHaveBeenCalledTimes(1);
+            });
+
+            test('uses y key for category values in horizontal orientation', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: { dynamicCategoryAxis: true, orientation: 'horizontal' },
+                };
+                const plugins = getPlugins(spec);
+
+                // In horizontal mode, swapPointAxes has been applied:
+                // category is in y, value is in x
+                const ds0 = {
+                    label: 'A',
+                    hidden: false,
+                    data: [
+                        { x: 1, y: 'cat1' },
+                        { x: 2, y: 'cat2' },
+                    ],
+                };
+                const ds1 = {
+                    label: 'B',
+                    hidden: false,
+                    data: [
+                        { x: 3, y: 'cat2' },
+                        { x: 4, y: 'cat3' },
+                    ],
+                };
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'horizontal');
+
+                // Hide dataset A — cat1 exclusive to A
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.data.labels).toEqual(['cat2', 'cat3']);
+            });
+        });
+    });
+
     describe('tooltip', () => {
         test('tooltip is enabled by default', () => {
             const spec = {

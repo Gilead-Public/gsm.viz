@@ -72,6 +72,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
         data: {
             datasets,
             labels,
+            _allLabels_: labels,
             _spec_: merged,
         },
         options,

@@ -34,6 +34,7 @@ export default function updateSpec(chart, spec) {
 
     chart.data.datasets = datasets;
     chart.data.labels = labels;
+    chart.data._allLabels_ = labels;
     chart.data._spec_ = merged;
 
     chart.options.indexAxis = scalesConfig._indexAxis;
