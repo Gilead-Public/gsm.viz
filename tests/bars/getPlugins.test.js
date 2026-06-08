@@ -126,7 +126,12 @@ describe('bars/getPlugins', () => {
         });
 
         describe('onClick behavior', () => {
-            function makeChart(datasets, allLabels, orientation = 'vertical') {
+            // Mock chart that mirrors Chart.js visibility API:
+            // isDatasetVisible / hide / show use an internal _meta map,
+            // matching how Chart.js 3 tracks runtime visibility.
+            function makeChart(datasets, allLabels, orientation = 'vertical', initiallyHidden = []) {
+                const _meta = {};
+                initiallyHidden.forEach((i) => { _meta[i] = true; });
                 return {
                     data: {
                         datasets,
@@ -134,14 +139,17 @@ describe('bars/getPlugins', () => {
                         _allLabels_: [...allLabels],
                         _spec_: { orientation },
                     },
+                    _meta,
                     update: jest.fn(),
+                    isDatasetVisible(i) { return this._meta[i] !== true; },
+                    hide(i) { this._meta[i] = true; },
+                    show(i) { this._meta[i] = false; },
                 };
             }
 
-            function makeDataset(label, categories, hidden = false) {
+            function makeDataset(label, categories) {
                 return {
                     label,
-                    hidden,
                     data: categories.map((cat) => ({ x: cat, y: 1 })),
                 };
             }
@@ -165,7 +173,7 @@ describe('bars/getPlugins', () => {
 
                 clickLegend(plugins, chart, 0);
 
-                expect(chart.data.datasets[0].hidden).toBe(true);
+                expect(chart.isDatasetVisible(0)).toBe(false);
             });
 
             test('toggles the clicked dataset hidden state from hidden to visible', () => {
@@ -175,13 +183,13 @@ describe('bars/getPlugins', () => {
                 };
                 const plugins = getPlugins(spec);
 
-                const ds0 = makeDataset('A', ['cat1', 'cat2'], true);
+                const ds0 = makeDataset('A', ['cat1', 'cat2']);
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
-                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'vertical', [0]);
 
                 clickLegend(plugins, chart, 0);
 
-                expect(chart.data.datasets[0].hidden).toBe(false);
+                expect(chart.isDatasetVisible(0)).toBe(true);
             });
 
             test('filters labels to categories in visible datasets only', () => {
@@ -208,9 +216,9 @@ describe('bars/getPlugins', () => {
                 };
                 const plugins = getPlugins(spec);
 
-                const ds0 = makeDataset('A', ['cat1', 'cat2'], true);
+                const ds0 = makeDataset('A', ['cat1', 'cat2']);
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
-                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'vertical', [0]);
 
                 // Re-show dataset A — cat1 should come back
                 clickLegend(plugins, chart, 0);
@@ -264,7 +272,6 @@ describe('bars/getPlugins', () => {
                 // category is in y, value is in x
                 const ds0 = {
                     label: 'A',
-                    hidden: false,
                     data: [
                         { x: 1, y: 'cat1' },
                         { x: 2, y: 'cat2' },
@@ -272,7 +279,6 @@ describe('bars/getPlugins', () => {
                 };
                 const ds1 = {
                     label: 'B',
-                    hidden: false,
                     data: [
                         { x: 3, y: 'cat2' },
                         { x: 4, y: 'cat3' },

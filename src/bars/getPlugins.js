@@ -30,9 +30,12 @@ export default function getPlugins(spec) {
             const chart = legendRef.chart;
             const { datasetIndex } = legendItem;
 
-            // Toggle the clicked dataset's visibility (mirrors Chart.js default).
-            chart.data.datasets[datasetIndex].hidden =
-                !chart.data.datasets[datasetIndex].hidden;
+            // Toggle visibility via the Chart.js API so runtime meta stays in sync.
+            if (chart.isDatasetVisible(datasetIndex)) {
+                chart.hide(datasetIndex);
+            } else {
+                chart.show(datasetIndex);
+            }
 
             // Determine which data key holds the category value.
             // After swapPointAxes in horizontal mode the category is in `y`;
@@ -42,9 +45,12 @@ export default function getPlugins(spec) {
 
             // Collect the union of category values from all visible datasets.
             const visibleCats = new Set();
-            for (const ds of chart.data.datasets) {
-                if (!ds.hidden && Array.isArray(ds.data)) {
-                    for (const point of ds.data) {
+            for (let i = 0; i < chart.data.datasets.length; i++) {
+                if (
+                    chart.isDatasetVisible(i) &&
+                    Array.isArray(chart.data.datasets[i].data)
+                ) {
+                    for (const point of chart.data.datasets[i].data) {
                         visibleCats.add(point[catKey]);
                     }
                 }
