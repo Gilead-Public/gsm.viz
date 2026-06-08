@@ -126,12 +126,20 @@ describe('bars/getPlugins', () => {
         });
 
         describe('onClick behavior', () => {
-            // Mock chart that mirrors Chart.js visibility API:
-            // isDatasetVisible / hide / show use an internal _meta map,
-            // matching how Chart.js 3 tracks runtime visibility.
+            // Mock chart that mirrors the Chart.js 3 visibility API used by the
+            // dynamicCategoryAxis handler: setDatasetVisibility / isDatasetVisible
+            // use an internal _meta map; hide/show are kept for completeness.
             function makeChart(datasets, allLabels, orientation = 'vertical', initiallyHidden = []) {
                 const _meta = {};
-                initiallyHidden.forEach((i) => { _meta[i] = true; });
+                initiallyHidden.forEach((i) => {
+                    _meta[i] = true;
+                    // Simulate state after a prior hide click: data is emptied,
+                    // backup is stored — mirrors what the handler does.
+                    if (datasets[i]) {
+                        datasets[i]._backup_ = datasets[i].data;
+                        datasets[i].data = [];
+                    }
+                });
                 return {
                     data: {
                         datasets,
@@ -142,6 +150,7 @@ describe('bars/getPlugins', () => {
                     _meta,
                     update: jest.fn(),
                     isDatasetVisible(i) { return this._meta[i] !== true; },
+                    setDatasetVisibility(i, visible) { this._meta[i] = !visible; },
                     hide(i) { this._meta[i] = true; },
                     show(i) { this._meta[i] = false; },
                 };
@@ -160,23 +169,26 @@ describe('bars/getPlugins', () => {
                 plugins.legend.onClick({}, legendItem, legend);
             }
 
-            test('toggles the clicked dataset hidden state from visible to hidden', () => {
+            test('hides clicked dataset: empties data and marks invisible', () => {
                 const spec = {
                     ...baseSpec,
                     theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
                 };
                 const plugins = getPlugins(spec);
 
-                const ds0 = makeDataset('A', ['cat1', 'cat2']);
+                const originalData = [{ x: 'cat1', y: 1 }, { x: 'cat2', y: 1 }];
+                const ds0 = { label: 'A', data: [...originalData] };
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
                 const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
 
                 clickLegend(plugins, chart, 0);
 
                 expect(chart.isDatasetVisible(0)).toBe(false);
+                expect(chart.data.datasets[0].data).toEqual([]);
+                expect(chart.data.datasets[0]._backup_).toEqual(originalData);
             });
 
-            test('toggles the clicked dataset hidden state from hidden to visible', () => {
+            test('shows previously-hidden dataset: restores data and marks visible', () => {
                 const spec = {
                     ...baseSpec,
                     theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
@@ -190,6 +202,8 @@ describe('bars/getPlugins', () => {
                 clickLegend(plugins, chart, 0);
 
                 expect(chart.isDatasetVisible(0)).toBe(true);
+                expect(chart.data.datasets[0].data).toHaveLength(2);
+                expect(chart.data.datasets[0]._backup_).toBeUndefined();
             });
 
             test('filters labels to categories in visible datasets only', () => {

@@ -29,12 +29,27 @@ export default function getPlugins(spec) {
         legend.onClick = function (e, legendItem, legendRef) {
             const chart = legendRef.chart;
             const { datasetIndex } = legendItem;
+            const dataset = chart.data.datasets[datasetIndex];
 
-            // Toggle visibility via the Chart.js API so runtime meta stays in sync.
+            // Chart.js CategoryScale.parse() calls findOrAddLabel() for every
+            // data point in every dataset — including hidden ones — so simply
+            // hiding a dataset is not enough: the parse step re-adds its
+            // categories back into chart.data.labels on the next update().
+            //
+            // Fix: empty the dataset's data array on hide (backing it up) so
+            // CategoryScale never sees those points. Restore on re-show.
+            // Use setDatasetVisibility (no internal update() call) to keep the
+            // legend strikethrough in sync without triggering a premature render.
             if (chart.isDatasetVisible(datasetIndex)) {
-                chart.hide(datasetIndex);
+                dataset._backup_ = dataset.data;
+                dataset.data = [];
+                chart.setDatasetVisibility(datasetIndex, false);
             } else {
-                chart.show(datasetIndex);
+                if (dataset._backup_) {
+                    dataset.data = dataset._backup_;
+                    delete dataset._backup_;
+                }
+                chart.setDatasetVisibility(datasetIndex, true);
             }
 
             // Determine which data key holds the category value.
@@ -43,7 +58,7 @@ export default function getPlugins(spec) {
             const catKey =
                 chart.data._spec_?.orientation === 'horizontal' ? 'y' : 'x';
 
-            // Collect the union of category values from all visible datasets.
+            // Collect categories from all currently visible (non-empty) datasets.
             const visibleCats = new Set();
             for (let i = 0; i < chart.data.datasets.length; i++) {
                 if (
@@ -59,6 +74,11 @@ export default function getPlugins(spec) {
             // Filter the full label list to the visible subset, preserving order.
             chart.data.labels = (chart.data._allLabels_ || []).filter((cat) =>
                 visibleCats.has(cat)
+            );
+
+            console.log(
+                '[dynamicCategoryAxis] labels after toggle:',
+                chart.data.labels
             );
 
             chart.update();
