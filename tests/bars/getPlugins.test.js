@@ -438,5 +438,104 @@ describe('bars/getPlugins', () => {
             const plugins = getPlugins(spec);
             expect(plugins.tooltip.callbacks).toBeUndefined();
         });
+
+        describe("position='fill' percentage label", () => {
+            function makeContext({ pct, datasetLabel, indexAxis = 'x' }) {
+                return {
+                    parsed: { x: indexAxis === 'y' ? pct : 0, y: indexAxis === 'x' ? pct : 0 },
+                    dataset: { label: datasetLabel },
+                    chart: { options: { indexAxis } },
+                };
+            }
+
+            test('injects a label callback when position is fill', () => {
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: {},
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                expect(typeof plugins.tooltip.callbacks?.label).toBe('function');
+            });
+
+            test('does not inject a label callback when position is not fill', () => {
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: {},
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.tooltip.callbacks?.label).toBeUndefined();
+            });
+
+            test('formats percentage to one decimal place (vertical)', () => {
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: {},
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                const ctx = makeContext({ pct: 33.333, datasetLabel: 'A' });
+                expect(plugins.tooltip.callbacks.label(ctx)).toBe('A: 33.3%');
+            });
+
+            test('formats percentage to one decimal place (horizontal)', () => {
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: {},
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                const ctx = makeContext({ pct: 66.666, datasetLabel: 'B', indexAxis: 'y' });
+                expect(plugins.tooltip.callbacks.label(ctx)).toBe('B: 66.7%');
+            });
+
+            test('omits label prefix when dataset has no label', () => {
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: {},
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                const ctx = makeContext({ pct: 50, datasetLabel: undefined });
+                expect(plugins.tooltip.callbacks.label(ctx)).toBe('50.0%');
+            });
+
+            test('does not override user-provided label callback', () => {
+                const customLabel = jest.fn(() => 'custom');
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: { callbacks: { label: customLabel } },
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.tooltip.callbacks.label).toBe(customLabel);
+            });
+
+            test('preserves other user-provided callbacks alongside fill label', () => {
+                const afterLabel = jest.fn();
+                const spec = {
+                    mapping: {},
+                    scales: { fill: {} },
+                    labels: {},
+                    tooltip: { callbacks: { afterLabel } },
+                    position: 'fill',
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.tooltip.callbacks.afterLabel).toBe(afterLabel);
+                expect(typeof plugins.tooltip.callbacks.label).toBe('function');
+            });
+        });
     });
 });

@@ -12,7 +12,7 @@
  * @returns {Object} Chart.js plugins config
  */
 export default function getPlugins(spec) {
-    const { labels, mapping, scales, tooltip, theme } = spec;
+    const { labels, mapping, scales, tooltip, theme, position } = spec;
 
     const fillLabel =
         scales.fill?.label !== undefined ? scales.fill.label : mapping?.fill;
@@ -82,7 +82,10 @@ export default function getPlugins(spec) {
             );
 
             chart.update();
-
+for (d of chart.data.datasets) {
+    console.log(d.label);
+    console.log(d.data.filter(di => di.y === '0X7932'));
+}
             // Reapply dynamic container sizing if enabled, using the post-update
             // chart area measurements and the new (possibly smaller) label count.
             if (chart.data._spec_?.theme?.dynamicSizing) {
@@ -120,13 +123,32 @@ export default function getPlugins(spec) {
             display: !!labels.title,
             text: labels.title || '',
         },
-        tooltip: {
-            enabled: true,
-            ...tooltip,
-        },
+        tooltip: buildTooltip(tooltip, position),
         legend,
         datalabels: {
             display: false,
+        },
+    };
+}
+
+function buildTooltip(tooltip, position) {
+    const base = { enabled: true, ...tooltip };
+
+    if (position !== 'fill') return base;
+    if (base.callbacks?.label) return base;
+
+    const fillLabelCallback = (context) => {
+        const indexAxis = context.chart?.options?.indexAxis || 'x';
+        const pct = indexAxis === 'y' ? context.parsed.x : context.parsed.y;
+        const prefix = context.dataset.label ? `${context.dataset.label}: ` : '';
+        return `${prefix}${pct.toFixed(1)}%`;
+    };
+
+    return {
+        ...base,
+        callbacks: {
+            ...base.callbacks,
+            label: fillLabelCallback,
         },
     };
 }

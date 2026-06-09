@@ -2,7 +2,7 @@ fetch('data/retention.csv')
     .then((response) => response.text())
     .then((text) => {
         const data = d3.csvParse(text);
-console.log(data.filter(d => d.invid === '0X2312').map(d => d.Reason));
+
         // Derive fill order dynamically from the Reason_order column.
         const reasonOrder = [
             ...new Map(data.map((d) => [d.Reason, +d.Reason_order])).entries(),
