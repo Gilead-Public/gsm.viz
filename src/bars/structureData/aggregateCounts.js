@@ -1,6 +1,12 @@
 /**
  * Aggregate data into count-mode points: one point per category (and
  * optionally per fill group), where y = number of rows.
+ *
+ * @param {Array<Object>} data - raw input rows
+ * @param {string} xKey - mapping key for the category axis
+ * @param {string} fillKey - optional mapping key for fill groups
+ * @param {Map} categoryIndex - lookup preserving resolved category order
+ * @returns {Array<Object>} Chart.js datasets containing count points
  */
 export default function aggregateCounts(data, xKey, fillKey, categoryIndex) {
     if (fillKey) {

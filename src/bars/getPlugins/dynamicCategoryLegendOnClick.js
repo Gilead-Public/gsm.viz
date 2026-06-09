@@ -3,6 +3,17 @@ import getVisibleCategories from './getVisibleCategories.js';
 import initializeDynamicCategoryData from './initializeDynamicCategoryData.js';
 import refreshDynamicCategoryData from './refreshDynamicCategoryData.js';
 
+/**
+ * Handle legend clicks when the dynamic category axis theme option is enabled.
+ *
+ * Toggles dataset visibility, recomputes visible category labels from the
+ * remaining visible fill groups, refreshes dataset data, and updates dynamic
+ * sizing for the chart container.
+ *
+ * @param {Event} e - Chart.js legend click event
+ * @param {Object} legendItem - clicked legend item
+ * @param {Object} legendRef - Chart.js legend reference
+ */
 export default function dynamicCategoryLegendOnClick(e, legendItem, legendRef) {
     const chart = legendRef.chart;
     const { datasetIndex } = legendItem;

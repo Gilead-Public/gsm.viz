@@ -1,5 +1,16 @@
 import alignDataToLabels from './alignDataToLabels.js';
 
+/**
+ * Refresh dataset data after dynamic category axis labels change.
+ *
+ * Filters visible datasets to the supplied label set, clears hidden datasets,
+ * and aligns stacked/fill datasets to all labels with zero placeholders.
+ *
+ * @param {Object} chart - Chart.js chart instance
+ * @param {Array} labels - active category labels
+ * @param {string} catKey - point property containing the category value
+ * @param {string} valKey - point property containing the numeric value
+ */
 export default function refreshDynamicCategoryData(
     chart,
     labels,

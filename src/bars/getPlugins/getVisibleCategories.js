@@ -1,3 +1,13 @@
+/**
+ * Collect categories represented by currently visible datasets.
+ *
+ * Uses each dataset's cached dynamic-category source data so hidden categories
+ * can be restored when legend items are toggled back on.
+ *
+ * @param {Object} chart - Chart.js chart instance
+ * @param {string} catKey - point property containing the category value
+ * @returns {Set} visible category values
+ */
 export default function getVisibleCategories(chart, catKey) {
     const visibleCats = new Set();
 

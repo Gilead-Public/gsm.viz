@@ -6,6 +6,7 @@
  *
  * @param {Array} datasets - structured datasets (point objects with x/y)
  * @param {boolean} horizontal - true when orientation is horizontal
+ * @returns {void}
  */
 export default function normalizeFill(datasets, horizontal) {
     const valueKey = horizontal ? 'x' : 'y';
