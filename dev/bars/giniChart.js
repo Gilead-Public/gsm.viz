@@ -37,7 +37,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 .sort((a, b) => Number(b.gini) - Number(a.gini));
         }
 
-        function buildSpec(year, data, orientation, dynamicSizing) {
+        function buildSpec(year, data, orientation, position, dynamicSizing) {
             const countryOrder = data.map((d) => d.country);
 
             return {
@@ -46,6 +46,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                     y: 'gini',
                 },
                 orientation,
+                position,
                 scales: {
                     x: {
                         label: 'Country',
@@ -71,6 +72,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 year,
                 data,
                 getValue('gini-orientation'),
+                getValue('gini-position'),
                 getDynamicSizing('gini-dynamic-sizing')
             );
             if (instance) instance.destroy();
@@ -79,7 +81,12 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
 
         render();
         onAnyChange(
-            ['gini-year', 'gini-orientation', 'gini-dynamic-sizing'],
+            [
+                'gini-year',
+                'gini-orientation',
+                'gini-position',
+                'gini-dynamic-sizing',
+            ],
             render
         );
     });

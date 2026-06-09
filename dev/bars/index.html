@@ -41,14 +41,54 @@
 
     <body>
         <nav class="tab-nav">
-            <button class="active" data-tab="kri">KRI by Flag</button>
-            <button data-tab="bites">Animal Bites</button>
-            <button data-tab="retention">Retention</button>
+            <button class="active" data-tab="retention">Retention</button>
+            <button data-tab="kri">KRI by Flag</button>
             <button data-tab="gini">World Gini Index</button>
         </nav>
 
+        <!-- Retention tab -->
+        <div id="retention" class="tab-panel active gsm-viz--example">
+            <div id="retention-controls">
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="retention-orientation">
+                        <option value="vertical">Vertical</option>
+                        <option value="horizontal" selected>Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Position</legend>
+                    <select id="retention-position">
+                        <option value="stack" selected>Stack</option>
+                        <option value="dodge">Dodge</option>
+                        <option value="fill">Fill</option>
+                        <!--option value="identity">Identity</option-->
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Sizing</legend>
+                    <select id="retention-dynamic-sizing">
+                        <option value="no">No</option>
+                        <option value="yes" selected>Yes</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Category Axis</legend>
+                    <select id="retention-dynamic-category-axis">
+                        <option value="no">No</option>
+                        <option value="yes" selected>Yes</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div id="retention-container"></div>
+        </div>
+
         <!-- KRI tab -->
-        <div id="kri" class="tab-panel active gsm-viz--example">
+        <div id="kri" class="tab-panel gsm-viz--example">
             <div id="controls">
                 <fieldset>
                     <legend>Orientation</legend>
@@ -59,18 +99,11 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Fill</legend>
-                    <select id="fill">
-                        <option value="">None</option>
-                        <option value="Flag" selected>Flag</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
                     <legend>Position</legend>
                     <select id="position">
                         <option value="stack" selected>Stack</option>
                         <option value="dodge">Dodge</option>
+                        <option value="fill">Fill</option>
                         <!--option value="identity">Identity</option-->
                     </select>
                 </fieldset>
@@ -82,6 +115,22 @@
                         <option value="yes">Yes</option>
                     </select>
                 </fieldset>
+
+                <fieldset>
+                    <legend>Dynamic Category Axis</legend>
+                    <select id="dynamic-category-axis">
+                        <option value="no" selected>No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Fill</legend>
+                    <select id="fill">
+                        <option value="">None</option>
+                        <option value="Flag" selected>Flag</option>
+                    </select>
+                </fieldset>
             </div>
 
             <div id="kri-container">
@@ -89,78 +138,9 @@
             </div>
         </div>
 
-        <!-- Animal Bites tab -->
-        <div id="bites" class="tab-panel gsm-viz--example">
-            <div id="bites-controls">
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="bites-orientation">
-                        <option value="vertical">Vertical</option>
-                        <option value="horizontal" selected>Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Position</legend>
-                    <select id="bites-position">
-                        <option value="stack">Stack</option>
-                        <option value="dodge" selected>Dodge</option>
-                        <!--option value="identity">Identity</option-->
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Sizing</legend>
-                    <select id="bites-dynamic-sizing">
-                        <option value="no" selected>No</option>
-                        <option value="yes">Yes</option>
-                    </select>
-                </fieldset>
-            </div>
-
-            <div id="bites-container"></div>
-        </div>
-
-        <!-- Retention tab -->
-        <div id="retention" class="tab-panel gsm-viz--example">
-            <div id="retention-controls">
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="retention-orientation">
-                        <option value="vertical" selected>Vertical</option>
-                        <option value="horizontal">Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Position</legend>
-                    <select id="retention-position">
-                        <option value="stack" selected>Stack</option>
-                        <option value="dodge">Dodge</option>
-                        <!--option value="identity">Identity</option-->
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Sizing</legend>
-                    <select id="retention-dynamic-sizing">
-                        <option value="no" selected>No</option>
-                        <option value="yes">Yes</option>
-                    </select>
-                </fieldset>
-            </div>
-
-            <div id="retention-container"></div>
-        </div>
-
         <!-- World Gini Index tab -->
         <div id="gini" class="tab-panel gsm-viz--example">
             <div id="gini-controls">
-                <fieldset>
-                    <legend>Year</legend>
-                    <select id="gini-year"></select>
-                </fieldset>
-
                 <fieldset>
                     <legend>Orientation</legend>
                     <select id="gini-orientation">
@@ -170,11 +150,26 @@
                 </fieldset>
 
                 <fieldset>
+                    <legend>Position</legend>
+                    <select id="gini-position">
+                        <option value="stack" selected>Stack</option>
+                        <option value="dodge">Dodge</option>
+                        <option value="fill">Fill</option>
+                        <!--option value="identity">Identity</option-->
+                    </select>
+                </fieldset>
+
+                <fieldset>
                     <legend>Dynamic Sizing</legend>
                     <select id="gini-dynamic-sizing">
                         <option value="no" selected>No</option>
                         <option value="yes">Yes</option>
                     </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Year</legend>
+                    <select id="gini-year"></select>
                 </fieldset>
             </div>
 
@@ -198,9 +193,8 @@
         </script>
 
         <script src="controls.js"></script>
-        <script src="kriChart.js"></script>
-        <script src="animalBitesChart.js"></script>
         <script src="retentionChart.js"></script>
+        <script src="kriChart.js"></script>
         <script src="giniChart.js"></script>
         <script src="../nav.js"></script>
     </body>
