@@ -22034,8 +22034,9 @@ var gsmViz = (() => {
     const palette = scales2.fill?.palette;
     if (palette) {
       if (fillKey) {
+        const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
         datasets.forEach((ds, i) => {
-          const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
+          const colorIndex = fillOrderStrings ? fillOrderStrings.indexOf(String(ds.label)) : -1;
           const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
           ds.backgroundColor = bg;
           ds.borderColor = darkenHex(bg);
