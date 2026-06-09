@@ -3,6 +3,7 @@
  */
 
 import bars from '../../src/bars.js';
+import updateData from '../../src/bars/updateData.js';
 import updateSpec from '../../src/bars/updateSpec.js';
 
 describe('bars/updateSpec', () => {
@@ -40,5 +41,36 @@ describe('bars/updateSpec', () => {
         updateSpec(chart, { labels: { title: 'New Title' } });
         expect(chart.data._spec_.data).toBe(data);
         expect(chart.data._spec_.mapping.x).toBe('category');
+    });
+
+    test('stores all labels as a stable snapshot after a spec update', () => {
+        const chart = bars(container, data, spec);
+        updateSpec(chart, { scales: { x: { order: ['B', 'A'] } } });
+        const labels = chart.data.labels;
+
+        expect(chart.data._allLabels_).toEqual(labels);
+        expect(chart.data._allLabels_).not.toBe(labels);
+
+        labels.pop();
+        expect(chart.data._allLabels_).toEqual(['B', 'A']);
+    });
+
+    test('stores all labels as a stable snapshot after a data update', () => {
+        const chart = bars(container, data, spec);
+        updateData(
+            chart,
+            [
+                { category: 'C', value: 30 },
+                { category: 'D', value: 40 },
+            ],
+            spec
+        );
+        const labels = chart.data.labels;
+
+        expect(chart.data._allLabels_).toEqual(labels);
+        expect(chart.data._allLabels_).not.toBe(labels);
+
+        labels.pop();
+        expect(chart.data._allLabels_).toEqual(['C', 'D']);
     });
 });

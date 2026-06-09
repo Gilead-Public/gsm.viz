@@ -1,5 +1,4 @@
 import alignDataToLabels from './alignDataToLabels.js';
-import clearDatasetMeta from './clearDatasetMeta.js';
 
 export default function refreshDynamicCategoryData(
     chart,
@@ -19,7 +18,6 @@ export default function refreshDynamicCategoryData(
         if (!chart.isDatasetVisible(i)) {
             dataset.data = [];
             dataset._backup_ = originalData;
-            clearDatasetMeta(chart, i);
             continue;
         }
 

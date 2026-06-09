@@ -207,6 +207,32 @@ describe('bars/getPlugins', () => {
                 expect(chart.data.datasets[0]._backup_).toEqual(originalData);
             });
 
+            test('does not mutate Chart.js private dataset metadata when hiding a dataset', () => {
+                const spec = {
+                    ...baseSpec,
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1']);
+                const ds1 = makeDataset('B', ['cat2']);
+                const chart = makeChart([ds0, ds1], ['cat1', 'cat2']);
+                const meta = {
+                    _parsed: [{ x: 'cat1', y: 1 }],
+                    _sorted: false,
+                };
+                chart.getDatasetMeta = jest.fn(() => meta);
+
+                clickLegend(plugins, chart, 0);
+
+                expect(chart.getDatasetMeta).not.toHaveBeenCalled();
+                expect(meta._parsed).toEqual([{ x: 'cat1', y: 1 }]);
+                expect(meta._sorted).toBe(false);
+            });
+
             test('shows previously-hidden dataset: restores data and marks visible', () => {
                 const spec = {
                     ...baseSpec,

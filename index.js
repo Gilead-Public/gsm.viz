@@ -21921,22 +21921,22 @@ var gsmViz = (() => {
 
   // src/bars/structureData/normalizeFill.js
   function normalizeFill(datasets, horizontal) {
-    const catKey = horizontal ? "x" : "y";
-    const valKey = horizontal ? "y" : "x";
+    const valueKey = horizontal ? "x" : "y";
+    const categoryKey = horizontal ? "y" : "x";
     const totals = /* @__PURE__ */ new Map();
     for (const ds of datasets) {
       for (const pt of ds.data) {
-        const cat = pt[valKey];
-        const val = pt[catKey];
-        totals.set(cat, (totals.get(cat) || 0) + val);
+        const category = pt[categoryKey];
+        const value = pt[valueKey];
+        totals.set(category, (totals.get(category) || 0) + value);
       }
     }
     for (const ds of datasets) {
       for (const pt of ds.data) {
-        const cat = pt[valKey];
-        const total = totals.get(cat) || 0;
-        pt._rawY = pt[catKey];
-        pt[catKey] = total === 0 ? 0 : pt._rawY / total * 100;
+        const category = pt[categoryKey];
+        const total = totals.get(category) || 0;
+        pt._rawY = pt[valueKey];
+        pt[valueKey] = total === 0 ? 0 : pt._rawY / total * 100;
       }
     }
   }
@@ -22157,15 +22157,6 @@ var gsmViz = (() => {
     );
   }
 
-  // src/bars/getPlugins/clearDatasetMeta.js
-  function clearDatasetMeta(chart, datasetIndex) {
-    const meta = chart.getDatasetMeta?.(datasetIndex);
-    if (meta) {
-      meta._parsed = [];
-      meta._sorted = true;
-    }
-  }
-
   // src/bars/getPlugins/refreshDynamicCategoryData.js
   function refreshDynamicCategoryData(chart, labels, catKey, valKey) {
     const alignStacked = chart.data._spec_?.mapping?.fill && ["stack", "fill"].includes(chart.data._spec_?.position);
@@ -22176,7 +22167,6 @@ var gsmViz = (() => {
       if (!chart.isDatasetVisible(i)) {
         dataset.data = [];
         dataset._backup_ = originalData;
-        clearDatasetMeta(chart, i);
         continue;
       }
       delete dataset._backup_;
@@ -22264,7 +22254,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
-    chart.data._allLabels_ = labels;
+    chart.data._allLabels_ = [...labels];
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22295,7 +22285,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
-    chart.data._allLabels_ = labels;
+    chart.data._allLabels_ = [...labels];
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22339,7 +22329,7 @@ var gsmViz = (() => {
       data: {
         datasets,
         labels,
-        _allLabels_: labels,
+        _allLabels_: [...labels],
         _spec_: merged
       },
       options,

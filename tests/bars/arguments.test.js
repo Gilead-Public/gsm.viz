@@ -91,6 +91,17 @@ describe('bars entry point', () => {
         expect(instance.data.labels).toEqual(['C', 'B', 'A']);
     });
 
+    test('stores all labels as a stable snapshot', () => {
+        const instance = bars(container, singleSeriesData, singleSeriesSpec);
+        const labels = instance.data.labels;
+
+        expect(instance.data._allLabels_).toEqual(labels);
+        expect(instance.data._allLabels_).not.toBe(labels);
+
+        labels.pop();
+        expect(instance.data._allLabels_).toEqual(['A', 'B', 'C']);
+    });
+
     test('renders count mode when mapping.y is omitted', () => {
         const instance = bars(
             container,
