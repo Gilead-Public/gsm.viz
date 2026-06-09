@@ -80,5 +80,13 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
         }
 
         render();
-        onAnyChange(['gini-year', 'gini-orientation', 'gini-position', 'gini-dynamic-sizing'], render);
+        onAnyChange(
+            [
+                'gini-year',
+                'gini-orientation',
+                'gini-position',
+                'gini-dynamic-sizing',
+            ],
+            render
+        );
     });

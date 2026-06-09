@@ -12,7 +12,12 @@ fetch('data/retention.csv')
 
         const container = document.getElementById('retention-container');
 
-        function buildSpec(orientation, position, dynamicSizing, dynamicCategoryAxis) {
+        function buildSpec(
+            orientation,
+            position,
+            dynamicSizing,
+            dynamicCategoryAxis
+        ) {
             return {
                 mapping: {
                     x: 'invid',
@@ -76,7 +81,12 @@ fetch('data/retention.csv')
         }
 
         onAnyChange(
-            ['retention-orientation', 'retention-position', 'retention-dynamic-sizing', 'retention-dynamic-category-axis'],
+            [
+                'retention-orientation',
+                'retention-position',
+                'retention-dynamic-sizing',
+                'retention-dynamic-category-axis',
+            ],
             rerender
         );
     });

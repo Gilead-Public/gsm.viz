@@ -55,7 +55,9 @@ describe('bars/validateSpec', () => {
                 mapping: { x: 'a', y: 'b' },
                 position: 'overlay',
             })
-        ).toThrow("spec.position must be 'stack', 'dodge', 'identity', or 'fill'");
+        ).toThrow(
+            "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
+        );
     });
 
     test('does not throw with valid position values', () => {

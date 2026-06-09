@@ -105,10 +105,8 @@ export default function barChart(
         const numCategories = datasets[0].data.length;
         const pxPerCategory = 30;
         const area = chart.chartArea;
-        const chartAreaWidth =
-            area ? area.right - area.left : 0;
-        const overhead =
-            chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
         canvas.parentNode.style.width =
             numCategories * pxPerCategory + overhead + 'px';
     }

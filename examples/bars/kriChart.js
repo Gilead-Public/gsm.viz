@@ -22,7 +22,13 @@ Promise.all(dataPromises)
                 !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
-        function buildSpec(orientation, fillKey, position, dynamicSizing, dynamicCategoryAxis) {
+        function buildSpec(
+            orientation,
+            fillKey,
+            position,
+            dynamicSizing,
+            dynamicCategoryAxis
+        ) {
             const spec = {
                 mapping: {
                     x: 'MetricID',
@@ -83,7 +89,13 @@ Promise.all(dataPromises)
         }
 
         onAnyChange(
-            ['orientation', 'fill', 'position', 'dynamic-sizing', 'dynamic-category-axis'],
+            [
+                'orientation',
+                'fill',
+                'position',
+                'dynamic-sizing',
+                'dynamic-category-axis',
+            ],
             rerender
         );
     });

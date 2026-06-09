@@ -99,16 +99,14 @@ export default function bars(element = 'body', data = [], spec = {}) {
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;
-            const chartAreaHeight =
-                area ? area.bottom - area.top : 0;
+            const chartAreaHeight = area ? area.bottom - area.top : 0;
             const overhead =
                 chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
             const corrected = numCategories * pxPerCategory + overhead;
             el.style.height = corrected + 'px';
         } else {
             const area = chart.chartArea;
-            const chartAreaWidth =
-                area ? area.right - area.left : 0;
+            const chartAreaWidth = area ? area.right - area.left : 0;
             const overhead =
                 chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
             const corrected = numCategories * pxPerCategory + overhead;
