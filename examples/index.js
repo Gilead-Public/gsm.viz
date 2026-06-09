@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -560,17 +561,17 @@ var gsmViz = (() => {
     easeInBounce: (t) => 1 - effects.easeOutBounce(1 - t),
     easeOutBounce(t) {
       const m = 7.5625;
-      const d2 = 2.75;
-      if (t < 1 / d2) {
+      const d = 2.75;
+      if (t < 1 / d) {
         return m * t * t;
       }
-      if (t < 2 / d2) {
-        return m * (t -= 1.5 / d2) * t + 0.75;
+      if (t < 2 / d) {
+        return m * (t -= 1.5 / d) * t + 0.75;
       }
-      if (t < 2.5 / d2) {
-        return m * (t -= 2.25 / d2) * t + 0.9375;
+      if (t < 2.5 / d) {
+        return m * (t -= 2.25 / d) * t + 0.9375;
       }
-      return m * (t -= 2.625 / d2) * t + 0.984375;
+      return m * (t -= 2.625 / d) * t + 0.984375;
     },
     easeInOutBounce: (t) => t < 0.5 ? effects.easeInBounce(t * 2) * 0.5 : effects.easeOutBounce(t * 2 - 1) * 0.5 + 0.5
   };
@@ -647,14 +648,14 @@ var gsmViz = (() => {
     }
     return rgb2;
   }
-  function hueValue(r, g, b, d2, max3) {
+  function hueValue(r, g, b, d, max3) {
     if (r === max3) {
-      return (g - b) / d2 + (g < b ? 6 : 0);
+      return (g - b) / d + (g < b ? 6 : 0);
     }
     if (g === max3) {
-      return (b - r) / d2 + 2;
+      return (b - r) / d + 2;
     }
-    return (r - g) / d2 + 4;
+    return (r - g) / d + 4;
   }
   function rgb2hsl(v) {
     const range = 255;
@@ -664,11 +665,11 @@ var gsmViz = (() => {
     const max3 = Math.max(r, g, b);
     const min3 = Math.min(r, g, b);
     const l = (max3 + min3) / 2;
-    let h, s, d2;
+    let h, s, d;
     if (max3 !== min3) {
-      d2 = max3 - min3;
-      s = l > 0.5 ? d2 / (2 - max3 - min3) : d2 / (max3 + min3);
-      h = hueValue(r, g, b, d2, max3);
+      d = max3 - min3;
+      s = l > 0.5 ? d / (2 - max3 - min3) : d / (max3 + min3);
+      h = hueValue(r, g, b, d, max3);
       h = h * 60 + 0.5;
     }
     return [h | 0, s || 0, l];
@@ -2243,9 +2244,9 @@ var gsmViz = (() => {
     const a = _pointInLine(p1, cp1, t);
     const b = _pointInLine(cp1, cp2, t);
     const c = _pointInLine(cp2, p2, t);
-    const d2 = _pointInLine(a, b, t);
+    const d = _pointInLine(a, b, t);
     const e = _pointInLine(b, c, t);
-    return _pointInLine(d2, e, t);
+    return _pointInLine(d, e, t);
   }
   var intlCache = /* @__PURE__ */ new Map();
   function getNumberFormat(locale2, options) {
@@ -9652,8 +9653,8 @@ var gsmViz = (() => {
             get: function() {
               return this._decimated;
             },
-            set: function(d2) {
-              this._data = d2;
+            set: function(d) {
+              this._data = d;
             }
           });
         }
@@ -10869,9 +10870,9 @@ var gsmViz = (() => {
         const el = items[i].element;
         if (el && el.hasValue()) {
           const center = el.getCenterPoint();
-          const d2 = distanceBetweenPoints(eventPosition, center);
-          if (d2 < minDistance) {
-            minDistance = d2;
+          const d = distanceBetweenPoints(eventPosition, center);
+          if (d < minDistance) {
+            minDistance = d;
             nearestElement = el;
           }
         }
@@ -15416,7 +15417,7 @@ var gsmViz = (() => {
   function quantilesFivenum(arr, length = arr.length) {
     const n = length;
     const n4 = Math.floor((n + 3) / 2) / 2;
-    const compute2 = (d2) => 0.5 * (arr[Math.floor(d2) - 1] + arr[Math.ceil(d2) - 1]);
+    const compute2 = (d) => 0.5 * (arr[Math.floor(d) - 1] + arr[Math.ceil(d) - 1]);
     return {
       q1: compute2(n4),
       median: compute2((n + 1) / 2),
@@ -15675,7 +15676,7 @@ var gsmViz = (() => {
     const stats = boxplot(arr, determineStatsOptions(options));
     const samples = computeSamples(stats.min, stats.max, options.points);
     const coords = samples.map((v) => ({ v, estimate: stats.kde(v) }));
-    const maxEstimate = coords.reduce((a, d2) => Math.max(a, d2.estimate), Number.NEGATIVE_INFINITY);
+    const maxEstimate = coords.reduce((a, d) => Math.max(a, d.estimate), Number.NEGATIVE_INFINITY);
     return {
       max: stats.max,
       min: stats.min,
@@ -16106,7 +16107,7 @@ var gsmViz = (() => {
     _drawCoords(ctx, props) {
       let maxEstimate;
       if (props.maxEstimate == null) {
-        maxEstimate = props.coords.reduce((a, d2) => Math.max(a, d2.estimate), Number.NEGATIVE_INFINITY);
+        maxEstimate = props.coords.reduce((a, d) => Math.max(a, d.estimate), Number.NEGATIVE_INFINITY);
       } else {
         maxEstimate = props.maxEstimate;
       }
@@ -17830,9 +17831,9 @@ var gsmViz = (() => {
   var constant_default2 = (x) => () => x;
 
   // node_modules/d3-interpolate/src/color.js
-  function linear(a, d2) {
+  function linear(a, d) {
     return function(t) {
-      return a + t * d2;
+      return a + t * d;
     };
   }
   function exponential(a, b, y) {
@@ -17846,8 +17847,8 @@ var gsmViz = (() => {
     };
   }
   function nogamma(a, b) {
-    var d2 = b - a;
-    return d2 ? linear(a, d2) : constant_default2(isNaN(a) ? b : a);
+    var d = b - a;
+    return d ? linear(a, d) : constant_default2(isNaN(a) ? b : a);
   }
 
   // node_modules/d3-interpolate/src/rgb.js
@@ -17949,12 +17950,12 @@ var gsmViz = (() => {
     scaleX: 1,
     scaleY: 1
   };
-  function decompose_default(a, b, c, d2, e, f) {
+  function decompose_default(a, b, c, d, e, f) {
     var scaleX, scaleY, skewX;
     if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
-    if (skewX = a * c + b * d2) c -= a * skewX, d2 -= b * skewX;
-    if (scaleY = Math.sqrt(c * c + d2 * d2)) c /= scaleY, d2 /= scaleY, skewX /= scaleY;
-    if (a * d2 < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
+    if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
+    if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
+    if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
     return {
       translateX: e,
       translateY: f,
@@ -18980,17 +18981,17 @@ var gsmViz = (() => {
   // node_modules/d3-format/src/formatPrefixAuto.js
   var prefixExponent;
   function formatPrefixAuto_default(x, p) {
-    var d2 = formatDecimalParts(x, p);
-    if (!d2) return prefixExponent = void 0, x.toPrecision(p);
-    var coefficient = d2[0], exponent = d2[1], i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1, n = coefficient.length;
+    var d = formatDecimalParts(x, p);
+    if (!d) return prefixExponent = void 0, x.toPrecision(p);
+    var coefficient = d[0], exponent = d[1], i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1, n = coefficient.length;
     return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0];
   }
 
   // node_modules/d3-format/src/formatRounded.js
   function formatRounded_default(x, p) {
-    var d2 = formatDecimalParts(x, p);
-    if (!d2) return x + "";
-    var coefficient = d2[0], exponent = d2[1];
+    var d = formatDecimalParts(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0], exponent = d[1];
     return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
   }
 
@@ -20968,7 +20969,7 @@ var gsmViz = (() => {
       return [];
     if (!Array.isArray(selectedGroupIDs)) selectedGroupIDs = [selectedGroupIDs];
     if (Array.isArray(selectedGroupIDs)) {
-      const actualGroupIDs = [...new Set(_data_.map((d2) => d2.GroupID))];
+      const actualGroupIDs = [...new Set(_data_.map((d) => d.GroupID))];
       for (const selectedGroupID of selectedGroupIDs) {
         if (actualGroupIDs.includes(selectedGroupID) === false)
           selectedGroupIDs = selectedGroupIDs.filter(
@@ -21050,7 +21051,7 @@ var gsmViz = (() => {
   // src/util/updateSelectedGroupDatum.js
   function updateSelectedGroupDatum(results, selectedGroupIDs) {
     if (selectedGroupIDs.length !== 1) return {};
-    const result = results.sort((a, b) => descending(a.SnapshotDate, b.SnapshotDate)).find((d2) => selectedGroupIDs.includes(d2.GroupID));
+    const result = results.sort((a, b) => descending(a.SnapshotDate, b.SnapshotDate)).find((d) => selectedGroupIDs.includes(d.GroupID));
     const selectedGroupDatum = results_default.items.required.reduce(
       (acc, item) => {
         acc[item] = result[item];
@@ -21172,8 +21173,8 @@ var gsmViz = (() => {
         acc[cur.Param] = cur.Value;
         return acc;
       }, {}),
-      (d2) => d2.GroupLevel,
-      (d2) => d2.GroupID
+      (d) => d.GroupLevel,
+      (d) => d.GroupID
     );
     const keys = Array.from(structuredGroupMetadata.keys());
     if (keys.includes(config.GroupLevel)) {
@@ -21192,21 +21193,21 @@ var gsmViz = (() => {
 
   // src/barChart/structureData/mutate.js
   function mutate(_results_, config, groupMetadata = null) {
-    const data = _results_.map((d2) => {
+    const data = _results_.map((d) => {
       if (groupMetadata !== null) {
-        const group2 = groupMetadata.get(d2.GroupID);
+        const group2 = groupMetadata.get(d.GroupID);
         if (group2 !== void 0) {
-          d2.group = group2;
-          d2.group.groupLabel = d2.group.hasOwnProperty(
+          d.group = group2;
+          d.group.groupLabel = d.group.hasOwnProperty(
             config.groupLabelKey
-          ) ? d2.group[config.groupLabelKey] : d2.GroupID;
+          ) ? d.group[config.groupLabelKey] : d.GroupID;
         }
       }
       const datum2 = {
-        ...d2,
-        x: d2[config.x],
-        y: falsy_default.includes(d2[config.y]) ? 0 : +d2[config.y],
-        stratum: falsy_default.includes(d2[config.color]) ? 3 : Math.abs(+d2[config.color])
+        ...d,
+        x: d[config.x],
+        y: falsy_default.includes(d[config.y]) ? 0 : +d[config.y],
+        stratum: falsy_default.includes(d[config.color]) ? 3 : Math.abs(+d[config.color])
       };
       return datum2;
     }).sort((a, b) => b.y - a.y);
@@ -21311,7 +21312,7 @@ var gsmViz = (() => {
 
   // src/util/identifyDuplicatePoints.js
   function identifyDuplicatePoints(data, config, mutate5 = true) {
-    const numericGroupIDs = data.every((d2) => /^\d+$/.test(d2.GroupID));
+    const numericGroupIDs = data.every((d) => /^\d+$/.test(d.GroupID));
     data.sort((a, b) => {
       const x = ascending(a[config.x], b[config.x]);
       const y = ascending(a[config.y], b[config.y]);
@@ -21323,12 +21324,12 @@ var gsmViz = (() => {
       rollup(
         data,
         (Group) => {
-          Group.forEach((d2, i) => {
-            d2.duplicate = i > 0;
+          Group.forEach((d, i) => {
+            d.duplicate = i > 0;
           });
         },
-        (d2) => d2[config.x],
-        (d2) => d2[config.y]
+        (d) => d[config.x],
+        (d) => d[config.y]
       );
   }
 
@@ -21340,7 +21341,7 @@ var gsmViz = (() => {
     )[0];
     const data = chart.data.datasets[element.datasetIndex].data;
     const activeData = data.filter(
-      (d2, i) => activeElements.map((activeElement) => activeElement.index).includes(i)
+      (d, i) => activeElements.map((activeElement) => activeElement.index).includes(i)
     );
     identifyDuplicatePoints(activeData, chart.data.config, false);
     const datum2 = activeData[0];
@@ -21561,9 +21562,9 @@ var gsmViz = (() => {
     tooltipAesthetics.boxWidth = 10;
     return {
       callbacks: {
-        label: (d2) => [
-          ...formatMetricTooltipLabel(d2.raw, config),
-          ...formatGroupTooltipLabel(d2.raw.group, config)
+        label: (d) => [
+          ...formatMetricTooltipLabel(d.raw, config),
+          ...formatGroupTooltipLabel(d.raw.group, config)
         ],
         labelPointStyle: () => ({ pointStyle: "rect" }),
         title: (data) => {
@@ -21667,14 +21668,14 @@ var gsmViz = (() => {
     if (chart.data.config.selectedGroupIDs.length > 0) {
       const data = chart.data.datasets[0].data;
       const point = data.find(
-        (d2) => chart.data.config.selectedGroupIDs.includes(d2.GroupID)
+        (d) => chart.data.config.selectedGroupIDs.includes(d.GroupID)
       );
       const overlappingPoints = data.filter(
-        (d2) => d2.x === point.x && d2.y === point.y
+        (d) => d.x === point.x && d.y === point.y
       );
-      const pointIndices = data.filter((d2, i) => overlappingPoints.includes(d2)).map((d2, i) => ({
+      const pointIndices = data.filter((d, i) => overlappingPoints.includes(d)).map((d, i) => ({
         datasetIndex: 0,
-        index: data.findIndex((d1, i2) => d1 === d2)
+        index: data.findIndex((d1, i2) => d1 === d)
       }));
       tooltip5.setActiveElements(pointIndices);
     }
@@ -21736,7 +21737,7 @@ var gsmViz = (() => {
       },
       layout: {
         padding: {
-          top: config.y === "Metric" ? max(datasets[0].data, (d2) => d2.GroupID.length) * 8 : null
+          top: config.y === "Metric" ? max(datasets[0].data, (d) => d.GroupID.length) * 8 : null
         }
       },
       maintainAspectRatio: config.maintainAspectRatio,
@@ -21869,7 +21870,7 @@ var gsmViz = (() => {
 
   // src/bars/structureData.js
   function resolveCategories(data, xKey, explicitOrder) {
-    const dataCategories = [...new Set(data.map((d2) => d2[xKey]))];
+    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
     if (explicitOrder) {
       const dataSet = new Set(dataCategories);
       const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
@@ -21899,13 +21900,13 @@ var gsmViz = (() => {
   function aggregateCounts(data, xKey, fillKey, categoryIndex) {
     if (fillKey) {
       const groups2 = /* @__PURE__ */ new Map();
-      for (const d2 of data) {
-        const key = d2[fillKey];
+      for (const d of data) {
+        const key = d[fillKey];
         if (!groups2.has(key)) groups2.set(key, /* @__PURE__ */ new Map());
         const catMap2 = groups2.get(key);
-        const cat = d2[xKey];
+        const cat = d[xKey];
         if (!catMap2.has(cat)) catMap2.set(cat, []);
-        catMap2.get(cat).push(d2);
+        catMap2.get(cat).push(d);
       }
       return [...groups2.entries()].map(([fillValue, catMap2]) => ({
         label: fillValue,
@@ -21920,10 +21921,10 @@ var gsmViz = (() => {
       }));
     }
     const catMap = /* @__PURE__ */ new Map();
-    for (const d2 of data) {
-      const cat = d2[xKey];
+    for (const d of data) {
+      const cat = d[xKey];
       if (!catMap.has(cat)) catMap.set(cat, []);
-      catMap.get(cat).push(d2);
+      catMap.get(cat).push(d);
     }
     return [
       {
@@ -21978,7 +21979,7 @@ var gsmViz = (() => {
     const fillOrder = scales2.fill?.order;
     const activeData = fillKey && fillOrder ? (() => {
       const allowed = new Set(fillOrder.map(String));
-      return data.filter((d2) => allowed.has(String(d2[fillKey])));
+      return data.filter((d) => allowed.has(String(d[fillKey])));
     })() : data;
     const labels = resolveCategories(activeData, xKey, scales2.x?.order);
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
@@ -21986,11 +21987,11 @@ var gsmViz = (() => {
     if (!yKey) {
       datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
     } else {
-      const points = activeData.map((d2) => ({
-        x: d2[xKey],
-        y: Number(d2[yKey]) || 0,
-        _fill: fillKey ? d2[fillKey] : void 0,
-        _datum: d2
+      const points = activeData.map((d) => ({
+        x: d[xKey],
+        y: Number(d[yKey]) || 0,
+        _fill: fillKey ? d[fillKey] : void 0,
+        _datum: d
       }));
       if (fillKey) {
         const groups2 = /* @__PURE__ */ new Map();
@@ -22096,38 +22097,28 @@ var gsmViz = (() => {
         const chart = legendRef.chart;
         const { datasetIndex } = legendItem;
         const dataset = chart.data.datasets[datasetIndex];
+        initializeDynamicCategoryData(chart.data.datasets);
         if (chart.isDatasetVisible(datasetIndex)) {
-          dataset._backup_ = dataset.data;
           dataset.data = [];
+          dataset._backup_ = dataset._dynamicCategoryAxisOriginalData_;
           chart.setDatasetVisibility(datasetIndex, false);
         } else {
-          if (dataset._backup_) {
-            dataset.data = dataset._backup_;
-            delete dataset._backup_;
-          }
+          delete dataset._backup_;
           chart.setDatasetVisibility(datasetIndex, true);
         }
         const catKey = chart.data._spec_?.orientation === "horizontal" ? "y" : "x";
-        const visibleCats = /* @__PURE__ */ new Set();
-        for (let i = 0; i < chart.data.datasets.length; i++) {
-          if (chart.isDatasetVisible(i) && Array.isArray(chart.data.datasets[i].data)) {
-            for (const point of chart.data.datasets[i].data) {
-              visibleCats.add(point[catKey]);
-            }
-          }
-        }
-        chart.data.labels = (chart.data._allLabels_ || []).filter(
+        const valKey = catKey === "x" ? "y" : "x";
+        const visibleCats = getVisibleCategories(chart, catKey);
+        chart.data.labels = getAllLabels(chart, visibleCats).filter(
           (cat) => visibleCats.has(cat)
         );
-        console.log(
-          "[dynamicCategoryAxis] labels after toggle:",
-          chart.data.labels
+        refreshDynamicCategoryData(
+          chart,
+          chart.data.labels,
+          catKey,
+          valKey
         );
         chart.update();
-        for (d of chart.data.datasets) {
-          console.log(d.label);
-          console.log(d.data.filter((di) => di.y === "0X7932"));
-        }
         if (chart.data._spec_?.theme?.dynamicSizing) {
           const container = chart.canvas?.parentElement;
           if (container) {
@@ -22160,6 +22151,66 @@ var gsmViz = (() => {
         display: false
       }
     };
+  }
+  function initializeDynamicCategoryData(datasets) {
+    for (const dataset of datasets) {
+      if (!dataset._dynamicCategoryAxisOriginalData_) {
+        dataset._dynamicCategoryAxisOriginalData_ = dataset._backup_ || dataset.data || [];
+      }
+    }
+  }
+  function getVisibleCategories(chart, catKey) {
+    const visibleCats = /* @__PURE__ */ new Set();
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      if (!chart.isDatasetVisible(i)) continue;
+      const originalData = chart.data.datasets[i]._dynamicCategoryAxisOriginalData_ || [];
+      for (const point of originalData) {
+        visibleCats.add(point[catKey]);
+      }
+    }
+    return visibleCats;
+  }
+  function getAllLabels(chart, visibleCats) {
+    return chart.data._allLabels_ || [...visibleCats];
+  }
+  function refreshDynamicCategoryData(chart, labels, catKey, valKey) {
+    const alignStacked = chart.data._spec_?.mapping?.fill && ["stack", "fill"].includes(chart.data._spec_?.position);
+    const labelSet = new Set(labels);
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const dataset = chart.data.datasets[i];
+      const originalData = dataset._dynamicCategoryAxisOriginalData_ || [];
+      if (!chart.isDatasetVisible(i)) {
+        dataset.data = [];
+        dataset._backup_ = originalData;
+        clearDatasetMeta(chart, i);
+        continue;
+      }
+      delete dataset._backup_;
+      const filteredData = originalData.filter(
+        (point) => labelSet.has(point[catKey])
+      );
+      dataset.data = alignStacked ? alignDataToLabels(filteredData, labels, catKey, valKey) : filteredData;
+    }
+  }
+  function alignDataToLabels(data, labels, catKey, valKey) {
+    const pointByCategory = new Map(
+      data.map((point) => [point[catKey], point])
+    );
+    return labels.map(
+      (cat) => pointByCategory.get(cat) || {
+        [catKey]: cat,
+        [valKey]: 0,
+        _rawY: 0,
+        _placeholder: true
+      }
+    );
+  }
+  function clearDatasetMeta(chart, datasetIndex) {
+    const meta = chart.getDatasetMeta?.(datasetIndex);
+    if (meta) {
+      meta._parsed = [];
+      meta._sorted = true;
+    }
   }
   function buildTooltip(tooltip5, position) {
     const base = { enabled: true, ...tooltip5 };
@@ -22584,7 +22635,7 @@ var gsmViz = (() => {
     const metricColumns = metricMetadata.map((metric) => {
       const column = {
         label: metric.Abbreviation,
-        data: results.filter((d2) => d2.MetricID === metric.MetricID),
+        data: results.filter((d) => d.MetricID === metric.MetricID),
         filterKey: "GroupID",
         valueKey: "Flag",
         headerTooltip: metric.Metric,
@@ -22616,7 +22667,7 @@ var gsmViz = (() => {
     const metricColumns = defineMetricColumns(metricMetadata, results, config);
     const columns = [...groupColumns, ...metricColumns];
     columns.forEach((column, i) => {
-      column.getDatum = (key) => column.data.find((d2) => d2[column.filterKey] === key);
+      column.getDatum = (key) => column.data.find((d) => d[column.filterKey] === key);
       column.index = i;
       column.sortState = column.dataType === "string" ? 0 : 1;
       column.activeSort = false;
@@ -22640,8 +22691,8 @@ var gsmViz = (() => {
   function structureData3(results, columns, groupMetadata, config) {
     const lookup = group(
       results,
-      (d2) => d2.GroupID,
-      (d2) => d2.MetricID
+      (d) => d.GroupID,
+      (d) => d.MetricID
     );
     const rowData = Array.from(lookup, ([key, value]) => {
       const group2 = groupMetadata.find((group3) => group3.GroupID === key);
@@ -22676,7 +22727,7 @@ var gsmViz = (() => {
 
   // src/groupOverview/makeTable/addHeaderRow.js
   function addHeaderRow(thead, columns) {
-    const headerRow = thead.append("tr").selectAll("th").data(columns).join("th").attr("class", (d2) => `group-overview--${d2.type}`).classed("group-overview--tooltip", (d2) => d2.headerTooltip !== null).text((d2) => d2.label).attr("title", (d2) => d2.headerTooltip);
+    const headerRow = thead.append("tr").selectAll("th").data(columns).join("th").attr("class", (d) => `group-overview--${d.type}`).classed("group-overview--tooltip", (d) => d.headerTooltip !== null).text((d) => d.label).attr("title", (d) => d.headerTooltip);
     return headerRow;
   }
 
@@ -22685,7 +22736,7 @@ var gsmViz = (() => {
     const bodyRows = tbody.selectAll("tr").data(
       rows,
       // Define a unique key for each row.
-      (d2) => d2.key
+      (d) => d.key
     ).join("tr");
     return bodyRows;
   }
@@ -22693,22 +22744,22 @@ var gsmViz = (() => {
   // src/groupOverview/makeTable/addCells.js
   function addCells(bodyRows) {
     const cells = bodyRows.selectAll("td").data(
-      (d2) => d2,
+      (d) => d,
       // Define a unique key for each cell.
-      (d2) => {
-        const id2 = d2.column.type === "metric" ? `${d2.GroupID}-${d2.column.meta.MetricID}` : `${d2.GroupID}-${d2.column.valueKey}`;
+      (d) => {
+        const id2 = d.column.type === "metric" ? `${d.GroupID}-${d.column.meta.MetricID}` : `${d.GroupID}-${d.column.valueKey}`;
         return id2;
       }
-    ).join("td").text((d2) => d2.text === "NA" ? "-" : d2.text).attr("class", (d2) => d2.class).classed("group-overview--tooltip", (d2) => {
-      if (d2.column.valueKey === "siteRiskScore") {
+    ).join("td").text((d) => d.text === "NA" ? "-" : d.text).attr("class", (d) => d.class).classed("group-overview--tooltip", (d) => {
+      if (d.column.valueKey === "siteRiskScore") {
         return false;
       }
-      return d2.tooltip;
-    }).attr("title", (d2) => {
-      if (d2.column.valueKey === "siteRiskScore") {
+      return d.tooltip;
+    }).attr("title", (d) => {
+      if (d.column.valueKey === "siteRiskScore") {
         return null;
       }
-      return d2.tooltip ? d2.tooltipContent : null;
+      return d.tooltip ? d.tooltipContent : null;
     });
     return cells;
   }
@@ -22716,8 +22767,8 @@ var gsmViz = (() => {
   // src/groupOverview/makeTable/addSorting.js
   function addSorting(headerRow, body) {
     headerRow.on("click", function(event, column) {
-      headerRow.data().forEach((d2) => {
-        d2.activeSort = false;
+      headerRow.data().forEach((d) => {
+        d.activeSort = false;
       });
       column.sort(body.selectAll("tr"), column);
       column.activeSort = true;
@@ -22765,8 +22816,8 @@ var gsmViz = (() => {
   // src/groupOverview/makeTable/addFlagIcons.js
   function addFlagIcons(rows) {
     const metricCells = rows.selectAll("td.group-overview--metric").text("");
-    metricCells.each(function(d2) {
-      const flag = parseInt(d2.Flag);
+    metricCells.each(function(d) {
+      const flag = parseInt(d.Flag);
       const absFlag = Math.abs(flag);
       switch (absFlag) {
         case 0:
@@ -22811,16 +22862,16 @@ var gsmViz = (() => {
     const riskSignalSelected = new CustomEvent("riskSignalSelected", {
       bubbles: true
     });
-    cells.filter(".group-overview--metric").on("click", function(event, d2) {
+    cells.filter(".group-overview--metric").on("click", function(event, d) {
       config.metricClickCallback({
         GroupLevel: config.GroupLevel,
-        GroupID: d2.GroupID,
-        MetricID: d2.MetricID,
-        data: d2
+        GroupID: d.GroupID,
+        MetricID: d.MetricID,
+        data: d
       });
       riskSignalSelected.data = results_default.items.required.reduce(
         (acc, item) => {
-          acc[item] = d2[item];
+          acc[item] = d[item];
           return acc;
         },
         {}
@@ -22830,17 +22881,17 @@ var gsmViz = (() => {
     const groupSelected = new CustomEvent("groupSelected", {
       bubbles: true
     });
-    cells.filter(".group-overview--group").filter((d2) => d2.column.valueKey !== "siteRiskScore").on("click", function(event, d2) {
+    cells.filter(".group-overview--group").filter((d) => d.column.valueKey !== "siteRiskScore").on("click", function(event, d) {
       config.groupClickCallback({
         GroupLevel: config.GroupLevel,
-        GroupID: d2.GroupID,
-        data: d2
+        GroupID: d.GroupID,
+        data: d
       });
       groupSelected.data = {
         //StudyID: d.StudyID,
         //SnapshotDate: d.SnapshotDate,
-        GroupLevel: d2.GroupLevel,
-        GroupID: d2.GroupID
+        GroupLevel: d.GroupLevel,
+        GroupID: d.GroupID
       };
       this.dispatchEvent(groupSelected);
     });
@@ -22857,10 +22908,10 @@ var gsmViz = (() => {
       );
     }
     const riskScoreCells = cells.filter(
-      (d2) => d2.column.valueKey === "siteRiskScore" && d2.tooltip
+      (d) => d.column.valueKey === "siteRiskScore" && d.tooltip
     );
     let activeCell = null;
-    riskScoreCells.style("cursor", "pointer").classed("group-overview--tooltip", false).on("click.risk-score-tooltip", function(event, d2) {
+    riskScoreCells.style("cursor", "pointer").classed("group-overview--tooltip", false).on("click.risk-score-tooltip", function(event, d) {
       event.stopPropagation();
       event.preventDefault();
       const currentCell = this;
@@ -22870,7 +22921,7 @@ var gsmViz = (() => {
         return;
       }
       tooltip5.style("display", "none");
-      const content = d2.tooltipContent;
+      const content = d.tooltipContent;
       if (!content) {
         activeCell = null;
         return;
@@ -22954,7 +23005,7 @@ var gsmViz = (() => {
     addRowHighlighting(bodyRows);
     addClickEvents(bodyRows, cells, this.config);
     addCustomTooltip(cells);
-    const sortedColumn = this.columns.find((d2) => d2.activeSort);
+    const sortedColumn = this.columns.find((d) => d.activeSort);
     if (sortedColumn !== void 0) {
       sortedColumn.sortState = -sortedColumn.sortState;
       sortedColumn.sort(tbody.selectAll("tr"), sortedColumn);
@@ -23084,21 +23135,21 @@ var gsmViz = (() => {
 
   // src/scatterPlot/structureData/mutate.js
   function mutate2(_results_, config, groupMetadata = null) {
-    const results = _results_.map((d2) => {
+    const results = _results_.map((d) => {
       if (groupMetadata !== null) {
-        const group2 = groupMetadata.get(d2.GroupID);
+        const group2 = groupMetadata.get(d.GroupID);
         if (group2 !== void 0) {
-          d2.group = group2;
-          d2.group.groupLabel = d2.group.hasOwnProperty(
+          d.group = group2;
+          d.group.groupLabel = d.group.hasOwnProperty(
             config.groupLabelKey
-          ) ? d2.group[config.groupLabelKey] : d2.GroupID;
+          ) ? d.group[config.groupLabelKey] : d.GroupID;
         }
       }
       const datum2 = {
-        ...d2,
-        x: +d2[config.x],
-        y: +d2[config.y],
-        stratum: isNaN(parseFloat(d2[config.color])) ? 3 : Math.abs(+d2[config.color])
+        ...d,
+        x: +d[config.x],
+        y: +d[config.y],
+        stratum: isNaN(parseFloat(d[config.color])) ? 3 : Math.abs(+d[config.color])
       };
       return datum2;
     }).sort((a, b) => {
@@ -23207,18 +23258,18 @@ var gsmViz = (() => {
         (Group) => {
           return {
             type: "line",
-            data: Group.map((d2) => ({
-              stratum: Math.abs(+d2.Threshold),
-              Threshold: d2.Threshold,
-              x: +d2.Denominator,
-              y: +d2.Numerator
+            data: Group.map((d) => ({
+              stratum: Math.abs(+d.Threshold),
+              Threshold: d.Threshold,
+              x: +d.Denominator,
+              y: +d.Numerator
             })),
             borderWidth: 1,
             hoverRadius: 0,
             pointRadius: 0
           };
         },
-        (d2) => d2.Threshold
+        (d) => d.Threshold
       );
       const flags = mapThresholdsToFlags(boundUps.map((bound) => bound[0]));
       const bounds = boundUps.map((bound, i) => {
@@ -23243,11 +23294,11 @@ var gsmViz = (() => {
       rollup(
         bounds,
         (Group) => {
-          Group.forEach((d2, i) => {
-            if (i > 0) d2.label = "";
+          Group.forEach((d, i) => {
+            if (i > 0) d.label = "";
           });
         },
-        (d2) => Math.abs(d2.Flag.Flag)
+        (d) => Math.abs(d.Flag.Flag)
       );
       return bounds;
     }
@@ -23261,17 +23312,17 @@ var gsmViz = (() => {
   }
   function predictBounds(_results_, config) {
     if (Array.isArray(_results_) === false || _results_.length === 0) return [];
-    const rows = _results_.map((d2) => ({
-      Numerator: Number(d2.Numerator),
-      Denominator: Number(d2.Denominator),
-      Metric: Number(d2.Metric)
+    const rows = _results_.map((d) => ({
+      Numerator: Number(d.Numerator),
+      Denominator: Number(d.Denominator),
+      Metric: Number(d.Metric)
     })).filter(
-      (d2) => Number.isFinite(d2.Numerator) && Number.isFinite(d2.Denominator) && Number.isFinite(d2.Metric) && d2.Denominator > 0
+      (d) => Number.isFinite(d.Numerator) && Number.isFinite(d.Denominator) && Number.isFinite(d.Metric) && d.Denominator > 0
     );
     if (rows.length === 0) return [];
     const thresholds2 = [.../* @__PURE__ */ new Set([...parseThresholds(config?.Threshold), 0])];
-    const denominatorMin = Math.min(...rows.map((d2) => d2.Denominator));
-    const denominatorMax = Math.max(...rows.map((d2) => d2.Denominator));
+    const denominatorMin = Math.min(...rows.map((d) => d.Denominator));
+    const denominatorMax = Math.max(...rows.map((d) => d.Denominator));
     const range = denominatorMax - denominatorMin;
     const nStep = Number.isFinite(range) && range !== 0 ? range / 250 : 1;
     const denominatorRange = [];
@@ -23280,15 +23331,15 @@ var gsmViz = (() => {
     for (let denominator = rangeStart; denominator <= rangeEnd + nStep / 2; denominator += nStep) {
       if (denominator > 0) denominatorRange.push(denominator);
     }
-    const numeratorSum = rows.reduce((sum, d2) => sum + d2.Numerator, 0);
-    const denominatorSum = rows.reduce((sum, d2) => sum + d2.Denominator, 0);
+    const numeratorSum = rows.reduce((sum, d) => sum + d.Numerator, 0);
+    const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
     const analysisType = config?.AnalysisType === "rate" ? "rate" : "binary";
-    const phiTerms = rows.map((d2) => {
-      const variance = analysisType === "rate" ? vMu / d2.Denominator : vMu * (1 - vMu) / d2.Denominator;
+    const phiTerms = rows.map((d) => {
+      const variance = analysisType === "rate" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
       if (variance <= 0) return Number.NaN;
-      const score = (d2.Metric - vMu) / Math.sqrt(variance);
+      const score = (d.Metric - vMu) / Math.sqrt(variance);
       return score * score;
     });
     const finitePhiTerms = phiTerms.filter((term) => Number.isFinite(term));
@@ -23345,8 +23396,8 @@ var gsmViz = (() => {
       bounds.forEach((bound) => {
         datasets.push(bound);
       });
-    if (data.every((d2) => falsy_default.includes(d2.Flag) === false))
-      datasets = datasets.filter((d2) => d2.label !== "No Flag");
+    if (data.every((d) => falsy_default.includes(d.Flag) === false))
+      datasets = datasets.filter((d) => d.label !== "No Flag");
     return datasets;
   }
 
@@ -23380,7 +23431,7 @@ var gsmViz = (() => {
 
   // src/util/sortByGroupID.js
   function sortByGroupID(data, config) {
-    const numericGroupIDs = data.every((d2) => /^\d+$/.test(d2.raw.GroupID));
+    const numericGroupIDs = data.every((d) => /^\d+$/.test(d.raw.GroupID));
     const dataSorted = data.sort((a, b) => {
       const selected = config.selectedGroupIDs.includes(b.raw.GroupID) - config.selectedGroupIDs.includes(a.raw.GroupID);
       const alphanumeric = numericGroupIDs ? ascending(+a.raw.GroupID, +b.raw.GroupID) : ascending(a.raw.GroupID, b.raw.GroupID);
@@ -23394,22 +23445,22 @@ var gsmViz = (() => {
     const tooltipAesthetics = getTooltipAesthetics();
     return {
       callbacks: {
-        label: (d2) => {
+        label: (d) => {
           const content = [
-            ...formatMetricTooltipLabel(d2.raw, config),
-            ...formatGroupTooltipLabel(d2.raw.group, config)
+            ...formatMetricTooltipLabel(d.raw, config),
+            ...formatGroupTooltipLabel(d.raw.group, config)
           ];
-          return d2.raw.duplicate ? "" : content;
+          return d.raw.duplicate ? "" : content;
         },
         title: (data) => {
           if (data.length) {
             const dataSorted = sortByGroupID(data, config);
-            const titles = dataSorted.map((d2, i) => {
+            const titles = dataSorted.map((d, i) => {
               let title5;
               if (data.length === 1) {
-                title5 = formatMetricTooltipTitle(d2.raw, config);
+                title5 = formatMetricTooltipTitle(d.raw, config);
               } else {
-                title5 = i === 0 ? `${config.GroupLevel}s ${d2.dataset.data[d2.dataIndex].GroupID}` : d2.dataset.data[d2.dataIndex].GroupID;
+                title5 = i === 0 ? `${config.GroupLevel}s ${d.dataset.data[d.dataIndex].GroupID}` : d.dataset.data[d.dataIndex].GroupID;
               }
               return title5;
             });
@@ -23588,12 +23639,12 @@ var gsmViz = (() => {
 
   // src/sparkline/structureData/mutate.js
   function mutate3(_data_, config) {
-    const data = _data_.map((d2) => {
+    const data = _data_.map((d) => {
       const datum2 = {
-        ...d2,
+        ...d,
         //x: +d[config.x],
-        y: +d2[config.y],
-        stratum: falsy_default.includes(d2[config.color]) ? 3 : Math.abs(+d2[config.color])
+        y: +d[config.y],
+        stratum: falsy_default.includes(d[config.color]) ? 3 : Math.abs(+d[config.color])
       };
       return datum2;
     }).sort((a, b) => ascending(a.SnapshotDate, b.SnapshotDate));
@@ -23635,17 +23686,17 @@ var gsmViz = (() => {
   // src/sparkline/structureData.js
   function structureData5(_data_, config) {
     const data = mutate3(_data_, config);
-    const labels = data.map((d2) => d2.SnapshotDate);
-    const pointBackgroundColor = data.map((d2, i) => {
-      return config.dataType === "continuous" ? colorScheme_default[d2.stratum].color : config.y === "n_at_risk" ? colorScheme_default.find((color3) => /amber/i.test(color3.description)).color : config.y === "n_flagged" ? colorScheme_default.find((color3) => /red/i.test(color3.description)).color : config.y === "n_at_risk_or_flagged" ? colorScheme_default.amberRed.color : "#1890FF";
+    const labels = data.map((d) => d.SnapshotDate);
+    const pointBackgroundColor = data.map((d, i) => {
+      return config.dataType === "continuous" ? colorScheme_default[d.stratum].color : config.y === "n_at_risk" ? colorScheme_default.find((color3) => /amber/i.test(color3.description)).color : config.y === "n_flagged" ? colorScheme_default.find((color3) => /red/i.test(color3.description)).color : config.y === "n_at_risk_or_flagged" ? colorScheme_default.amberRed.color : "#1890FF";
     });
     const datasets = [
       {
         type: "line",
-        data: data.map((d2, i) => {
-          const datum2 = { ...d2 };
+        data: data.map((d, i) => {
+          const datum2 = { ...d };
           datum2.x = i;
-          datum2.y = +d2[config.y];
+          datum2.y = +d[config.y];
           return datum2;
         }),
         pointBackgroundColor,
@@ -23685,12 +23736,12 @@ var gsmViz = (() => {
     const xMin = 0;
     const xMax = data.length - 1;
     const xValue = xMax + xMax / 50;
-    const yMin = min(data, (d2) => +d2[config.y]);
-    const yMax = max(data, (d2) => +d2[config.y]);
+    const yMin = min(data, (d) => +d[config.y]);
+    const yMax = max(data, (d) => +d[config.y]);
     const range = yMin === yMax ? yMin : yMax - yMin;
     const yValue = yMin === yMax ? yMin : yMin + range / 2;
-    const format2 = data.every((d2) => +d2[config.y] % 1 === 0) ? `d` : config.y === "Metric" ? `.3f` : `.1f`;
-    const datum2 = data.filter((d2) => falsy_default.includes(d2.y) === false).slice(-1)[0];
+    const format2 = data.every((d) => +d[config.y] % 1 === 0) ? `d` : config.y === "Metric" ? `.3f` : `.1f`;
+    const datum2 = data.filter((d) => falsy_default.includes(d.y) === false).slice(-1)[0];
     const content = [format(format2)(datum2?.y)];
     const value = {
       content,
@@ -23771,8 +23822,8 @@ var gsmViz = (() => {
     const scales2 = getDefaultScales();
     scales2.x.display = false;
     scales2.x.type = config.xType;
-    const yMin = min(data, (d2) => d2.y);
-    const yMax = max(data, (d2) => d2.y);
+    const yMin = min(data, (d) => d.y);
+    const yMax = max(data, (d) => d.y);
     const range = yMin !== yMax ? yMax - yMin : yMin === yMax && yMin !== 0 ? yMin : 1;
     scales2.y.display = false;
     scales2.y.min = config.yMin !== void 0 ? config.yMin : yMin - range * 0.35;
@@ -23948,16 +23999,16 @@ var gsmViz = (() => {
 
   // src/timeSeries/structureData/getLabels.js
   function getLabels(data, config) {
-    const labels = [...new Set(data.map((d2) => d2[config.x]))];
+    const labels = [...new Set(data.map((d) => d[config.x]))];
     return labels;
   }
 
   // src/timeSeries/structureData/mutate.js
   function mutate4(_results_, config, _thresholds_, _intervals_, groupMetadata = null) {
-    const results = _results_.map((d2) => {
-      const datum2 = { ...d2 };
+    const results = _results_.map((d) => {
+      const datum2 = { ...d };
       if (groupMetadata !== null) {
-        const group2 = groupMetadata.get(d2.GroupID);
+        const group2 = groupMetadata.get(d.GroupID);
         if (group2 !== void 0) {
           datum2.group = group2;
           datum2.group.groupLabel = datum2.group.hasOwnProperty(
@@ -23981,11 +24032,11 @@ var gsmViz = (() => {
     const labels = getLabels(results, config);
     let thresholds2 = null;
     if (Array.isArray(_thresholds_) && config.variableThresholds) {
-      thresholds2 = _thresholds_.filter((d2) => labels.includes(d2[config.x])).map((d2) => ({ ...d2 })).sort((a, b) => ascending(a[config.x], b[config.x]));
+      thresholds2 = _thresholds_.filter((d) => labels.includes(d[config.x])).map((d) => ({ ...d })).sort((a, b) => ascending(a[config.x], b[config.x]));
     }
     let intervals = null;
     if (Array.isArray(_intervals_)) {
-      intervals = _intervals_.filter((d2) => labels.includes(d2[config.x])).map((d2) => ({ ...d2 })).sort((a, b) => ascending(a[config.x], b[config.x]));
+      intervals = _intervals_.filter((d) => labels.includes(d[config.x])).map((d) => ({ ...d })).sort((a, b) => ascending(a[config.x], b[config.x]));
     }
     identifyDuplicatePoints(results, config);
     return {
@@ -24000,8 +24051,8 @@ var gsmViz = (() => {
   function identityLine(data, config, labels) {
     const aggregateData = rollup(
       data,
-      (Group) => mean(Group, (d2) => d2[config.y]),
-      (d2) => d2[config.x]
+      (Group) => mean(Group, (d) => d[config.y]),
+      (d) => d[config.x]
     );
     const color3 = "#666666";
     const backgroundColor4 = color2(color3);
@@ -24009,12 +24060,12 @@ var gsmViz = (() => {
     const borderColor4 = color2(color3);
     borderColor4.opacity = 0.25;
     const dataset = {
-      backgroundColor: (d2) => {
-        if (d2.type === "dataset") {
+      backgroundColor: (d) => {
+        if (d.type === "dataset") {
           return backgroundColor4;
         } else {
           return colorScheme_default.find(
-            (color4) => color4.Flag.includes(+d2.raw.Flag)
+            (color4) => color4.Flag.includes(+d.raw.Flag)
           ).color;
         }
       },
@@ -24023,7 +24074,7 @@ var gsmViz = (() => {
         const x = labels[i];
         const y = value;
         return {
-          ...data.find((d2) => d2[config.x] === x),
+          ...data.find((d) => d[config.x] === x),
           x,
           y
         };
@@ -24043,10 +24094,10 @@ var gsmViz = (() => {
   function intervalLines(_intervals_, config, labels) {
     if (_intervals_ === null) return [null];
     const intervals = rollup(
-      _intervals_.filter((d2) => /ci/i.test(d2.Param)),
+      _intervals_.filter((d) => /ci/i.test(d.Param)),
       (Group) => +Group[0].Value,
-      (d2) => d2.Param,
-      (d2) => d2.SnapshotDate
+      (d) => d.Param,
+      (d) => d.SnapshotDate
     );
     const datasets = [...intervals].map(([key, value], i) => {
       return {
@@ -24068,8 +24119,8 @@ var gsmViz = (() => {
   // src/timeSeries/structureData/selectedGroupLine.js
   function selectedGroupLine(data, config, labels) {
     if (config.selectedGroupIDs.length === 0) return [null];
-    const lineData = data.filter((d2) => config.selectedGroupIDs.includes(d2.GroupID)).map((d2, i) => {
-      const datum2 = { ...d2 };
+    const lineData = data.filter((d) => config.selectedGroupIDs.includes(d.GroupID)).map((d, i) => {
+      const datum2 = { ...d };
       datum2.x = datum2[config.x];
       datum2.y = +datum2[config.y];
       return datum2;
@@ -24081,19 +24132,19 @@ var gsmViz = (() => {
     borderColor4.opacity = 0.5;
     const datasets = config.selectedGroupIDs.map((GroupID) => {
       return {
-        data: lineData.filter((d2) => d2.GroupID === GroupID),
-        backgroundColor: function(d2) {
-          if (d2.element === void 0) {
+        data: lineData.filter((d) => d.GroupID === GroupID),
+        backgroundColor: function(d) {
+          if (d.element === void 0) {
             return backgroundColor4;
           }
           const color4 = colorScheme_default.find(
-            (color5) => falsy_default.includes(d2.raw.Flag) ? color5.Flag.includes(d2.raw?.Flag) : color5.Flag.includes(+d2.raw?.Flag)
+            (color5) => falsy_default.includes(d.raw.Flag) ? color5.Flag.includes(d.raw?.Flag) : color5.Flag.includes(+d.raw?.Flag)
           );
           color4.rgba.opacity = 0.75;
           return color4.rgba + "";
         },
-        borderColor: function(d2) {
-          return d2.type === "data" ? "black" : borderColor4;
+        borderColor: function(d) {
+          return d.type === "data" ? "black" : borderColor4;
         },
         label: "",
         pointStyle: "circle",
@@ -24108,8 +24159,8 @@ var gsmViz = (() => {
 
   // src/timeSeries/structureData/flagAmber.js
   function flagAmber(data, config, labels) {
-    const pointData = data.filter((d2) => Math.abs(+d2.Flag) === 1).map((d2) => {
-      const datum2 = { ...d2 };
+    const pointData = data.filter((d) => Math.abs(+d.Flag) === 1).map((d) => {
+      const datum2 = { ...d };
       datum2.x = datum2[config.x];
       datum2.y = +datum2[config.y];
       return datum2;
@@ -24135,8 +24186,8 @@ var gsmViz = (() => {
 
   // src/timeSeries/structureData/flagRed.js
   function flagRed(data, config, labels) {
-    const pointData = data.filter((d2) => Math.abs(+d2.Flag) > 1).map((d2) => {
-      const datum2 = { ...d2 };
+    const pointData = data.filter((d) => Math.abs(+d.Flag) > 1).map((d) => {
+      const datum2 = { ...d };
       datum2.x = datum2[config.x];
       datum2.y = +datum2[config.y];
       return datum2;
@@ -24165,11 +24216,11 @@ var gsmViz = (() => {
     const grouped = rollups(
       data,
       //.filter(d => +d.Flag === 0),
-      (Group) => Group.map((d2) => +d2[config.y]),
-      (d2) => d2.SnapshotDate
+      (Group) => Group.map((d) => +d[config.y]),
+      (d) => d.SnapshotDate
     );
     const dataset = {
-      data: grouped.map((d2) => d2[1]),
+      data: grouped.map((d) => d[1]),
       maxBarThickness: 7,
       maxWhiskerThickness: 0,
       meanRadius: /^n_/.test(config.y) ? 3 : 0,
@@ -24190,11 +24241,11 @@ var gsmViz = (() => {
     const grouped = rollups(
       data,
       //.filter((d) => +d.Flag === 0),
-      (Group) => Group.map((d2) => +d2[config.y]),
-      (d2) => d2.SnapshotDate
+      (Group) => Group.map((d) => +d[config.y]),
+      (d) => d.SnapshotDate
     );
     const dataset = {
-      data: grouped.map((d2) => d2[1]),
+      data: grouped.map((d) => d[1]),
       label: /Flag|at.risk/.test(config.y) ? `Distribution` : `${config.GroupLevel} Distribution`,
       purpose: "distribution",
       type: "violin"
@@ -24216,7 +24267,7 @@ var gsmViz = (() => {
     if (Array.isArray(_thresholds_) && config.variableThresholds) {
       const thresholds2 = [
         ...rollup(
-          _thresholds_.filter((d2) => d2.Param === "vThreshold").sort((a, b) => a < b ? -1 : b < a ? 1 : 0),
+          _thresholds_.filter((d) => d.Param === "vThreshold").sort((a, b) => a < b ? -1 : b < a ? 1 : 0),
           (Group) => {
             const flags = checkThresholds({}, Group);
             flags.forEach((Flag) => {
@@ -24230,9 +24281,9 @@ var gsmViz = (() => {
             });
             return flags;
           },
-          (d2) => d2.SnapshotDate
+          (d) => d.SnapshotDate
         )
-      ].flatMap((d2) => d2[1]);
+      ].flatMap((d) => d[1]);
       const latestSnapshotDate = max(labels);
       thresholdData = [
         ...rollup(
@@ -24256,13 +24307,13 @@ var gsmViz = (() => {
               type: "line"
             };
             const snapshotDates = [
-              ...new Set(Group.map((d2) => d2[config.x]))
+              ...new Set(Group.map((d) => d[config.x]))
             ];
             const snapshotDate = max(snapshotDates);
             if (snapshotDate < latestSnapshotDate) {
               const Threshold = {
                 ...dataset.data.find(
-                  (d2) => d2[config.x] === snapshotDate
+                  (d) => d[config.x] === snapshotDate
                 )
               };
               Threshold[config.x] = latestSnapshotDate;
@@ -24271,9 +24322,9 @@ var gsmViz = (() => {
             }
             return dataset;
           },
-          (d2) => d2.Flag
+          (d) => d.Flag
         )
-      ].map((d2) => d2[1]);
+      ].map((d) => d[1]);
     }
     return thresholdData;
   }
@@ -24282,8 +24333,8 @@ var gsmViz = (() => {
   function aggregateLine(data, config, labels) {
     const aggregateData = rollup(
       data,
-      (Group) => mean(Group, (d2) => d2[config.y]),
-      (d2) => d2[config.x]
+      (Group) => mean(Group, (d) => d[config.y]),
+      (d) => d[config.x]
     );
     const countsBySnapshot = rollup(
       data,
@@ -24296,10 +24347,10 @@ var gsmViz = (() => {
             N,
             pct: Math.round(subgroup.length / N * 100 * 10) / 10
           }),
-          (d2) => d2[config.y]
+          (d) => d[config.y]
         );
       },
-      (d2) => d2[config.x]
+      (d) => d[config.x]
     );
     const color3 = /at.risk/.test(config.y) && /flagged/.test(config.y) ? colorScheme_default.amberRed.color : /at.risk/.test(config.y) ? colorScheme_default.find((color4) => color4.Flag.includes(1)).color : /flagged/.test(config.y) ? colorScheme_default.find((color4) => color4.Flag.includes(2)).color : "#828282";
     const backgroundColor4 = color2(color3);
@@ -24399,8 +24450,8 @@ var gsmViz = (() => {
         config.selectedGroupIDs.length > 0 ? {
           ...selectedGroupLine(results, config, labels),
           backgroundColor: color3,
-          borderColor: (d2) => {
-            return d2.raw !== void 0 ? "black" : "#828282";
+          borderColor: (d) => {
+            return d.raw !== void 0 ? "black" : "#828282";
           }
         } : null,
         {
@@ -24563,7 +24614,7 @@ var gsmViz = (() => {
       ] : data.dataset.purpose === "aggregate" && config.discreteUnit === "Metric" ? [
         `${format(".1f")(datum2.y)} Average ${config.yLabel}`,
         ...datum2.counts.map(
-          (d2) => `${d2[config.y]} ${config.yLabel}: ${d2.n}/${d2.N} (${d2.pct}%) ${config.GroupLevel}s`
+          (d) => `${d[config.y]} ${config.yLabel}: ${d.n}/${d.N} (${d.pct}%) ${config.GroupLevel}s`
         )
       ] : data.dataset.purpose === "aggregate" && config.discreteUnit === "Site" ? `${format(".1f")(datum2.y)} ${config.yLabel}` : null;
     }
@@ -24575,12 +24626,12 @@ var gsmViz = (() => {
     const tooltipAesthetics = getTooltipAesthetics();
     return {
       callbacks: {
-        label: (d2) => {
+        label: (d) => {
           const content = [
-            ...formatResultTooltipContent(d2, config),
-            ...formatGroupTooltipLabel(d2.raw.group, config)
+            ...formatResultTooltipContent(d, config),
+            ...formatGroupTooltipLabel(d.raw.group, config)
           ];
-          return d2.raw.duplicate ? "" : content;
+          return d.raw.duplicate ? "" : content;
         },
         labelPointStyle: (data) => {
           return {
@@ -24601,12 +24652,12 @@ var gsmViz = (() => {
                 console.log(err);
                 console.log(data);
               }
-              const titles = dataSorted.map(function(d2, i) {
+              const titles = dataSorted.map(function(d, i) {
                 let title5;
                 if (data.length === 1) {
-                  title5 = formatMetricTooltipTitle(d2.raw, config);
+                  title5 = formatMetricTooltipTitle(d.raw, config);
                 } else {
-                  title5 = i === 0 ? `${config.GroupLevel}s ${d2.dataset.data[d2.dataIndex].GroupID}` : d2.dataset.data[d2.dataIndex].GroupID;
+                  title5 = i === 0 ? `${config.GroupLevel}s ${d.dataset.data[d.dataIndex].GroupID}` : d.dataset.data[d.dataIndex].GroupID;
                 }
                 return title5;
               });
@@ -24681,7 +24732,7 @@ var gsmViz = (() => {
   function updateSelectedGroupIDs(selectedGroupIDs) {
     if (!Array.isArray(selectedGroupIDs)) selectedGroupIDs = [selectedGroupIDs];
     this.data.config.selectedGroupIDs = selectedGroupIDs.filter(
-      (GroupID) => this.data._results_.map((d2) => d2.GroupID).includes(GroupID)
+      (GroupID) => this.data._results_.map((d) => d.GroupID).includes(GroupID)
     );
     this.data.config.selectedGroupDatum = updateSelectedGroupDatum(
       this.data._results_,

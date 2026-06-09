@@ -129,7 +129,12 @@ describe('bars/getPlugins', () => {
             // Mock chart that mirrors the Chart.js 3 visibility API used by the
             // dynamicCategoryAxis handler: setDatasetVisibility / isDatasetVisible
             // use an internal _meta map; hide/show are kept for completeness.
-            function makeChart(datasets, allLabels, orientation = 'vertical', initiallyHidden = []) {
+            function makeChart(
+                datasets,
+                allLabels,
+                orientation = 'vertical',
+                initiallyHidden = []
+            ) {
                 const _meta = {};
                 initiallyHidden.forEach((i) => {
                     _meta[i] = true;
@@ -149,10 +154,18 @@ describe('bars/getPlugins', () => {
                     },
                     _meta,
                     update: jest.fn(),
-                    isDatasetVisible(i) { return this._meta[i] !== true; },
-                    setDatasetVisibility(i, visible) { this._meta[i] = !visible; },
-                    hide(i) { this._meta[i] = true; },
-                    show(i) { this._meta[i] = false; },
+                    isDatasetVisible(i) {
+                        return this._meta[i] !== true;
+                    },
+                    setDatasetVisibility(i, visible) {
+                        this._meta[i] = !visible;
+                    },
+                    hide(i) {
+                        this._meta[i] = true;
+                    },
+                    show(i) {
+                        this._meta[i] = false;
+                    },
                 };
             }
 
@@ -172,11 +185,17 @@ describe('bars/getPlugins', () => {
             test('hides clicked dataset: empties data and marks invisible', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
-                const originalData = [{ x: 'cat1', y: 1 }, { x: 'cat2', y: 1 }];
+                const originalData = [
+                    { x: 'cat1', y: 1 },
+                    { x: 'cat2', y: 1 },
+                ];
                 const ds0 = { label: 'A', data: [...originalData] };
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
                 const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3']);
@@ -191,13 +210,21 @@ describe('bars/getPlugins', () => {
             test('shows previously-hidden dataset: restores data and marks visible', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
                 const ds0 = makeDataset('A', ['cat1', 'cat2']);
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
-                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'vertical', [0]);
+                const chart = makeChart(
+                    [ds0, ds1],
+                    ['cat1', 'cat2', 'cat3'],
+                    'vertical',
+                    [0]
+                );
 
                 clickLegend(plugins, chart, 0);
 
@@ -209,7 +236,10 @@ describe('bars/getPlugins', () => {
             test('filters labels to categories in visible datasets only', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
@@ -226,13 +256,21 @@ describe('bars/getPlugins', () => {
             test('restores full labels when a hidden dataset is re-selected', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
                 const ds0 = makeDataset('A', ['cat1', 'cat2']);
                 const ds1 = makeDataset('B', ['cat2', 'cat3']);
-                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'vertical', [0]);
+                const chart = makeChart(
+                    [ds0, ds1],
+                    ['cat1', 'cat2', 'cat3'],
+                    'vertical',
+                    [0]
+                );
 
                 // Re-show dataset A — cat1 should come back
                 clickLegend(plugins, chart, 0);
@@ -243,7 +281,10 @@ describe('bars/getPlugins', () => {
             test('preserves original category order from _allLabels_', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
@@ -262,7 +303,10 @@ describe('bars/getPlugins', () => {
             test('calls chart.update() after adjusting labels', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'vertical' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
@@ -276,20 +320,32 @@ describe('bars/getPlugins', () => {
             });
 
             describe('dynamicSizing integration', () => {
-                function makeChartWithSizing(datasets, allLabels, orientation, chartArea, chartDim, theme = { dynamicSizing: true }) {
+                function makeChartWithSizing(
+                    datasets,
+                    allLabels,
+                    orientation,
+                    chartArea,
+                    chartDim,
+                    theme = { dynamicSizing: true }
+                ) {
                     const chart = makeChart(datasets, allLabels, orientation);
                     chart.data._spec_.theme = theme;
                     chart.chartArea = chartArea;
                     chart.height = chartDim;
                     chart.width = chartDim;
-                    chart.canvas = { parentElement: { style: { width: '', height: '' } } };
+                    chart.canvas = {
+                        parentElement: { style: { width: '', height: '' } },
+                    };
                     return chart;
                 }
 
                 test('updates container width for vertical chart after hide', () => {
                     const spec = {
                         ...baseSpec,
-                        theme: { dynamicCategoryAxis: true, dynamicSizing: true },
+                        theme: {
+                            dynamicCategoryAxis: true,
+                            dynamicSizing: true,
+                        },
                     };
                     const plugins = getPlugins(spec);
 
@@ -308,7 +364,9 @@ describe('bars/getPlugins', () => {
                     clickLegend(plugins, chart, 0); // hides ds0, labels → ['cat2','cat3']
 
                     // 2 categories × 30 + 100 overhead = 160
-                    expect(chart.canvas.parentElement.style.width).toBe('160px');
+                    expect(chart.canvas.parentElement.style.width).toBe(
+                        '160px'
+                    );
                 });
 
                 test('updates container height for horizontal chart after hide', () => {
@@ -343,13 +401,18 @@ describe('bars/getPlugins', () => {
                     clickLegend(plugins, chart, 0); // hides ds0, labels → ['cat2','cat3']
 
                     // 2 categories × 30 + 100 overhead = 160
-                    expect(chart.canvas.parentElement.style.height).toBe('160px');
+                    expect(chart.canvas.parentElement.style.height).toBe(
+                        '160px'
+                    );
                 });
 
                 test('does not set container dimensions when dynamicSizing is false', () => {
                     const spec = {
                         ...baseSpec,
-                        theme: { dynamicCategoryAxis: true, dynamicSizing: false },
+                        theme: {
+                            dynamicCategoryAxis: true,
+                            dynamicSizing: false,
+                        },
                     };
                     const plugins = getPlugins(spec);
 
@@ -374,7 +437,10 @@ describe('bars/getPlugins', () => {
             test('uses y key for category values in horizontal orientation', () => {
                 const spec = {
                     ...baseSpec,
-                    theme: { dynamicCategoryAxis: true, orientation: 'horizontal' },
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'horizontal',
+                    },
                 };
                 const plugins = getPlugins(spec);
 
@@ -394,12 +460,102 @@ describe('bars/getPlugins', () => {
                         { x: 4, y: 'cat3' },
                     ],
                 };
-                const chart = makeChart([ds0, ds1], ['cat1', 'cat2', 'cat3'], 'horizontal');
+                const chart = makeChart(
+                    [ds0, ds1],
+                    ['cat1', 'cat2', 'cat3'],
+                    'horizontal'
+                );
 
                 // Hide dataset A — cat1 exclusive to A
                 clickLegend(plugins, chart, 0);
 
                 expect(chart.data.labels).toEqual(['cat2', 'cat3']);
+            });
+
+            test('aligns visible stacked datasets to filtered labels after a hide', () => {
+                const spec = {
+                    ...baseSpec,
+                    position: 'stack',
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = makeDataset('A', ['cat1', 'cat3']);
+                const ds1 = makeDataset('B', ['cat2', 'cat3']);
+                const ds2 = makeDataset('C', ['cat4']);
+                const chart = makeChart(
+                    [ds0, ds1, ds2],
+                    ['cat1', 'cat2', 'cat3', 'cat4']
+                );
+                chart.data._spec_.position = 'stack';
+                chart.data._spec_.mapping = { fill: 'group' };
+
+                clickLegend(plugins, chart, 2);
+
+                expect(chart.data.labels).toEqual(['cat1', 'cat2', 'cat3']);
+                expect(chart.data.datasets[0].data.map((d) => d.x)).toEqual([
+                    'cat1',
+                    'cat2',
+                    'cat3',
+                ]);
+                expect(chart.data.datasets[0].data.map((d) => d.y)).toEqual([
+                    1, 0, 1,
+                ]);
+                expect(chart.data.datasets[1].data.map((d) => d.x)).toEqual([
+                    'cat1',
+                    'cat2',
+                    'cat3',
+                ]);
+                expect(chart.data.datasets[1].data.map((d) => d.y)).toEqual([
+                    0, 1, 1,
+                ]);
+            });
+
+            test("preserves position='fill' percentages when aligning after a hide", () => {
+                const spec = {
+                    ...baseSpec,
+                    position: 'fill',
+                    theme: {
+                        dynamicCategoryAxis: true,
+                        orientation: 'vertical',
+                    },
+                };
+                const plugins = getPlugins(spec);
+
+                const ds0 = {
+                    label: 'A',
+                    data: [
+                        { x: 'cat1', y: 25, _rawY: 1 },
+                        { x: 'cat3', y: 40, _rawY: 2 },
+                    ],
+                };
+                const ds1 = {
+                    label: 'B',
+                    data: [
+                        { x: 'cat2', y: 30, _rawY: 3 },
+                        { x: 'cat3', y: 60, _rawY: 3 },
+                    ],
+                };
+                const ds2 = makeDataset('C', ['cat4']);
+                const chart = makeChart(
+                    [ds0, ds1, ds2],
+                    ['cat1', 'cat2', 'cat3', 'cat4']
+                );
+                chart.data._spec_.position = 'fill';
+                chart.data._spec_.mapping = { fill: 'group' };
+
+                clickLegend(plugins, chart, 2);
+
+                expect(chart.data.labels).toEqual(['cat1', 'cat2', 'cat3']);
+                expect(chart.data.datasets[0].data.map((d) => d.y)).toEqual([
+                    25, 0, 40,
+                ]);
+                expect(chart.data.datasets[1].data.map((d) => d.y)).toEqual([
+                    0, 30, 60,
+                ]);
             });
         });
     });
@@ -442,7 +598,10 @@ describe('bars/getPlugins', () => {
         describe("position='fill' percentage label", () => {
             function makeContext({ pct, datasetLabel, indexAxis = 'x' }) {
                 return {
-                    parsed: { x: indexAxis === 'y' ? pct : 0, y: indexAxis === 'x' ? pct : 0 },
+                    parsed: {
+                        x: indexAxis === 'y' ? pct : 0,
+                        y: indexAxis === 'x' ? pct : 0,
+                    },
                     dataset: { label: datasetLabel },
                     chart: { options: { indexAxis } },
                 };
@@ -457,7 +616,9 @@ describe('bars/getPlugins', () => {
                     position: 'fill',
                 };
                 const plugins = getPlugins(spec);
-                expect(typeof plugins.tooltip.callbacks?.label).toBe('function');
+                expect(typeof plugins.tooltip.callbacks?.label).toBe(
+                    'function'
+                );
             });
 
             test('does not inject a label callback when position is not fill', () => {
@@ -493,7 +654,11 @@ describe('bars/getPlugins', () => {
                     position: 'fill',
                 };
                 const plugins = getPlugins(spec);
-                const ctx = makeContext({ pct: 66.666, datasetLabel: 'B', indexAxis: 'y' });
+                const ctx = makeContext({
+                    pct: 66.666,
+                    datasetLabel: 'B',
+                    indexAxis: 'y',
+                });
                 expect(plugins.tooltip.callbacks.label(ctx)).toBe('B: 66.7%');
             });
 
