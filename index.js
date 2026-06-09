@@ -21799,9 +21799,9 @@ var gsmViz = (() => {
     if (!spec.mapping.x) {
       throw new Error("spec.mapping.x is required");
     }
-    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity") {
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill") {
       throw new Error(
-        "spec.position must be 'stack', 'dodge', or 'identity'"
+        "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
       );
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
@@ -21843,7 +21843,8 @@ var gsmViz = (() => {
     theme: {
       maintainAspectRatio: false,
       animation: false,
-      dynamicSizing: false
+      dynamicSizing: false,
+      dynamicCategoryAxis: false
     }
   };
   var defaults_default = defaults3;
@@ -21866,35 +21867,7 @@ var gsmViz = (() => {
     };
   }
 
-  // src/bars/structureData.js
-  function resolveCategories(data, xKey, explicitOrder) {
-    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
-    if (explicitOrder) {
-      const dataSet = new Set(dataCategories);
-      const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
-      const orderedSet = new Set(ordered);
-      const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
-        (a, b) => String(a).localeCompare(String(b), void 0, {
-          sensitivity: "base"
-        })
-      );
-      return [...ordered, ...remaining];
-    }
-    return dataCategories.sort(
-      (a, b) => String(a).localeCompare(String(b), void 0, {
-        sensitivity: "base"
-      })
-    );
-  }
-  function reorderDatasets(datasets, fillOrder) {
-    const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
-    const ordered = fillOrder.filter((val) => datasetMap.has(String(val))).map((val) => datasetMap.get(String(val)));
-    const orderedSet = new Set(fillOrder.map(String));
-    const remaining = datasets.filter(
-      (ds) => !orderedSet.has(String(ds.label))
-    );
-    return [...ordered, ...remaining];
-  }
+  // src/bars/structureData/aggregateCounts.js
   function aggregateCounts(data, xKey, fillKey, categoryIndex) {
     if (fillKey) {
       const groups2 = /* @__PURE__ */ new Map();
@@ -21936,6 +21909,70 @@ var gsmViz = (() => {
       }
     ];
   }
+
+  // src/bars/structureData/darkenHex.js
+  function darkenHex(hex3) {
+    const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
+    const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
+    const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
+    return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
+  }
+
+  // src/bars/structureData/normalizeFill.js
+  function normalizeFill(datasets, horizontal) {
+    const valueKey = horizontal ? "x" : "y";
+    const categoryKey = horizontal ? "y" : "x";
+    const totals = /* @__PURE__ */ new Map();
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const category = pt[categoryKey];
+        const value = pt[valueKey];
+        totals.set(category, (totals.get(category) || 0) + value);
+      }
+    }
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const category = pt[categoryKey];
+        const total = totals.get(category) || 0;
+        pt._rawY = pt[valueKey];
+        pt[valueKey] = total === 0 ? 0 : pt._rawY / total * 100;
+      }
+    }
+  }
+
+  // src/bars/structureData/reorderDatasets.js
+  function reorderDatasets(datasets, fillOrder) {
+    const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
+    const ordered = fillOrder.filter((val) => datasetMap.has(String(val))).map((val) => datasetMap.get(String(val)));
+    const orderedSet = new Set(fillOrder.map(String));
+    const remaining = datasets.filter(
+      (ds) => !orderedSet.has(String(ds.label))
+    );
+    return [...ordered, ...remaining];
+  }
+
+  // src/bars/structureData/resolveCategories.js
+  function resolveCategories(data, xKey, explicitOrder) {
+    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
+    if (explicitOrder) {
+      const dataSet = new Set(dataCategories);
+      const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+      const orderedSet = new Set(ordered);
+      const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
+        (a, b) => String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        })
+      );
+      return [...ordered, ...remaining];
+    }
+    return dataCategories.sort(
+      (a, b) => String(a).localeCompare(String(b), void 0, {
+        sensitivity: "base"
+      })
+    );
+  }
+
+  // src/bars/structureData/swapPointAxes.js
   function swapPointAxes(datasets) {
     for (const ds of datasets) {
       for (const point of ds.data) {
@@ -21945,12 +21982,8 @@ var gsmViz = (() => {
       }
     }
   }
-  function darkenHex(hex3) {
-    const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
-    const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
-    const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
-    return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
-  }
+
+  // src/bars/structureData/structureData.js
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
@@ -22000,8 +22033,9 @@ var gsmViz = (() => {
     const palette = scales2.fill?.palette;
     if (palette) {
       if (fillKey) {
+        const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
         datasets.forEach((ds, i) => {
-          const colorIndex = fillOrder ? fillOrder.indexOf(String(ds.label)) : -1;
+          const colorIndex = fillOrderStrings ? fillOrderStrings.indexOf(String(ds.label)) : -1;
           const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
           ds.backgroundColor = bg;
           ds.borderColor = darkenHex(bg);
@@ -22018,6 +22052,9 @@ var gsmViz = (() => {
     if (orientation === "horizontal") {
       swapPointAxes(datasets);
     }
+    if (spec.position === "fill") {
+      normalizeFill(datasets, orientation === "horizontal");
+    }
     return { datasets, labels };
   }
 
@@ -22025,9 +22062,11 @@ var gsmViz = (() => {
   function getScales2(spec) {
     const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === "horizontal";
-    const stacked = position === "stack";
+    const stacked = position === "stack" || position === "fill";
+    const fill2 = position === "fill";
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
+    const percentageTicks = { callback: (v) => `${v}%` };
     const categoryScale = {
       type: specScales.x.type,
       title: {
@@ -22044,7 +22083,8 @@ var gsmViz = (() => {
         text: yLabel
       },
       beginAtZero: true,
-      ...stacked ? { stacked: true } : {}
+      ...stacked ? { stacked: true } : {},
+      ...fill2 ? { max: 100, ticks: percentageTicks } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -22053,26 +22093,154 @@ var gsmViz = (() => {
     };
   }
 
-  // src/bars/getPlugins.js
+  // src/bars/getPlugins/fillLabelCallback.js
+  function fillLabelCallback(context) {
+    const indexAxis = context.chart?.options?.indexAxis || "x";
+    const pct = indexAxis === "y" ? context.parsed.x : context.parsed.y;
+    const prefix = context.dataset.label ? `${context.dataset.label}: ` : "";
+    return `${prefix}${pct.toFixed(1)}%`;
+  }
+
+  // src/bars/getPlugins/buildTooltip.js
+  function buildTooltip(tooltip5, position) {
+    const base = { enabled: true, ...tooltip5 };
+    if (position !== "fill") return base;
+    if (base.callbacks?.label) return base;
+    return {
+      ...base,
+      callbacks: {
+        ...base.callbacks,
+        label: fillLabelCallback
+      }
+    };
+  }
+
+  // src/bars/getPlugins/getAllLabels.js
+  function getAllLabels(chart, visibleCats) {
+    return chart.data._allLabels_ || [...visibleCats];
+  }
+
+  // src/bars/getPlugins/getVisibleCategories.js
+  function getVisibleCategories(chart, catKey) {
+    const visibleCats = /* @__PURE__ */ new Set();
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      if (!chart.isDatasetVisible(i)) continue;
+      const originalData = chart.data.datasets[i]._dynamicCategoryAxisOriginalData_ || [];
+      for (const point of originalData) {
+        visibleCats.add(point[catKey]);
+      }
+    }
+    return visibleCats;
+  }
+
+  // src/bars/getPlugins/initializeDynamicCategoryData.js
+  function initializeDynamicCategoryData(datasets) {
+    for (const dataset of datasets) {
+      if (!dataset._dynamicCategoryAxisOriginalData_) {
+        dataset._dynamicCategoryAxisOriginalData_ = dataset._backup_ || dataset.data || [];
+      }
+    }
+  }
+
+  // src/bars/getPlugins/alignDataToLabels.js
+  function alignDataToLabels(data, labels, catKey, valKey) {
+    const pointByCategory = new Map(
+      data.map((point) => [point[catKey], point])
+    );
+    return labels.map(
+      (cat) => pointByCategory.get(cat) || {
+        [catKey]: cat,
+        [valKey]: 0,
+        _rawY: 0,
+        _placeholder: true
+      }
+    );
+  }
+
+  // src/bars/getPlugins/refreshDynamicCategoryData.js
+  function refreshDynamicCategoryData(chart, labels, catKey, valKey) {
+    const alignStacked = chart.data._spec_?.mapping?.fill && ["stack", "fill"].includes(chart.data._spec_?.position);
+    const labelSet = new Set(labels);
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const dataset = chart.data.datasets[i];
+      const originalData = dataset._dynamicCategoryAxisOriginalData_ || [];
+      if (!chart.isDatasetVisible(i)) {
+        dataset.data = [];
+        dataset._backup_ = originalData;
+        continue;
+      }
+      delete dataset._backup_;
+      const filteredData = originalData.filter(
+        (point) => labelSet.has(point[catKey])
+      );
+      dataset.data = alignStacked ? alignDataToLabels(filteredData, labels, catKey, valKey) : filteredData;
+    }
+  }
+
+  // src/bars/getPlugins/dynamicCategoryLegendOnClick.js
+  function dynamicCategoryLegendOnClick(e, legendItem, legendRef) {
+    const chart = legendRef.chart;
+    const { datasetIndex } = legendItem;
+    const dataset = chart.data.datasets[datasetIndex];
+    initializeDynamicCategoryData(chart.data.datasets);
+    if (chart.isDatasetVisible(datasetIndex)) {
+      dataset.data = [];
+      dataset._backup_ = dataset._dynamicCategoryAxisOriginalData_;
+      chart.setDatasetVisibility(datasetIndex, false);
+    } else {
+      delete dataset._backup_;
+      chart.setDatasetVisibility(datasetIndex, true);
+    }
+    const catKey = chart.data._spec_?.orientation === "horizontal" ? "y" : "x";
+    const valKey = catKey === "x" ? "y" : "x";
+    const visibleCats = getVisibleCategories(chart, catKey);
+    chart.data.labels = getAllLabels(chart, visibleCats).filter(
+      (cat) => visibleCats.has(cat)
+    );
+    refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    chart.update();
+    if (chart.data._spec_?.theme?.dynamicSizing) {
+      const container = chart.canvas?.parentElement;
+      if (container) {
+        const numCategories = chart.data.labels.length;
+        const pxPerCategory = 30;
+        const horizontal = chart.data._spec_?.orientation === "horizontal";
+        if (horizontal) {
+          const area = chart.chartArea;
+          const chartAreaHeight = area ? area.bottom - area.top : 0;
+          const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+          container.style.height = numCategories * pxPerCategory + overhead + "px";
+        } else {
+          const area = chart.chartArea;
+          const chartAreaWidth = area ? area.right - area.left : 0;
+          const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+          container.style.width = numCategories * pxPerCategory + overhead + "px";
+        }
+      }
+    }
+  }
+
+  // src/bars/getPlugins/getPlugins.js
   function getPlugins2(spec) {
-    const { labels, mapping, scales: scales2, tooltip: tooltip5 } = spec;
+    const { labels, mapping, scales: scales2, tooltip: tooltip5, theme, position } = spec;
     const fillLabel = scales2.fill?.label !== void 0 ? scales2.fill.label : mapping?.fill;
+    const legend5 = {
+      display: !!mapping.fill,
+      title: {
+        display: !!fillLabel,
+        text: fillLabel || ""
+      }
+    };
+    if (theme?.dynamicCategoryAxis) {
+      legend5.onClick = dynamicCategoryLegendOnClick;
+    }
     return {
       title: {
         display: !!labels.title,
         text: labels.title || ""
       },
-      tooltip: {
-        enabled: true,
-        ...tooltip5
-      },
-      legend: {
-        display: !!mapping.fill,
-        title: {
-          display: !!fillLabel,
-          text: fillLabel || ""
-        }
-      },
+      tooltip: buildTooltip(tooltip5, position),
+      legend: legend5,
       datalabels: {
         display: false
       }
@@ -22086,6 +22254,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
+    chart.data._allLabels_ = [...labels];
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22116,6 +22285,7 @@ var gsmViz = (() => {
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
+    chart.data._allLabels_ = [...labels];
     chart.data._spec_ = merged;
     chart.options.indexAxis = scalesConfig._indexAxis;
     chart.options.scales = {
@@ -22159,6 +22329,7 @@ var gsmViz = (() => {
       data: {
         datasets,
         labels,
+        _allLabels_: [...labels],
         _spec_: merged
       },
       options,
@@ -22176,18 +22347,12 @@ var gsmViz = (() => {
         const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
         const corrected = numCategories * pxPerCategory + overhead;
         el.style.height = corrected + "px";
-        console.log(
-          `[dynamicSizing] horizontal \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container height: ${corrected}px`
-        );
       } else {
         const area = chart.chartArea;
         const chartAreaWidth = area ? area.right - area.left : 0;
         const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
         const corrected = numCategories * pxPerCategory + overhead;
         el.style.width = corrected + "px";
-        console.log(
-          `[dynamicSizing] vertical \u2014 ${numCategories} categories, overhead ${overhead}px \u2192 container width: ${corrected}px`
-        );
       }
     }
     chart.helpers = {

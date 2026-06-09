@@ -16,12 +16,15 @@
 export default function getScales(spec) {
     const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === 'horizontal';
-    const stacked = position === 'stack';
+    const stacked = position === 'stack' || position === 'fill';
+    const fill = position === 'fill';
 
     const xLabel =
         specScales.x.label !== undefined ? specScales.x.label : mapping?.x;
     const yLabel =
         specScales.y.label !== undefined ? specScales.y.label : mapping?.y;
+
+    const percentageTicks = { callback: (v) => `${v}%` };
 
     const categoryScale = {
         type: specScales.x.type,
@@ -41,6 +44,7 @@ export default function getScales(spec) {
         },
         beginAtZero: true,
         ...(stacked ? { stacked: true } : {}),
+        ...(fill ? { max: 100, ticks: percentageTicks } : {}),
     };
 
     return {

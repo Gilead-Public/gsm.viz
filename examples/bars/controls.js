@@ -9,13 +9,23 @@ function getValue(id) {
 }
 
 /**
+ * Returns the current value of a boolean-style select (yes/no) as a boolean.
+ *
+ * @param {string} id - element ID
+ * @returns {boolean}
+ */
+function getBoolean(id) {
+    return document.getElementById(id).value === 'yes';
+}
+
+/**
  * Returns the current dynamic-sizing setting as a boolean.
  *
  * @param {string} id - element ID
  * @returns {boolean}
  */
 function getDynamicSizing(id) {
-    return document.getElementById(id).value === 'yes';
+    return getBoolean(id);
 }
 
 /**

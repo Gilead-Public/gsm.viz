@@ -12,7 +12,12 @@ fetch('data/retention.csv')
 
         const container = document.getElementById('retention-container');
 
-        function buildSpec(orientation, position, dynamicSizing) {
+        function buildSpec(
+            orientation,
+            position,
+            dynamicSizing,
+            dynamicCategoryAxis
+        ) {
             return {
                 mapping: {
                     x: 'invid',
@@ -33,6 +38,7 @@ fetch('data/retention.csv')
                 },
                 theme: {
                     dynamicSizing,
+                    dynamicCategoryAxis,
                 },
                 tooltip: {
                     callbacks: {
@@ -55,7 +61,8 @@ fetch('data/retention.csv')
             buildSpec(
                 getValue('retention-orientation'),
                 getValue('retention-position'),
-                getDynamicSizing('retention-dynamic-sizing')
+                getDynamicSizing('retention-dynamic-sizing'),
+                getBoolean('retention-dynamic-category-axis')
             )
         );
 
@@ -67,13 +74,19 @@ fetch('data/retention.csv')
                 buildSpec(
                     getValue('retention-orientation'),
                     getValue('retention-position'),
-                    getDynamicSizing('retention-dynamic-sizing')
+                    getDynamicSizing('retention-dynamic-sizing'),
+                    getBoolean('retention-dynamic-category-axis')
                 )
             );
         }
 
         onAnyChange(
-            ['retention-orientation', 'retention-position', 'retention-dynamic-sizing'],
+            [
+                'retention-orientation',
+                'retention-position',
+                'retention-dynamic-sizing',
+                'retention-dynamic-category-axis',
+            ],
             rerender
         );
     });

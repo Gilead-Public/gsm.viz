@@ -896,4 +896,169 @@ describe('bars/structureData', () => {
             expect(result.datasets[0].borderRadius).toBeUndefined();
         });
     });
+
+    describe("position='fill' (within-category percentage normalization)", () => {
+        describe('value mode', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                    { cat: 'B', grp: 'X', val: 40 },
+                    { cat: 'B', grp: 'Y', val: 60 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'fill',
+                scales: { x: {}, y: {} },
+            };
+
+            test('normalizes y values to percentage of category total', () => {
+                const result = structureData(spec);
+                const xDs = result.datasets.find((ds) => ds.label === 'X');
+                const yDs = result.datasets.find((ds) => ds.label === 'Y');
+                // cat A: total=100, X=25% Y=75%
+                expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(25);
+                expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(75);
+                // cat B: total=100, X=40% Y=60%
+                expect(xDs.data.find((d) => d.x === 'B').y).toBeCloseTo(40);
+                expect(yDs.data.find((d) => d.x === 'B').y).toBeCloseTo(60);
+            });
+
+            test('stores original value as _rawY on each data point', () => {
+                const result = structureData(spec);
+                const xDs = result.datasets.find((ds) => ds.label === 'X');
+                expect(xDs.data.find((d) => d.x === 'A')._rawY).toBe(25);
+                expect(xDs.data.find((d) => d.x === 'B')._rawY).toBe(40);
+            });
+
+            test('category totals sum to 100 across all fill groups', () => {
+                const result = structureData(spec);
+                const cats = ['A', 'B'];
+                for (const cat of cats) {
+                    const total = result.datasets.reduce((sum, ds) => {
+                        const pt = ds.data.find((d) => d.x === cat);
+                        return sum + (pt ? pt.y : 0);
+                    }, 0);
+                    expect(total).toBeCloseTo(100);
+                }
+            });
+
+            test('percentages are proportional to raw values', () => {
+                // cat A: X=25 (25%), Y=75 (75%) — ratio 1:3
+                const result = structureData(spec);
+                const xDs = result.datasets.find((ds) => ds.label === 'X');
+                const yDs = result.datasets.find((ds) => ds.label === 'Y');
+                const xA = xDs.data.find((d) => d.x === 'A').y;
+                const yA = yDs.data.find((d) => d.x === 'A').y;
+                expect(yA / xA).toBeCloseTo(3);
+            });
+        });
+
+        describe('count mode', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'Y' },
+                    { cat: 'B', grp: 'X' },
+                    { cat: 'B', grp: 'Y' },
+                    { cat: 'B', grp: 'Y' },
+                    { cat: 'B', grp: 'Y' },
+                ],
+                mapping: { x: 'cat', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'fill',
+                scales: { x: {}, y: {} },
+            };
+
+            test('normalizes counts to percentage of category total', () => {
+                const result = structureData(spec);
+                const xDs = result.datasets.find((ds) => ds.label === 'X');
+                const yDs = result.datasets.find((ds) => ds.label === 'Y');
+                // cat A: X=2 (66.7%), Y=1 (33.3%)
+                expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                    (2 / 3) * 100
+                );
+                expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                    (1 / 3) * 100
+                );
+                // cat B: X=1 (25%), Y=3 (75%)
+                expect(xDs.data.find((d) => d.x === 'B').y).toBeCloseTo(25);
+                expect(yDs.data.find((d) => d.x === 'B').y).toBeCloseTo(75);
+            });
+
+            test('category totals sum to 100 in count mode', () => {
+                const result = structureData(spec);
+                for (const cat of ['A', 'B']) {
+                    const total = result.datasets.reduce((sum, ds) => {
+                        const pt = ds.data.find((d) => d.x === cat);
+                        return sum + (pt ? pt.y : 0);
+                    }, 0);
+                    expect(total).toBeCloseTo(100);
+                }
+            });
+        });
+
+        describe('single-series (no fill mapping)', () => {
+            test('each bar normalizes to 100% when there is only one series', () => {
+                const spec = {
+                    data: [
+                        { cat: 'A', val: 10 },
+                        { cat: 'B', val: 50 },
+                    ],
+                    mapping: { x: 'cat', y: 'val' },
+                    orientation: 'vertical',
+                    position: 'fill',
+                    scales: { x: {}, y: {} },
+                };
+                const result = structureData(spec);
+                result.datasets[0].data.forEach((d) => {
+                    expect(d.y).toBeCloseTo(100);
+                });
+            });
+        });
+
+        describe('zero-total categories', () => {
+            test('y remains 0 when all values for a category are 0', () => {
+                const spec = {
+                    data: [
+                        { cat: 'A', grp: 'X', val: 0 },
+                        { cat: 'A', grp: 'Y', val: 0 },
+                        { cat: 'B', grp: 'X', val: 10 },
+                        { cat: 'B', grp: 'Y', val: 90 },
+                    ],
+                    mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                    orientation: 'vertical',
+                    position: 'fill',
+                    scales: { x: {}, y: {} },
+                };
+                const result = structureData(spec);
+                result.datasets.forEach((ds) => {
+                    const ptA = ds.data.find((d) => d.x === 'A');
+                    expect(ptA.y).toBe(0);
+                });
+            });
+        });
+
+        describe('horizontal orientation', () => {
+            test('percentage values are preserved after axis swap', () => {
+                const spec = {
+                    data: [
+                        { cat: 'A', grp: 'X', val: 30 },
+                        { cat: 'A', grp: 'Y', val: 70 },
+                    ],
+                    mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                    orientation: 'horizontal',
+                    position: 'fill',
+                    scales: { x: {}, y: {} },
+                };
+                const result = structureData(spec);
+                const xDs = result.datasets.find((ds) => ds.label === 'X');
+                const yDs = result.datasets.find((ds) => ds.label === 'Y');
+                // After horizontal swap: x=percentage, y=category
+                expect(xDs.data.find((d) => d.y === 'A').x).toBeCloseTo(30);
+                expect(yDs.data.find((d) => d.y === 'A').x).toBeCloseTo(70);
+            });
+        });
+    });
 });

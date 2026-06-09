@@ -38,6 +38,7 @@ const defaults = {
         maintainAspectRatio: false,
         animation: false,
         dynamicSizing: false,
+        dynamicCategoryAxis: false,
     },
 };
 

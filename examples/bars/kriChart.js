@@ -22,7 +22,13 @@ Promise.all(dataPromises)
                 !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
-        function buildSpec(orientation, fillKey, position, dynamicSizing) {
+        function buildSpec(
+            orientation,
+            fillKey,
+            position,
+            dynamicSizing,
+            dynamicCategoryAxis
+        ) {
             const spec = {
                 mapping: {
                     x: 'MetricID',
@@ -38,6 +44,7 @@ Promise.all(dataPromises)
                 },
                 theme: {
                     dynamicSizing,
+                    dynamicCategoryAxis,
                 },
             };
 
@@ -61,7 +68,8 @@ Promise.all(dataPromises)
                 getValue('orientation'),
                 getValue('fill') || undefined,
                 getValue('position'),
-                getDynamicSizing('dynamic-sizing')
+                getDynamicSizing('dynamic-sizing'),
+                getBoolean('dynamic-category-axis')
             )
         );
 
@@ -74,13 +82,20 @@ Promise.all(dataPromises)
                     getValue('orientation'),
                     getValue('fill') || undefined,
                     getValue('position'),
-                    getDynamicSizing('dynamic-sizing')
+                    getDynamicSizing('dynamic-sizing'),
+                    getBoolean('dynamic-category-axis')
                 )
             );
         }
 
         onAnyChange(
-            ['orientation', 'fill', 'position', 'dynamic-sizing'],
+            [
+                'orientation',
+                'fill',
+                'position',
+                'dynamic-sizing',
+                'dynamic-category-axis',
+            ],
             rerender
         );
     });

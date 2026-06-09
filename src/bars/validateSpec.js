@@ -34,10 +34,11 @@ export default function validateSpec(data, spec) {
         spec.position !== undefined &&
         spec.position !== 'stack' &&
         spec.position !== 'dodge' &&
-        spec.position !== 'identity'
+        spec.position !== 'identity' &&
+        spec.position !== 'fill'
     ) {
         throw new Error(
-            "spec.position must be 'stack', 'dodge', or 'identity'"
+            "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
         );
     }
 

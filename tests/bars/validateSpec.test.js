@@ -55,15 +55,26 @@ describe('bars/validateSpec', () => {
                 mapping: { x: 'a', y: 'b' },
                 position: 'overlay',
             })
-        ).toThrow("spec.position must be 'stack', 'dodge', or 'identity'");
+        ).toThrow(
+            "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
+        );
     });
 
     test('does not throw with valid position values', () => {
-        for (const position of ['stack', 'dodge', 'identity']) {
+        for (const position of ['stack', 'dodge', 'identity', 'fill']) {
             expect(() =>
                 validateSpec(data, { mapping: { x: 'a', y: 'b' }, position })
             ).not.toThrow();
         }
+    });
+
+    test('error message for invalid position lists fill as a valid option', () => {
+        expect(() =>
+            validateSpec(data, {
+                mapping: { x: 'a', y: 'b' },
+                position: 'overlay',
+            })
+        ).toThrow('fill');
     });
 
     test('does not throw with a valid minimal spec', () => {

@@ -224,6 +224,72 @@ describe('bars/getScales', () => {
         });
     });
 
+    describe("position='fill'", () => {
+        const baseSpec = {
+            orientation: 'vertical',
+            position: 'fill',
+            scales: {
+                x: { type: 'category' },
+                y: { type: 'linear' },
+            },
+        };
+
+        test('sets stacked: true on both axes', () => {
+            const scales = getScales(baseSpec);
+            expect(scales.x.stacked).toBe(true);
+            expect(scales.y.stacked).toBe(true);
+        });
+
+        test('sets max: 100 on value axis (y) for vertical orientation', () => {
+            const scales = getScales(baseSpec);
+            expect(scales.y.max).toBe(100);
+        });
+
+        test('does not set max on category axis (x) for vertical orientation', () => {
+            const scales = getScales(baseSpec);
+            expect(scales.x.max).toBeUndefined();
+        });
+
+        test('provides a ticks.callback that formats numbers as percentages', () => {
+            const scales = getScales(baseSpec);
+            const callback = scales.y.ticks?.callback;
+            expect(typeof callback).toBe('function');
+            expect(callback(50)).toBe('50%');
+            expect(callback(0)).toBe('0%');
+            expect(callback(100)).toBe('100%');
+        });
+
+        test('sets max: 100 on value axis (x) for horizontal orientation', () => {
+            const horizontalSpec = { ...baseSpec, orientation: 'horizontal' };
+            const scales = getScales(horizontalSpec);
+            expect(scales.x.max).toBe(100);
+            expect(scales.y.max).toBeUndefined();
+        });
+
+        test('provides ticks.callback on value axis (x) for horizontal orientation', () => {
+            const horizontalSpec = { ...baseSpec, orientation: 'horizontal' };
+            const scales = getScales(horizontalSpec);
+            const callback = scales.x.ticks?.callback;
+            expect(typeof callback).toBe('function');
+            expect(callback(25)).toBe('25%');
+        });
+
+        test('non-fill positions do not set max on value axis', () => {
+            for (const position of ['stack', 'dodge', 'identity']) {
+                const spec = {
+                    orientation: 'vertical',
+                    position,
+                    scales: {
+                        x: { type: 'category' },
+                        y: { type: 'linear' },
+                    },
+                };
+                const scales = getScales(spec);
+                expect(scales.y.max).toBeUndefined();
+            }
+        });
+    });
+
     describe('dynamicSizing / autoSkip', () => {
         test('sets autoSkip false on category (x) axis for vertical when dynamicSizing is true', () => {
             const spec = {

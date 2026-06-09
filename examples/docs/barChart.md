@@ -29,24 +29,24 @@ gsmViz.barChart(element, results, config, thresholds, groupMetadata);
 
 All properties are optional and merged with the defaults shown below.
 
-| Key                        | Type                  | Default                                        | Description                                                               |
-| -------------------------- | --------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| `x`                        | `string`              | `'GroupID'`                                    | Data field mapped to the x-axis (category axis)                           |
-| `xType`                    | `string`              | `'category'`                                   | Scale type for x-axis                                                     |
-| `xLabel`                   | `string`              | `'Group'`                                      | x-axis label                                                              |
-| `y`                        | `string`              | `'Score'`                                      | Data field mapped to the y-axis (`'Score'`, `'Numerator'`, or `'Metric'`) |
-| `yType`                    | `string`              | `'linear'`                                     | Scale type for y-axis                                                     |
-| `yLabel`                   | `string`              | _(derived from `y`)_                           | y-axis label                                                              |
-| `color`                    | `string`              | `'Flag'`                                       | Data field used to colour bars                                            |
-| `GroupLevel`               | `string`              | `'Site'`                                       | Group level label                                                         |
-| `groupLabelKey`            | `string`              | `'InvestigatorLastName'`                       | Field used as the group display label                                     |
-| `groupParticipantCountKey` | `string`              | `'ParticipantCount'`                           | Field holding participant count                                           |
-| `groupTooltipKeys`         | `Array\|null`         | `null`                                         | Extra fields shown in the group tooltip                                   |
-| `resultTooltipKeys`        | `Array`               | `['Score','Metric','Numerator','Denominator']` | Fields shown in the result tooltip                                        |
-| `selectedGroupIDs`         | `string\|Array\|null` | `null`                                         | Pre-selected group ID(s) to highlight                                     |
-| `displayTitle`             | `boolean`             | `false`                                        | Show the auto-generated chart title                                       |
+| Key                        | Type                  | Default                                        | Description                                                                                                                                   |
+| -------------------------- | --------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`                        | `string`              | `'GroupID'`                                    | Data field mapped to the x-axis (category axis)                                                                                               |
+| `xType`                    | `string`              | `'category'`                                   | Scale type for x-axis                                                                                                                         |
+| `xLabel`                   | `string`              | `'Group'`                                      | x-axis label                                                                                                                                  |
+| `y`                        | `string`              | `'Score'`                                      | Data field mapped to the y-axis (`'Score'`, `'Numerator'`, or `'Metric'`)                                                                     |
+| `yType`                    | `string`              | `'linear'`                                     | Scale type for y-axis                                                                                                                         |
+| `yLabel`                   | `string`              | _(derived from `y`)_                           | y-axis label                                                                                                                                  |
+| `color`                    | `string`              | `'Flag'`                                       | Data field used to colour bars                                                                                                                |
+| `GroupLevel`               | `string`              | `'Site'`                                       | Group level label                                                                                                                             |
+| `groupLabelKey`            | `string`              | `'InvestigatorLastName'`                       | Field used as the group display label                                                                                                         |
+| `groupParticipantCountKey` | `string`              | `'ParticipantCount'`                           | Field holding participant count                                                                                                               |
+| `groupTooltipKeys`         | `Array\|null`         | `null`                                         | Extra fields shown in the group tooltip                                                                                                       |
+| `resultTooltipKeys`        | `Array`               | `['Score','Metric','Numerator','Denominator']` | Fields shown in the result tooltip                                                                                                            |
+| `selectedGroupIDs`         | `string\|Array\|null` | `null`                                         | Pre-selected group ID(s) to highlight                                                                                                         |
+| `displayTitle`             | `boolean`             | `false`                                        | Show the auto-generated chart title                                                                                                           |
 | `dynamicSizing`            | `boolean`             | `false`                                        | Dynamically set canvas width so every category bar has adequate space (30 px each); eliminates axis-label thinning when there are many groups |
-| `maintainAspectRatio`      | `boolean`             | `false`                                        | Passed to Chart.js                                                        |
+| `maintainAspectRatio`      | `boolean`             | `false`                                        | Passed to Chart.js                                                                                                                            |
 
 ### Callbacks
 
