@@ -78,9 +78,10 @@ export default function structureData(spec) {
     const palette = scales.fill?.palette;
     if (palette) {
         if (fillKey) {
+            const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
             datasets.forEach((ds, i) => {
-                const colorIndex = fillOrder
-                    ? fillOrder.indexOf(String(ds.label))
+                const colorIndex = fillOrderStrings
+                    ? fillOrderStrings.indexOf(String(ds.label))
                     : -1;
                 const bg =
                     palette[
