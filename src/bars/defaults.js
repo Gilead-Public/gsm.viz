@@ -51,6 +51,13 @@ const defaults = {
                 color: undefined,
                 font: undefined,
             },
+            inside: {
+                display: false,
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
             outside: {
                 display: false,
                 value: 'auto',

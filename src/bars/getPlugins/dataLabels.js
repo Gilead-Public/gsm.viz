@@ -78,7 +78,7 @@ function resolveLabelValue(point, context, options, mode, spec) {
                 : 'raw'
             : configuredValue;
 
-    if (mode === 'total') {
+    if (mode === 'total' || mode === 'inside') {
         return { value: getRawTotal(context), valueType: 'raw' };
     }
 
@@ -215,6 +215,20 @@ function buildTotalLabel(options, spec) {
     );
 }
 
+function buildInsideLabel(options, spec) {
+    return withStyle(
+        {
+            display: (context) => isLastVisibleDatasetForCategory(context),
+            formatter: (value, context) =>
+                formatLabel(value, context, options, 'inside', spec),
+            anchor: () => 'end',
+            align: () => 'start',
+            offset: 4,
+        },
+        options
+    );
+}
+
 function buildOutsideLabel(options, spec) {
     return withStyle(
         {
@@ -236,6 +250,7 @@ export default function dataLabels(spec) {
     if (
         !labels?.segment?.display &&
         !labels?.total?.display &&
+        !labels?.inside?.display &&
         !labels?.outside?.display
     ) {
         return {
@@ -251,6 +266,10 @@ export default function dataLabels(spec) {
 
     if (labels.total?.display) {
         config.labels.total = buildTotalLabel(labels.total, spec);
+    }
+
+    if (labels.inside?.display) {
+        config.labels.inside = buildInsideLabel(labels.inside, spec);
     }
 
     if (labels.outside?.display) {

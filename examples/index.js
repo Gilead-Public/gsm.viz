@@ -21858,6 +21858,13 @@ var gsmViz = (() => {
           color: void 0,
           font: void 0
         },
+        inside: {
+          display: false,
+          format: void 0,
+          formatter: void 0,
+          color: void 0,
+          font: void 0
+        },
         outside: {
           display: false,
           value: "auto",
@@ -21904,6 +21911,10 @@ var gsmViz = (() => {
           total: {
             ...labelModes.total,
             ...userLabels.total
+          },
+          inside: {
+            ...labelModes.inside,
+            ...userLabels.inside
           },
           outside: {
             ...labelModes.outside,
@@ -22219,7 +22230,7 @@ var gsmViz = (() => {
   function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? "auto";
     const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
-    if (mode === "total") {
+    if (mode === "total" || mode === "inside") {
       return { value: getRawTotal(context), valueType: "raw" };
     }
     if (valueType === "percent") {
@@ -22323,6 +22334,18 @@ var gsmViz = (() => {
       options
     );
   }
+  function buildInsideLabel(options, spec) {
+    return withStyle(
+      {
+        display: (context) => isLastVisibleDatasetForCategory(context),
+        formatter: (value, context) => formatLabel(value, context, options, "inside", spec),
+        anchor: () => "end",
+        align: () => "start",
+        offset: 4
+      },
+      options
+    );
+  }
   function buildOutsideLabel(options, spec) {
     return withStyle(
       {
@@ -22337,7 +22360,7 @@ var gsmViz = (() => {
   }
   function dataLabels2(spec) {
     const labels = spec.annotations?.labels;
-    if (!labels?.segment?.display && !labels?.total?.display && !labels?.outside?.display) {
+    if (!labels?.segment?.display && !labels?.total?.display && !labels?.inside?.display && !labels?.outside?.display) {
       return {
         display: false
       };
@@ -22348,6 +22371,9 @@ var gsmViz = (() => {
     }
     if (labels.total?.display) {
       config.labels.total = buildTotalLabel(labels.total, spec);
+    }
+    if (labels.inside?.display) {
+      config.labels.inside = buildInsideLabel(labels.inside, spec);
     }
     if (labels.outside?.display) {
       config.labels.outside = buildOutsideLabel(labels.outside, spec);
@@ -22527,6 +22553,10 @@ var gsmViz = (() => {
           total: {
             ...existing.annotations?.labels?.total,
             ...spec.annotations?.labels?.total
+          },
+          inside: {
+            ...existing.annotations?.labels?.inside,
+            ...spec.annotations?.labels?.inside
           },
           outside: {
             ...existing.annotations?.labels?.outside,

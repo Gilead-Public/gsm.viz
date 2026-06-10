@@ -146,4 +146,37 @@ describe('bars/updateSpec', () => {
         expect(chart.data._spec_.annotations.labels.segment.display).toBe(true);
         expect(chart.data.labels).toEqual(['C', 'D']);
     });
+
+    test('preserves inside annotation label mode on partial spec update', () => {
+        const chart = bars(container, data, {
+            ...spec,
+            annotations: {
+                labels: {
+                    inside: { display: true, color: '#ffffff' },
+                },
+            },
+        });
+
+        updateSpec(chart, { labels: { title: 'Updated' } });
+
+        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.inside.color).toBe(
+            '#ffffff'
+        );
+    });
+
+    test('rebuilds datalabel options with inside labels after a partial annotation update', () => {
+        const chart = bars(container, data, spec);
+
+        updateSpec(chart, {
+            annotations: {
+                labels: {
+                    inside: { display: true },
+                },
+            },
+        });
+
+        expect(chart.options.plugins.datalabels.labels.inside).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
+    });
 });

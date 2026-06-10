@@ -858,6 +858,105 @@ describe('bars/getPlugins', () => {
             expect(outside.anchor(context)).toBe('end');
             expect(outside.align(context)).toBe('right');
         });
+
+        test('renders inside labels only on the last visible dataset for a category', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const firstContext = makeContext({ datasetIndex: 0, datasets });
+            const lastContext = makeContext({ datasetIndex: 1, datasets });
+
+            expect(inside.display(firstContext)).toBe(false);
+            expect(inside.display(lastContext)).toBe(true);
+        });
+
+        test('inside labels show the raw stack total', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(inside.formatter(datasets[1].data[0], context)).toBe('30');
+        });
+
+        test('inside labels use anchor end and align start', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const context = makeContext();
+
+            expect(inside.anchor(context)).toBe('end');
+            expect(inside.align(context)).toBe('start');
+        });
+
+        test('inside labels use raw totals even for position: fill', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 25, _rawY: 1 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 75, _rawY: 3 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                position: 'fill',
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(
+                plugins.datalabels.labels.inside.formatter(
+                    datasets[1].data[0],
+                    context
+                )
+            ).toBe('4');
+        });
+
+        test('applies color and font style options to inside labels', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: {
+                            display: true,
+                            color: '#ffffff',
+                            font: { weight: 'bold' },
+                        },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+
+            expect(inside.color).toBe('#ffffff');
+            expect(inside.font).toEqual({ weight: 'bold' });
+        });
     });
 
     describe('tooltip', () => {

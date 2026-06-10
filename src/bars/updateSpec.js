@@ -37,6 +37,10 @@ export default function updateSpec(chart, spec) {
                     ...existing.annotations?.labels?.total,
                     ...spec.annotations?.labels?.total,
                 },
+                inside: {
+                    ...existing.annotations?.labels?.inside,
+                    ...spec.annotations?.labels?.inside,
+                },
                 outside: {
                     ...existing.annotations?.labels?.outside,
                     ...spec.annotations?.labels?.outside,

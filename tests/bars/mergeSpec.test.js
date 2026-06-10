@@ -141,6 +141,7 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.segment.minSize).toBe(16);
             expect(merged.annotations.labels.total.display).toBe(false);
             expect(merged.annotations.labels.outside.display).toBe(false);
+            expect(merged.annotations.labels.inside.display).toBe(false);
         });
 
         test('deep merges user label modes with defaults', () => {
@@ -171,6 +172,24 @@ describe('bars/mergeSpec', () => {
                 weight: 'bold',
             });
             expect(merged.annotations.labels.outside.display).toBe(false);
+            expect(merged.annotations.labels.inside.display).toBe(false);
+        });
+
+        test('deep merges user inside label config with defaults', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true, color: '#ffffff' },
+                    },
+                },
+            });
+
+            expect(merged.annotations.labels.inside.display).toBe(true);
+            expect(merged.annotations.labels.inside.color).toBe('#ffffff');
+            // other modes unaffected
+            expect(merged.annotations.labels.segment.display).toBe(false);
+            expect(merged.annotations.labels.total.display).toBe(false);
         });
     });
 });
