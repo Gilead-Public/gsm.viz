@@ -22252,13 +22252,13 @@ var gsmViz = (() => {
       mode,
       spec
     );
-    const details = {
-      mode,
-      valueType,
-      point,
-      total: mode === "total" ? value : getRawTotal(context)
-    };
     if (typeof options.formatter === "function") {
+      const details = {
+        mode,
+        valueType,
+        point,
+        total: mode === "total" ? value : getRawTotal(context)
+      };
       return options.formatter(value, context, details);
     }
     if (options.format) {
