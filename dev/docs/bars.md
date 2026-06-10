@@ -50,6 +50,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         },
         fill: {
             palette: [ /* array of hex colour strings */ ],
+            colors: { /* name → hex map, e.g. { Completed: '#4e79a7' } */ },
             label: undefined,  // defaults to mapping.fill; null or '' hides legend title
             order: undefined,  // optional fill order / allowlist array
         },
@@ -220,6 +221,40 @@ gsmViz.default.bars(element, data, {
 });
 ```
 
+### Color palettes
+
+Bar colours are driven by `scales.fill`. Two APIs are supported:
+
+**Array palette** — provide `scales.fill.palette` (array of hex strings) and optionally `scales.fill.order` to anchor each colour to a named fill value:
+
+```js
+scales: {
+    fill: {
+        order:   ['Completed', 'Discontinued', 'Ongoing'],
+        palette: ['#4e79a7',   '#e15759',       '#59a14f'],
+    },
+}
+```
+
+**Named colour map** (`scales.fill.colors`) — a `{ name: hex }` object that is equivalent to providing both `order` and `palette` simultaneously. This is the preferred API when upstream packages maintain domain-specific colour maps:
+
+```js
+const RETENTION_COLORS = {
+    Completed: '#4e79a7',
+    Discontinued: '#e15759',
+    Ongoing: '#59a14f',
+};
+
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', fill: 'disposition' },
+    scales: { fill: { colors: RETENTION_COLORS } },
+});
+```
+
+`colors` takes precedence over any separately provided `palette` + `order`. Keys that appear in the map but not in the data are silently dropped; rows whose fill value is not a key in the map are excluded (same allowlist behaviour as `scales.fill.order`).
+
+When no palette or colors map is provided, the Tableau-10 categorical palette is used as the default. A darkened shade of each fill colour is automatically applied as `borderColor` to give each bar a visible non-colour edge cue.
+
 ### Ordering and labels
 
 Categories are sorted alphanumerically by default. Set `scales.x.order` to
@@ -227,11 +262,11 @@ provide an explicit category order. Categories listed in `order` but absent
 from the data are dropped; data categories not listed are appended
 alphanumerically.
 
-Fill groups appear in data order by default. Set `scales.fill.order` to provide
-an explicit fill order. When set, it also acts as an allowlist: rows with fill
-values not listed in `scales.fill.order` are excluded. Palette colours follow
-the fill order position, so colours stay aligned even when some fill values are
-absent from the data.
+Fill groups appear in data order by default. Use `scales.fill.order` or
+`scales.fill.colors` to set an explicit fill order. When either is set, it also
+acts as an allowlist: rows with fill values not listed are excluded. Palette
+colours follow the fill order position, so colours stay aligned even when some
+fill values are absent from the data.
 
 Axis labels default to `mapping.x` and `mapping.y`. The legend title defaults to
 `mapping.fill`. Set `scales.x.label`, `scales.y.label`, or
