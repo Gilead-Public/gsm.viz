@@ -28,19 +28,12 @@ function getCategory(point, context) {
     return point?.[getCategoryKey(context)];
 }
 
-function isDatasetVisible(chart, datasetIndex) {
-    return typeof chart.isDatasetVisible === 'function'
-        ? chart.isDatasetVisible(datasetIndex)
-        : true;
-}
-
 function getRawTotal(context) {
     const point = getPoint(context);
     const category = getCategory(point, context);
 
     return context.chart.data.datasets.reduce(
-        (total, dataset, datasetIndex) => {
-            if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+        (total, dataset) => {
             const match = dataset.data.find(
                 (p) => getCategory(p, context) === category
             );

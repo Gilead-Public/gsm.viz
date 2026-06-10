@@ -220,4 +220,56 @@ describe('bars/getPlugins/buildTooltip', () => {
             expect(result.mode).toBe('index');
         });
     });
+
+    describe('stable percentages when legend items are hidden', () => {
+        // When dataset B is toggled off via the legend, the percentage for A
+        // must still be computed against the full category total (A=2, B=4 → total=6),
+        // not just the visible subset (A=2 → total=2).
+        function makeContextWithHiddenDataset({ datasetIndex = 0 } = {}) {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat1', y: 2, _fill: 'A', _datum: { x: 'cat1', fill: 'A', y: 2 } }] },
+                { label: 'B', data: [{ x: 'cat1', y: 4, _fill: 'B', _datum: { x: 'cat1', fill: 'B', y: 4 } }] },
+            ];
+            const chart = {
+                options: { indexAxis: 'x' },
+                data: { datasets },
+                // Dataset B (index 1) is hidden via legend toggle
+                isDatasetVisible: (i) => i !== 1,
+            };
+            return {
+                chart,
+                dataset: datasets[datasetIndex],
+                dataIndex: 0,
+                parsed: { x: 'cat1', y: datasets[datasetIndex].data[0].y },
+            };
+        }
+
+        test('format: percent — hidden dataset does not change percentage', () => {
+            const result = buildTooltip({ format: 'percent' }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 }); // A=2, total should be 6 (not 2)
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 33.3%'); // 2/6 = 33.3%, not 2/2 = 100%
+        });
+
+        test('format: count+percent — hidden dataset does not change percentage', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 });
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 2 (33.3%)'); // total=6, not total=2
+        });
+
+        test('formatter — hidden dataset does not change total or percent', () => {
+            const formatter = jest.fn((_count, _ctx, { percent, total }) =>
+                `${total} / ${percent.toFixed(1)}%`
+            );
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 });
+            result.callbacks.label(ctx);
+            expect(formatter).toHaveBeenCalledWith(
+                2,
+                expect.anything(),
+                expect.objectContaining({ total: 6, percent: expect.closeTo(33.3, 0) })
+            );
+        });
+    });
 });

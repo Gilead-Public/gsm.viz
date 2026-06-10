@@ -22182,15 +22182,11 @@ var gsmViz = (() => {
   function getCategory(point, context) {
     return point?.[getCategoryKey(context)];
   }
-  function isDatasetVisible(chart, datasetIndex) {
-    return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
-  }
   function getRawTotal(context) {
     const point = getPoint2(context);
     const category = getCategory(point, context);
     return context.chart.data.datasets.reduce(
-      (total, dataset, datasetIndex) => {
-        if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+      (total, dataset) => {
         const match = dataset.data.find(
           (p) => getCategory(p, context) === category
         );
@@ -22290,7 +22286,7 @@ var gsmViz = (() => {
   function getCategory2(point, context) {
     return point?.[getCategoryKey2(context)];
   }
-  function isDatasetVisible2(chart, datasetIndex) {
+  function isDatasetVisible(chart, datasetIndex) {
     return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
   }
   function findPointForCategory(dataset, category, context) {
@@ -22302,8 +22298,7 @@ var gsmViz = (() => {
     const point = getPoint3(context);
     const category = getCategory2(point, context);
     return context.chart.data.datasets.reduce(
-      (total, dataset, datasetIndex) => {
-        if (!isDatasetVisible2(context.chart, datasetIndex)) return total;
+      (total, dataset) => {
         const match = findPointForCategory(dataset, category, context);
         return total + getRawValue2(match, context);
       },
@@ -22373,7 +22368,7 @@ var gsmViz = (() => {
     return defaultFormat(value, valueType);
   }
   function hasVisibleValueForCategory(context, datasetIndex, category) {
-    if (!isDatasetVisible2(context.chart, datasetIndex)) return false;
+    if (!isDatasetVisible(context.chart, datasetIndex)) return false;
     const dataset = context.chart.data.datasets[datasetIndex];
     const point = findPointForCategory(dataset, category, context);
     return Math.abs(getRawValue2(point, context)) > 0;

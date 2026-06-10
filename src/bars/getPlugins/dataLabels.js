@@ -48,8 +48,7 @@ function getRawTotal(context) {
     const category = getCategory(point, context);
 
     return context.chart.data.datasets.reduce(
-        (total, dataset, datasetIndex) => {
-            if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+        (total, dataset) => {
             const match = findPointForCategory(dataset, category, context);
             return total + getRawValue(match, context);
         },
