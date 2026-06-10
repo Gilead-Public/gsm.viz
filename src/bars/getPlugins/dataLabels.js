@@ -43,12 +43,21 @@ function findPointForCategory(dataset, category, context) {
     );
 }
 
+// When dynamicCategoryLegendOnClick hides a dataset it empties dataset.data and
+// stores the original points in dataset._backup_. Use the backup when available so
+// hidden groups still contribute to the category total.
+function getDataForTotal(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+}
+
 function getRawTotal(context) {
     const point = getPoint(context);
     const category = getCategory(point, context);
 
     return context.chart.data.datasets.reduce((total, dataset) => {
-        const match = findPointForCategory(dataset, category, context);
+        const match = getDataForTotal(dataset).find(
+            (p) => getCategory(p, context) === category
+        );
         return total + getRawValue(match, context);
     }, 0);
 }

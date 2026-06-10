@@ -358,4 +358,81 @@ describe('bars/getPlugins/buildTooltip', () => {
             );
         });
     });
+
+    describe('stable percentages when dynamic category axis clears dataset data', () => {
+        // When dynamicCategoryLegendOnClick hides a dataset, it sets dataset.data = []
+        // and stores the original points in dataset._backup_. getRawTotal must read
+        // _backup_ (not the empty data array) to include the hidden group in the total.
+        function makeContextWithBackupDataset({ datasetIndex = 0 } = {}) {
+            const backupPointB = {
+                x: 'cat1',
+                y: 4,
+                _fill: 'B',
+                _datum: { x: 'cat1', fill: 'B', y: 4 },
+            };
+            const datasets = [
+                {
+                    label: 'A',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 2,
+                            _fill: 'A',
+                            _datum: { x: 'cat1', fill: 'A', y: 2 },
+                        },
+                    ],
+                },
+                {
+                    label: 'B',
+                    // data cleared by dynamicCategoryLegendOnClick
+                    data: [],
+                    // original data stored as _backup_
+                    _backup_: [backupPointB],
+                },
+            ];
+            const chart = {
+                options: { indexAxis: 'x' },
+                data: { datasets },
+                isDatasetVisible: (i) => i !== 1,
+            };
+            return {
+                chart,
+                dataset: datasets[datasetIndex],
+                dataIndex: 0,
+                parsed: { x: 'cat1', y: datasets[datasetIndex].data[0]?.y ?? 0 },
+            };
+        }
+
+        test('format: count+percent — _backup_ data counts toward total', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 }); // A=2, B backup=4 → total=6
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 2 (33.3%)'); // 2/6, not 2/2 = 100%
+        });
+
+        test('format: percent — _backup_ data counts toward total', () => {
+            const result = buildTooltip({ format: 'percent' }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 });
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 33.3%');
+        });
+
+        test('formatter — _backup_ data included in total and percent', () => {
+            const formatter = jest.fn(
+                (_count, _ctx, { percent, total }) =>
+                    `${total} / ${percent.toFixed(1)}%`
+            );
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 });
+            result.callbacks.label(ctx);
+            expect(formatter).toHaveBeenCalledWith(
+                2,
+                expect.anything(),
+                expect.objectContaining({
+                    total: 6,
+                    percent: expect.closeTo(33.3, 0),
+                })
+            );
+        });
+    });
 });
