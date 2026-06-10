@@ -22,12 +22,18 @@ Promise.all(dataPromises)
                 !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
+        function buildAnnotations(mode) {
+            if (mode === 'none') return {};
+            return { labels: { [mode]: { display: true } } };
+        }
+
         function buildSpec(
             orientation,
             fillKey,
             position,
             dynamicSizing,
-            dynamicCategoryAxis
+            dynamicCategoryAxis,
+            annotationsMode
         ) {
             const spec = {
                 mapping: {
@@ -46,6 +52,7 @@ Promise.all(dataPromises)
                     dynamicSizing,
                     dynamicCategoryAxis,
                 },
+                annotations: buildAnnotations(annotationsMode),
             };
 
             if (fillKey) {
@@ -69,7 +76,8 @@ Promise.all(dataPromises)
                 getValue('fill') || undefined,
                 getValue('position'),
                 getDynamicSizing('dynamic-sizing'),
-                getBoolean('dynamic-category-axis')
+                getBoolean('dynamic-category-axis'),
+                getValue('kri-annotations')
             )
         );
 
@@ -83,7 +91,8 @@ Promise.all(dataPromises)
                     getValue('fill') || undefined,
                     getValue('position'),
                     getDynamicSizing('dynamic-sizing'),
-                    getBoolean('dynamic-category-axis')
+                    getBoolean('dynamic-category-axis'),
+                    getValue('kri-annotations')
                 )
             );
         }
@@ -95,6 +104,7 @@ Promise.all(dataPromises)
                 'position',
                 'dynamic-sizing',
                 'dynamic-category-axis',
+                'kri-annotations',
             ],
             rerender
         );

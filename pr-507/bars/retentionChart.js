@@ -12,11 +12,17 @@ fetch('data/retention.csv')
 
         const container = document.getElementById('retention-container');
 
+        function buildAnnotations(mode) {
+            if (mode === 'none') return {};
+            return { labels: { [mode]: { display: true } } };
+        }
+
         function buildSpec(
             orientation,
             position,
             dynamicSizing,
-            dynamicCategoryAxis
+            dynamicCategoryAxis,
+            annotationsMode
         ) {
             return {
                 mapping: {
@@ -40,6 +46,7 @@ fetch('data/retention.csv')
                     dynamicSizing,
                     dynamicCategoryAxis,
                 },
+                annotations: buildAnnotations(annotationsMode),
                 tooltip: {
                     callbacks: {
                         afterLabel: (context) => {
@@ -62,7 +69,8 @@ fetch('data/retention.csv')
                 getValue('retention-orientation'),
                 getValue('retention-position'),
                 getDynamicSizing('retention-dynamic-sizing'),
-                getBoolean('retention-dynamic-category-axis')
+                getBoolean('retention-dynamic-category-axis'),
+                getValue('retention-annotations')
             )
         );
 
@@ -75,7 +83,8 @@ fetch('data/retention.csv')
                     getValue('retention-orientation'),
                     getValue('retention-position'),
                     getDynamicSizing('retention-dynamic-sizing'),
-                    getBoolean('retention-dynamic-category-axis')
+                    getBoolean('retention-dynamic-category-axis'),
+                    getValue('retention-annotations')
                 )
             );
         }
@@ -86,6 +95,7 @@ fetch('data/retention.csv')
                 'retention-position',
                 'retention-dynamic-sizing',
                 'retention-dynamic-category-axis',
+                'retention-annotations',
             ],
             rerender
         );
