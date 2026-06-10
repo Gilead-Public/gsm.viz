@@ -48,6 +48,7 @@ fetch('data/retention.csv')
                 },
                 annotations: buildAnnotations(annotationsMode),
                 tooltip: {
+                    format: 'count+percent',
                     callbacks: {
                         afterLabel: (context) => {
                             const rows = context.raw._datum;
