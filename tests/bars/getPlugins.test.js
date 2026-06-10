@@ -586,6 +586,379 @@ describe('bars/getPlugins', () => {
         });
     });
 
+    describe('datalabel annotations', () => {
+        const baseSpec = {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+            position: 'stack',
+            orientation: 'vertical',
+        };
+
+        function makeContext({
+            datasetIndex = 0,
+            dataIndex = 0,
+            point = { x: 'A', y: 10 },
+            datasets = [{ data: [point] }],
+            indexAxis = 'x',
+            element = { width: 30, height: 30 },
+            hidden = [],
+        } = {}) {
+            return {
+                datasetIndex,
+                dataIndex,
+                dataset: datasets[datasetIndex],
+                chart: {
+                    data: { datasets },
+                    options: { indexAxis },
+                    isDatasetVisible(i) {
+                        return !hidden.includes(i);
+                    },
+                    getDatasetMeta(i) {
+                        return {
+                            data: i === datasetIndex ? [element] : [],
+                        };
+                    },
+                },
+            };
+        }
+
+        test('keeps datalabels disabled by default', () => {
+            const plugins = getPlugins(baseSpec);
+            expect(plugins.datalabels.display).toBe(false);
+            expect(plugins.datalabels.labels).toBeUndefined();
+        });
+
+        test('formats inside segment labels with raw values by default', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true },
+                    },
+                },
+            });
+            const segment = plugins.datalabels.labels.segment;
+            const context = makeContext();
+
+            expect(segment.display(context)).toBe(true);
+            expect(segment.formatter(context.dataset.data[0], context)).toBe(
+                '10'
+            );
+            expect(segment.anchor(context)).toBe('center');
+            expect(segment.align(context)).toBe('center');
+        });
+
+        test("formats position='fill' segment labels as percentages by default", () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                position: 'fill',
+                annotations: {
+                    labels: {
+                        segment: { display: true },
+                    },
+                },
+            });
+            const context = makeContext({
+                point: { x: 'A', y: 33.333, _rawY: 1 },
+                datasets: [{ data: [{ x: 'A', y: 33.333, _rawY: 1 }] }],
+            });
+
+            expect(
+                plugins.datalabels.labels.segment.formatter(
+                    context.dataset.data[0],
+                    context
+                )
+            ).toBe('33.3%');
+        });
+
+        test('supports d3 number format strings', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true, format: ',.1f' },
+                    },
+                },
+            });
+            const context = makeContext({
+                point: { x: 'A', y: 1234.56 },
+                datasets: [{ data: [{ x: 'A', y: 1234.56 }] }],
+            });
+
+            expect(
+                plugins.datalabels.labels.segment.formatter(
+                    context.dataset.data[0],
+                    context
+                )
+            ).toBe('1,234.6');
+        });
+
+        test('supports d3 percent format strings for percent labels', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                position: 'fill',
+                annotations: {
+                    labels: {
+                        segment: {
+                            display: true,
+                            format: '.1%',
+                        },
+                    },
+                },
+            });
+            const context = makeContext({
+                point: { x: 'A', y: 33.333, _rawY: 1 },
+                datasets: [{ data: [{ x: 'A', y: 33.333, _rawY: 1 }] }],
+            });
+
+            expect(
+                plugins.datalabels.labels.segment.formatter(
+                    context.dataset.data[0],
+                    context
+                )
+            ).toBe('33.3%');
+        });
+
+        test('supports custom formatter callbacks', () => {
+            const formatter = jest.fn((value) => `custom ${value}`);
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true, formatter },
+                    },
+                },
+            });
+            const context = makeContext();
+
+            expect(
+                plugins.datalabels.labels.segment.formatter(
+                    context.dataset.data[0],
+                    context
+                )
+            ).toBe('custom 10');
+            expect(formatter).toHaveBeenCalledWith(
+                10,
+                context,
+                expect.objectContaining({
+                    mode: 'segment',
+                    valueType: 'raw',
+                })
+            );
+        });
+
+        test('hides inside segment labels when the rendered segment is smaller than minSize', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true, minSize: 16 },
+                    },
+                },
+            });
+            const context = makeContext({
+                element: { width: 30, height: 10 },
+            });
+
+            expect(plugins.datalabels.labels.segment.display(context)).toBe(
+                false
+            );
+        });
+
+        test('renders total labels only on the last visible dataset for a category', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        total: { display: true },
+                    },
+                },
+            });
+            const total = plugins.datalabels.labels.total;
+            const firstContext = makeContext({ datasetIndex: 0, datasets });
+            const lastContext = makeContext({ datasetIndex: 1, datasets });
+
+            expect(total.display(firstContext)).toBe(false);
+            expect(total.display(lastContext)).toBe(true);
+            expect(total.formatter(datasets[1].data[0], lastContext)).toBe(
+                '30'
+            );
+            expect(total.anchor(lastContext)).toBe('end');
+            expect(total.align(lastContext)).toBe('end');
+        });
+
+        test('uses raw values for totals when bars are normalized to percentages', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 25, _rawY: 1 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 75, _rawY: 3 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                position: 'fill',
+                annotations: {
+                    labels: {
+                        total: { display: true },
+                    },
+                },
+            });
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(
+                plugins.datalabels.labels.total.formatter(
+                    datasets[1].data[0],
+                    context
+                )
+            ).toBe('4');
+        });
+
+        test('supports outside labels for single bar values', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        outside: { display: true, color: '#333333' },
+                    },
+                },
+            });
+            const outside = plugins.datalabels.labels.outside;
+            const context = makeContext();
+
+            expect(outside.display(context)).toBe(true);
+            expect(outside.formatter(context.dataset.data[0], context)).toBe(
+                '10'
+            );
+            expect(outside.anchor(context)).toBe('end');
+            expect(outside.align(context)).toBe('end');
+            expect(outside.color).toBe('#333333');
+        });
+
+        test('places horizontal outside labels at the bar end', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                orientation: 'horizontal',
+                annotations: {
+                    labels: {
+                        outside: { display: true },
+                    },
+                },
+            });
+            const outside = plugins.datalabels.labels.outside;
+            const context = makeContext({
+                point: { x: 10, y: 'A' },
+                datasets: [{ data: [{ x: 10, y: 'A' }] }],
+                indexAxis: 'y',
+            });
+
+            expect(outside.anchor(context)).toBe('end');
+            expect(outside.align(context)).toBe('right');
+        });
+
+        test('renders inside labels only on the last visible dataset for a category', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const firstContext = makeContext({ datasetIndex: 0, datasets });
+            const lastContext = makeContext({ datasetIndex: 1, datasets });
+
+            expect(inside.display(firstContext)).toBe(false);
+            expect(inside.display(lastContext)).toBe(true);
+        });
+
+        test('inside labels show the raw stack total', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(inside.formatter(datasets[1].data[0], context)).toBe('30');
+        });
+
+        test('inside labels use anchor end and align start', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const context = makeContext();
+
+            expect(inside.anchor(context)).toBe('end');
+            expect(inside.align(context)).toBe('start');
+        });
+
+        test('inside labels use raw totals even for position: fill', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 25, _rawY: 1 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 75, _rawY: 3 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                position: 'fill',
+                annotations: {
+                    labels: {
+                        inside: { display: true },
+                    },
+                },
+            });
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(
+                plugins.datalabels.labels.inside.formatter(
+                    datasets[1].data[0],
+                    context
+                )
+            ).toBe('4');
+        });
+
+        test('applies color and font style options to inside labels', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        inside: {
+                            display: true,
+                            color: '#ffffff',
+                            font: { weight: 'bold' },
+                        },
+                    },
+                },
+            });
+            const inside = plugins.datalabels.labels.inside;
+
+            expect(inside.color).toBe('#ffffff');
+            expect(inside.font).toEqual({ weight: 'bold' });
+        });
+    });
+
     describe('tooltip', () => {
         test('tooltip is enabled by default', () => {
             const spec = {

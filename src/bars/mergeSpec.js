@@ -10,6 +10,9 @@ import defaults from './defaults.js';
  * @returns {Object} merged spec
  */
 export default function mergeSpec(data, spec) {
+    const labelModes = defaults.annotations.labels;
+    const userLabels = spec.annotations?.labels || {};
+
     return {
         data,
         mapping: { ...spec.mapping },
@@ -21,6 +24,28 @@ export default function mergeSpec(data, spec) {
             fill: { ...defaults.scales.fill, ...spec.scales?.fill },
         },
         labels: { ...defaults.labels, ...spec.labels },
+        annotations: {
+            ...defaults.annotations,
+            ...spec.annotations,
+            labels: {
+                segment: {
+                    ...labelModes.segment,
+                    ...userLabels.segment,
+                },
+                total: {
+                    ...labelModes.total,
+                    ...userLabels.total,
+                },
+                inside: {
+                    ...labelModes.inside,
+                    ...userLabels.inside,
+                },
+                outside: {
+                    ...labelModes.outside,
+                    ...userLabels.outside,
+                },
+            },
+        },
         theme: { ...defaults.theme, ...spec.theme },
         tooltip: { ...defaults.tooltip, ...spec.tooltip },
     };

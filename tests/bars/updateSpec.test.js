@@ -73,4 +73,110 @@ describe('bars/updateSpec', () => {
         labels.pop();
         expect(chart.data._allLabels_).toEqual(['C', 'D']);
     });
+
+    test('preserves existing annotation label modes on partial spec update', () => {
+        const chart = bars(container, data, {
+            ...spec,
+            annotations: {
+                labels: {
+                    segment: {
+                        display: true,
+                        color: '#111111',
+                    },
+                },
+            },
+        });
+
+        updateSpec(chart, {
+            annotations: {
+                labels: {
+                    total: {
+                        display: true,
+                    },
+                },
+            },
+        });
+
+        expect(chart.data._spec_.annotations.labels.segment.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.segment.color).toBe(
+            '#111111'
+        );
+        expect(chart.data._spec_.annotations.labels.total.display).toBe(true);
+    });
+
+    test('rebuilds datalabel options after a partial annotation update', () => {
+        const chart = bars(container, data, spec);
+
+        updateSpec(chart, {
+            annotations: {
+                labels: {
+                    outside: {
+                        display: true,
+                    },
+                },
+            },
+        });
+
+        expect(chart.options.plugins.datalabels.labels.outside).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.outside.display).toBe(true);
+    });
+
+    test('rebuilds datalabel options after a data update', () => {
+        const chart = bars(container, data, {
+            ...spec,
+            annotations: {
+                labels: {
+                    segment: {
+                        display: true,
+                    },
+                },
+            },
+        });
+
+        updateData(
+            chart,
+            [
+                { category: 'C', value: 30 },
+                { category: 'D', value: 40 },
+            ],
+            chart.data._spec_
+        );
+
+        expect(chart.options.plugins.datalabels.labels.segment).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.segment.display).toBe(true);
+        expect(chart.data.labels).toEqual(['C', 'D']);
+    });
+
+    test('preserves inside annotation label mode on partial spec update', () => {
+        const chart = bars(container, data, {
+            ...spec,
+            annotations: {
+                labels: {
+                    inside: { display: true, color: '#ffffff' },
+                },
+            },
+        });
+
+        updateSpec(chart, { labels: { title: 'Updated' } });
+
+        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.inside.color).toBe(
+            '#ffffff'
+        );
+    });
+
+    test('rebuilds datalabel options with inside labels after a partial annotation update', () => {
+        const chart = bars(container, data, spec);
+
+        updateSpec(chart, {
+            annotations: {
+                labels: {
+                    inside: { display: true },
+                },
+            },
+        });
+
+        expect(chart.options.plugins.datalabels.labels.inside).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
+    });
 });

@@ -1,4 +1,5 @@
 import Chart from 'chart.js/auto';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import validateSpec from './bars/validateSpec.js';
 import mergeSpec from './bars/mergeSpec.js';
@@ -76,7 +77,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
             _spec_: merged,
         },
         options,
-        plugins: [displayWhiteBackground()],
+        plugins: [ChartDataLabels, displayWhiteBackground()],
     });
 
     // Attach chart to canvas element.
