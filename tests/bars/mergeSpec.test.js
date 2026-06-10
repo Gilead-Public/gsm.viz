@@ -132,4 +132,45 @@ describe('bars/mergeSpec', () => {
             expect(merged.tooltip.callbacks).toBe(callbacks);
         });
     });
+
+    describe('annotations', () => {
+        test('defaults labels to disabled modes', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.annotations.labels.segment.display).toBe(false);
+            expect(merged.annotations.labels.segment.value).toBe('auto');
+            expect(merged.annotations.labels.segment.minSize).toBe(16);
+            expect(merged.annotations.labels.total.display).toBe(false);
+            expect(merged.annotations.labels.outside.display).toBe(false);
+        });
+
+        test('deep merges user label modes with defaults', () => {
+            const formatter = jest.fn();
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: {
+                    labels: {
+                        segment: {
+                            display: true,
+                            color: '#111111',
+                            formatter,
+                        },
+                        total: {
+                            display: true,
+                            font: { weight: 'bold' },
+                        },
+                    },
+                },
+            });
+
+            expect(merged.annotations.labels.segment.display).toBe(true);
+            expect(merged.annotations.labels.segment.value).toBe('auto');
+            expect(merged.annotations.labels.segment.color).toBe('#111111');
+            expect(merged.annotations.labels.segment.formatter).toBe(formatter);
+            expect(merged.annotations.labels.total.display).toBe(true);
+            expect(merged.annotations.labels.total.font).toEqual({
+                weight: 'bold',
+            });
+            expect(merged.annotations.labels.outside.display).toBe(false);
+        });
+    });
 });

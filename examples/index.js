@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21839,6 +21840,34 @@ var gsmViz = (() => {
       }
     },
     labels: {},
+    annotations: {
+      labels: {
+        segment: {
+          display: false,
+          value: "auto",
+          format: void 0,
+          formatter: void 0,
+          minSize: 16,
+          color: void 0,
+          font: void 0
+        },
+        total: {
+          display: false,
+          format: void 0,
+          formatter: void 0,
+          color: void 0,
+          font: void 0
+        },
+        outside: {
+          display: false,
+          value: "auto",
+          format: void 0,
+          formatter: void 0,
+          color: void 0,
+          font: void 0
+        }
+      }
+    },
     tooltip: {},
     theme: {
       maintainAspectRatio: false,
@@ -21851,6 +21880,8 @@ var gsmViz = (() => {
 
   // src/bars/mergeSpec.js
   function mergeSpec(data, spec) {
+    const labelModes = defaults_default.annotations.labels;
+    const userLabels = spec.annotations?.labels || {};
     return {
       data,
       mapping: { ...spec.mapping },
@@ -21862,6 +21893,24 @@ var gsmViz = (() => {
         fill: { ...defaults_default.scales.fill, ...spec.scales?.fill }
       },
       labels: { ...defaults_default.labels, ...spec.labels },
+      annotations: {
+        ...defaults_default.annotations,
+        ...spec.annotations,
+        labels: {
+          segment: {
+            ...labelModes.segment,
+            ...userLabels.segment
+          },
+          total: {
+            ...labelModes.total,
+            ...userLabels.total
+          },
+          outside: {
+            ...labelModes.outside,
+            ...userLabels.outside
+          }
+        }
+      },
       theme: { ...defaults_default.theme, ...spec.theme },
       tooltip: { ...defaults_default.tooltip, ...spec.tooltip }
     };
@@ -22115,6 +22164,197 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/getPlugins/dataLabels.js
+  function getValueKey(context) {
+    return context.chart.options?.indexAxis === "y" ? "x" : "y";
+  }
+  function getCategoryKey(context) {
+    return context.chart.options?.indexAxis === "y" ? "y" : "x";
+  }
+  function toNumber(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+  function getPoint2(context) {
+    return context.dataset.data[context.dataIndex];
+  }
+  function getRenderedValue(point, context) {
+    return toNumber(point?.[getValueKey(context)]);
+  }
+  function getRawValue(point, context) {
+    return point?._rawY !== void 0 ? toNumber(point._rawY) : getRenderedValue(point, context);
+  }
+  function getCategory(point, context) {
+    return point?.[getCategoryKey(context)];
+  }
+  function isDatasetVisible(chart, datasetIndex) {
+    return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
+  }
+  function findPointForCategory(dataset, category, context) {
+    return dataset.data.find(
+      (point) => getCategory(point, context) === category
+    );
+  }
+  function getRawTotal(context) {
+    const point = getPoint2(context);
+    const category = getCategory(point, context);
+    return context.chart.data.datasets.reduce(
+      (total, dataset, datasetIndex) => {
+        if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+        const match = findPointForCategory(dataset, category, context);
+        return total + getRawValue(match, context);
+      },
+      0
+    );
+  }
+  function getSpec(context, spec) {
+    return context.chart.data?._spec_ || spec;
+  }
+  function getPercentValue(point, context, spec) {
+    const rendered = getRenderedValue(point, context);
+    if (getSpec(context, spec)?.position === "fill") return rendered;
+    const total = getRawTotal(context);
+    return total === 0 ? 0 : getRawValue(point, context) / total * 100;
+  }
+  function resolveLabelValue(point, context, options, mode, spec) {
+    const configuredValue = options.value ?? "auto";
+    const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
+    if (mode === "total") {
+      return { value: getRawTotal(context), valueType: "raw" };
+    }
+    if (valueType === "percent") {
+      return {
+        value: getPercentValue(point, context, spec),
+        valueType
+      };
+    }
+    if (valueType === "value") {
+      return {
+        value: getRenderedValue(point, context),
+        valueType
+      };
+    }
+    return {
+      value: getRawValue(point, context),
+      valueType: "raw"
+    };
+  }
+  function defaultFormat(value, valueType) {
+    const formatter2 = valueType === "percent" ? format(".1f") : format("~g");
+    const suffix = valueType === "percent" ? "%" : "";
+    return `${formatter2(value)}${suffix}`;
+  }
+  function formatLabel(point, context, options, mode, spec) {
+    const { value, valueType } = resolveLabelValue(
+      point,
+      context,
+      options,
+      mode,
+      spec
+    );
+    const details = {
+      mode,
+      valueType,
+      point,
+      total: mode === "total" ? value : getRawTotal(context)
+    };
+    if (typeof options.formatter === "function") {
+      return options.formatter(value, context, details);
+    }
+    if (options.format) {
+      const usesPercentFormat = options.format.includes("%");
+      const formatValue = valueType === "percent" && usesPercentFormat ? value / 100 : value;
+      const suffix = valueType === "percent" && !usesPercentFormat ? "%" : "";
+      return `${format(options.format)(formatValue)}${suffix}`;
+    }
+    return defaultFormat(value, valueType);
+  }
+  function hasVisibleValueForCategory(context, datasetIndex, category) {
+    if (!isDatasetVisible(context.chart, datasetIndex)) return false;
+    const dataset = context.chart.data.datasets[datasetIndex];
+    const point = findPointForCategory(dataset, category, context);
+    return Math.abs(getRawValue(point, context)) > 0;
+  }
+  function isLastVisibleDatasetForCategory(context) {
+    const point = getPoint2(context);
+    const category = getCategory(point, context);
+    for (let i = context.chart.data.datasets.length - 1; i >= context.datasetIndex; i--) {
+      if (hasVisibleValueForCategory(context, i, category)) {
+        return i === context.datasetIndex;
+      }
+    }
+    return false;
+  }
+  function isLargeEnoughForSegment(context, options) {
+    const minSize = options.minSize ?? 0;
+    if (!minSize) return true;
+    const element = context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[context.dataIndex];
+    if (!element) return true;
+    const size = context.chart.options?.indexAxis === "y" ? element.width : element.height;
+    return size === void 0 || size >= minSize;
+  }
+  function withStyle(config, options) {
+    return {
+      ...config,
+      ...options.color !== void 0 ? { color: options.color } : {},
+      ...options.font !== void 0 ? { font: options.font } : {}
+    };
+  }
+  function buildSegmentLabel(options, spec) {
+    return withStyle(
+      {
+        display: (context) => isLargeEnoughForSegment(context, options),
+        formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
+        anchor: () => "center",
+        align: () => "center"
+      },
+      options
+    );
+  }
+  function buildTotalLabel(options, spec) {
+    return withStyle(
+      {
+        display: (context) => isLastVisibleDatasetForCategory(context),
+        formatter: (value, context) => formatLabel(value, context, options, "total", spec),
+        anchor: () => "end",
+        align: () => "end",
+        offset: 4
+      },
+      options
+    );
+  }
+  function buildOutsideLabel(options, spec) {
+    return withStyle(
+      {
+        display: () => true,
+        formatter: (value, context) => formatLabel(value, context, options, "outside", spec),
+        anchor: () => "end",
+        align: (context) => context.chart.options?.indexAxis === "y" ? "right" : "end",
+        offset: 4
+      },
+      options
+    );
+  }
+  function dataLabels2(spec) {
+    const labels = spec.annotations?.labels;
+    if (!labels?.segment?.display && !labels?.total?.display && !labels?.outside?.display) {
+      return {
+        display: false
+      };
+    }
+    const config = { labels: {} };
+    if (labels.segment?.display) {
+      config.labels.segment = buildSegmentLabel(labels.segment, spec);
+    }
+    if (labels.total?.display) {
+      config.labels.total = buildTotalLabel(labels.total, spec);
+    }
+    if (labels.outside?.display) {
+      config.labels.outside = buildOutsideLabel(labels.outside, spec);
+    }
+    return config;
+  }
+
   // src/bars/getPlugins/getAllLabels.js
   function getAllLabels(chart, visibleCats) {
     return chart.data._allLabels_ || [...visibleCats];
@@ -22241,9 +22481,7 @@ var gsmViz = (() => {
       },
       tooltip: buildTooltip(tooltip5, position),
       legend: legend5,
-      datalabels: {
-        display: false
-      }
+      datalabels: dataLabels2(spec)
     };
   }
 
@@ -22278,6 +22516,24 @@ var gsmViz = (() => {
         fill: { ...existing.scales?.fill, ...spec.scales?.fill }
       },
       labels: { ...existing.labels, ...spec.labels },
+      annotations: {
+        ...existing.annotations,
+        ...spec.annotations,
+        labels: {
+          segment: {
+            ...existing.annotations?.labels?.segment,
+            ...spec.annotations?.labels?.segment
+          },
+          total: {
+            ...existing.annotations?.labels?.total,
+            ...spec.annotations?.labels?.total
+          },
+          outside: {
+            ...existing.annotations?.labels?.outside,
+            ...spec.annotations?.labels?.outside
+          }
+        }
+      },
       theme: { ...existing.theme, ...spec.theme }
     };
     const merged = mergeSpec(existing.data, combined);
@@ -22333,7 +22589,7 @@ var gsmViz = (() => {
         _spec_: merged
       },
       options,
-      plugins: [displayWhiteBackground()]
+      plugins: [plugin, displayWhiteBackground()]
     });
     canvas.chart = chart;
     el.style.height = "";

@@ -1,4 +1,5 @@
 import buildTooltip from './buildTooltip.js';
+import dataLabels from './dataLabels.js';
 import dynamicCategoryLegendOnClick from './dynamicCategoryLegendOnClick.js';
 
 /**
@@ -39,8 +40,6 @@ export default function getPlugins(spec) {
         },
         tooltip: buildTooltip(tooltip, position),
         legend,
-        datalabels: {
-            display: false,
-        },
+        datalabels: dataLabels(spec),
     };
 }

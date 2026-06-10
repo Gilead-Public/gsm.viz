@@ -70,6 +70,40 @@ describe('bars entry point', () => {
         expect(instance.options.plugins.title.display).toBe(true);
     });
 
+    test('renders with datalabel annotations enabled', () => {
+        const instance = bars(container, singleSeriesData, {
+            ...singleSeriesSpec,
+            annotations: {
+                labels: {
+                    segment: { display: true },
+                    outside: { display: true },
+                },
+            },
+        });
+
+        expect(
+            instance.options.plugins.datalabels.labels.segment
+        ).toBeDefined();
+        expect(
+            instance.options.plugins.datalabels.labels.outside
+        ).toBeDefined();
+    });
+
+    test('registers the ChartDataLabels plugin for bars charts', () => {
+        const instance = bars(container, singleSeriesData, {
+            ...singleSeriesSpec,
+            annotations: {
+                labels: {
+                    segment: { display: true },
+                },
+            },
+        });
+
+        expect(
+            instance.config.plugins.some((plugin) => plugin.id === 'datalabels')
+        ).toBe(true);
+    });
+
     test('attaches helpers to chart instance', () => {
         const instance = bars(container, singleSeriesData, singleSeriesSpec);
         expect(instance.helpers).toBeDefined();

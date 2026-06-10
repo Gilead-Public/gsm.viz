@@ -33,6 +33,34 @@ const defaults = {
         },
     },
     labels: {},
+    annotations: {
+        labels: {
+            segment: {
+                display: false,
+                value: 'auto',
+                format: undefined,
+                formatter: undefined,
+                minSize: 16,
+                color: undefined,
+                font: undefined,
+            },
+            total: {
+                display: false,
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
+            outside: {
+                display: false,
+                value: 'auto',
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
+        },
+    },
     tooltip: {},
     theme: {
         maintainAspectRatio: false,

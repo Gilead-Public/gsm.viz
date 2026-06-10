@@ -57,6 +57,34 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     labels: {
         title: undefined,
     },
+    annotations: {
+        labels: {
+            segment: {
+                display: false,    // inside each bar segment
+                value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
+                format: undefined, // optional d3-format string, e.g. ',.0f'
+                formatter: undefined,
+                minSize: 16,       // hide if the segment is smaller than this many px
+                color: undefined,
+                font: undefined,
+            },
+            total: {
+                display: false,    // end-of-stack total labels
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
+            outside: {
+                display: false,    // outside-bar value labels
+                value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
+        },
+    },
     tooltip: {
         // Chart.js tooltip options and callbacks
     },
@@ -71,17 +99,21 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 ### Defaults
 
-| Key                         | Default                        |
-| --------------------------- | ------------------------------ |
-| `orientation`               | `'vertical'`                   |
-| `position`                  | `'stack'`                      |
-| `scales.x.type`             | `'category'`                   |
-| `scales.y.type`             | `'linear'`                     |
-| `scales.fill.palette`       | Tableau-10 categorical palette |
-| `theme.maintainAspectRatio` | `false`                        |
-| `theme.animation`           | `false`                        |
-| `theme.dynamicSizing`       | `false`                        |
-| `theme.dynamicCategoryAxis` | `false`                        |
+| Key                                  | Default                        |
+| ------------------------------------ | ------------------------------ |
+| `orientation`                        | `'vertical'`                   |
+| `position`                           | `'stack'`                      |
+| `scales.x.type`                      | `'category'`                   |
+| `scales.y.type`                      | `'linear'`                     |
+| `scales.fill.palette`                | Tableau-10 categorical palette |
+| `annotations.labels.*.display`       | `false`                        |
+| `annotations.labels.segment.value`   | `'auto'`                       |
+| `annotations.labels.segment.minSize` | `16`                           |
+| `annotations.labels.outside.value`   | `'auto'`                       |
+| `theme.maintainAspectRatio`          | `false`                        |
+| `theme.animation`                    | `false`                        |
+| `theme.dynamicSizing`                | `false`                        |
+| `theme.dynamicCategoryAxis`          | `false`                        |
 
 ### Mapping modes
 
@@ -102,6 +134,79 @@ number of rows in each `x` category, optionally split by `fill`.
 
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
+
+### Label annotations
+
+`annotations.labels` controls value labels rendered by
+`chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
+independently:
+
+| Mode      | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| `segment` | Draws labels inside each rendered bar segment              |
+| `total`   | Draws one total label at the end of each stacked bar       |
+| `outside` | Draws value labels outside bars, useful for unstacked bars |
+
+`segment.value` and `outside.value` accept:
+
+| Value       | Behaviour                                                               |
+| ----------- | ----------------------------------------------------------------------- |
+| `'auto'`    | Raw/count values, or percentages when `position: 'fill'`                |
+| `'raw'`     | Raw/count values; for `position: 'fill'`, uses the pre-normalized value |
+| `'value'`   | Rendered chart value                                                    |
+| `'percent'` | Percentage of the category total                                        |
+
+`format` accepts a d3-format string such as `',.0f'`, `'.1f'`, or `'.2%'`.
+Use `formatter(value, context, details)` for full control. `details` includes
+`mode`, `valueType`, `point`, and `total`.
+
+Inside segment labels automatically hide when the rendered segment is smaller
+than `segment.minSize` pixels. Set `minSize: 0` to disable this rule.
+
+```js
+// Inside-segment counts
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', fill: 'flag' },
+    annotations: {
+        labels: {
+            segment: {
+                display: true,
+                format: ',.0f',
+                color: 'white',
+                font: { weight: 'bold' },
+            },
+        },
+    },
+});
+
+// End-of-stack totals
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'count', fill: 'flag' },
+    position: 'stack',
+    annotations: {
+        labels: {
+            total: {
+                display: true,
+                format: ',.0f',
+                color: '#333333',
+            },
+        },
+    },
+});
+
+// Outside-bar labels
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'prevalence' },
+    annotations: {
+        labels: {
+            outside: {
+                display: true,
+                format: '.1f',
+            },
+        },
+    },
+});
+```
 
 ### Ordering and labels
 

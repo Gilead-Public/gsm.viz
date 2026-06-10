@@ -25,6 +25,24 @@ export default function updateSpec(chart, spec) {
             fill: { ...existing.scales?.fill, ...spec.scales?.fill },
         },
         labels: { ...existing.labels, ...spec.labels },
+        annotations: {
+            ...existing.annotations,
+            ...spec.annotations,
+            labels: {
+                segment: {
+                    ...existing.annotations?.labels?.segment,
+                    ...spec.annotations?.labels?.segment,
+                },
+                total: {
+                    ...existing.annotations?.labels?.total,
+                    ...spec.annotations?.labels?.total,
+                },
+                outside: {
+                    ...existing.annotations?.labels?.outside,
+                    ...spec.annotations?.labels?.outside,
+                },
+            },
+        },
         theme: { ...existing.theme, ...spec.theme },
     };
 
