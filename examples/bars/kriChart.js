@@ -48,6 +48,9 @@ Promise.all(dataPromises)
                 labels: {
                     title: 'Record Count by Metric ID',
                 },
+                tooltip: {
+                    format: 'count+percent',
+                },
                 theme: {
                     dynamicSizing,
                     dynamicCategoryAxis,

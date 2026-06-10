@@ -42,7 +42,14 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
             return { labels: { [mode]: { display: true } } };
         }
 
-        function buildSpec(year, data, orientation, position, dynamicSizing, annotationsMode) {
+        function buildSpec(
+            year,
+            data,
+            orientation,
+            position,
+            dynamicSizing,
+            annotationsMode
+        ) {
             const countryOrder = data.map((d) => d.country);
 
             return {

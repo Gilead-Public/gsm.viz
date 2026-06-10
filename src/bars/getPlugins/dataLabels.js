@@ -47,13 +47,10 @@ function getRawTotal(context) {
     const point = getPoint(context);
     const category = getCategory(point, context);
 
-    return context.chart.data.datasets.reduce(
-        (total, dataset) => {
-            const match = findPointForCategory(dataset, category, context);
-            return total + getRawValue(match, context);
-        },
-        0
-    );
+    return context.chart.data.datasets.reduce((total, dataset) => {
+        const match = findPointForCategory(dataset, category, context);
+        return total + getRawValue(match, context);
+    }, 0);
 }
 
 function getSpec(context, spec) {

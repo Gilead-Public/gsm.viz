@@ -4,8 +4,28 @@ import buildTooltip from '../../src/bars/getPlugins/buildTooltip.js';
 // Simulates a stacked bar with two fill groups (A=2, B=4) in a single category.
 function makeContext({ datasetIndex = 0, datasets, indexAxis = 'x' } = {}) {
     const defaultDatasets = [
-        { label: 'A', data: [{ x: 'cat1', y: 2, _fill: 'A', _datum: { x: 'cat1', fill: 'A', y: 2 } }] },
-        { label: 'B', data: [{ x: 'cat1', y: 4, _fill: 'B', _datum: { x: 'cat1', fill: 'B', y: 4 } }] },
+        {
+            label: 'A',
+            data: [
+                {
+                    x: 'cat1',
+                    y: 2,
+                    _fill: 'A',
+                    _datum: { x: 'cat1', fill: 'A', y: 2 },
+                },
+            ],
+        },
+        {
+            label: 'B',
+            data: [
+                {
+                    x: 'cat1',
+                    y: 4,
+                    _fill: 'B',
+                    _datum: { x: 'cat1', fill: 'B', y: 4 },
+                },
+            ],
+        },
     ];
     const ds = datasets || defaultDatasets;
     const chart = {
@@ -29,14 +49,20 @@ describe('bars/getPlugins/buildTooltip', () => {
         });
 
         test('passes through arbitrary Chart.js tooltip options', () => {
-            const result = buildTooltip({ mode: 'index', intersect: false }, 'stack');
+            const result = buildTooltip(
+                { mode: 'index', intersect: false },
+                'stack'
+            );
             expect(result.mode).toBe('index');
             expect(result.intersect).toBe(false);
         });
 
         test('preserves caller-provided callbacks.label for any position', () => {
             const customLabel = jest.fn(() => 'custom');
-            const result = buildTooltip({ callbacks: { label: customLabel } }, 'fill');
+            const result = buildTooltip(
+                { callbacks: { label: customLabel } },
+                'fill'
+            );
             expect(result.callbacks.label).toBe(customLabel);
         });
 
@@ -121,8 +147,14 @@ describe('bars/getPlugins/buildTooltip', () => {
         test('format: count+percent uses _rawY for fill-normalized bars', () => {
             // Simulate a fill-normalized bar: rendered y=33.33, _rawY=2
             const datasets = [
-                { label: 'A', data: [{ x: 'cat1', y: 33.33, _rawY: 2, _fill: 'A' }] },
-                { label: 'B', data: [{ x: 'cat1', y: 66.67, _rawY: 4, _fill: 'B' }] },
+                {
+                    label: 'A',
+                    data: [{ x: 'cat1', y: 33.33, _rawY: 2, _fill: 'A' }],
+                },
+                {
+                    label: 'B',
+                    data: [{ x: 'cat1', y: 66.67, _rawY: 4, _fill: 'B' }],
+                },
             ];
             const ctx = {
                 chart: {
@@ -140,14 +172,20 @@ describe('bars/getPlugins/buildTooltip', () => {
         });
 
         test('format strips format key from forwarded Chart.js options', () => {
-            const result = buildTooltip({ format: 'count', mode: 'index' }, 'stack');
+            const result = buildTooltip(
+                { format: 'count', mode: 'index' },
+                'stack'
+            );
             expect(result.format).toBeUndefined();
             expect(result.mode).toBe('index');
         });
 
         test('callbacks.label takes precedence over format', () => {
             const customLabel = jest.fn(() => 'custom');
-            const result = buildTooltip({ format: 'count', callbacks: { label: customLabel } }, 'stack');
+            const result = buildTooltip(
+                { format: 'count', callbacks: { label: customLabel } },
+                'stack'
+            );
             expect(result.callbacks.label).toBe(customLabel);
         });
     });
@@ -161,7 +199,10 @@ describe('bars/getPlugins/buildTooltip', () => {
 
         test('formatter callback receives count as first argument', () => {
             let capturedCount;
-            const formatter = (count) => { capturedCount = count; return ''; };
+            const formatter = (count) => {
+                capturedCount = count;
+                return '';
+            };
             const result = buildTooltip({ formatter }, 'stack');
             const ctx = makeContext({ datasetIndex: 0 }); // A=2
             result.callbacks.label(ctx);
@@ -170,7 +211,10 @@ describe('bars/getPlugins/buildTooltip', () => {
 
         test('formatter callback receives context as second argument', () => {
             let capturedCtx;
-            const formatter = (_count, ctx) => { capturedCtx = ctx; return ''; };
+            const formatter = (_count, ctx) => {
+                capturedCtx = ctx;
+                return '';
+            };
             const result = buildTooltip({ formatter }, 'stack');
             const ctx = makeContext({ datasetIndex: 0 });
             result.callbacks.label(ctx);
@@ -179,14 +223,21 @@ describe('bars/getPlugins/buildTooltip', () => {
 
         test('formatter callback receives details with percent, total, fill, datum', () => {
             let capturedDetails;
-            const formatter = (_count, _ctx, details) => { capturedDetails = details; return ''; };
+            const formatter = (_count, _ctx, details) => {
+                capturedDetails = details;
+                return '';
+            };
             const result = buildTooltip({ formatter }, 'stack');
             const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6
             result.callbacks.label(ctx);
             expect(capturedDetails.percent).toBeCloseTo(33.33, 1);
             expect(capturedDetails.total).toBe(6);
             expect(capturedDetails.fill).toBe('A');
-            expect(capturedDetails.datum).toEqual({ x: 'cat1', fill: 'A', y: 2 });
+            expect(capturedDetails.datum).toEqual({
+                x: 'cat1',
+                fill: 'A',
+                y: 2,
+            });
         });
 
         test('formatter return value is used as the label', () => {
@@ -194,13 +245,21 @@ describe('bars/getPlugins/buildTooltip', () => {
                 `${count} subjects — ${percent.toFixed(0)}% of site`;
             const result = buildTooltip({ formatter }, 'stack');
             const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6
-            expect(result.callbacks.label(ctx)).toBe('2 subjects — 33% of site');
+            expect(result.callbacks.label(ctx)).toBe(
+                '2 subjects — 33% of site'
+            );
         });
 
         test('formatter takes precedence over format', () => {
             let formatterCalled = false;
-            const formatter = () => { formatterCalled = true; return 'fmt'; };
-            const result = buildTooltip({ format: 'count', formatter }, 'stack');
+            const formatter = () => {
+                formatterCalled = true;
+                return 'fmt';
+            };
+            const result = buildTooltip(
+                { format: 'count', formatter },
+                'stack'
+            );
             const ctx = makeContext();
             result.callbacks.label(ctx);
             expect(formatterCalled).toBe(true);
@@ -209,7 +268,10 @@ describe('bars/getPlugins/buildTooltip', () => {
         test('callbacks.label takes precedence over formatter', () => {
             const customLabel = jest.fn(() => 'custom');
             const formatter = jest.fn(() => 'fmt');
-            const result = buildTooltip({ formatter, callbacks: { label: customLabel } }, 'stack');
+            const result = buildTooltip(
+                { formatter, callbacks: { label: customLabel } },
+                'stack'
+            );
             expect(result.callbacks.label).toBe(customLabel);
         });
 
@@ -227,8 +289,28 @@ describe('bars/getPlugins/buildTooltip', () => {
         // not just the visible subset (A=2 → total=2).
         function makeContextWithHiddenDataset({ datasetIndex = 0 } = {}) {
             const datasets = [
-                { label: 'A', data: [{ x: 'cat1', y: 2, _fill: 'A', _datum: { x: 'cat1', fill: 'A', y: 2 } }] },
-                { label: 'B', data: [{ x: 'cat1', y: 4, _fill: 'B', _datum: { x: 'cat1', fill: 'B', y: 4 } }] },
+                {
+                    label: 'A',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 2,
+                            _fill: 'A',
+                            _datum: { x: 'cat1', fill: 'A', y: 2 },
+                        },
+                    ],
+                },
+                {
+                    label: 'B',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 4,
+                            _fill: 'B',
+                            _datum: { x: 'cat1', fill: 'B', y: 4 },
+                        },
+                    ],
+                },
             ];
             const chart = {
                 options: { indexAxis: 'x' },
@@ -259,8 +341,9 @@ describe('bars/getPlugins/buildTooltip', () => {
         });
 
         test('formatter — hidden dataset does not change total or percent', () => {
-            const formatter = jest.fn((_count, _ctx, { percent, total }) =>
-                `${total} / ${percent.toFixed(1)}%`
+            const formatter = jest.fn(
+                (_count, _ctx, { percent, total }) =>
+                    `${total} / ${percent.toFixed(1)}%`
             );
             const result = buildTooltip({ formatter }, 'stack');
             const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 });
@@ -268,7 +351,10 @@ describe('bars/getPlugins/buildTooltip', () => {
             expect(formatter).toHaveBeenCalledWith(
                 2,
                 expect.anything(),
-                expect.objectContaining({ total: 6, percent: expect.closeTo(33.3, 0) })
+                expect.objectContaining({
+                    total: 6,
+                    percent: expect.closeTo(33.3, 0),
+                })
             );
         });
     });

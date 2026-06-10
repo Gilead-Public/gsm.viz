@@ -153,12 +153,12 @@ default to percentages unless you provide `tooltip.callbacks.label`.
 `chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
 independently:
 
-| Mode      | Description                                                                          |
-| --------- | ------------------------------------------------------------------------------------ |
-| `segment` | Draws labels inside each rendered bar segment                                        |
-| `total`   | Draws one total label at the end of each stacked bar (outside the bar)               |
-| `inside`  | Draws one total label at the end of each stacked bar, placed inside the bar          |
-| `outside` | Draws value labels outside bars, useful for unstacked bars                           |
+| Mode      | Description                                                                 |
+| --------- | --------------------------------------------------------------------------- |
+| `segment` | Draws labels inside each rendered bar segment                               |
+| `total`   | Draws one total label at the end of each stacked bar (outside the bar)      |
+| `inside`  | Draws one total label at the end of each stacked bar, placed inside the bar |
+| `outside` | Draws value labels outside bars, useful for unstacked bars                  |
 
 `inside` is useful when `total` labels would overlap the legend (e.g., `position: 'fill'` with
 `orientation: 'vertical'`). It shows the same raw stack total as `total` but uses
@@ -233,20 +233,20 @@ The `tooltip` spec key is passed through to the Chart.js [tooltip plugin](https:
 
 Each bar point carries these extra properties that are accessible inside any tooltip callback via `context.dataset.data[context.dataIndex]`:
 
-| Property | Description |
-| -------- | ----------- |
+| Property | Description                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------- |
 | `_rawY`  | Pre-normalization value when `position: 'fill'` is used; otherwise the same as the rendered value |
-| `_datum` | The original input row (or, in count mode, the array of rows that make up the bar) |
-| `_fill`  | The fill group value assigned to this segment |
+| `_datum` | The original input row (or, in count mode, the array of rows that make up the bar)                |
+| `_fill`  | The fill group value assigned to this segment                                                     |
 
 #### `tooltip.format`
 
 A shorthand string that injects a pre-built `label` callback. The prefix (`"Label: "`) is omitted when no `mapping.fill` is set.
 
-| Value | Output example |
-| ----- | -------------- |
-| `'count'` | `"Treated: 42"` |
-| `'percent'` | `"Treated: 33.3%"` |
+| Value             | Output example          |
+| ----------------- | ----------------------- |
+| `'count'`         | `"Treated: 42"`         |
+| `'percent'`       | `"Treated: 33.3%"`      |
 | `'count+percent'` | `"Treated: 42 (33.3%)"` |
 | `'percent+count'` | `"Treated: 33.3% (42)"` |
 
@@ -260,15 +260,15 @@ A callback for full control over the tooltip label line. Called as:
 formatter(count, context, details)
 ```
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `count` | `number` | Raw count / value for this segment |
-| `context` | `Object` | Standard Chart.js tooltip callback context |
-| `details` | `Object` | `{ percent, total, fill, datum }` |
-| `details.percent` | `number` | Percentage of category total (0–100) |
-| `details.total` | `number` | Sum of raw values across all visible datasets for this category |
-| `details.fill` | `*` | Fill group value (`_fill`) for this segment |
-| `details.datum` | `*` | Original input row (`_datum`) |
+| Parameter         | Type     | Description                                                     |
+| ----------------- | -------- | --------------------------------------------------------------- |
+| `count`           | `number` | Raw count / value for this segment                              |
+| `context`         | `Object` | Standard Chart.js tooltip callback context                      |
+| `details`         | `Object` | `{ percent, total, fill, datum }`                               |
+| `details.percent` | `number` | Percentage of category total (0–100)                            |
+| `details.total`   | `number` | Sum of raw values across all visible datasets for this category |
+| `details.fill`    | `*`      | Fill group value (`_fill`) for this segment                     |
+| `details.datum`   | `*`      | Original input row (`_datum`)                                   |
 
 #### Precedence
 

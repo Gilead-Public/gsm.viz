@@ -32,15 +32,12 @@ function getRawTotal(context) {
     const point = getPoint(context);
     const category = getCategory(point, context);
 
-    return context.chart.data.datasets.reduce(
-        (total, dataset) => {
-            const match = dataset.data.find(
-                (p) => getCategory(p, context) === category
-            );
-            return total + getRawValue(match, context);
-        },
-        0
-    );
+    return context.chart.data.datasets.reduce((total, dataset) => {
+        const match = dataset.data.find(
+            (p) => getCategory(p, context) === category
+        );
+        return total + getRawValue(match, context);
+    }, 0);
 }
 
 function buildPrefix(context) {

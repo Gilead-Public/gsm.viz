@@ -22185,15 +22185,12 @@ var gsmViz = (() => {
   function getRawTotal(context) {
     const point = getPoint2(context);
     const category = getCategory(point, context);
-    return context.chart.data.datasets.reduce(
-      (total, dataset) => {
-        const match = dataset.data.find(
-          (p) => getCategory(p, context) === category
-        );
-        return total + getRawValue(match, context);
-      },
-      0
-    );
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = dataset.data.find(
+        (p) => getCategory(p, context) === category
+      );
+      return total + getRawValue(match, context);
+    }, 0);
   }
   function buildPrefix(context) {
     return context.dataset.label ? `${context.dataset.label}: ` : "";
@@ -22297,13 +22294,10 @@ var gsmViz = (() => {
   function getRawTotal2(context) {
     const point = getPoint3(context);
     const category = getCategory2(point, context);
-    return context.chart.data.datasets.reduce(
-      (total, dataset) => {
-        const match = findPointForCategory(dataset, category, context);
-        return total + getRawValue2(match, context);
-      },
-      0
-    );
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = findPointForCategory(dataset, category, context);
+      return total + getRawValue2(match, context);
+    }, 0);
   }
   function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
