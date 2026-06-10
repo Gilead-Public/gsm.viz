@@ -69,7 +69,14 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 font: undefined,
             },
             total: {
-                display: false,    // end-of-stack total labels
+                display: false,    // end-of-stack total labels, placed outside the bar
+                format: undefined,
+                formatter: undefined,
+                color: undefined,
+                font: undefined,
+            },
+            inside: {
+                display: false,    // end-of-stack total labels, placed inside the bar
                 format: undefined,
                 formatter: undefined,
                 color: undefined,
@@ -141,11 +148,16 @@ default to percentages unless you provide `tooltip.callbacks.label`.
 `chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
 independently:
 
-| Mode      | Description                                                |
-| --------- | ---------------------------------------------------------- |
-| `segment` | Draws labels inside each rendered bar segment              |
-| `total`   | Draws one total label at the end of each stacked bar       |
-| `outside` | Draws value labels outside bars, useful for unstacked bars |
+| Mode      | Description                                                                 |
+| --------- | --------------------------------------------------------------------------- |
+| `segment` | Draws labels inside each rendered bar segment                               |
+| `total`   | Draws one total label at the end of each stacked bar (outside the bar)      |
+| `inside`  | Draws one total label at the end of each stacked bar, placed inside the bar |
+| `outside` | Draws value labels outside bars, useful for unstacked bars                  |
+
+`inside` is useful when `total` labels would overlap the legend (e.g., `position: 'fill'` with
+`orientation: 'vertical'`). It shows the same raw stack total as `total` but uses
+`anchor: 'end', align: 'start'` so the text extends inward rather than protruding beyond the bar.
 
 `segment.value` and `outside.value` accept:
 
