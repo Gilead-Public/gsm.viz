@@ -37,7 +37,12 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 .sort((a, b) => Number(b.gini) - Number(a.gini));
         }
 
-        function buildSpec(year, data, orientation, position, dynamicSizing) {
+        function buildAnnotations(mode) {
+            if (mode === 'none') return {};
+            return { labels: { [mode]: { display: true } } };
+        }
+
+        function buildSpec(year, data, orientation, position, dynamicSizing, annotationsMode) {
             const countryOrder = data.map((d) => d.country);
 
             return {
@@ -62,6 +67,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 theme: {
                     dynamicSizing,
                 },
+                annotations: buildAnnotations(annotationsMode),
             };
         }
 
@@ -73,7 +79,8 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 data,
                 getValue('gini-orientation'),
                 getValue('gini-position'),
-                getDynamicSizing('gini-dynamic-sizing')
+                getDynamicSizing('gini-dynamic-sizing'),
+                getValue('gini-annotations')
             );
             if (instance) instance.destroy();
             instance = gsmViz.default.bars(container, data, spec);
@@ -86,6 +93,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 'gini-orientation',
                 'gini-position',
                 'gini-dynamic-sizing',
+                'gini-annotations',
             ],
             render
         );
