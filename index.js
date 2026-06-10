@@ -1,4 +1,3 @@
-'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21808,6 +21807,12 @@ var gsmViz = (() => {
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
       throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
     }
+    const colors2 = spec.scales?.fill?.colors;
+    if (colors2 !== void 0) {
+      if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
+        throw new Error("scales.fill.colors must be a plain object");
+      }
+    }
   }
 
   // src/bars/defaults.js
@@ -21971,7 +21976,9 @@ var gsmViz = (() => {
   }
 
   // src/bars/structureData/darkenHex.js
+  var HEX6_RE = /^#[0-9a-fA-F]{6}$/;
   function darkenHex(hex3) {
+    if (!hex3 || !HEX6_RE.test(hex3)) return hex3;
     const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
     const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
     const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
@@ -22047,7 +22054,9 @@ var gsmViz = (() => {
   function structureData2(spec) {
     const { data, mapping, scales: scales2, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
-    const fillOrder = scales2.fill?.order;
+    const fillColors = scales2.fill?.colors;
+    const fillOrder = fillColors ? Object.keys(fillColors) : scales2.fill?.order;
+    const palette = fillColors ? Object.values(fillColors) : scales2.fill?.palette;
     const activeData = fillKey && fillOrder ? (() => {
       const allowed = new Set(fillOrder.map(String));
       return data.filter((d) => allowed.has(String(d[fillKey])));
@@ -22090,8 +22099,7 @@ var gsmViz = (() => {
     if (fillOrder && fillKey) {
       datasets = reorderDatasets(datasets, fillOrder);
     }
-    const palette = scales2.fill?.palette;
-    if (palette) {
+    if (palette && palette.length > 0) {
       if (fillKey) {
         const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
         datasets.forEach((ds, i) => {

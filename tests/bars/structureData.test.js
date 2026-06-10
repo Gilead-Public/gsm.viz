@@ -1062,3 +1062,119 @@ describe('bars/structureData', () => {
         });
     });
 });
+
+describe('bars/structureData — scales.fill.colors named map', () => {
+    const COLORS = {
+        Completed: '#4e79a7',
+        Discontinued: '#e15759',
+        Ongoing: '#59a14f',
+    };
+
+    const data = [
+        { site: 'A', disposition: 'Completed' },
+        { site: 'A', disposition: 'Ongoing' },
+        { site: 'B', disposition: 'Discontinued' },
+    ];
+
+    const baseSpec = {
+        data,
+        mapping: { x: 'site', fill: 'disposition' },
+        orientation: 'vertical',
+        scales: { x: {}, y: {} },
+    };
+
+    test('assigns backgroundColor from colors map by name', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { x: {}, y: {}, fill: { colors: COLORS } },
+        };
+        const result = structureData(spec);
+        const byName = Object.fromEntries(
+            result.datasets.map((ds) => [ds.label, ds.backgroundColor])
+        );
+        expect(byName['Completed']).toBe('#4e79a7');
+        expect(byName['Discontinued']).toBe('#e15759');
+        expect(byName['Ongoing']).toBe('#59a14f');
+    });
+
+    test('orders datasets according to keys of colors map', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { x: {}, y: {}, fill: { colors: COLORS } },
+        };
+        const result = structureData(spec);
+        expect(result.datasets.map((ds) => ds.label)).toEqual([
+            'Completed',
+            'Discontinued',
+            'Ongoing',
+        ]);
+    });
+
+    test('acts as an allowlist: fill values not in colors map are excluded', () => {
+        const dataWithExtra = [
+            ...data,
+            { site: 'C', disposition: 'Screen Failure' },
+        ];
+        const spec = {
+            ...baseSpec,
+            data: dataWithExtra,
+            scales: { x: {}, y: {}, fill: { colors: COLORS } },
+        };
+        const result = structureData(spec);
+        const labels = result.datasets.map((ds) => ds.label);
+        expect(labels).not.toContain('Screen Failure');
+    });
+
+    test('colors takes precedence over separately provided palette + order', () => {
+        const spec = {
+            ...baseSpec,
+            scales: {
+                x: {},
+                y: {},
+                fill: {
+                    colors: COLORS,
+                    order: ['Ongoing', 'Completed', 'Discontinued'],
+                    palette: ['#000000', '#111111', '#222222'],
+                },
+            },
+        };
+        const result = structureData(spec);
+        const byName = Object.fromEntries(
+            result.datasets.map((ds) => [ds.label, ds.backgroundColor])
+        );
+        // colors wins — original COLORS map values used, COLORS key order wins
+        expect(byName['Completed']).toBe('#4e79a7');
+        expect(byName['Discontinued']).toBe('#e15759');
+        expect(byName['Ongoing']).toBe('#59a14f');
+        expect(result.datasets.map((ds) => ds.label)).toEqual([
+            'Completed',
+            'Discontinued',
+            'Ongoing',
+        ]);
+    });
+
+    test('applies darkenHex border when colors map is used', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { x: {}, y: {}, fill: { colors: COLORS } },
+        };
+        const result = structureData(spec);
+        result.datasets.forEach((ds) => {
+            expect(ds.borderWidth).toBe(1);
+            expect(ds.borderRadius).toBe(2);
+            expect(typeof ds.borderColor).toBe('string');
+        });
+    });
+
+    test('empty colors map ({}) does not set backgroundColor (no NaN from %0)', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { x: {}, y: {}, fill: { colors: {} } },
+        };
+        // All rows are excluded (empty allowlist), no datasets
+        const result = structureData(spec);
+        result.datasets.forEach((ds) => {
+            expect(ds.backgroundColor).toBeUndefined();
+        });
+    });
+});
