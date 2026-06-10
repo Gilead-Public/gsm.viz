@@ -21875,7 +21875,10 @@ var gsmViz = (() => {
         }
       }
     },
-    tooltip: {},
+    tooltip: {
+      format: void 0,
+      formatter: void 0
+    },
     theme: {
       maintainAspectRatio: false,
       animation: false,
@@ -22161,11 +22164,100 @@ var gsmViz = (() => {
     return `${prefix}${pct.toFixed(1)}%`;
   }
 
+  // src/bars/getPlugins/formatTooltipLabel.js
+  function getValueKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "x" : "y";
+  }
+  function getCategoryKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "y" : "x";
+  }
+  function getPoint2(context) {
+    return context.dataset.data[context.dataIndex];
+  }
+  function getRawValue(point, context) {
+    if (point?._rawY !== void 0) return Number(point._rawY) || 0;
+    const val = point?.[getValueKey(context)];
+    return Number(val) || 0;
+  }
+  function getCategory(point, context) {
+    return point?.[getCategoryKey(context)];
+  }
+  function isDatasetVisible(chart, datasetIndex) {
+    return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
+  }
+  function getRawTotal(context) {
+    const point = getPoint2(context);
+    const category = getCategory(point, context);
+    return context.chart.data.datasets.reduce(
+      (total, dataset, datasetIndex) => {
+        if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+        const match = dataset.data.find(
+          (p) => getCategory(p, context) === category
+        );
+        return total + getRawValue(match, context);
+      },
+      0
+    );
+  }
+  function buildPrefix(context) {
+    return context.dataset.label ? `${context.dataset.label}: ` : "";
+  }
+  function buildFormatCallback(format2) {
+    return function formatLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const prefix = buildPrefix(context);
+      switch (format2) {
+        case "count":
+          return `${prefix}${count}`;
+        case "percent":
+          return `${prefix}${percent.toFixed(1)}%`;
+        case "percent+count":
+          return `${prefix}${percent.toFixed(1)}% (${count})`;
+        case "count+percent":
+        default:
+          return `${prefix}${count} (${percent.toFixed(1)}%)`;
+      }
+    };
+  }
+  function buildFormatterCallback(formatter2) {
+    return function formatterLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const fill2 = point?._fill;
+      const datum2 = point?._datum;
+      return formatter2(count, context, { percent, total, fill: fill2, datum: datum2 });
+    };
+  }
+
   // src/bars/getPlugins/buildTooltip.js
   function buildTooltip(tooltip5, position) {
-    const base = { enabled: true, ...tooltip5 };
-    if (position !== "fill") return base;
+    const { format: format2, formatter: formatter2, ...rest } = tooltip5 || {};
+    const base = { enabled: true, ...rest };
     if (base.callbacks?.label) return base;
+    if (typeof formatter2 === "function") {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatterCallback(formatter2)
+        }
+      };
+    }
+    if (format2) {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatCallback(format2)
+        }
+      };
+    }
+    if (position !== "fill") return base;
     return {
       ...base,
       callbacks: {
@@ -22176,44 +22268,44 @@ var gsmViz = (() => {
   }
 
   // src/bars/getPlugins/dataLabels.js
-  function getValueKey(context) {
+  function getValueKey2(context) {
     return context.chart.options?.indexAxis === "y" ? "x" : "y";
   }
-  function getCategoryKey(context) {
+  function getCategoryKey2(context) {
     return context.chart.options?.indexAxis === "y" ? "y" : "x";
   }
   function toNumber(value) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : 0;
   }
-  function getPoint2(context) {
+  function getPoint3(context) {
     return context.dataset.data[context.dataIndex];
   }
   function getRenderedValue(point, context) {
-    return toNumber(point?.[getValueKey(context)]);
+    return toNumber(point?.[getValueKey2(context)]);
   }
-  function getRawValue(point, context) {
+  function getRawValue2(point, context) {
     return point?._rawY !== void 0 ? toNumber(point._rawY) : getRenderedValue(point, context);
   }
-  function getCategory(point, context) {
-    return point?.[getCategoryKey(context)];
+  function getCategory2(point, context) {
+    return point?.[getCategoryKey2(context)];
   }
-  function isDatasetVisible(chart, datasetIndex) {
+  function isDatasetVisible2(chart, datasetIndex) {
     return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
   }
   function findPointForCategory(dataset, category, context) {
     return dataset.data.find(
-      (point) => getCategory(point, context) === category
+      (point) => getCategory2(point, context) === category
     );
   }
-  function getRawTotal(context) {
-    const point = getPoint2(context);
-    const category = getCategory(point, context);
+  function getRawTotal2(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
     return context.chart.data.datasets.reduce(
       (total, dataset, datasetIndex) => {
-        if (!isDatasetVisible(context.chart, datasetIndex)) return total;
+        if (!isDatasetVisible2(context.chart, datasetIndex)) return total;
         const match = findPointForCategory(dataset, category, context);
-        return total + getRawValue(match, context);
+        return total + getRawValue2(match, context);
       },
       0
     );
@@ -22224,14 +22316,14 @@ var gsmViz = (() => {
   function getPercentValue(point, context, spec) {
     const rendered = getRenderedValue(point, context);
     if (getSpec(context, spec)?.position === "fill") return rendered;
-    const total = getRawTotal(context);
-    return total === 0 ? 0 : getRawValue(point, context) / total * 100;
+    const total = getRawTotal2(context);
+    return total === 0 ? 0 : getRawValue2(point, context) / total * 100;
   }
   function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? "auto";
     const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
     if (mode === "total" || mode === "inside") {
-      return { value: getRawTotal(context), valueType: "raw" };
+      return { value: getRawTotal2(context), valueType: "raw" };
     }
     if (valueType === "percent") {
       return {
@@ -22246,7 +22338,7 @@ var gsmViz = (() => {
       };
     }
     return {
-      value: getRawValue(point, context),
+      value: getRawValue2(point, context),
       valueType: "raw"
     };
   }
@@ -22268,7 +22360,7 @@ var gsmViz = (() => {
         mode,
         valueType,
         point,
-        total: mode === "total" ? value : getRawTotal(context)
+        total: mode === "total" ? value : getRawTotal2(context)
       };
       return options.formatter(value, context, details);
     }
@@ -22281,14 +22373,14 @@ var gsmViz = (() => {
     return defaultFormat(value, valueType);
   }
   function hasVisibleValueForCategory(context, datasetIndex, category) {
-    if (!isDatasetVisible(context.chart, datasetIndex)) return false;
+    if (!isDatasetVisible2(context.chart, datasetIndex)) return false;
     const dataset = context.chart.data.datasets[datasetIndex];
     const point = findPointForCategory(dataset, category, context);
-    return Math.abs(getRawValue(point, context)) > 0;
+    return Math.abs(getRawValue2(point, context)) > 0;
   }
   function isLastVisibleDatasetForCategory(context) {
-    const point = getPoint2(context);
-    const category = getCategory(point, context);
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
     for (let i = context.chart.data.datasets.length - 1; i >= context.datasetIndex; i--) {
       if (hasVisibleValueForCategory(context, i, category)) {
         return i === context.datasetIndex;
