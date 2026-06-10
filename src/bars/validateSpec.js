@@ -49,4 +49,15 @@ export default function validateSpec(data, spec) {
     ) {
         throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
     }
+
+    const colors = spec.scales?.fill?.colors;
+    if (colors !== undefined) {
+        if (
+            colors === null ||
+            typeof colors !== 'object' ||
+            Array.isArray(colors)
+        ) {
+            throw new Error('scales.fill.colors must be a plain object');
+        }
+    }
 }
