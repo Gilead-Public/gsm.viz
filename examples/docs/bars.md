@@ -93,7 +93,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         },
     },
     tooltip: {
-        // Chart.js tooltip options and callbacks
+        format: undefined,     // built-in format: 'count' | 'percent' | 'count+percent' | 'percent+count'
+        formatter: undefined,  // (count, context, details) => string — full custom control
+        // All standard Chart.js tooltip plugin options and callbacks are also supported.
+        // callbacks.label takes precedence over format / formatter.
     },
     theme: {
         maintainAspectRatio: false,
@@ -121,6 +124,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `theme.animation`                    | `false`                        |
 | `theme.dynamicSizing`                | `false`                        |
 | `theme.dynamicCategoryAxis`          | `false`                        |
+| `tooltip.format`                     | `undefined`                    |
+| `tooltip.formatter`                  | `undefined`                    |
 
 ### Mapping modes
 
@@ -215,6 +220,88 @@ gsmViz.default.bars(element, data, {
                 display: true,
                 format: '.1f',
             },
+        },
+    },
+});
+```
+
+### Tooltip
+
+The `tooltip` spec key is passed through to the Chart.js [tooltip plugin](https://www.chartjs.org/docs/latest/configuration/tooltip.html), so any native Chart.js tooltip option works as-is. Two additional convenience keys — `format` and `formatter` — are provided for the most common formatting patterns.
+
+#### Built-in point data
+
+Each bar point carries these extra properties that are accessible inside any tooltip callback via `context.dataset.data[context.dataIndex]`:
+
+| Property | Description |
+| -------- | ----------- |
+| `_rawY`  | Pre-normalization value when `position: 'fill'` is used; otherwise the same as the rendered value |
+| `_datum` | The original input row (or, in count mode, the array of rows that make up the bar) |
+| `_fill`  | The fill group value assigned to this segment |
+
+#### `tooltip.format`
+
+A shorthand string that injects a pre-built `label` callback. The prefix (`"Label: "`) is omitted when no `mapping.fill` is set.
+
+| Value | Output example |
+| ----- | -------------- |
+| `'count'` | `"Treated: 42"` |
+| `'percent'` | `"Treated: 33.3%"` |
+| `'count+percent'` | `"Treated: 42 (33.3%)"` |
+| `'percent+count'` | `"Treated: 33.3% (42)"` |
+
+The percentage is always the segment's raw count divided by the visible category total (the same denominator used by `annotations.labels.segment` with `value: 'percent'`).
+
+#### `tooltip.formatter`
+
+A callback for full control over the tooltip label line. Called as:
+
+```
+formatter(count, context, details)
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `count` | `number` | Raw count / value for this segment |
+| `context` | `Object` | Standard Chart.js tooltip callback context |
+| `details` | `Object` | `{ percent, total, fill, datum }` |
+| `details.percent` | `number` | Percentage of category total (0–100) |
+| `details.total` | `number` | Sum of raw values across all visible datasets for this category |
+| `details.fill` | `*` | Fill group value (`_fill`) for this segment |
+| `details.datum` | `*` | Original input row (`_datum`) |
+
+#### Precedence
+
+1. `tooltip.callbacks.label` — used as-is (standard Chart.js)
+2. `tooltip.formatter` — takes priority over `format`
+3. `tooltip.format` — built-in formatted callback
+4. `position: 'fill'` default — percentage callback injected when none of the above are present
+5. Chart.js default tooltip label
+
+#### Examples
+
+```js
+// Built-in count+percent format
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', fill: 'flag' },
+    tooltip: { format: 'count+percent' },
+});
+
+// Custom formatter with enriched context
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'count', fill: 'flag' },
+    tooltip: {
+        formatter: (count, context, { percent, total, fill }) =>
+            `${fill}: ${count} of ${total} (${percent.toFixed(1)}%)`,
+    },
+});
+
+// Raw Chart.js callback (always supported)
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'value' },
+    tooltip: {
+        callbacks: {
+            label: (ctx) => `Value: ${ctx.parsed.y.toFixed(2)}`,
         },
     },
 });

@@ -68,7 +68,10 @@ const defaults = {
             },
         },
     },
-    tooltip: {},
+    tooltip: {
+        format: undefined,
+        formatter: undefined,
+    },
     theme: {
         maintainAspectRatio: false,
         animation: false,
