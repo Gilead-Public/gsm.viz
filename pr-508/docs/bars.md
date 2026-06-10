@@ -245,7 +245,7 @@ const RETENTION_COLORS = {
     Ongoing: '#59a14f',
 };
 
-bars(element, data, {
+gsmViz.default.bars(element, data, {
     mapping: { x: 'site', fill: 'disposition' },
     scales: { fill: { colors: RETENTION_COLORS } },
 });
