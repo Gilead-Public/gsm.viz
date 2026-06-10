@@ -117,14 +117,14 @@ function formatLabel(point, context, options, mode, spec) {
         mode,
         spec
     );
-    const details = {
-        mode,
-        valueType,
-        point,
-        total: mode === 'total' ? value : getRawTotal(context),
-    };
 
     if (typeof options.formatter === 'function') {
+        const details = {
+            mode,
+            valueType,
+            point,
+            total: mode === 'total' ? value : getRawTotal(context),
+        };
         return options.formatter(value, context, details);
     }
 
