@@ -1,4 +1,3 @@
-'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21810,7 +21809,7 @@ var gsmViz = (() => {
     }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
-      if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2)) {
+      if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
         throw new Error("scales.fill.colors must be a plain object");
       }
     }
@@ -22100,7 +22099,7 @@ var gsmViz = (() => {
     if (fillOrder && fillKey) {
       datasets = reorderDatasets(datasets, fillOrder);
     }
-    if (palette) {
+    if (palette && palette.length > 0) {
       if (fillKey) {
         const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
         datasets.forEach((ds, i) => {

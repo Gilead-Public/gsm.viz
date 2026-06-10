@@ -84,7 +84,7 @@ export default function structureData(spec) {
         datasets = reorderDatasets(datasets, fillOrder);
     }
 
-    if (palette) {
+    if (palette && palette.length > 0) {
         if (fillKey) {
             const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
             datasets.forEach((ds, i) => {

@@ -141,5 +141,37 @@ describe('bars/validateSpec', () => {
                 })
             ).not.toThrow();
         });
+
+        test('throws when scales.fill.colors is a Map instance', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b', fill: 'group' },
+                    scales: { fill: { colors: new Map([['Red', '#ff0000']]) } },
+                })
+            ).toThrow('scales.fill.colors must be a plain object');
+        });
+
+        test('throws when scales.fill.colors is a class instance', () => {
+            class MyColors {}
+            const instance = new MyColors();
+            instance.Red = '#ff0000';
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b', fill: 'group' },
+                    scales: { fill: { colors: instance } },
+                })
+            ).toThrow('scales.fill.colors must be a plain object');
+        });
+
+        test('does not throw for a null-prototype object', () => {
+            const nullProto = Object.create(null);
+            nullProto.Red = '#ff0000';
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b', fill: 'group' },
+                    scales: { fill: { colors: nullProto } },
+                })
+            ).not.toThrow();
+        });
     });
 });

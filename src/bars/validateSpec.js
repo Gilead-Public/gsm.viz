@@ -55,7 +55,9 @@ export default function validateSpec(data, spec) {
         if (
             colors === null ||
             typeof colors !== 'object' ||
-            Array.isArray(colors)
+            Array.isArray(colors) ||
+            (Object.getPrototypeOf(colors) !== Object.prototype &&
+                Object.getPrototypeOf(colors) !== null)
         ) {
             throw new Error('scales.fill.colors must be a plain object');
         }

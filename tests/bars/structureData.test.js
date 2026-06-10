@@ -1165,4 +1165,16 @@ describe('bars/structureData — scales.fill.colors named map', () => {
             expect(typeof ds.borderColor).toBe('string');
         });
     });
+
+    test('empty colors map ({}) does not set backgroundColor (no NaN from %0)', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { x: {}, y: {}, fill: { colors: {} } },
+        };
+        // All rows are excluded (empty allowlist), no datasets
+        const result = structureData(spec);
+        result.datasets.forEach((ds) => {
+            expect(ds.backgroundColor).toBeUndefined();
+        });
+    });
 });
