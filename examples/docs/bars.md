@@ -250,7 +250,7 @@ A shorthand string that injects a pre-built `label` callback. The prefix (`"Labe
 | `'count+percent'` | `"Treated: 42 (33.3%)"` |
 | `'percent+count'` | `"Treated: 33.3% (42)"` |
 
-The percentage is always the segment's raw count divided by the visible category total (the same denominator used by `annotations.labels.segment` with `value: 'percent'`).
+The percentage is always the segment's raw count divided by the **full** category total across all groups — including groups currently hidden via the legend (the same denominator used by `annotations.labels.segment` with `value: 'percent'`). Hiding a legend group does not change the denominator.
 
 #### `tooltip.formatter`
 
@@ -266,7 +266,7 @@ formatter(count, context, details)
 | `context`         | `Object` | Standard Chart.js tooltip callback context                      |
 | `details`         | `Object` | `{ percent, total, fill, datum }`                               |
 | `details.percent` | `number` | Percentage of category total (0–100)                            |
-| `details.total`   | `number` | Sum of raw values across all visible datasets for this category |
+| `details.total`   | `number` | Sum of raw values across **all** datasets for this category (including legend-hidden groups) |
 | `details.fill`    | `*`      | Fill group value (`_fill`) for this segment                     |
 | `details.datum`   | `*`      | Original input row (`_datum`)                                   |
 
