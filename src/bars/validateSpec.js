@@ -68,7 +68,9 @@ export default function validateSpec(data, spec) {
         if (
             callbacks === null ||
             typeof callbacks !== 'object' ||
-            Array.isArray(callbacks)
+            Array.isArray(callbacks) ||
+            (Object.getPrototypeOf(callbacks) !== Object.prototype &&
+                Object.getPrototypeOf(callbacks) !== null)
         ) {
             throw new Error('spec.callbacks must be a plain object');
         }
