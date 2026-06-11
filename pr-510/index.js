@@ -21820,10 +21820,14 @@ var gsmViz = (() => {
         throw new Error("spec.callbacks must be a plain object");
       }
       if (callbacks.onClick !== void 0 && callbacks.onClick !== null && typeof callbacks.onClick !== "function") {
-        throw new Error("spec.callbacks.onClick must be a function or null");
+        throw new Error(
+          "spec.callbacks.onClick must be a function or null"
+        );
       }
       if (callbacks.onHover !== void 0 && callbacks.onHover !== null && typeof callbacks.onHover !== "function") {
-        throw new Error("spec.callbacks.onHover must be a function or null");
+        throw new Error(
+          "spec.callbacks.onHover must be a function or null"
+        );
       }
     }
   }
