@@ -957,6 +957,187 @@ describe('bars/getPlugins', () => {
             expect(inside.color).toBe('#ffffff');
             expect(inside.font).toEqual({ weight: 'bold' });
         });
+
+        test('total annotation shows visible-only total when a group is disabled via legend', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { total: { display: true } } },
+            });
+            const total = plugins.datalabels.labels.total;
+            // Dataset 0 (A=10) is hidden; only B=20 is visible.
+            const context = makeContext({
+                datasetIndex: 1,
+                datasets,
+                hidden: [0],
+            });
+
+            expect(total.formatter(datasets[1].data[0], context)).toBe('20');
+        });
+
+        test('total annotation still shows full total when all groups are visible', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { total: { display: true } } },
+            });
+            const total = plugins.datalabels.labels.total;
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(total.formatter(datasets[1].data[0], context)).toBe('30');
+        });
+
+        test('inside annotation shows visible-only total when a group is disabled via legend', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { inside: { display: true } } },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            // Dataset 0 (A=10) is hidden; only B=20 is visible.
+            const context = makeContext({
+                datasetIndex: 1,
+                datasets,
+                hidden: [0],
+            });
+
+            expect(inside.formatter(datasets[1].data[0], context)).toBe('20');
+        });
+
+        test('inside annotation still shows full total when all groups are visible', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { inside: { display: true } } },
+            });
+            const inside = plugins.datalabels.labels.inside;
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(inside.formatter(datasets[1].data[0], context)).toBe('30');
+        });
+
+        test('total annotation excludes dynamicCategoryAxis-hidden groups', () => {
+            const datasets = [
+                {
+                    label: 'A',
+                    data: [],
+                    _backup_: [{ x: 'cat', y: 10 }],
+                },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { total: { display: true } } },
+            });
+            const total = plugins.datalabels.labels.total;
+            // Dataset 0 hidden via dynamicCategoryAxis (_backup_ set, isDatasetVisible false)
+            const context = makeContext({
+                datasetIndex: 1,
+                datasets,
+                hidden: [0],
+            });
+
+            expect(total.formatter(datasets[1].data[0], context)).toBe('20');
+        });
+
+        describe('segment label dynamic contrast color', () => {
+            function makeContextWithBg(backgroundColor) {
+                return {
+                    datasetIndex: 0,
+                    dataIndex: 0,
+                    dataset: {
+                        data: [{ x: 'A', y: 10 }],
+                        backgroundColor,
+                    },
+                    chart: {
+                        data: { datasets: [{ data: [{ x: 'A', y: 10 }] }] },
+                        options: { indexAxis: 'x' },
+                        isDatasetVisible: () => true,
+                        getDatasetMeta: () => ({ data: [{ height: 30 }] }),
+                    },
+                };
+            }
+
+            test('segment color is a function when no explicit color is set', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                expect(typeof plugins.datalabels.labels.segment.color).toBe(
+                    'function'
+                );
+            });
+
+            test('returns white text for dark bar (#4e79a7)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#4e79a7');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#ffffff'
+                );
+            });
+
+            test('returns white text for dark bar (#9c755f)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#9c755f');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#ffffff'
+                );
+            });
+
+            test('returns dark text for light bar (#edc948)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#edc948');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#333333'
+                );
+            });
+
+            test('explicit color option overrides dynamic color', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, color: '#ff0000' },
+                        },
+                    },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe(
+                    '#ff0000'
+                );
+            });
+
+            test('falls back to dark text when backgroundColor is missing', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg(undefined);
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#333333'
+                );
+            });
+        });
     });
 
     describe('tooltip', () => {

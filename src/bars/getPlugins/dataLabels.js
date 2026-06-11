@@ -1,4 +1,5 @@
 import { format as d3Format } from 'd3';
+import getContrastColor from '../structureData/getContrastColor.js';
 
 function getValueKey(context) {
     return context.chart.options?.indexAxis === 'y' ? 'x' : 'y';
@@ -62,6 +63,23 @@ function getRawTotal(context) {
     }, 0);
 }
 
+// Sum only datasets that are currently visible (not hidden by legend toggle or
+// dynamicCategoryAxis). Used for total/inside annotation labels so the displayed
+// total reflects what the user sees.
+function getVisibleRawTotal(context) {
+    const point = getPoint(context);
+    const category = getCategory(point, context);
+
+    return context.chart.data.datasets.reduce((total, dataset, i) => {
+        if (dataset._backup_) return total;
+        if (!isDatasetVisible(context.chart, i)) return total;
+        const match = dataset.data.find(
+            (p) => getCategory(p, context) === category
+        );
+        return total + getRawValue(match, context);
+    }, 0);
+}
+
 function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
 }
@@ -84,7 +102,7 @@ function resolveLabelValue(point, context, options, mode, spec) {
             : configuredValue;
 
     if (mode === 'total' || mode === 'inside') {
-        return { value: getRawTotal(context), valueType: 'raw' };
+        return { value: getVisibleRawTotal(context), valueType: 'raw' };
     }
 
     if (valueType === 'percent') {
@@ -128,7 +146,7 @@ function formatLabel(point, context, options, mode, spec) {
             mode,
             valueType,
             point,
-            total: mode === 'total' ? value : getRawTotal(context),
+            total: (mode === 'total' || mode === 'inside') ? value : getRawTotal(context),
         };
         return options.formatter(value, context, details);
     }
@@ -194,16 +212,26 @@ function withStyle(config, options) {
 }
 
 function buildSegmentLabel(options, spec) {
-    return withStyle(
-        {
-            display: (context) => isLargeEnoughForSegment(context, options),
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'segment', spec),
-            anchor: () => 'center',
-            align: () => 'center',
-        },
-        options
-    );
+    const config = {
+        display: (context) => isLargeEnoughForSegment(context, options),
+        formatter: (value, context) =>
+            formatLabel(value, context, options, 'segment', spec),
+        anchor: () => 'center',
+        align: () => 'center',
+    };
+
+    if (options.color !== undefined) {
+        config.color = options.color;
+    } else {
+        config.color = (context) =>
+            getContrastColor(context.dataset.backgroundColor);
+    }
+
+    if (options.font !== undefined) {
+        config.font = options.font;
+    }
+
+    return config;
 }
 
 function buildTotalLabel(options, spec) {
