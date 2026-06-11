@@ -193,4 +193,45 @@ describe('bars/updateSpec', () => {
             'inside'
         );
     });
+
+    describe('nCategories + _nExcluded wiring', () => {
+        const manyData = [
+            { category: 'A', value: 5 },
+            { category: 'B', value: 30 },
+            { category: 'C', value: 10 },
+            { category: 'D', value: 20 },
+            { category: 'E', value: 1 },
+        ];
+
+        test('updateSpec sets _nExcluded on merged spec so caption renders', () => {
+            const chart = bars(container, manyData, {
+                mapping: { x: 'category', y: 'value' },
+            });
+            updateSpec(chart, {
+                nCategories: 3,
+                scales: { x: { label: 'Category', sort: 'total' } },
+            });
+            expect(chart.data._spec_._nExcluded).toBe(2);
+            expect(chart.options.plugins.subtitle.text).toContain(
+                'Displaying top 3 values of Category by total. Remaining 2 values of Category are hidden.'
+            );
+        });
+
+        test('updateData sets _nExcluded on merged spec so caption renders', () => {
+            const chart = bars(container, manyData, {
+                mapping: { x: 'category', y: 'value' },
+                nCategories: 3,
+                scales: { x: { label: 'Category', sort: 'total' } },
+            });
+            updateData(chart, manyData, {
+                mapping: { x: 'category', y: 'value' },
+                nCategories: 2,
+                scales: { x: { label: 'Category', sort: 'total' } },
+            });
+            expect(chart.data._spec_._nExcluded).toBe(3);
+            expect(chart.options.plugins.subtitle.text).toContain(
+                'Displaying top 2 values of Category by total. Remaining 3 values of Category are hidden.'
+            );
+        });
+    });
 });

@@ -22697,7 +22697,7 @@ var gsmViz = (() => {
       legend5.onClick = dynamicCategoryLegendOnClick;
     }
     const captionsRaw = labels.captions;
-    const captionsArray = Array.isArray(captionsRaw) ? captionsRaw : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
+    const captionsArray = Array.isArray(captionsRaw) ? [...captionsRaw] : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
     const nExcluded = spec._nExcluded;
     if (spec.nCategories && (scales2.x?.sort === "total" || scales2.x?.sort === void 0) && nExcluded > 0) {
       const xLabel = scales2.x?.label || mapping?.x || "category";
@@ -22727,7 +22727,8 @@ var gsmViz = (() => {
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
     const merged = mergeSpec(data, spec);
-    const { datasets, labels } = structureData2(merged);
+    const { datasets, labels, nExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;

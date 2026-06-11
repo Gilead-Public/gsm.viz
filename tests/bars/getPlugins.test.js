@@ -1468,5 +1468,19 @@ describe('bars/getPlugins', () => {
                 'Displaying top 5 values of Site by total. Remaining 1 values of Site are hidden.'
             );
         });
+
+        test('does not mutate a user-supplied captions array', () => {
+            const userCaptions = ['Note: preliminary data.'];
+            const spec = {
+                ...baseSpec,
+                labels: { captions: userCaptions },
+                nCategories: 5,
+                _nExcluded: 2,
+            };
+            getPlugins(spec);
+            // The original array must remain unchanged
+            expect(userCaptions).toHaveLength(1);
+            expect(userCaptions[0]).toBe('Note: preliminary data.');
+        });
     });
 });

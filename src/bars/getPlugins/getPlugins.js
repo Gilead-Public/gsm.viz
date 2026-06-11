@@ -35,7 +35,7 @@ export default function getPlugins(spec) {
 
     const captionsRaw = labels.captions;
     const captionsArray = Array.isArray(captionsRaw)
-        ? captionsRaw
+        ? [...captionsRaw]
         : captionsRaw != null && captionsRaw !== ''
         ? [captionsRaw]
         : [];
