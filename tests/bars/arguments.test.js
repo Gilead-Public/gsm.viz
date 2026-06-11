@@ -107,6 +107,7 @@ describe('bars entry point', () => {
         expect(instance.helpers).toBeDefined();
         expect(typeof instance.helpers.updateData).toBe('function');
         expect(typeof instance.helpers.updateSpec).toBe('function');
+        expect(typeof instance.helpers.exportImage).toBe('function');
     });
 
     test('stores the merged spec on chart.data._spec_', () => {

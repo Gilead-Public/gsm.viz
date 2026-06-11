@@ -193,6 +193,12 @@ Promise.all(dataPromises)
             )
         );
 
+        document
+            .getElementById('kri-export-btn')
+            .addEventListener('click', () =>
+                instance.helpers.exportImage(instance, 'kri-by-flag.png')
+            );
+
         function rerender() {
             hoverTableEl.innerHTML = '';
             scatterContainerEl.innerHTML = '';
