@@ -21850,6 +21850,7 @@ var gsmViz = (() => {
       labels: {
         segment: {
           display: false,
+          placement: "center",
           value: "auto",
           format: void 0,
           formatter: void 0,
@@ -21859,21 +21860,7 @@ var gsmViz = (() => {
         },
         total: {
           display: false,
-          format: void 0,
-          formatter: void 0,
-          color: void 0,
-          font: void 0
-        },
-        inside: {
-          display: false,
-          format: void 0,
-          formatter: void 0,
-          color: void 0,
-          font: void 0
-        },
-        outside: {
-          display: false,
-          value: "auto",
+          placement: "outside",
           format: void 0,
           formatter: void 0,
           color: void 0,
@@ -21881,7 +21868,10 @@ var gsmViz = (() => {
         }
       }
     },
-    tooltip: {},
+    tooltip: {
+      format: void 0,
+      formatter: void 0
+    },
     theme: {
       maintainAspectRatio: false,
       animation: false,
@@ -22170,11 +22160,96 @@ var gsmViz = (() => {
     return `${prefix}${pct.toFixed(1)}%`;
   }
 
+  // src/bars/getPlugins/formatTooltipLabel.js
+  function getValueKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "x" : "y";
+  }
+  function getCategoryKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "y" : "x";
+  }
+  function getPoint2(context) {
+    return context.dataset.data[context.dataIndex];
+  }
+  function getRawValue(point, context) {
+    if (point?._rawY !== void 0) return Number(point._rawY) || 0;
+    const val = point?.[getValueKey(context)];
+    return Number(val) || 0;
+  }
+  function getCategory(point, context) {
+    return point?.[getCategoryKey(context)];
+  }
+  function getDataForTotal(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+  }
+  function getRawTotal(context) {
+    const point = getPoint2(context);
+    const category = getCategory(point, context);
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = getDataForTotal(dataset).find(
+        (p) => getCategory(p, context) === category
+      );
+      return total + getRawValue(match, context);
+    }, 0);
+  }
+  function buildPrefix(context) {
+    return context.dataset.label ? `${context.dataset.label}: ` : "";
+  }
+  function buildFormatCallback(format2) {
+    return function formatLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const prefix = buildPrefix(context);
+      switch (format2) {
+        case "count":
+          return `${prefix}${count}`;
+        case "percent":
+          return `${prefix}${percent.toFixed(1)}%`;
+        case "percent+count":
+          return `${prefix}${percent.toFixed(1)}% (${count})`;
+        case "count+percent":
+        default:
+          return `${prefix}${count} (${percent.toFixed(1)}%)`;
+      }
+    };
+  }
+  function buildFormatterCallback(formatter2) {
+    return function formatterLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const fill2 = point?._fill;
+      const datum2 = point?._datum;
+      return formatter2(count, context, { percent, total, fill: fill2, datum: datum2 });
+    };
+  }
+
   // src/bars/getPlugins/buildTooltip.js
   function buildTooltip(tooltip5, position) {
-    const base = { enabled: true, ...tooltip5 };
-    if (position !== "fill") return base;
+    const { format: format2, formatter: formatter2, ...rest } = tooltip5 || {};
+    const base = { enabled: true, ...rest };
     if (base.callbacks?.label) return base;
+    if (typeof formatter2 === "function") {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatterCallback(formatter2)
+        }
+      };
+    }
+    if (format2) {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatCallback(format2)
+        }
+      };
+    }
+    if (position !== "fill") return base;
     return {
       ...base,
       callbacks: {
@@ -22184,48 +22259,83 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/structureData/getContrastColor.js
+  var HEX6_RE2 = /^#[0-9a-fA-F]{6}$/;
+  var LIGHT_TEXT = "#ffffff";
+  var DARK_TEXT = "#333333";
+  var L_DARK_TEXT = 0.0332;
+  function toLinear(c) {
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function relativeLuminance(r, g, b) {
+    return 0.2126 * toLinear(r / 255) + 0.7152 * toLinear(g / 255) + 0.0722 * toLinear(b / 255);
+  }
+  function getContrastColor(hex3) {
+    if (!hex3 || !HEX6_RE2.test(hex3)) return DARK_TEXT;
+    const r = parseInt(hex3.slice(1, 3), 16);
+    const g = parseInt(hex3.slice(3, 5), 16);
+    const b = parseInt(hex3.slice(5, 7), 16);
+    const L = relativeLuminance(r, g, b);
+    const contrastWithLight = (1 + 0.05) / (L + 0.05);
+    const contrastWithDark = (L + 0.05) / (L_DARK_TEXT + 0.05);
+    return contrastWithLight >= contrastWithDark ? LIGHT_TEXT : DARK_TEXT;
+  }
+
   // src/bars/getPlugins/dataLabels.js
-  function getValueKey(context) {
+  function getValueKey2(context) {
     return context.chart.options?.indexAxis === "y" ? "x" : "y";
   }
-  function getCategoryKey(context) {
+  function getCategoryKey2(context) {
     return context.chart.options?.indexAxis === "y" ? "y" : "x";
   }
   function toNumber(value) {
     const numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : 0;
   }
-  function getPoint2(context) {
+  function getPoint3(context) {
     return context.dataset.data[context.dataIndex];
   }
   function getRenderedValue(point, context) {
-    return toNumber(point?.[getValueKey(context)]);
+    return toNumber(point?.[getValueKey2(context)]);
   }
-  function getRawValue(point, context) {
+  function getRawValue2(point, context) {
     return point?._rawY !== void 0 ? toNumber(point._rawY) : getRenderedValue(point, context);
   }
-  function getCategory(point, context) {
-    return point?.[getCategoryKey(context)];
+  function getCategory2(point, context) {
+    return point?.[getCategoryKey2(context)];
   }
   function isDatasetVisible(chart, datasetIndex) {
     return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
   }
   function findPointForCategory(dataset, category, context) {
     return dataset.data.find(
-      (point) => getCategory(point, context) === category
+      (point) => getCategory2(point, context) === category
     );
   }
-  function getRawTotal(context) {
-    const point = getPoint2(context);
-    const category = getCategory(point, context);
-    return context.chart.data.datasets.reduce(
-      (total, dataset, datasetIndex) => {
-        if (!isDatasetVisible(context.chart, datasetIndex)) return total;
-        const match = findPointForCategory(dataset, category, context);
-        return total + getRawValue(match, context);
-      },
-      0
-    );
+  function getDataForTotal2(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+  }
+  function getRawTotal2(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = getDataForTotal2(dataset).find(
+        (p) => getCategory2(p, context) === category
+      );
+      return total + getRawValue2(match, context);
+    }, 0);
+  }
+  function getVisibleRawTotal(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    return context.chart.data.datasets.reduce((total, dataset, i) => {
+      if (dataset._backup_) return total;
+      if (!isDatasetVisible(context.chart, i)) return total;
+      const match = dataset.data.find(
+        (p) => getCategory2(p, context) === category
+      );
+      return total + getRawValue2(match, context);
+    }, 0);
   }
   function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
@@ -22233,14 +22343,14 @@ var gsmViz = (() => {
   function getPercentValue(point, context, spec) {
     const rendered = getRenderedValue(point, context);
     if (getSpec(context, spec)?.position === "fill") return rendered;
-    const total = getRawTotal(context);
-    return total === 0 ? 0 : getRawValue(point, context) / total * 100;
+    const total = getRawTotal2(context);
+    return total === 0 ? 0 : getRawValue2(point, context) / total * 100;
   }
   function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? "auto";
     const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
-    if (mode === "total" || mode === "inside") {
-      return { value: getRawTotal(context), valueType: "raw" };
+    if (mode === "total") {
+      return { value: getVisibleRawTotal(context), valueType: "raw" };
     }
     if (valueType === "percent") {
       return {
@@ -22255,7 +22365,7 @@ var gsmViz = (() => {
       };
     }
     return {
-      value: getRawValue(point, context),
+      value: getRawValue2(point, context),
       valueType: "raw"
     };
   }
@@ -22277,7 +22387,7 @@ var gsmViz = (() => {
         mode,
         valueType,
         point,
-        total: mode === "total" ? value : getRawTotal(context)
+        total: mode === "total" ? value : getRawTotal2(context)
       };
       return options.formatter(value, context, details);
     }
@@ -22293,11 +22403,11 @@ var gsmViz = (() => {
     if (!isDatasetVisible(context.chart, datasetIndex)) return false;
     const dataset = context.chart.data.datasets[datasetIndex];
     const point = findPointForCategory(dataset, category, context);
-    return Math.abs(getRawValue(point, context)) > 0;
+    return Math.abs(getRawValue2(point, context)) > 0;
   }
   function isLastVisibleDatasetForCategory(context) {
-    const point = getPoint2(context);
-    const category = getCategory(point, context);
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
     for (let i = context.chart.data.datasets.length - 1; i >= context.datasetIndex; i--) {
       if (hasVisibleValueForCategory(context, i, category)) {
         return i === context.datasetIndex;
@@ -22321,47 +22431,38 @@ var gsmViz = (() => {
     };
   }
   function buildSegmentLabel(options, spec) {
-    return withStyle(
-      {
-        display: (context) => isLargeEnoughForSegment(context, options),
-        formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
-        anchor: () => "center",
-        align: () => "center"
-      },
-      options
-    );
+    const placement = options.placement ?? "center";
+    const isEnd = placement === "end";
+    const config = {
+      display: (context) => isLargeEnoughForSegment(context, options),
+      formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
+      anchor: () => "end",
+      align: isEnd ? (context) => context.chart.options?.indexAxis === "y" ? "right" : "end" : () => "center"
+    };
+    if (!isEnd) {
+      config.anchor = () => "center";
+    }
+    if (options.color !== void 0) {
+      config.color = options.color;
+    } else if (isEnd) {
+      config.color = "#333333";
+    } else {
+      config.color = (context) => getContrastColor(context.dataset.backgroundColor);
+    }
+    if (options.font !== void 0) {
+      config.font = options.font;
+    }
+    return config;
   }
   function buildTotalLabel(options, spec) {
+    const placement = options.placement ?? "outside";
+    const align = placement === "inside" ? () => "start" : () => "end";
     return withStyle(
       {
         display: (context) => isLastVisibleDatasetForCategory(context),
         formatter: (value, context) => formatLabel(value, context, options, "total", spec),
         anchor: () => "end",
-        align: () => "end",
-        offset: 4
-      },
-      options
-    );
-  }
-  function buildInsideLabel(options, spec) {
-    return withStyle(
-      {
-        display: (context) => isLastVisibleDatasetForCategory(context),
-        formatter: (value, context) => formatLabel(value, context, options, "inside", spec),
-        anchor: () => "end",
-        align: () => "start",
-        offset: 4
-      },
-      options
-    );
-  }
-  function buildOutsideLabel(options, spec) {
-    return withStyle(
-      {
-        display: () => true,
-        formatter: (value, context) => formatLabel(value, context, options, "outside", spec),
-        anchor: () => "end",
-        align: (context) => context.chart.options?.indexAxis === "y" ? "right" : "end",
+        align,
         offset: 4
       },
       options
@@ -22369,7 +22470,7 @@ var gsmViz = (() => {
   }
   function dataLabels2(spec) {
     const labels = spec.annotations?.labels;
-    if (!labels?.segment?.display && !labels?.total?.display && !labels?.inside?.display && !labels?.outside?.display) {
+    if (!labels?.segment?.display && !labels?.total?.display) {
       return {
         display: false
       };
@@ -22380,12 +22481,6 @@ var gsmViz = (() => {
     }
     if (labels.total?.display) {
       config.labels.total = buildTotalLabel(labels.total, spec);
-    }
-    if (labels.inside?.display) {
-      config.labels.inside = buildInsideLabel(labels.inside, spec);
-    }
-    if (labels.outside?.display) {
-      config.labels.outside = buildOutsideLabel(labels.outside, spec);
     }
     return config;
   }
