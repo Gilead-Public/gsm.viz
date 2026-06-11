@@ -22271,6 +22271,28 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/structureData/getContrastColor.js
+  var HEX6_RE2 = /^#[0-9a-fA-F]{6}$/;
+  var LIGHT_TEXT = "#ffffff";
+  var DARK_TEXT = "#333333";
+  var L_DARK_TEXT = 0.0332;
+  function toLinear(c) {
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function relativeLuminance(r, g, b) {
+    return 0.2126 * toLinear(r / 255) + 0.7152 * toLinear(g / 255) + 0.0722 * toLinear(b / 255);
+  }
+  function getContrastColor(hex3) {
+    if (!hex3 || !HEX6_RE2.test(hex3)) return DARK_TEXT;
+    const r = parseInt(hex3.slice(1, 3), 16);
+    const g = parseInt(hex3.slice(3, 5), 16);
+    const b = parseInt(hex3.slice(5, 7), 16);
+    const L = relativeLuminance(r, g, b);
+    const contrastWithLight = (1 + 0.05) / (L + 0.05);
+    const contrastWithDark = (L + 0.05) / (L_DARK_TEXT + 0.05);
+    return contrastWithLight >= contrastWithDark ? LIGHT_TEXT : DARK_TEXT;
+  }
+
   // src/bars/getPlugins/dataLabels.js
   function getValueKey2(context) {
     return context.chart.options?.indexAxis === "y" ? "x" : "y";
@@ -22315,6 +22337,18 @@ var gsmViz = (() => {
       return total + getRawValue2(match, context);
     }, 0);
   }
+  function getVisibleRawTotal(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    return context.chart.data.datasets.reduce((total, dataset, i) => {
+      if (dataset._backup_) return total;
+      if (!isDatasetVisible(context.chart, i)) return total;
+      const match = dataset.data.find(
+        (p) => getCategory2(p, context) === category
+      );
+      return total + getRawValue2(match, context);
+    }, 0);
+  }
   function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
   }
@@ -22328,7 +22362,7 @@ var gsmViz = (() => {
     const configuredValue = options.value ?? "auto";
     const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
     if (mode === "total" || mode === "inside") {
-      return { value: getRawTotal2(context), valueType: "raw" };
+      return { value: getVisibleRawTotal(context), valueType: "raw" };
     }
     if (valueType === "percent") {
       return {
@@ -22365,7 +22399,7 @@ var gsmViz = (() => {
         mode,
         valueType,
         point,
-        total: mode === "total" ? value : getRawTotal2(context)
+        total: mode === "total" || mode === "inside" ? value : getRawTotal2(context)
       };
       return options.formatter(value, context, details);
     }
@@ -22409,15 +22443,21 @@ var gsmViz = (() => {
     };
   }
   function buildSegmentLabel(options, spec) {
-    return withStyle(
-      {
-        display: (context) => isLargeEnoughForSegment(context, options),
-        formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
-        anchor: () => "center",
-        align: () => "center"
-      },
-      options
-    );
+    const config = {
+      display: (context) => isLargeEnoughForSegment(context, options),
+      formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
+      anchor: () => "center",
+      align: () => "center"
+    };
+    if (options.color !== void 0) {
+      config.color = options.color;
+    } else {
+      config.color = (context) => getContrastColor(context.dataset.backgroundColor);
+    }
+    if (options.font !== void 0) {
+      config.font = options.font;
+    }
+    return config;
   }
   function buildTotalLabel(options, spec) {
     return withStyle(
