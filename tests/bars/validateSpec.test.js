@@ -236,4 +236,163 @@ describe('bars/validateSpec', () => {
             ).toThrow('spec.callbacks.onHover must be a function or null');
         });
     });
+
+    describe('spec.labels.captions validation', () => {
+        test('does not throw when labels.captions is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is undefined', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: undefined },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is null', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: null },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: 'Source: Study XYZ' },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is an empty string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: '' },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is an array of strings', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: ['Caption one', 'Caption two'] },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when labels.captions is an empty array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: [] },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when labels.captions is a number', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: 42 },
+                })
+            ).toThrow(
+                'spec.labels.captions must be a string or an array of strings'
+            );
+        });
+
+        test('throws when labels.captions is a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: {} },
+                })
+            ).toThrow(
+                'spec.labels.captions must be a string or an array of strings'
+            );
+        });
+
+        test('throws when labels.captions is an array containing a non-string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: ['valid', 42] },
+                })
+            ).toThrow(
+                'spec.labels.captions must be a string or an array of strings'
+            );
+        });
+
+        test('throws when labels.captions is an array containing null', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captions: ['valid', null] },
+                })
+            ).toThrow(
+                'spec.labels.captions must be a string or an array of strings'
+            );
+        });
+    });
+
+    describe('spec.labels.captionsOptions validation', () => {
+        test('does not throw when captionsOptions is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when captionsOptions is a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captionsOptions: { position: 'top', align: 'end' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when captionsOptions is an empty object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captionsOptions: {} },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when captionsOptions is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captionsOptions: 'bottom' },
+                })
+            ).toThrow('spec.labels.captionsOptions must be a plain object');
+        });
+
+        test('throws when captionsOptions is an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captionsOptions: [] },
+                })
+            ).toThrow('spec.labels.captionsOptions must be a plain object');
+        });
+
+        test('throws when captionsOptions is null', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    labels: { captionsOptions: null },
+                })
+            ).toThrow('spec.labels.captionsOptions must be a plain object');
+        });
+    });
 });

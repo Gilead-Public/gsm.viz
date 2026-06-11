@@ -1,4 +1,3 @@
-'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21816,7 +21815,7 @@ var gsmViz = (() => {
     }
     const callbacks = spec.callbacks;
     if (callbacks !== void 0) {
-      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks)) {
+      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks) || Object.getPrototypeOf(callbacks) !== Object.prototype && Object.getPrototypeOf(callbacks) !== null) {
         throw new Error("spec.callbacks must be a plain object");
       }
       if (callbacks.onClick !== void 0 && callbacks.onClick !== null && typeof callbacks.onClick !== "function") {
@@ -21827,6 +21826,16 @@ var gsmViz = (() => {
       if (callbacks.onHover !== void 0 && callbacks.onHover !== null && typeof callbacks.onHover !== "function") {
         throw new Error(
           "spec.callbacks.onHover must be a function or null"
+        );
+      }
+    }
+    const captions = spec.labels?.captions;
+    if (captions !== void 0 && captions !== null) {
+      const isValidString = typeof captions === "string";
+      const isValidStringArray = Array.isArray(captions) && captions.every((item) => typeof item === "string");
+      if (!isValidString && !isValidStringArray) {
+        throw new Error(
+          "spec.labels.captions must be a string or an array of strings"
         );
       }
     }
@@ -21861,7 +21870,9 @@ var gsmViz = (() => {
         palette: DEFAULT_PALETTE
       }
     },
-    labels: {},
+    labels: {
+      captions: void 0
+    },
     annotations: {
       labels: {
         segment: {
@@ -22628,10 +22639,18 @@ var gsmViz = (() => {
     if (theme?.dynamicCategoryAxis) {
       legend5.onClick = dynamicCategoryLegendOnClick;
     }
+    const captionsRaw = labels.captions;
+    const captionsArray = Array.isArray(captionsRaw) ? captionsRaw : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
     return {
       title: {
         display: !!labels.title,
         text: labels.title || ""
+      },
+      subtitle: {
+        display: captionsArray.length > 0,
+        text: captionsArray,
+        position: "bottom",
+        align: "start"
       },
       tooltip: buildTooltip(tooltip5, position),
       legend: legend5,
@@ -22710,11 +22729,31 @@ var gsmViz = (() => {
     chart.update();
   }
 
+  // src/bars/defaultFilename.js
+  function toFilename(str) {
+    return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  }
+  function defaultFilename(spec) {
+    const { labels = {}, scales: scales2 = {}, mapping = {} } = spec || {};
+    if (labels.title) {
+      return toFilename(labels.title) + ".png";
+    }
+    if (scales2.fill?.label && scales2.x?.label) {
+      return toFilename(scales2.fill.label) + "-by-" + toFilename(scales2.x.label) + ".png";
+    }
+    if (mapping.x) {
+      const prefix = mapping.fill ? toFilename(mapping.fill) + "-by-" : "";
+      return prefix + toFilename(mapping.x) + ".png";
+    }
+    return "bars.png";
+  }
+
   // src/bars/exportImage.js
-  function exportImage(chart, filename = "bars.png") {
+  function exportImage(chart, filename) {
+    const name = filename !== void 0 ? filename : defaultFilename(chart.data?._spec_);
     const dataURL = chart.toBase64Image();
     const a = document.createElement("a");
-    a.download = filename;
+    a.download = name;
     a.href = dataURL;
     document.body.appendChild(a);
     a.click();
@@ -22733,10 +22772,13 @@ var gsmViz = (() => {
   // src/bars/onHover.js
   function onHover2(event, activeElements, chart) {
     const spec = chart.data._spec_;
+    const target = event?.native?.target;
     const hasClickCallback = !!spec.callbacks?.onClick;
     const hasHoverCallback = !!spec.callbacks?.onHover;
-    if (!hasClickCallback && !hasHoverCallback) return;
-    const target = event.native?.target;
+    if (!hasClickCallback && !hasHoverCallback) {
+      if (target?.style?.cursor === "pointer") target.style.cursor = "default";
+      return;
+    }
     if (activeElements.length) {
       if (target) target.style.cursor = "pointer";
       if (hasHoverCallback) {
@@ -22762,12 +22804,14 @@ var gsmViz = (() => {
       }
     }
     const merged = mergeSpec(data, spec);
+    el._gsmVizBarsHoverCallbackWrapper ??= () => {
+    };
+    el._gsmVizBarsClickCallbackWrapper ??= () => {
+    };
     const canvas = addCanvas(el, {
       maintainAspectRatio: merged.theme.maintainAspectRatio,
-      hoverCallbackWrapper: () => {
-      },
-      clickCallbackWrapper: () => {
-      }
+      hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
+      clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper
     });
     const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
@@ -22817,7 +22861,7 @@ var gsmViz = (() => {
     chart.helpers = {
       updateData: updateData2,
       updateSpec,
-      exportImage: (filename) => exportImage(chart, filename)
+      exportImage
     };
     return chart;
   }

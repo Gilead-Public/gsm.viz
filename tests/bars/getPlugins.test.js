@@ -1226,4 +1226,155 @@ describe('bars/getPlugins', () => {
             });
         });
     });
+
+    describe('subtitle (captions)', () => {
+        const baseSpec = {
+            mapping: {},
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+        };
+
+        test('subtitle is hidden when labels.captions is absent', () => {
+            const plugins = getPlugins(baseSpec);
+            expect(plugins.subtitle.display).toBe(false);
+        });
+
+        test('subtitle is hidden when labels.captions is undefined', () => {
+            const spec = { ...baseSpec, labels: { captions: undefined } };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(false);
+        });
+
+        test('subtitle is hidden when labels.captions is null', () => {
+            const spec = { ...baseSpec, labels: { captions: null } };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(false);
+        });
+
+        test('subtitle is hidden when labels.captions is an empty array', () => {
+            const spec = { ...baseSpec, labels: { captions: [] } };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(false);
+        });
+
+        test('subtitle is hidden when labels.captions is an empty string', () => {
+            const spec = { ...baseSpec, labels: { captions: '' } };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(false);
+        });
+
+        test('subtitle is displayed when labels.captions is a non-empty string', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: 'Source: Study XYZ' },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(true);
+        });
+
+        test('subtitle text is an array when captions is a string', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: 'Source: Study XYZ' },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toEqual(['Source: Study XYZ']);
+        });
+
+        test('subtitle is displayed when labels.captions is a non-empty array', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: ['Caption one', 'Caption two'] },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.display).toBe(true);
+        });
+
+        test('subtitle text preserves array order', () => {
+            const captions = ['Caption one', 'Caption two', 'Caption three'];
+            const spec = { ...baseSpec, labels: { captions } };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toEqual(captions);
+        });
+
+        test('subtitle position defaults to bottom', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: 'Source: Study XYZ' },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.position).toBe('bottom');
+        });
+
+        test('subtitle align defaults to start (left)', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: 'Source: Study XYZ' },
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.align).toBe('start');
+        });
+
+        describe('captionsOptions', () => {
+            test('overrides position when provided', () => {
+                const spec = {
+                    ...baseSpec,
+                    labels: {
+                        captions: 'Footnote',
+                        captionsOptions: { position: 'top' },
+                    },
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.subtitle.position).toBe('top');
+            });
+
+            test('overrides align when provided', () => {
+                const spec = {
+                    ...baseSpec,
+                    labels: {
+                        captions: 'Footnote',
+                        captionsOptions: { align: 'end' },
+                    },
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.subtitle.align).toBe('end');
+            });
+
+            test('preserves defaults when captionsOptions is absent', () => {
+                const spec = {
+                    ...baseSpec,
+                    labels: { captions: 'Footnote' },
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.subtitle.position).toBe('bottom');
+                expect(plugins.subtitle.align).toBe('start');
+            });
+
+            test('passes arbitrary Chart.js subtitle options through', () => {
+                const font = { size: 10, style: 'italic' };
+                const spec = {
+                    ...baseSpec,
+                    labels: {
+                        captions: 'Footnote',
+                        captionsOptions: { font },
+                    },
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.subtitle.font).toEqual(font);
+            });
+
+            test('does not bleed captionsOptions.text over captions array', () => {
+                const spec = {
+                    ...baseSpec,
+                    labels: {
+                        captions: 'Real caption',
+                        captionsOptions: { text: 'should be ignored' },
+                    },
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.subtitle.text).toEqual(['Real caption']);
+            });
+        });
+    });
 });

@@ -93,4 +93,32 @@ export default function validateSpec(data, spec) {
             );
         }
     }
+
+    const captions = spec.labels?.captions;
+    if (captions !== undefined && captions !== null) {
+        const isValidString = typeof captions === 'string';
+        const isValidStringArray =
+            Array.isArray(captions) &&
+            captions.every((item) => typeof item === 'string');
+        if (!isValidString && !isValidStringArray) {
+            throw new Error(
+                'spec.labels.captions must be a string or an array of strings'
+            );
+        }
+    }
+
+    const captionsOptions = spec.labels?.captionsOptions;
+    if (captionsOptions !== undefined) {
+        if (
+            captionsOptions === null ||
+            typeof captionsOptions !== 'object' ||
+            Array.isArray(captionsOptions) ||
+            (Object.getPrototypeOf(captionsOptions) !== Object.prototype &&
+                Object.getPrototypeOf(captionsOptions) !== null)
+        ) {
+            throw new Error(
+                'spec.labels.captionsOptions must be a plain object'
+            );
+        }
+    }
 }
