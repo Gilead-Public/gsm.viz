@@ -50,10 +50,13 @@ export default function bars(element = 'body', data = [], spec = {}) {
     const merged = mergeSpec(data, spec);
 
     // Add or select canvas element.
+    // Reuse stable no-op listeners so addCanvas() can remove them on re-render.
+    el._gsmVizBarsHoverCallbackWrapper ??= () => {};
+    el._gsmVizBarsClickCallbackWrapper ??= () => {};
     const canvas = addCanvas(el, {
         maintainAspectRatio: merged.theme.maintainAspectRatio,
-        hoverCallbackWrapper: () => {},
-        clickCallbackWrapper: () => {},
+        hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
+        clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper,
     });
 
     // Transform data into Chart.js datasets.
