@@ -1039,9 +1039,7 @@ describe('bars/getPlugins', () => {
                         },
                     },
                 });
-                expect(plugins.datalabels.labels.segment.color).toBe(
-                    '#ff0000'
-                );
+                expect(plugins.datalabels.labels.segment.color).toBe('#ff0000');
             });
 
             test('falls back to dark text when backgroundColor is missing', () => {

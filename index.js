@@ -21814,6 +21814,18 @@ var gsmViz = (() => {
         throw new Error("scales.fill.colors must be a plain object");
       }
     }
+    const callbacks = spec.callbacks;
+    if (callbacks !== void 0) {
+      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks)) {
+        throw new Error("spec.callbacks must be a plain object");
+      }
+      if (callbacks.onClick !== void 0 && callbacks.onClick !== null && typeof callbacks.onClick !== "function") {
+        throw new Error("spec.callbacks.onClick must be a function or null");
+      }
+      if (callbacks.onHover !== void 0 && callbacks.onHover !== null && typeof callbacks.onHover !== "function") {
+        throw new Error("spec.callbacks.onHover must be a function or null");
+      }
+    }
   }
 
   // src/bars/defaults.js
@@ -21868,6 +21880,10 @@ var gsmViz = (() => {
         }
       }
     },
+    callbacks: {
+      onClick: null,
+      onHover: null
+    },
     tooltip: {
       format: void 0,
       formatter: void 0
@@ -21919,7 +21935,11 @@ var gsmViz = (() => {
         }
       },
       theme: { ...defaults_default.theme, ...spec.theme },
-      tooltip: { ...defaults_default.tooltip, ...spec.tooltip }
+      tooltip: { ...defaults_default.tooltip, ...spec.tooltip },
+      callbacks: {
+        onClick: spec.callbacks?.onClick ?? defaults_default.callbacks.onClick,
+        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover
+      }
     };
   }
 
@@ -22686,6 +22706,34 @@ var gsmViz = (() => {
     chart.update();
   }
 
+  // src/bars/onClick.js
+  function onClick2(event, activeElements, chart) {
+    const spec = chart.data._spec_;
+    if (!activeElements.length || !spec.callbacks?.onClick) return;
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const point = chart.data.datasets[datasetIndex].data[index3];
+    spec.callbacks.onClick(point, event);
+  }
+
+  // src/bars/onHover.js
+  function onHover2(event, activeElements, chart) {
+    const spec = chart.data._spec_;
+    const hasClickCallback = !!spec.callbacks?.onClick;
+    const hasHoverCallback = !!spec.callbacks?.onHover;
+    if (!hasClickCallback && !hasHoverCallback) return;
+    const target = event.native?.target;
+    if (activeElements.length) {
+      if (target) target.style.cursor = "pointer";
+      if (hasHoverCallback) {
+        const { datasetIndex, index: index3 } = activeElements[0];
+        const point = chart.data.datasets[datasetIndex].data[index3];
+        spec.callbacks.onHover(point, event);
+      }
+    } else {
+      if (target) target.style.cursor = "default";
+    }
+  }
+
   // src/bars.js
   function bars(element = "body", data = [], spec = {}) {
     validateSpec(data, spec);
@@ -22700,7 +22748,11 @@ var gsmViz = (() => {
     }
     const merged = mergeSpec(data, spec);
     const canvas = addCanvas(el, {
-      maintainAspectRatio: merged.theme.maintainAspectRatio
+      maintainAspectRatio: merged.theme.maintainAspectRatio,
+      hoverCallbackWrapper: () => {
+      },
+      clickCallbackWrapper: () => {
+      }
     });
     const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
@@ -22708,6 +22760,8 @@ var gsmViz = (() => {
       animation: merged.theme.animation,
       indexAxis: scalesConfig._indexAxis,
       maintainAspectRatio: merged.theme.maintainAspectRatio,
+      onClick: onClick2,
+      onHover: onHover2,
       plugins: getPlugins2(merged),
       scales: {
         x: scalesConfig.x,

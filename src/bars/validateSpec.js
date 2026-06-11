@@ -62,4 +62,35 @@ export default function validateSpec(data, spec) {
             throw new Error('scales.fill.colors must be a plain object');
         }
     }
+
+    const callbacks = spec.callbacks;
+    if (callbacks !== undefined) {
+        if (
+            callbacks === null ||
+            typeof callbacks !== 'object' ||
+            Array.isArray(callbacks) ||
+            (Object.getPrototypeOf(callbacks) !== Object.prototype &&
+                Object.getPrototypeOf(callbacks) !== null)
+        ) {
+            throw new Error('spec.callbacks must be a plain object');
+        }
+        if (
+            callbacks.onClick !== undefined &&
+            callbacks.onClick !== null &&
+            typeof callbacks.onClick !== 'function'
+        ) {
+            throw new Error(
+                'spec.callbacks.onClick must be a function or null'
+            );
+        }
+        if (
+            callbacks.onHover !== undefined &&
+            callbacks.onHover !== null &&
+            typeof callbacks.onHover !== 'function'
+        ) {
+            throw new Error(
+                'spec.callbacks.onHover must be a function or null'
+            );
+        }
+    }
 }

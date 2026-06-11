@@ -1,4 +1,8 @@
-const dataFiles = ['../data/results.csv', '../data/metricMetadata.csv'];
+const dataFiles = [
+    '../data/results.csv',
+    '../data/metricMetadata.csv',
+    '../data/groupMetadata.csv',
+];
 
 const dataPromises = dataFiles.map((dataFile) =>
     fetch(dataFile).then((response) => response.text())
@@ -16,11 +20,95 @@ Promise.all(dataPromises)
     .then((texts) => texts.map((text) => d3.csvParse(text)))
     .then((datasets) => {
         const SnapshotDate = d3.max(datasets[0], (d) => d.SnapshotDate);
-        const results = datasets[0].filter(
-            (d) =>
-                d.SnapshotDate === SnapshotDate &&
-                !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
+
+        // All results at the latest snapshot (used to feed scatterPlot on click).
+        const allResults = datasets[0].filter(
+            (d) => d.SnapshotDate === SnapshotDate
         );
+
+        // KRI-only results for the bar chart.
+        const results = allResults.filter(
+            (d) => !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
+        );
+
+        const metricMetadata = datasets[1];
+        const groupMetadata = datasets[2];
+
+        const hoverTableEl = document.getElementById('kri-hover-table');
+        const scatterContainerEl = document.getElementById(
+            'kri-scatter-container'
+        );
+
+        // Hover → render a table of the sites that make up the hovered bar segment.
+        function onHover(point) {
+            const rows = Array.isArray(point._datum)
+                ? point._datum
+                : [point._datum];
+
+            const flagLabel =
+                point._fill !== undefined ? ` — Flag ${point._fill}` : '';
+
+            const sorted = [...rows].sort(
+                (a, b) => Number(b.Score) - Number(a.Score)
+            );
+
+            hoverTableEl.innerHTML = '';
+
+            const heading = document.createElement('h4');
+            heading.textContent = `${point.x}${flagLabel} — ${
+                rows.length
+            } site${rows.length !== 1 ? 's' : ''}`;
+            hoverTableEl.appendChild(heading);
+
+            const table = document.createElement('table');
+            table.innerHTML =
+                '<thead><tr>' +
+                '<th>Group ID</th><th>Score</th><th>Flag</th>' +
+                '<th>Numerator</th><th>Denominator</th>' +
+                '</tr></thead>';
+
+            const tbody = document.createElement('tbody');
+            for (const row of sorted) {
+                const tr = document.createElement('tr');
+                [
+                    row.GroupID,
+                    Number(row.Score).toFixed(3),
+                    row.Flag,
+                    row.Numerator,
+                    row.Denominator,
+                ].forEach((val) => {
+                    const td = document.createElement('td');
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            hoverTableEl.appendChild(table);
+        }
+
+        // Click → render a scatterPlot for the clicked MetricID.
+        function onClick(point) {
+            const metricID = point.x;
+            const resultsForMetric = filterOnMetricID(allResults, metricID);
+            if (!resultsForMetric.length) return;
+
+            const config = selectMetricID(metricMetadata, metricID);
+            if (!config) return;
+
+            config.displayTitle = true;
+            config.groupTooltipKeys = groupTooltipKeys[config.GroupLevel];
+
+            gsmViz.default.scatterPlot(
+                scatterContainerEl,
+                resultsForMetric,
+                config,
+                null,
+                groupMetadata
+            );
+        }
+
+        const callbacks = { onClick, onHover };
 
         function buildAnnotations(mode) {
             if (mode === 'none') return {};
@@ -76,6 +164,7 @@ Promise.all(dataPromises)
                     dynamicCategoryAxis,
                 },
                 annotations: buildAnnotations(annotationsMode),
+                callbacks,
             };
 
             if (fillKey) {
@@ -105,6 +194,8 @@ Promise.all(dataPromises)
         );
 
         function rerender() {
+            hoverTableEl.innerHTML = '';
+            scatterContainerEl.innerHTML = '';
             instance.destroy();
             instance = gsmViz.default.bars(
                 container,

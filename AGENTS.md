@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-**gsm.viz** (v2.3.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on Chart.js and D3.
+**gsm.viz** (v2.4.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on Chart.js and D3.
 
 ## Tech Stack
 
@@ -189,6 +189,40 @@ These apply at all times, across all tasks:
 
 ---
 
+## Pull Requests
+
+### Opening a PR
+
+-   **Target branch:** Always target `dev` (the default branch). Never open PRs against `main`.
+-   Use `gh pr create --base dev` or set the base branch explicitly in the GitHub UI.
+
+### PR Description Structure
+
+```
+## Summary
+
+<Short description of what this PR does and why.>
+
+## Changes
+
+- <Bullet list of notable changes>
+
+## Resolved Issues
+
+- Resolves #<issue-number>
+- Closes #<issue-number>
+```
+
+Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresses so GitHub auto-closes them on merge.
+
+### After Opening
+
+-   Monitor Copilot's review comments on the PR.
+-   Address any meaningful findings (bugs, logic errors, missing tests, security concerns).
+-   Dismiss or note findings that are style-only or out of scope, but do not silently ignore substantive feedback.
+
+---
+
 ## Boundaries
 
 ### Always Do
@@ -216,3 +250,4 @@ These apply at all times, across all tasks:
 -   Remove failing tests without approval
 -   Skip TDD for any code change
 -   Push to `main` without review
+-   Open PRs targeting `main` directly (always use `dev`)

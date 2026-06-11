@@ -13,6 +13,10 @@ import displayWhiteBackground from './util/displayWhiteBackground.js';
 import updateData from './bars/updateData.js';
 import updateSpec from './bars/updateSpec.js';
 
+// event callbacks
+import onClick from './bars/onClick.js';
+import onHover from './bars/onHover.js';
+
 /**
  * Render a bar chart using a ggplot2-inspired spec.
  *
@@ -46,8 +50,13 @@ export default function bars(element = 'body', data = [], spec = {}) {
     const merged = mergeSpec(data, spec);
 
     // Add or select canvas element.
+    // Reuse stable no-op listeners so addCanvas() can remove them on re-render.
+    el._gsmVizBarsHoverCallbackWrapper ??= () => {};
+    el._gsmVizBarsClickCallbackWrapper ??= () => {};
     const canvas = addCanvas(el, {
         maintainAspectRatio: merged.theme.maintainAspectRatio,
+        hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
+        clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper,
     });
 
     // Transform data into Chart.js datasets.
@@ -60,6 +69,8 @@ export default function bars(element = 'body', data = [], spec = {}) {
         animation: merged.theme.animation,
         indexAxis: scalesConfig._indexAxis,
         maintainAspectRatio: merged.theme.maintainAspectRatio,
+        onClick,
+        onHover,
         plugins: getPlugins(merged),
         scales: {
             x: scalesConfig.x,

@@ -55,6 +55,10 @@ const defaults = {
             },
         },
     },
+    callbacks: {
+        onClick: null,
+        onHover: null,
+    },
     tooltip: {
         format: undefined,
         formatter: undefined,

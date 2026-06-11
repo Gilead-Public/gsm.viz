@@ -192,7 +192,11 @@ describe('bars/mergeSpec', () => {
                 ...minimalSpec,
                 annotations: {
                     labels: {
-                        total: { display: true, placement: 'inside', color: '#ffffff' },
+                        total: {
+                            display: true,
+                            placement: 'inside',
+                            color: '#ffffff',
+                        },
                     },
                 },
             });
