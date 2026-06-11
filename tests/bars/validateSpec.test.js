@@ -96,7 +96,8 @@ describe('bars/validateSpec', () => {
         ).not.toThrow();
     });
 
-    describe('scales.fill.colors validation', () => {        test('does not throw when scales.fill.colors is a plain object', () => {
+    describe('scales.fill.colors validation', () => {
+        test('does not throw when scales.fill.colors is a plain object', () => {
             expect(() =>
                 validateSpec(data, {
                     mapping: { x: 'a', y: 'b', fill: 'group' },
