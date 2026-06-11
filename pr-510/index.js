@@ -22754,12 +22754,14 @@ var gsmViz = (() => {
       }
     }
     const merged = mergeSpec(data, spec);
+    el._gsmVizBarsHoverCallbackWrapper ??= () => {
+    };
+    el._gsmVizBarsClickCallbackWrapper ??= () => {
+    };
     const canvas = addCanvas(el, {
       maintainAspectRatio: merged.theme.maintainAspectRatio,
-      hoverCallbackWrapper: () => {
-      },
-      clickCallbackWrapper: () => {
-      }
+      hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
+      clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper
     });
     const { datasets, labels } = structureData2(merged);
     const scalesConfig = getScales2(merged);
