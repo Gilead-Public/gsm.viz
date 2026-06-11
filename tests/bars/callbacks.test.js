@@ -145,6 +145,22 @@ describe('bars callbacks', () => {
             chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart);
             expect(target.style.cursor).toBe('');
         });
+
+        test('does not throw when event.native is null', () => {
+            const chart = makeChart({ callbacks: { onClick: jest.fn() } });
+            const event = { native: null };
+            expect(() =>
+                chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart)
+            ).not.toThrow();
+        });
+
+        test('does not throw when event.native is undefined', () => {
+            const chart = makeChart({ callbacks: { onHover: jest.fn() } });
+            const event = {};
+            expect(() =>
+                chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart)
+            ).not.toThrow();
+        });
     });
 
     describe('multi-series', () => {

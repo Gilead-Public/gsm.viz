@@ -17,14 +17,16 @@ export default function onHover(event, activeElements, chart) {
 
     if (!hasClickCallback && !hasHoverCallback) return;
 
+    const target = event.native?.target;
+
     if (activeElements.length) {
-        event.native.target.style.cursor = 'pointer';
+        if (target) target.style.cursor = 'pointer';
         if (hasHoverCallback) {
             const { datasetIndex, index } = activeElements[0];
             const point = chart.data.datasets[datasetIndex].data[index];
             spec.callbacks.onHover(point, event);
         }
     } else {
-        event.native.target.style.cursor = 'default';
+        if (target) target.style.cursor = 'default';
     }
 }

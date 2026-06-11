@@ -407,10 +407,12 @@ gsmViz.default.bars(element, data, {
 
 | Property  | Description                                                                         |
 | --------- | ----------------------------------------------------------------------------------- |
-| `x`       | Category value                                                                      |
-| `y`       | Numeric bar value (or percentage when `position: 'fill'`)                           |
+| `x`       | Category value (or numeric value in `horizontal` orientation)                       |
+| `y`       | Numeric bar value (or category value in `horizontal` orientation; percentage when `position: 'fill'`) |
 | `_fill`   | Fill group value for this segment (`undefined` when no `mapping.fill`)              |
 | `_datum`  | Original input row, or (in count mode) the array of rows that make up the bar       |
+
+> **Note on horizontal orientation:** When `spec.orientation` is `'horizontal'`, Chart.js swaps the axes internally. As a result, `point.x` holds the numeric value and `point.y` holds the category value — the reverse of vertical (default) orientation.
 
 ### Cursor behaviour
 

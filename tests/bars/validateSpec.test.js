@@ -96,8 +96,7 @@ describe('bars/validateSpec', () => {
         ).not.toThrow();
     });
 
-    describe('scales.fill.colors validation', () => {
-        test('does not throw when scales.fill.colors is a plain object', () => {
+    describe('scales.fill.colors validation', () => {        test('does not throw when scales.fill.colors is a plain object', () => {
             expect(() =>
                 validateSpec(data, {
                     mapping: { x: 'a', y: 'b', fill: 'group' },
@@ -172,6 +171,68 @@ describe('bars/validateSpec', () => {
                     scales: { fill: { colors: nullProto } },
                 })
             ).not.toThrow();
+        });
+    });
+
+    describe('spec.callbacks validation', () => {
+        test('does not throw when callbacks is not provided', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw with valid onClick and onHover functions', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: { onClick: () => {}, onHover: () => {} },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw with null callbacks', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: { onClick: null, onHover: null },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when spec.callbacks is not a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: 'not-an-object',
+                })
+            ).toThrow('spec.callbacks must be a plain object');
+        });
+
+        test('throws when spec.callbacks is an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: [],
+                })
+            ).toThrow('spec.callbacks must be a plain object');
+        });
+
+        test('throws when callbacks.onClick is a non-function truthy value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: { onClick: {} },
+                })
+            ).toThrow('spec.callbacks.onClick must be a function or null');
+        });
+
+        test('throws when callbacks.onHover is a non-function truthy value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    callbacks: { onHover: 42 },
+                })
+            ).toThrow('spec.callbacks.onHover must be a function or null');
         });
     });
 });

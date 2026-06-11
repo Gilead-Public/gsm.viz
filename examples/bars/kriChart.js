@@ -53,23 +53,37 @@ Promise.all(dataPromises)
                 (a, b) => Number(b.Score) - Number(a.Score)
             );
 
-            let html = `<h4>${point.x}${flagLabel} — ${rows.length} site${rows.length !== 1 ? 's' : ''}</h4>`;
-            html +=
-                '<table><thead><tr>' +
+            hoverTableEl.innerHTML = '';
+
+            const heading = document.createElement('h4');
+            heading.textContent = `${point.x}${flagLabel} — ${rows.length} site${rows.length !== 1 ? 's' : ''}`;
+            hoverTableEl.appendChild(heading);
+
+            const table = document.createElement('table');
+            table.innerHTML =
+                '<thead><tr>' +
                 '<th>Group ID</th><th>Score</th><th>Flag</th>' +
                 '<th>Numerator</th><th>Denominator</th>' +
-                '</tr></thead><tbody>';
+                '</tr></thead>';
+
+            const tbody = document.createElement('tbody');
             for (const row of sorted) {
-                html += `<tr>
-                    <td>${row.GroupID}</td>
-                    <td>${Number(row.Score).toFixed(3)}</td>
-                    <td>${row.Flag}</td>
-                    <td>${row.Numerator}</td>
-                    <td>${row.Denominator}</td>
-                </tr>`;
+                const tr = document.createElement('tr');
+                [
+                    row.GroupID,
+                    Number(row.Score).toFixed(3),
+                    row.Flag,
+                    row.Numerator,
+                    row.Denominator,
+                ].forEach((val) => {
+                    const td = document.createElement('td');
+                    td.textContent = val;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
             }
-            html += '</tbody></table>';
-            hoverTableEl.innerHTML = html;
+            table.appendChild(tbody);
+            hoverTableEl.appendChild(table);
         }
 
         // Click → render a scatterPlot for the clicked MetricID.

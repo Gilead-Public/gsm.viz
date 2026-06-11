@@ -52,6 +52,8 @@ export default function bars(element = 'body', data = [], spec = {}) {
     // Add or select canvas element.
     const canvas = addCanvas(el, {
         maintainAspectRatio: merged.theme.maintainAspectRatio,
+        hoverCallbackWrapper: () => {},
+        clickCallbackWrapper: () => {},
     });
 
     // Transform data into Chart.js datasets.

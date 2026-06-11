@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-**gsm.viz** (v2.3.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on Chart.js and D3.
+**gsm.viz** (v2.4.0) is a web-based data visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It provides interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on Chart.js and D3.
 
 ## Tech Stack
 
