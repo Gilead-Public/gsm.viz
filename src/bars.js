@@ -128,7 +128,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
     chart.helpers = {
         updateData,
         updateSpec,
-        exportImage: (filename) => exportImage(chart, filename),
+        exportImage,
     };
 
     return chart;
