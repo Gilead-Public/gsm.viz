@@ -21816,7 +21816,7 @@ var gsmViz = (() => {
     }
     const callbacks = spec.callbacks;
     if (callbacks !== void 0) {
-      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks)) {
+      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks) || Object.getPrototypeOf(callbacks) !== Object.prototype && Object.getPrototypeOf(callbacks) !== null) {
         throw new Error("spec.callbacks must be a plain object");
       }
       if (callbacks.onClick !== void 0 && callbacks.onClick !== null && typeof callbacks.onClick !== "function") {
@@ -22722,10 +22722,13 @@ var gsmViz = (() => {
   // src/bars/onHover.js
   function onHover2(event, activeElements, chart) {
     const spec = chart.data._spec_;
+    const target = event?.native?.target;
     const hasClickCallback = !!spec.callbacks?.onClick;
     const hasHoverCallback = !!spec.callbacks?.onHover;
-    if (!hasClickCallback && !hasHoverCallback) return;
-    const target = event.native?.target;
+    if (!hasClickCallback && !hasHoverCallback) {
+      if (target?.style?.cursor === "pointer") target.style.cursor = "default";
+      return;
+    }
     if (activeElements.length) {
       if (target) target.style.cursor = "pointer";
       if (hasHoverCallback) {
