@@ -12,6 +12,7 @@ import displayWhiteBackground from './util/displayWhiteBackground.js';
 // update methods
 import updateData from './bars/updateData.js';
 import updateSpec from './bars/updateSpec.js';
+import exportImage from './bars/exportImage.js';
 
 // event callbacks
 import onClick from './bars/onClick.js';
@@ -127,6 +128,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
     chart.helpers = {
         updateData,
         updateSpec,
+        exportImage: (filename) => exportImage(chart, filename),
     };
 
     return chart;

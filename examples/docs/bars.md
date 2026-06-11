@@ -432,6 +432,24 @@ After instantiation the chart exposes `chart.helpers`:
 | ------------------------------- | ----------------------------------------------- |
 | `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
 | `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
+| `exportImage(filename?)`        | Download the chart as a PNG file                |
+
+### `exportImage(filename?)`
+
+Captures the rendered chart canvas (including the white background) and
+triggers a browser download.
+
+```js
+// Default filename: "bars.png"
+chart.helpers.exportImage();
+
+// Custom filename
+chart.helpers.exportImage('retention-by-site.png');
+```
+
+The chart already renders with a white background (applied by the
+`displayWhiteBackground` plugin), so the exported PNG is fully opaque and
+suitable for inclusion in documents and reports.
 
 ---
 
