@@ -22,16 +22,16 @@ describe('exportImage', () => {
 
         // Intercept document.createElement so we can inspect and spy on anchors.
         const originalCreate = document.createElement.bind(document);
-        jest
-            .spyOn(document, 'createElement')
-            .mockImplementation((tagName, ...rest) => {
+        jest.spyOn(document, 'createElement').mockImplementation(
+            (tagName, ...rest) => {
                 const el = originalCreate(tagName, ...rest);
                 if (tagName === 'a') {
                     jest.spyOn(el, 'click').mockImplementation(clickSpy);
                     createdAnchors.push(el);
                 }
                 return el;
-            });
+            }
+        );
 
         jest.spyOn(document.body, 'appendChild').mockImplementation(() => {});
         jest.spyOn(document.body, 'removeChild').mockImplementation(() => {});

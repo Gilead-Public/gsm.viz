@@ -21808,6 +21808,13 @@ var gsmViz = (() => {
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
       throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
     }
+    if (spec.nCategories !== void 0 && (typeof spec.nCategories !== "number" || !Number.isInteger(spec.nCategories) || spec.nCategories < 1)) {
+      throw new Error("spec.nCategories must be a positive integer");
+    }
+    const xSort = spec.scales?.x?.sort;
+    if (xSort !== void 0 && xSort !== "total" && xSort !== "alphanumeric") {
+      throw new Error("spec.scales.x.sort must be 'total' or 'alphanumeric'");
+    }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
       if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
@@ -21930,6 +21937,7 @@ var gsmViz = (() => {
       mapping: { ...spec.mapping },
       orientation: spec.orientation ?? defaults_default.orientation,
       position: spec.position ?? defaults_default.position,
+      nCategories: spec.nCategories,
       scales: {
         x: { ...defaults_default.scales.x, ...spec.scales?.x },
         y: { ...defaults_default.scales.y, ...spec.scales?.y },
@@ -22020,6 +22028,31 @@ var gsmViz = (() => {
     return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
   }
 
+  // src/bars/structureData/limitCategories.js
+  function limitCategories(categories, data, xKey, yKey, nCategories, sort = "total") {
+    if (!nCategories || nCategories >= categories.length) {
+      return { limitedCategories: categories, nExcluded: 0 };
+    }
+    const nExcluded = categories.length - nCategories;
+    if (sort === "total") {
+      const totals = /* @__PURE__ */ new Map();
+      for (const d of data) {
+        const cat = d[xKey];
+        const val = yKey ? Number(d[yKey]) || 0 : 1;
+        totals.set(cat, (totals.get(cat) || 0) + val);
+      }
+      const sorted = [...categories].sort((a, b) => {
+        const diff = (totals.get(b) || 0) - (totals.get(a) || 0);
+        if (diff !== 0) return diff;
+        return String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        });
+      });
+      return { limitedCategories: sorted.slice(0, nCategories), nExcluded };
+    }
+    return { limitedCategories: categories.slice(0, nCategories), nExcluded };
+  }
+
   // src/bars/structureData/normalizeFill.js
   function normalizeFill(datasets, horizontal) {
     const valueKey = horizontal ? "x" : "y";
@@ -22092,11 +22125,26 @@ var gsmViz = (() => {
     const fillColors = scales2.fill?.colors;
     const fillOrder = fillColors ? Object.keys(fillColors) : scales2.fill?.order;
     const palette = fillColors ? Object.values(fillColors) : scales2.fill?.palette;
-    const activeData = fillKey && fillOrder ? (() => {
+    let activeData = fillKey && fillOrder ? (() => {
       const allowed = new Set(fillOrder.map(String));
       return data.filter((d) => allowed.has(String(d[fillKey])));
     })() : data;
-    const labels = resolveCategories(activeData, xKey, scales2.x?.order);
+    let labels = resolveCategories(activeData, xKey, scales2.x?.order);
+    let nExcluded = 0;
+    if (spec.nCategories) {
+      const result = limitCategories(
+        labels,
+        activeData,
+        xKey,
+        yKey,
+        spec.nCategories,
+        scales2.x?.sort
+      );
+      labels = result.limitedCategories;
+      nExcluded = result.nExcluded;
+      const allowed = new Set(labels);
+      activeData = activeData.filter((d) => allowed.has(d[xKey]));
+    }
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
     let datasets;
     if (!yKey) {
@@ -22158,7 +22206,7 @@ var gsmViz = (() => {
     if (spec.position === "fill") {
       normalizeFill(datasets, orientation === "horizontal");
     }
-    return { datasets, labels };
+    return { datasets, labels, nExcluded };
   }
 
   // src/bars/getScales.js
@@ -22650,6 +22698,14 @@ var gsmViz = (() => {
     }
     const captionsRaw = labels.captions;
     const captionsArray = Array.isArray(captionsRaw) ? captionsRaw : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
+    const nExcluded = spec._nExcluded;
+    if (spec.nCategories && (scales2.x?.sort === "total" || scales2.x?.sort === void 0) && nExcluded > 0) {
+      const xLabel = scales2.x?.label || mapping?.x || "category";
+      const sort = scales2.x?.sort ?? "total";
+      captionsArray.push(
+        `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden.`
+      );
+    }
     return {
       title: {
         display: !!labels.title,
@@ -22724,7 +22780,8 @@ var gsmViz = (() => {
       theme: { ...existing.theme, ...spec.theme }
     };
     const merged = mergeSpec(existing.data, combined);
-    const { datasets, labels } = structureData2(merged);
+    const { datasets, labels, nExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
@@ -22786,7 +22843,8 @@ var gsmViz = (() => {
     const hasClickCallback = !!spec.callbacks?.onClick;
     const hasHoverCallback = !!spec.callbacks?.onHover;
     if (!hasClickCallback && !hasHoverCallback) {
-      if (target?.style?.cursor === "pointer") target.style.cursor = "default";
+      if (target?.style?.cursor === "pointer")
+        target.style.cursor = "default";
       return;
     }
     if (activeElements.length) {
@@ -22823,7 +22881,8 @@ var gsmViz = (() => {
       hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
       clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper
     });
-    const { datasets, labels } = structureData2(merged);
+    const { datasets, labels, nExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
     const scalesConfig = getScales2(merged);
     const options = {
       animation: merged.theme.animation,

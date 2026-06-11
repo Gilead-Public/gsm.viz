@@ -19,9 +19,7 @@ import defaultFilename from './defaultFilename.js';
 
 export default function exportImage(chart, filename) {
     const name =
-        filename !== undefined
-            ? filename
-            : defaultFilename(chart.data?._spec_);
+        filename !== undefined ? filename : defaultFilename(chart.data?._spec_);
     const dataURL = chart.toBase64Image();
     const a = document.createElement('a');
     a.download = name;

@@ -18,7 +18,8 @@ export default function onHover(event, activeElements, chart) {
 
     if (!hasClickCallback && !hasHoverCallback) {
         // Avoid leaving a stale pointer cursor if callbacks were removed via updateSpec().
-        if (target?.style?.cursor === 'pointer') target.style.cursor = 'default';
+        if (target?.style?.cursor === 'pointer')
+            target.style.cursor = 'default';
         return;
     }
     if (activeElements.length) {

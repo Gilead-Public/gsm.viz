@@ -4,7 +4,9 @@ describe('defaultFilename', () => {
     describe('priority 1 — spec.labels.title', () => {
         test('uses title when present', () => {
             expect(
-                defaultFilename({ labels: { title: 'Retention Status by Site' } })
+                defaultFilename({
+                    labels: { title: 'Retention Status by Site' },
+                })
             ).toBe('retention-status-by-site.png');
         });
 
@@ -21,15 +23,15 @@ describe('defaultFilename', () => {
         });
 
         test('trims leading and trailing whitespace', () => {
-            expect(
-                defaultFilename({ labels: { title: '  my chart  ' } })
-            ).toBe('my-chart.png');
+            expect(defaultFilename({ labels: { title: '  my chart  ' } })).toBe(
+                'my-chart.png'
+            );
         });
 
         test('replaces multiple spaces with a single dash', () => {
-            expect(
-                defaultFilename({ labels: { title: 'a  b   c' } })
-            ).toBe('a-b-c.png');
+            expect(defaultFilename({ labels: { title: 'a  b   c' } })).toBe(
+                'a-b-c.png'
+            );
         });
     });
 

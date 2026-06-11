@@ -61,7 +61,10 @@ export default function bars(element = 'body', data = [], spec = {}) {
     });
 
     // Transform data into Chart.js datasets.
-    const { datasets, labels } = structureData(merged);
+    const { datasets, labels, nExcluded } = structureData(merged);
+
+    // Make nExcluded available to getPlugins for auto-caption generation.
+    merged._nExcluded = nExcluded;
 
     // Build Chart.js configuration.
     const scalesConfig = getScales(merged);

@@ -37,8 +37,23 @@ export default function getPlugins(spec) {
     const captionsArray = Array.isArray(captionsRaw)
         ? captionsRaw
         : captionsRaw != null && captionsRaw !== ''
-          ? [captionsRaw]
-          : [];
+        ? [captionsRaw]
+        : [];
+
+    // Auto-inject a caption when nCategories is active with 'total' sort (or
+    // the default) and some categories are excluded.
+    const nExcluded = spec._nExcluded;
+    if (
+        spec.nCategories &&
+        (scales.x?.sort === 'total' || scales.x?.sort === undefined) &&
+        nExcluded > 0
+    ) {
+        const xLabel = scales.x?.label || mapping?.x || 'category';
+        const sort = scales.x?.sort ?? 'total';
+        captionsArray.push(
+            `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden.`
+        );
+    }
 
     return {
         title: {

@@ -429,8 +429,8 @@ gsmViz.default.bars(element, data, {
     labels: {
         captions: 'Source: Study XYZ',
         captionsOptions: {
-            position: 'top',       // 'top' | 'bottom' (default: 'bottom')
-            align: 'end',          // 'start' | 'center' | 'end' (default: 'start')
+            position: 'top', // 'top' | 'bottom' (default: 'bottom')
+            align: 'end', // 'start' | 'center' | 'end' (default: 'start')
             font: { size: 10, style: 'italic' },
             padding: { top: 8 },
         },
