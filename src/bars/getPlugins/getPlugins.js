@@ -33,10 +33,24 @@ export default function getPlugins(spec) {
         legend.onClick = dynamicCategoryLegendOnClick;
     }
 
+    const captionsRaw = labels.captions;
+    const captionsArray = Array.isArray(captionsRaw)
+        ? captionsRaw
+        : captionsRaw != null && captionsRaw !== ''
+          ? [captionsRaw]
+          : [];
+
     return {
         title: {
             display: !!labels.title,
             text: labels.title || '',
+        },
+        subtitle: {
+            display: captionsArray.length > 0,
+            position: 'bottom',
+            align: 'start',
+            ...labels.captionsOptions,
+            text: captionsArray,
         },
         tooltip: buildTooltip(tooltip, position),
         legend,

@@ -90,6 +90,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 },
                 labels: {
                     title: `Gini Index by Country (${year})`,
+                    captions: `Includes ${data.length} ${data.length === 1 ? 'country' : 'countries'} with data available.`,
                 },
                 theme: {
                     dynamicSizing,

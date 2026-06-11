@@ -32,7 +32,9 @@ const defaults = {
             palette: DEFAULT_PALETTE,
         },
     },
-    labels: {},
+    labels: {
+        captions: undefined,
+    },
     annotations: {
         labels: {
             segment: {

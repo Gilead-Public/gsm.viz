@@ -208,4 +208,61 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.segment.display).toBe(false);
         });
     });
+
+    describe('labels.captions', () => {
+        test('captions is undefined by default', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.labels.captions).toBeUndefined();
+        });
+
+        test('passes through a string caption', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                labels: { captions: 'Source: Study XYZ' },
+            });
+            expect(merged.labels.captions).toBe('Source: Study XYZ');
+        });
+
+        test('passes through an array of caption strings', () => {
+            const captions = ['Caption one', 'Caption two'];
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                labels: { captions },
+            });
+            expect(merged.labels.captions).toEqual(captions);
+        });
+
+        test('passes through an empty array', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                labels: { captions: [] },
+            });
+            expect(merged.labels.captions).toEqual([]);
+        });
+
+        test('preserves captions alongside title', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                labels: { title: 'My Chart', captions: ['Footnote'] },
+            });
+            expect(merged.labels.title).toBe('My Chart');
+            expect(merged.labels.captions).toEqual(['Footnote']);
+        });
+    });
+
+    describe('labels.captionsOptions', () => {
+        test('captionsOptions is undefined by default', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.labels.captionsOptions).toBeUndefined();
+        });
+
+        test('passes through a captionsOptions object', () => {
+            const captionsOptions = { position: 'top', align: 'end' };
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                labels: { captionsOptions },
+            });
+            expect(merged.labels.captionsOptions).toEqual(captionsOptions);
+        });
+    });
 });
