@@ -432,19 +432,22 @@ After instantiation the chart exposes `chart.helpers`:
 | ------------------------------- | ----------------------------------------------- |
 | `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
 | `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
-| `exportImage(filename?)`        | Download the chart as a PNG file                |
+| `exportImage(chart, filename?)` | Download the chart as a PNG file                |
 
-### `exportImage(filename?)`
+All three helpers follow the same calling convention: the chart instance is
+always the first argument.
+
+### `exportImage(chart, filename?)`
 
 Captures the rendered chart canvas (including the white background) and
 triggers a browser download.
 
 ```js
 // Default filename: "bars.png"
-chart.helpers.exportImage();
+chart.helpers.exportImage(chart);
 
 // Custom filename
-chart.helpers.exportImage('retention-by-site.png');
+chart.helpers.exportImage(chart, 'retention-by-site.png');
 ```
 
 The chart already renders with a white background (applied by the

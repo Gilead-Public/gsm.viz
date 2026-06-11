@@ -22822,7 +22822,7 @@ var gsmViz = (() => {
     chart.helpers = {
       updateData: updateData2,
       updateSpec,
-      exportImage: (filename) => exportImage(chart, filename)
+      exportImage
     };
     return chart;
   }
