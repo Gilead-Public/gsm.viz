@@ -110,15 +110,17 @@ describe('bars/updateSpec', () => {
         updateSpec(chart, {
             annotations: {
                 labels: {
-                    outside: {
+                    segment: {
                         display: true,
+                        placement: 'end',
                     },
                 },
             },
         });
 
-        expect(chart.options.plugins.datalabels.labels.outside).toBeDefined();
-        expect(chart.data._spec_.annotations.labels.outside.display).toBe(true);
+        expect(chart.options.plugins.datalabels.labels.segment).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.segment.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.segment.placement).toBe('end');
     });
 
     test('rebuilds datalabel options after a data update', () => {
@@ -152,31 +154,33 @@ describe('bars/updateSpec', () => {
             ...spec,
             annotations: {
                 labels: {
-                    inside: { display: true, color: '#ffffff' },
+                    total: { display: true, placement: 'inside', color: '#ffffff' },
                 },
             },
         });
 
         updateSpec(chart, { labels: { title: 'Updated' } });
 
-        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
-        expect(chart.data._spec_.annotations.labels.inside.color).toBe(
+        expect(chart.data._spec_.annotations.labels.total.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.total.placement).toBe('inside');
+        expect(chart.data._spec_.annotations.labels.total.color).toBe(
             '#ffffff'
         );
     });
 
-    test('rebuilds datalabel options with inside labels after a partial annotation update', () => {
+    test('rebuilds datalabel options with inside total placement after a partial annotation update', () => {
         const chart = bars(container, data, spec);
 
         updateSpec(chart, {
             annotations: {
                 labels: {
-                    inside: { display: true },
+                    total: { display: true, placement: 'inside' },
                 },
             },
         });
 
-        expect(chart.options.plugins.datalabels.labels.inside).toBeDefined();
-        expect(chart.data._spec_.annotations.labels.inside.display).toBe(true);
+        expect(chart.options.plugins.datalabels.labels.total).toBeDefined();
+        expect(chart.data._spec_.annotations.labels.total.display).toBe(true);
+        expect(chart.data._spec_.annotations.labels.total.placement).toBe('inside');
     });
 });

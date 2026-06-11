@@ -24,9 +24,7 @@ export default function structureData(spec) {
     // Resolve scales.fill.colors (named map) into order + palette when present.
     // colors takes precedence over any separately provided order/palette.
     const fillColors = scales.fill?.colors;
-    const fillOrder = fillColors
-        ? Object.keys(fillColors)
-        : scales.fill?.order;
+    const fillOrder = fillColors ? Object.keys(fillColors) : scales.fill?.order;
     const palette = fillColors
         ? Object.values(fillColors)
         : scales.fill?.palette;

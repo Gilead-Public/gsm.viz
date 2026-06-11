@@ -39,10 +39,37 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
 
         function buildAnnotations(mode) {
             if (mode === 'none') return {};
-            return { labels: { [mode]: { display: true } } };
+            if (mode === 'total-outside')
+                return {
+                    labels: { total: { display: true, placement: 'outside' } },
+                };
+            if (mode === 'total-inside')
+                return {
+                    labels: { total: { display: true, placement: 'inside' } },
+                };
+            if (mode === 'segment-outside')
+                return {
+                    labels: {
+                        segment: { display: true, placement: 'end' },
+                    },
+                };
+            if (mode === 'segment-inside')
+                return {
+                    labels: {
+                        segment: { display: true, placement: 'center' },
+                    },
+                };
+            return {};
         }
 
-        function buildSpec(year, data, orientation, position, dynamicSizing, annotationsMode) {
+        function buildSpec(
+            year,
+            data,
+            orientation,
+            position,
+            dynamicSizing,
+            annotationsMode
+        ) {
             const countryOrder = data.map((d) => d.country);
 
             return {

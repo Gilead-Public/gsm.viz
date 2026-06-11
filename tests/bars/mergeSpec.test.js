@@ -153,9 +153,9 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.segment.display).toBe(false);
             expect(merged.annotations.labels.segment.value).toBe('auto');
             expect(merged.annotations.labels.segment.minSize).toBe(16);
+            expect(merged.annotations.labels.segment.placement).toBe('center');
             expect(merged.annotations.labels.total.display).toBe(false);
-            expect(merged.annotations.labels.outside.display).toBe(false);
-            expect(merged.annotations.labels.inside.display).toBe(false);
+            expect(merged.annotations.labels.total.placement).toBe('outside');
         });
 
         test('deep merges user label modes with defaults', () => {
@@ -185,25 +185,23 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.total.font).toEqual({
                 weight: 'bold',
             });
-            expect(merged.annotations.labels.outside.display).toBe(false);
-            expect(merged.annotations.labels.inside.display).toBe(false);
         });
 
-        test('deep merges user inside label config with defaults', () => {
+        test('deep merges user total placement with defaults', () => {
             const merged = mergeSpec(data, {
                 ...minimalSpec,
                 annotations: {
                     labels: {
-                        inside: { display: true, color: '#ffffff' },
+                        total: { display: true, placement: 'inside', color: '#ffffff' },
                     },
                 },
             });
 
-            expect(merged.annotations.labels.inside.display).toBe(true);
-            expect(merged.annotations.labels.inside.color).toBe('#ffffff');
+            expect(merged.annotations.labels.total.display).toBe(true);
+            expect(merged.annotations.labels.total.placement).toBe('inside');
+            expect(merged.annotations.labels.total.color).toBe('#ffffff');
             // other modes unaffected
             expect(merged.annotations.labels.segment.display).toBe(false);
-            expect(merged.annotations.labels.total.display).toBe(false);
         });
     });
 });

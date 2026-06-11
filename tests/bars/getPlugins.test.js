@@ -767,6 +767,59 @@ describe('bars/getPlugins', () => {
             );
         });
 
+        test("segment placement='end' uses anchor 'end' and align 'end' (vertical)", () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true, placement: 'end' },
+                    },
+                },
+            });
+            const segment = plugins.datalabels.labels.segment;
+            const context = makeContext();
+
+            expect(segment.anchor(context)).toBe('end');
+            expect(segment.align(context)).toBe('end');
+        });
+
+        test("segment placement='end' uses align 'right' for horizontal orientation", () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                orientation: 'horizontal',
+                annotations: {
+                    labels: {
+                        segment: { display: true, placement: 'end' },
+                    },
+                },
+            });
+            const segment = plugins.datalabels.labels.segment;
+            const context = makeContext({
+                point: { x: 10, y: 'A' },
+                datasets: [{ data: [{ x: 10, y: 'A' }] }],
+                indexAxis: 'y',
+            });
+
+            expect(segment.anchor(context)).toBe('end');
+            expect(segment.align(context)).toBe('right');
+        });
+
+        test("segment placement='center' (default) still uses anchor 'center' and align 'center'", () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    labels: {
+                        segment: { display: true, placement: 'center' },
+                    },
+                },
+            });
+            const segment = plugins.datalabels.labels.segment;
+            const context = makeContext();
+
+            expect(segment.anchor(context)).toBe('center');
+            expect(segment.align(context)).toBe('center');
+        });
+
         test('renders total labels only on the last visible dataset for a category', () => {
             const datasets = [
                 { label: 'A', data: [{ x: 'site-1', y: 10 }] },
@@ -817,145 +870,218 @@ describe('bars/getPlugins', () => {
             ).toBe('4');
         });
 
-        test('supports outside labels for single bar values', () => {
+        test("total placement='inside' uses anchor 'end' and align 'start'", () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
             const plugins = getPlugins({
                 ...baseSpec,
                 annotations: {
                     labels: {
-                        outside: { display: true, color: '#333333' },
+                        total: { display: true, placement: 'inside' },
                     },
                 },
             });
-            const outside = plugins.datalabels.labels.outside;
-            const context = makeContext();
+            const total = plugins.datalabels.labels.total;
+            const context = makeContext({ datasetIndex: 1, datasets });
 
-            expect(outside.display(context)).toBe(true);
-            expect(outside.formatter(context.dataset.data[0], context)).toBe(
-                '10'
-            );
-            expect(outside.anchor(context)).toBe('end');
-            expect(outside.align(context)).toBe('end');
-            expect(outside.color).toBe('#333333');
+            expect(total.anchor(context)).toBe('end');
+            expect(total.align(context)).toBe('start');
         });
 
-        test('places horizontal outside labels at the bar end', () => {
+        test("total placement='outside' (default) uses anchor 'end' and align 'end'", () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
+                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+            ];
             const plugins = getPlugins({
                 ...baseSpec,
-                orientation: 'horizontal',
                 annotations: {
                     labels: {
-                        outside: { display: true },
+                        total: { display: true, placement: 'outside' },
                     },
                 },
             });
-            const outside = plugins.datalabels.labels.outside;
+            const total = plugins.datalabels.labels.total;
+            const context = makeContext({ datasetIndex: 1, datasets });
+
+            expect(total.anchor(context)).toBe('end');
+            expect(total.align(context)).toBe('end');
+        });
+
+        test('total annotation shows visible-only total when a group is disabled via legend', () => {
+            const datasets = [
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
+            ];
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { labels: { total: { display: true } } },
+            });
+            const total = plugins.datalabels.labels.total;
+            // Dataset 0 (A=10) is hidden; only B=20 is visible.
             const context = makeContext({
-                point: { x: 10, y: 'A' },
-                datasets: [{ data: [{ x: 10, y: 'A' }] }],
-                indexAxis: 'y',
+                datasetIndex: 1,
+                datasets,
+                hidden: [0],
             });
 
-            expect(outside.anchor(context)).toBe('end');
-            expect(outside.align(context)).toBe('right');
+            expect(total.formatter(datasets[1].data[0], context)).toBe('20');
         });
 
-        test('renders inside labels only on the last visible dataset for a category', () => {
+        test('total annotation still shows full total when all groups are visible', () => {
             const datasets = [
-                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
-                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
+                { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
             ];
             const plugins = getPlugins({
                 ...baseSpec,
-                annotations: {
-                    labels: {
-                        inside: { display: true },
-                    },
-                },
+                annotations: { labels: { total: { display: true } } },
             });
-            const inside = plugins.datalabels.labels.inside;
-            const firstContext = makeContext({ datasetIndex: 0, datasets });
-            const lastContext = makeContext({ datasetIndex: 1, datasets });
-
-            expect(inside.display(firstContext)).toBe(false);
-            expect(inside.display(lastContext)).toBe(true);
-        });
-
-        test('inside labels show the raw stack total', () => {
-            const datasets = [
-                { label: 'A', data: [{ x: 'site-1', y: 10 }] },
-                { label: 'B', data: [{ x: 'site-1', y: 20 }] },
-            ];
-            const plugins = getPlugins({
-                ...baseSpec,
-                annotations: {
-                    labels: {
-                        inside: { display: true },
-                    },
-                },
-            });
-            const inside = plugins.datalabels.labels.inside;
+            const total = plugins.datalabels.labels.total;
             const context = makeContext({ datasetIndex: 1, datasets });
 
-            expect(inside.formatter(datasets[1].data[0], context)).toBe('30');
+            expect(total.formatter(datasets[1].data[0], context)).toBe('30');
         });
 
-        test('inside labels use anchor end and align start', () => {
-            const plugins = getPlugins({
-                ...baseSpec,
-                annotations: {
-                    labels: {
-                        inside: { display: true },
-                    },
-                },
-            });
-            const inside = plugins.datalabels.labels.inside;
-            const context = makeContext();
-
-            expect(inside.anchor(context)).toBe('end');
-            expect(inside.align(context)).toBe('start');
-        });
-
-        test('inside labels use raw totals even for position: fill', () => {
+        test('total annotation excludes dynamicCategoryAxis-hidden groups', () => {
             const datasets = [
-                { label: 'A', data: [{ x: 'site-1', y: 25, _rawY: 1 }] },
-                { label: 'B', data: [{ x: 'site-1', y: 75, _rawY: 3 }] },
+                {
+                    label: 'A',
+                    data: [],
+                    _backup_: [{ x: 'cat', y: 10 }],
+                },
+                { label: 'B', data: [{ x: 'cat', y: 20 }] },
             ];
             const plugins = getPlugins({
                 ...baseSpec,
-                position: 'fill',
-                annotations: {
-                    labels: {
-                        inside: { display: true },
-                    },
-                },
+                annotations: { labels: { total: { display: true } } },
             });
-            const context = makeContext({ datasetIndex: 1, datasets });
+            const total = plugins.datalabels.labels.total;
+            // Dataset 0 hidden via dynamicCategoryAxis (_backup_ set, isDatasetVisible false)
+            const context = makeContext({
+                datasetIndex: 1,
+                datasets,
+                hidden: [0],
+            });
 
-            expect(
-                plugins.datalabels.labels.inside.formatter(
-                    datasets[1].data[0],
-                    context
-                )
-            ).toBe('4');
+            expect(total.formatter(datasets[1].data[0], context)).toBe('20');
         });
 
-        test('applies color and font style options to inside labels', () => {
-            const plugins = getPlugins({
-                ...baseSpec,
-                annotations: {
-                    labels: {
-                        inside: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { weight: 'bold' },
+        describe('segment label dynamic contrast color', () => {
+            function makeContextWithBg(backgroundColor) {
+                return {
+                    datasetIndex: 0,
+                    dataIndex: 0,
+                    dataset: {
+                        data: [{ x: 'A', y: 10 }],
+                        backgroundColor,
+                    },
+                    chart: {
+                        data: { datasets: [{ data: [{ x: 'A', y: 10 }] }] },
+                        options: { indexAxis: 'x' },
+                        isDatasetVisible: () => true,
+                        getDatasetMeta: () => ({ data: [{ height: 30 }] }),
+                    },
+                };
+            }
+
+            test('segment color is a function when no explicit color is set', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                expect(typeof plugins.datalabels.labels.segment.color).toBe(
+                    'function'
+                );
+            });
+
+            test('returns white text for dark bar (#4e79a7)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#4e79a7');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#ffffff'
+                );
+            });
+
+            test('returns white text for dark bar (#9c755f)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#9c755f');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#ffffff'
+                );
+            });
+
+            test('returns dark text for light bar (#edc948)', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg('#edc948');
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#333333'
+                );
+            });
+
+            test('explicit color option overrides dynamic color', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, color: '#ff0000' },
                         },
                     },
-                },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe(
+                    '#ff0000'
+                );
             });
-            const inside = plugins.datalabels.labels.inside;
 
-            expect(inside.color).toBe('#ffffff');
-            expect(inside.font).toEqual({ weight: 'bold' });
+            test('falls back to dark text when backgroundColor is missing', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true } } },
+                });
+                const context = makeContextWithBg(undefined);
+                expect(plugins.datalabels.labels.segment.color(context)).toBe(
+                    '#333333'
+                );
+            });
+
+            test("segment placement='end' uses static '#333333' (no dynamic contrast)", () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, placement: 'end' },
+                        },
+                    },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe('#333333');
+            });
+
+            test("segment placement='end' with explicit color uses that color", () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: {
+                                display: true,
+                                placement: 'end',
+                                color: '#ff0000',
+                            },
+                        },
+                    },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe('#ff0000');
+            });
         });
     });
 

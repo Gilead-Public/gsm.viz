@@ -1,4 +1,5 @@
 import { format as d3Format } from 'd3';
+import getContrastColor from '../structureData/getContrastColor.js';
 
 function getValueKey(context) {
     return context.chart.options?.indexAxis === 'y' ? 'x' : 'y';
@@ -43,18 +44,40 @@ function findPointForCategory(dataset, category, context) {
     );
 }
 
+// When dynamicCategoryLegendOnClick hides a dataset it empties dataset.data and
+// stores the original points in dataset._backup_. Use the backup when available so
+// hidden groups still contribute to the category total.
+function getDataForTotal(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+}
+
 function getRawTotal(context) {
     const point = getPoint(context);
     const category = getCategory(point, context);
 
-    return context.chart.data.datasets.reduce(
-        (total, dataset, datasetIndex) => {
-            if (!isDatasetVisible(context.chart, datasetIndex)) return total;
-            const match = findPointForCategory(dataset, category, context);
-            return total + getRawValue(match, context);
-        },
-        0
-    );
+    return context.chart.data.datasets.reduce((total, dataset) => {
+        const match = getDataForTotal(dataset).find(
+            (p) => getCategory(p, context) === category
+        );
+        return total + getRawValue(match, context);
+    }, 0);
+}
+
+// Sum only datasets that are currently visible (not hidden by legend toggle or
+// dynamicCategoryAxis). Used for total/inside annotation labels so the displayed
+// total reflects what the user sees.
+function getVisibleRawTotal(context) {
+    const point = getPoint(context);
+    const category = getCategory(point, context);
+
+    return context.chart.data.datasets.reduce((total, dataset, i) => {
+        if (dataset._backup_) return total;
+        if (!isDatasetVisible(context.chart, i)) return total;
+        const match = dataset.data.find(
+            (p) => getCategory(p, context) === category
+        );
+        return total + getRawValue(match, context);
+    }, 0);
 }
 
 function getSpec(context, spec) {
@@ -78,8 +101,8 @@ function resolveLabelValue(point, context, options, mode, spec) {
                 : 'raw'
             : configuredValue;
 
-    if (mode === 'total' || mode === 'inside') {
-        return { value: getRawTotal(context), valueType: 'raw' };
+    if (mode === 'total') {
+        return { value: getVisibleRawTotal(context), valueType: 'raw' };
     }
 
     if (valueType === 'percent') {
@@ -189,55 +212,51 @@ function withStyle(config, options) {
 }
 
 function buildSegmentLabel(options, spec) {
-    return withStyle(
-        {
-            display: (context) => isLargeEnoughForSegment(context, options),
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'segment', spec),
-            anchor: () => 'center',
-            align: () => 'center',
-        },
-        options
-    );
+    const placement = options.placement ?? 'center';
+    const isEnd = placement === 'end';
+
+    const config = {
+        display: (context) => isLargeEnoughForSegment(context, options),
+        formatter: (value, context) =>
+            formatLabel(value, context, options, 'segment', spec),
+        anchor: () => 'end',
+        align: isEnd
+            ? (context) =>
+                  context.chart.options?.indexAxis === 'y' ? 'right' : 'end'
+            : () => 'center',
+    };
+
+    if (!isEnd) {
+        config.anchor = () => 'center';
+    }
+
+    if (options.color !== undefined) {
+        config.color = options.color;
+    } else if (isEnd) {
+        config.color = '#333333';
+    } else {
+        config.color = (context) =>
+            getContrastColor(context.dataset.backgroundColor);
+    }
+
+    if (options.font !== undefined) {
+        config.font = options.font;
+    }
+
+    return config;
 }
 
 function buildTotalLabel(options, spec) {
+    const placement = options.placement ?? 'outside';
+    const align = placement === 'inside' ? () => 'start' : () => 'end';
+
     return withStyle(
         {
             display: (context) => isLastVisibleDatasetForCategory(context),
             formatter: (value, context) =>
                 formatLabel(value, context, options, 'total', spec),
             anchor: () => 'end',
-            align: () => 'end',
-            offset: 4,
-        },
-        options
-    );
-}
-
-function buildInsideLabel(options, spec) {
-    return withStyle(
-        {
-            display: (context) => isLastVisibleDatasetForCategory(context),
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'inside', spec),
-            anchor: () => 'end',
-            align: () => 'start',
-            offset: 4,
-        },
-        options
-    );
-}
-
-function buildOutsideLabel(options, spec) {
-    return withStyle(
-        {
-            display: () => true,
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'outside', spec),
-            anchor: () => 'end',
-            align: (context) =>
-                context.chart.options?.indexAxis === 'y' ? 'right' : 'end',
+            align,
             offset: 4,
         },
         options
@@ -247,12 +266,7 @@ function buildOutsideLabel(options, spec) {
 export default function dataLabels(spec) {
     const labels = spec.annotations?.labels;
 
-    if (
-        !labels?.segment?.display &&
-        !labels?.total?.display &&
-        !labels?.inside?.display &&
-        !labels?.outside?.display
-    ) {
+    if (!labels?.segment?.display && !labels?.total?.display) {
         return {
             display: false,
         };
@@ -266,14 +280,6 @@ export default function dataLabels(spec) {
 
     if (labels.total?.display) {
         config.labels.total = buildTotalLabel(labels.total, spec);
-    }
-
-    if (labels.inside?.display) {
-        config.labels.inside = buildInsideLabel(labels.inside, spec);
-    }
-
-    if (labels.outside?.display) {
-        config.labels.outside = buildOutsideLabel(labels.outside, spec);
     }
 
     return config;

@@ -61,7 +61,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     annotations: {
         labels: {
             segment: {
-                display: false,    // inside each bar segment
+                display: false,    // value label inside or at the end of each bar segment
+                placement: 'center', // 'center' (inside segment) | 'end' (outside segment end)
                 value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
                 format: undefined, // optional d3-format string, e.g. ',.0f'
                 formatter: undefined,
@@ -70,22 +71,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 font: undefined,
             },
             total: {
-                display: false,    // end-of-stack total labels, placed outside the bar
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            inside: {
-                display: false,    // end-of-stack total labels, placed inside the bar
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            outside: {
-                display: false,    // outside-bar value labels
-                value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
+                display: false,    // end-of-stack total label for each category
+                placement: 'outside', // 'outside' (beyond bar end) | 'inside' (within bar end)
                 format: undefined,
                 formatter: undefined,
                 color: undefined,
@@ -94,7 +81,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         },
     },
     tooltip: {
-        // Chart.js tooltip options and callbacks
+        format: undefined,     // built-in format: 'count' | 'percent' | 'count+percent' | 'percent+count'
+        formatter: undefined,  // (count, context, details) => string — full custom control
+        // All standard Chart.js tooltip plugin options and callbacks are also supported.
+        // callbacks.label takes precedence over format / formatter.
     },
     theme: {
         maintainAspectRatio: false,
@@ -116,12 +106,15 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `scales.fill.palette`                | Tableau-10 categorical palette |
 | `annotations.labels.*.display`       | `false`                        |
 | `annotations.labels.segment.value`   | `'auto'`                       |
+| `annotations.labels.segment.placement` | `'center'`                   |
 | `annotations.labels.segment.minSize` | `16`                           |
-| `annotations.labels.outside.value`   | `'auto'`                       |
+| `annotations.labels.total.placement` | `'outside'`                    |
 | `theme.maintainAspectRatio`          | `false`                        |
 | `theme.animation`                    | `false`                        |
 | `theme.dynamicSizing`                | `false`                        |
 | `theme.dynamicCategoryAxis`          | `false`                        |
+| `tooltip.format`                     | `undefined`                    |
+| `tooltip.formatter`                  | `undefined`                    |
 
 ### Mapping modes
 
@@ -149,18 +142,30 @@ default to percentages unless you provide `tooltip.callbacks.label`.
 `chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
 independently:
 
-| Mode      | Description                                                                          |
-| --------- | ------------------------------------------------------------------------------------ |
-| `segment` | Draws labels inside each rendered bar segment                                        |
-| `total`   | Draws one total label at the end of each stacked bar (outside the bar)               |
-| `inside`  | Draws one total label at the end of each stacked bar, placed inside the bar          |
-| `outside` | Draws value labels outside bars, useful for unstacked bars                           |
+| Mode      | Description                                                                             |
+| --------- | --------------------------------------------------------------------------------------- |
+| `segment` | Draws a value label for each rendered bar segment; placement controlled by `placement`  |
+| `total`   | Draws one total label at the end of each stacked bar; placement controlled by `placement` |
 
-`inside` is useful when `total` labels would overlap the legend (e.g., `position: 'fill'` with
-`orientation: 'vertical'`). It shows the same raw stack total as `total` but uses
-`anchor: 'end', align: 'start'` so the text extends inward rather than protruding beyond the bar.
+#### `segment.placement`
 
-`segment.value` and `outside.value` accept:
+| Value      | Behaviour                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| `'center'` | Label rendered at the center of the segment (default)                   |
+| `'end'`    | Label rendered outside the end of the segment, beyond the bar           |
+
+Use `placement: 'end'` to annotate individual segments outside the bar — useful for unstacked or dodge charts where each segment spans the full bar.
+
+#### `total.placement`
+
+| Value      | Behaviour                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| `'outside'` | Total label placed beyond the end of the bar (default)                 |
+| `'inside'`  | Total label placed inside the bar at the end (`anchor: end, align: start`) |
+
+Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `position: 'fill'` with `orientation: 'vertical'`). The raw stack total is always shown regardless of placement.
+
+`segment.value` accepts:
 
 | Value       | Behaviour                                                               |
 | ----------- | ----------------------------------------------------------------------- |
@@ -192,7 +197,21 @@ gsmViz.default.bars(element, data, {
     },
 });
 
-// End-of-stack totals
+// Outside-segment labels (useful for dodge/unstacked bars)
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'prevalence' },
+    annotations: {
+        labels: {
+            segment: {
+                display: true,
+                placement: 'end',
+                format: '.1f',
+            },
+        },
+    },
+});
+
+// End-of-stack totals (outside, default)
 gsmViz.default.bars(element, data, {
     mapping: { x: 'country', y: 'count', fill: 'flag' },
     position: 'stack',
@@ -207,19 +226,22 @@ gsmViz.default.bars(element, data, {
     },
 });
 
-// Outside-bar labels
+// End-of-stack totals (inside bar)
 gsmViz.default.bars(element, data, {
-    mapping: { x: 'country', y: 'prevalence' },
+    mapping: { x: 'country', y: 'count', fill: 'flag' },
+    position: 'fill',
     annotations: {
         labels: {
-            outside: {
+            total: {
                 display: true,
-                format: '.1f',
+                placement: 'inside',
+                format: ',.0f',
             },
         },
     },
 });
 ```
+
 
 ### Color palettes
 
@@ -240,9 +262,9 @@ scales: {
 
 ```js
 const RETENTION_COLORS = {
-    'Completed':    '#4e79a7',
-    'Discontinued': '#e15759',
-    'Ongoing':      '#59a14f',
+    Completed: '#4e79a7',
+    Discontinued: '#e15759',
+    Ongoing: '#59a14f',
 };
 
 gsmViz.default.bars(element, data, {
@@ -254,6 +276,89 @@ gsmViz.default.bars(element, data, {
 `colors` takes precedence over any separately provided `palette` + `order`. Keys that appear in the map but not in the data are silently dropped; rows whose fill value is not a key in the map are excluded (same allowlist behaviour as `scales.fill.order`).
 
 When no palette or colors map is provided, the Tableau-10 categorical palette is used as the default. A darkened shade of each fill colour is automatically applied as `borderColor` to give each bar a visible non-colour edge cue.
+
+### Tooltip
+
+The `tooltip` spec key is passed through to the Chart.js [tooltip plugin](https://www.chartjs.org/docs/latest/configuration/tooltip.html), so any native Chart.js tooltip option works as-is. Two additional convenience keys — `format` and `formatter` — are provided for the most common formatting patterns.
+
+#### Built-in point data
+
+Each bar point carries these extra properties that are accessible inside any tooltip callback via `context.dataset.data[context.dataIndex]`:
+
+| Property | Description                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| `_rawY`  | Pre-normalization value when `position: 'fill'` is used; otherwise the same as the rendered value |
+| `_datum` | The original input row (or, in count mode, the array of rows that make up the bar)                |
+| `_fill`  | The fill group value assigned to this segment                                                     |
+
+#### `tooltip.format`
+
+A shorthand string that injects a pre-built `label` callback. The prefix (`"Label: "`) is omitted when no `mapping.fill` is set.
+
+| Value             | Output example          |
+| ----------------- | ----------------------- |
+| `'count'`         | `"Treated: 42"`         |
+| `'percent'`       | `"Treated: 33.3%"`      |
+| `'count+percent'` | `"Treated: 42 (33.3%)"` |
+| `'percent+count'` | `"Treated: 33.3% (42)"` |
+
+The percentage is always the segment's raw count divided by the **full** category total across all groups — including groups currently hidden via the legend (the same denominator used by `annotations.labels.segment` with `value: 'percent'`). Hiding a legend group does not change the denominator.
+
+#### `tooltip.formatter`
+
+A callback for full control over the tooltip label line. Called as:
+
+```
+formatter(count, context, details)
+```
+
+| Parameter         | Type     | Description                                                                                  |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `count`           | `number` | Raw count / value for this segment                                                           |
+| `context`         | `Object` | Standard Chart.js tooltip callback context                                                   |
+| `details`         | `Object` | `{ percent, total, fill, datum }`                                                            |
+| `details.percent` | `number` | Percentage of category total (0–100)                                                         |
+| `details.total`   | `number` | Sum of raw values across **all** datasets for this category (including legend-hidden groups) |
+| `details.fill`    | `*`      | Fill group value (`_fill`) for this segment                                                  |
+| `details.datum`   | `*`      | Original input row (`_datum`)                                                                |
+
+#### Precedence
+
+1. `tooltip.callbacks.label` — used as-is (standard Chart.js)
+2. `tooltip.formatter` — takes priority over `format`
+3. `tooltip.format` — built-in formatted callback
+4. `position: 'fill'` default — percentage callback injected when none of the above are present
+5. Chart.js default tooltip label
+
+#### Examples
+
+```js
+// Built-in count+percent format
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', fill: 'flag' },
+    tooltip: { format: 'count+percent' },
+});
+
+// Custom formatter with enriched context
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'count', fill: 'flag' },
+    tooltip: {
+        formatter: (count, context, { percent, total, fill }) =>
+            `${fill}: ${count} of ${total} (${percent.toFixed(1)}%)`,
+    },
+});
+
+// Raw Chart.js callback (always supported)
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'value' },
+    tooltip: {
+        callbacks: {
+            label: (ctx) => `Value: ${ctx.parsed.y.toFixed(2)}`,
+        },
+    },
+});
+```
+
 
 ### Ordering and labels
 
