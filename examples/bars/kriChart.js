@@ -1,4 +1,8 @@
-const dataFiles = ['../data/results.csv', '../data/metricMetadata.csv'];
+const dataFiles = [
+    '../data/results.csv',
+    '../data/metricMetadata.csv',
+    '../data/groupMetadata.csv',
+];
 
 const dataPromises = dataFiles.map((dataFile) =>
     fetch(dataFile).then((response) => response.text())
@@ -16,11 +20,85 @@ Promise.all(dataPromises)
     .then((texts) => texts.map((text) => d3.csvParse(text)))
     .then((datasets) => {
         const SnapshotDate = d3.max(datasets[0], (d) => d.SnapshotDate);
-        const results = datasets[0].filter(
+
+        // All results at the latest snapshot (used to feed scatterPlot on click).
+        const allResults = datasets[0].filter(
+            (d) => d.SnapshotDate === SnapshotDate
+        );
+
+        // KRI-only results for the bar chart.
+        const results = allResults.filter(
             (d) =>
-                d.SnapshotDate === SnapshotDate &&
                 !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
+
+        const metricMetadata = datasets[1];
+        const groupMetadata = datasets[2];
+
+        const hoverTableEl = document.getElementById('kri-hover-table');
+        const scatterEl = document.getElementById('kri-scatter');
+        const scatterTitleEl = scatterEl.querySelector('h4');
+        const scatterContainerEl = document.getElementById(
+            'kri-scatter-container'
+        );
+
+        // Hover → render a table of the sites that make up the hovered bar segment.
+        function onHover(point) {
+            const rows = Array.isArray(point._datum)
+                ? point._datum
+                : [point._datum];
+
+            const flagLabel =
+                point._fill !== undefined ? ` — Flag ${point._fill}` : '';
+
+            const sorted = [...rows].sort(
+                (a, b) => Number(b.Score) - Number(a.Score)
+            );
+
+            let html = `<h4>${point.x}${flagLabel} — ${rows.length} site${rows.length !== 1 ? 's' : ''}</h4>`;
+            html +=
+                '<table><thead><tr>' +
+                '<th>Group ID</th><th>Score</th><th>Flag</th>' +
+                '<th>Numerator</th><th>Denominator</th>' +
+                '</tr></thead><tbody>';
+            for (const row of sorted) {
+                html += `<tr>
+                    <td>${row.GroupID}</td>
+                    <td>${Number(row.Score).toFixed(3)}</td>
+                    <td>${row.Flag}</td>
+                    <td>${row.Numerator}</td>
+                    <td>${row.Denominator}</td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            hoverTableEl.innerHTML = html;
+        }
+
+        // Click → render a scatterPlot for the clicked MetricID.
+        function onClick(point) {
+            const metricID = point.x;
+            const resultsForMetric = filterOnMetricID(allResults, metricID);
+            if (!resultsForMetric.length) return;
+
+            const config = selectMetricID(metricMetadata, metricID);
+            if (!config) return;
+
+            config.displayTitle = true;
+            config.groupTooltipKeys = groupTooltipKeys[config.GroupLevel];
+
+            scatterTitleEl.textContent = config.Metric || metricID;
+            scatterEl.style.display = 'block';
+
+            gsmViz.default.scatterPlot(
+                scatterContainerEl,
+                resultsForMetric,
+                config,
+                null,
+                groupMetadata
+            );
+        }
+
+        const callbacks = { onClick, onHover };
 
         function buildAnnotations(mode) {
             if (mode === 'none') return {};
@@ -76,6 +154,7 @@ Promise.all(dataPromises)
                     dynamicCategoryAxis,
                 },
                 annotations: buildAnnotations(annotationsMode),
+                callbacks,
             };
 
             if (fillKey) {
@@ -105,6 +184,8 @@ Promise.all(dataPromises)
         );
 
         function rerender() {
+            hoverTableEl.innerHTML = '';
+            scatterEl.style.display = 'none';
             instance.destroy();
             instance = gsmViz.default.bars(
                 container,

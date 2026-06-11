@@ -33,10 +33,46 @@
             .tab-panel.active {
                 display: block;
             }
+            #kri-hover-table {
+                margin: 12px 16px 0;
+                font-size: 13px;
+            }
+            #kri-hover-table table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            #kri-hover-table th,
+            #kri-hover-table td {
+                border: 1px solid #ddd;
+                padding: 4px 10px;
+                text-align: left;
+            }
+            #kri-hover-table th {
+                background: #f0f0f0;
+                font-weight: bold;
+            }
+            #kri-hover-table tr:nth-child(even) {
+                background: #fafafa;
+            }
+            #kri-scatter {
+                margin: 16px;
+                display: none;
+            }
+            #kri-scatter h4 {
+                margin: 0 0 6px;
+                font-size: 14px;
+            }
+            #kri-scatter-container {
+                height: 400px;
+            }
         </style>
 
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="../index.js"></script>
+
+        <script src="../data/helpers/filterOnMetricID.js"></script>
+        <script src="../data/helpers/selectMetricID.js"></script>
+        <script src="../groupTooltipKeys.js"></script>
     </head>
 
     <body>
@@ -157,6 +193,13 @@
 
             <div id="kri-container">
                 <canvas id="canvas"></canvas>
+            </div>
+
+            <div id="kri-hover-table"></div>
+
+            <div id="kri-scatter">
+                <h4></h4>
+                <div id="kri-scatter-container"></div>
             </div>
         </div>
 
