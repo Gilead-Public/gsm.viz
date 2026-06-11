@@ -37,6 +37,7 @@ const defaults = {
         labels: {
             segment: {
                 display: false,
+                placement: 'center',
                 value: 'auto',
                 format: undefined,
                 formatter: undefined,
@@ -46,21 +47,7 @@ const defaults = {
             },
             total: {
                 display: false,
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            inside: {
-                display: false,
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            outside: {
-                display: false,
-                value: 'auto',
+                placement: 'outside',
                 format: undefined,
                 formatter: undefined,
                 color: undefined,

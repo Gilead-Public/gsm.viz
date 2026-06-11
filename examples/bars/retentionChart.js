@@ -14,7 +14,27 @@ fetch('data/retention.csv')
 
         function buildAnnotations(mode) {
             if (mode === 'none') return {};
-            return { labels: { [mode]: { display: true } } };
+            if (mode === 'total-outside')
+                return {
+                    labels: { total: { display: true, placement: 'outside' } },
+                };
+            if (mode === 'total-inside')
+                return {
+                    labels: { total: { display: true, placement: 'inside' } },
+                };
+            if (mode === 'segment-outside')
+                return {
+                    labels: {
+                        segment: { display: true, placement: 'end' },
+                    },
+                };
+            if (mode === 'segment-inside')
+                return {
+                    labels: {
+                        segment: { display: true, placement: 'center' },
+                    },
+                };
+            return {};
         }
 
         function buildSpec(

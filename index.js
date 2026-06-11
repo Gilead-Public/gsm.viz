@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21849,6 +21850,7 @@ var gsmViz = (() => {
       labels: {
         segment: {
           display: false,
+          placement: "center",
           value: "auto",
           format: void 0,
           formatter: void 0,
@@ -21858,21 +21860,7 @@ var gsmViz = (() => {
         },
         total: {
           display: false,
-          format: void 0,
-          formatter: void 0,
-          color: void 0,
-          font: void 0
-        },
-        inside: {
-          display: false,
-          format: void 0,
-          formatter: void 0,
-          color: void 0,
-          font: void 0
-        },
-        outside: {
-          display: false,
-          value: "auto",
+          placement: "outside",
           format: void 0,
           formatter: void 0,
           color: void 0,
@@ -22361,7 +22349,7 @@ var gsmViz = (() => {
   function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? "auto";
     const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
-    if (mode === "total" || mode === "inside") {
+    if (mode === "total") {
       return { value: getVisibleRawTotal(context), valueType: "raw" };
     }
     if (valueType === "percent") {
@@ -22399,7 +22387,7 @@ var gsmViz = (() => {
         mode,
         valueType,
         point,
-        total: mode === "total" || mode === "inside" ? value : getRawTotal2(context)
+        total: mode === "total" ? value : getRawTotal2(context)
       };
       return options.formatter(value, context, details);
     }
@@ -22443,12 +22431,17 @@ var gsmViz = (() => {
     };
   }
   function buildSegmentLabel(options, spec) {
+    const placement = options.placement ?? "center";
+    const isEnd = placement === "end";
     const config = {
       display: (context) => isLargeEnoughForSegment(context, options),
       formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
-      anchor: () => "center",
-      align: () => "center"
+      anchor: () => "end",
+      align: isEnd ? (context) => context.chart.options?.indexAxis === "y" ? "right" : "end" : () => "center"
     };
+    if (!isEnd) {
+      config.anchor = () => "center";
+    }
     if (options.color !== void 0) {
       config.color = options.color;
     } else {
@@ -22460,36 +22453,14 @@ var gsmViz = (() => {
     return config;
   }
   function buildTotalLabel(options, spec) {
+    const placement = options.placement ?? "outside";
+    const align = placement === "inside" ? () => "start" : () => "end";
     return withStyle(
       {
         display: (context) => isLastVisibleDatasetForCategory(context),
         formatter: (value, context) => formatLabel(value, context, options, "total", spec),
         anchor: () => "end",
-        align: () => "end",
-        offset: 4
-      },
-      options
-    );
-  }
-  function buildInsideLabel(options, spec) {
-    return withStyle(
-      {
-        display: (context) => isLastVisibleDatasetForCategory(context),
-        formatter: (value, context) => formatLabel(value, context, options, "inside", spec),
-        anchor: () => "end",
-        align: () => "start",
-        offset: 4
-      },
-      options
-    );
-  }
-  function buildOutsideLabel(options, spec) {
-    return withStyle(
-      {
-        display: () => true,
-        formatter: (value, context) => formatLabel(value, context, options, "outside", spec),
-        anchor: () => "end",
-        align: (context) => context.chart.options?.indexAxis === "y" ? "right" : "end",
+        align,
         offset: 4
       },
       options
@@ -22497,7 +22468,7 @@ var gsmViz = (() => {
   }
   function dataLabels2(spec) {
     const labels = spec.annotations?.labels;
-    if (!labels?.segment?.display && !labels?.total?.display && !labels?.inside?.display && !labels?.outside?.display) {
+    if (!labels?.segment?.display && !labels?.total?.display) {
       return {
         display: false
       };
@@ -22508,12 +22479,6 @@ var gsmViz = (() => {
     }
     if (labels.total?.display) {
       config.labels.total = buildTotalLabel(labels.total, spec);
-    }
-    if (labels.inside?.display) {
-      config.labels.inside = buildInsideLabel(labels.inside, spec);
-    }
-    if (labels.outside?.display) {
-      config.labels.outside = buildOutsideLabel(labels.outside, spec);
     }
     return config;
   }

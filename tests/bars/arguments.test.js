@@ -75,8 +75,8 @@ describe('bars entry point', () => {
             ...singleSeriesSpec,
             annotations: {
                 labels: {
-                    segment: { display: true },
-                    outside: { display: true },
+                    segment: { display: true, placement: 'end' },
+                    total: { display: true },
                 },
             },
         });
@@ -85,7 +85,7 @@ describe('bars entry point', () => {
             instance.options.plugins.datalabels.labels.segment
         ).toBeDefined();
         expect(
-            instance.options.plugins.datalabels.labels.outside
+            instance.options.plugins.datalabels.labels.total
         ).toBeDefined();
     });
 

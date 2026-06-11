@@ -101,7 +101,7 @@ function resolveLabelValue(point, context, options, mode, spec) {
                 : 'raw'
             : configuredValue;
 
-    if (mode === 'total' || mode === 'inside') {
+    if (mode === 'total') {
         return { value: getVisibleRawTotal(context), valueType: 'raw' };
     }
 
@@ -146,7 +146,7 @@ function formatLabel(point, context, options, mode, spec) {
             mode,
             valueType,
             point,
-            total: (mode === 'total' || mode === 'inside') ? value : getRawTotal(context),
+            total: mode === 'total' ? value : getRawTotal(context),
         };
         return options.formatter(value, context, details);
     }
@@ -212,13 +212,23 @@ function withStyle(config, options) {
 }
 
 function buildSegmentLabel(options, spec) {
+    const placement = options.placement ?? 'center';
+    const isEnd = placement === 'end';
+
     const config = {
         display: (context) => isLargeEnoughForSegment(context, options),
         formatter: (value, context) =>
             formatLabel(value, context, options, 'segment', spec),
-        anchor: () => 'center',
-        align: () => 'center',
+        anchor: () => 'end',
+        align: isEnd
+            ? (context) =>
+                  context.chart.options?.indexAxis === 'y' ? 'right' : 'end'
+            : () => 'center',
     };
+
+    if (!isEnd) {
+        config.anchor = () => 'center';
+    }
 
     if (options.color !== undefined) {
         config.color = options.color;
@@ -235,42 +245,16 @@ function buildSegmentLabel(options, spec) {
 }
 
 function buildTotalLabel(options, spec) {
+    const placement = options.placement ?? 'outside';
+    const align = placement === 'inside' ? () => 'start' : () => 'end';
+
     return withStyle(
         {
             display: (context) => isLastVisibleDatasetForCategory(context),
             formatter: (value, context) =>
                 formatLabel(value, context, options, 'total', spec),
             anchor: () => 'end',
-            align: () => 'end',
-            offset: 4,
-        },
-        options
-    );
-}
-
-function buildInsideLabel(options, spec) {
-    return withStyle(
-        {
-            display: (context) => isLastVisibleDatasetForCategory(context),
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'inside', spec),
-            anchor: () => 'end',
-            align: () => 'start',
-            offset: 4,
-        },
-        options
-    );
-}
-
-function buildOutsideLabel(options, spec) {
-    return withStyle(
-        {
-            display: () => true,
-            formatter: (value, context) =>
-                formatLabel(value, context, options, 'outside', spec),
-            anchor: () => 'end',
-            align: (context) =>
-                context.chart.options?.indexAxis === 'y' ? 'right' : 'end',
+            align,
             offset: 4,
         },
         options
@@ -280,12 +264,7 @@ function buildOutsideLabel(options, spec) {
 export default function dataLabels(spec) {
     const labels = spec.annotations?.labels;
 
-    if (
-        !labels?.segment?.display &&
-        !labels?.total?.display &&
-        !labels?.inside?.display &&
-        !labels?.outside?.display
-    ) {
+    if (!labels?.segment?.display && !labels?.total?.display) {
         return {
             display: false,
         };
@@ -299,14 +278,6 @@ export default function dataLabels(spec) {
 
     if (labels.total?.display) {
         config.labels.total = buildTotalLabel(labels.total, spec);
-    }
-
-    if (labels.inside?.display) {
-        config.labels.inside = buildInsideLabel(labels.inside, spec);
-    }
-
-    if (labels.outside?.display) {
-        config.labels.outside = buildOutsideLabel(labels.outside, spec);
     }
 
     return config;

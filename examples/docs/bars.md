@@ -61,7 +61,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     annotations: {
         labels: {
             segment: {
-                display: false,    // inside each bar segment
+                display: false,    // value label inside or at the end of each bar segment
+                placement: 'center', // 'center' (inside segment) | 'end' (outside segment end)
                 value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
                 format: undefined, // optional d3-format string, e.g. ',.0f'
                 formatter: undefined,
@@ -70,22 +71,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 font: undefined,
             },
             total: {
-                display: false,    // end-of-stack total labels, placed outside the bar
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            inside: {
-                display: false,    // end-of-stack total labels, placed inside the bar
-                format: undefined,
-                formatter: undefined,
-                color: undefined,
-                font: undefined,
-            },
-            outside: {
-                display: false,    // outside-bar value labels
-                value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
+                display: false,    // end-of-stack total label for each category
+                placement: 'outside', // 'outside' (beyond bar end) | 'inside' (within bar end)
                 format: undefined,
                 formatter: undefined,
                 color: undefined,
@@ -119,8 +106,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `scales.fill.palette`                | Tableau-10 categorical palette |
 | `annotations.labels.*.display`       | `false`                        |
 | `annotations.labels.segment.value`   | `'auto'`                       |
+| `annotations.labels.segment.placement` | `'center'`                   |
 | `annotations.labels.segment.minSize` | `16`                           |
-| `annotations.labels.outside.value`   | `'auto'`                       |
+| `annotations.labels.total.placement` | `'outside'`                    |
 | `theme.maintainAspectRatio`          | `false`                        |
 | `theme.animation`                    | `false`                        |
 | `theme.dynamicSizing`                | `false`                        |
@@ -154,18 +142,30 @@ default to percentages unless you provide `tooltip.callbacks.label`.
 `chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
 independently:
 
-| Mode      | Description                                                                 |
-| --------- | --------------------------------------------------------------------------- |
-| `segment` | Draws labels inside each rendered bar segment                               |
-| `total`   | Draws one total label at the end of each stacked bar (outside the bar)      |
-| `inside`  | Draws one total label at the end of each stacked bar, placed inside the bar |
-| `outside` | Draws value labels outside bars, useful for unstacked bars                  |
+| Mode      | Description                                                                             |
+| --------- | --------------------------------------------------------------------------------------- |
+| `segment` | Draws a value label for each rendered bar segment; placement controlled by `placement`  |
+| `total`   | Draws one total label at the end of each stacked bar; placement controlled by `placement` |
 
-`inside` is useful when `total` labels would overlap the legend (e.g., `position: 'fill'` with
-`orientation: 'vertical'`). It shows the same raw stack total as `total` but uses
-`anchor: 'end', align: 'start'` so the text extends inward rather than protruding beyond the bar.
+#### `segment.placement`
 
-`segment.value` and `outside.value` accept:
+| Value      | Behaviour                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| `'center'` | Label rendered at the center of the segment (default)                   |
+| `'end'`    | Label rendered outside the end of the segment, beyond the bar           |
+
+Use `placement: 'end'` to annotate individual segments outside the bar — useful for unstacked or dodge charts where each segment spans the full bar.
+
+#### `total.placement`
+
+| Value      | Behaviour                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| `'outside'` | Total label placed beyond the end of the bar (default)                 |
+| `'inside'`  | Total label placed inside the bar at the end (`anchor: end, align: start`) |
+
+Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `position: 'fill'` with `orientation: 'vertical'`). The raw stack total is always shown regardless of placement.
+
+`segment.value` accepts:
 
 | Value       | Behaviour                                                               |
 | ----------- | ----------------------------------------------------------------------- |
@@ -197,7 +197,21 @@ gsmViz.default.bars(element, data, {
     },
 });
 
-// End-of-stack totals
+// Outside-segment labels (useful for dodge/unstacked bars)
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', y: 'prevalence' },
+    annotations: {
+        labels: {
+            segment: {
+                display: true,
+                placement: 'end',
+                format: '.1f',
+            },
+        },
+    },
+});
+
+// End-of-stack totals (outside, default)
 gsmViz.default.bars(element, data, {
     mapping: { x: 'country', y: 'count', fill: 'flag' },
     position: 'stack',
@@ -212,14 +226,16 @@ gsmViz.default.bars(element, data, {
     },
 });
 
-// Outside-bar labels
+// End-of-stack totals (inside bar)
 gsmViz.default.bars(element, data, {
-    mapping: { x: 'country', y: 'prevalence' },
+    mapping: { x: 'country', y: 'count', fill: 'flag' },
+    position: 'fill',
     annotations: {
         labels: {
-            outside: {
+            total: {
                 display: true,
-                format: '.1f',
+                placement: 'inside',
+                format: ',.0f',
             },
         },
     },
