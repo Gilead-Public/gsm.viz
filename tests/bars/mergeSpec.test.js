@@ -108,6 +108,20 @@ describe('bars/mergeSpec', () => {
         expect(merged.scales.fill.palette.length).toBeGreaterThan(0);
     });
 
+    test('passes scales.fill.colors through when provided', () => {
+        const colors = { Red: '#ff0000', Green: '#00ff00' };
+        const merged = mergeSpec(data, {
+            ...minimalSpec,
+            scales: { fill: { colors } },
+        });
+        expect(merged.scales.fill.colors).toEqual(colors);
+    });
+
+    test('scales.fill.colors is undefined by default', () => {
+        const merged = mergeSpec(data, minimalSpec);
+        expect(merged.scales.fill.colors).toBeUndefined();
+    });
+
     describe('tooltip', () => {
         test('defaults tooltip to empty object when not specified', () => {
             const merged = mergeSpec(data, minimalSpec);

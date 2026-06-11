@@ -21,7 +21,14 @@ export default function structureData(spec) {
     const { data, mapping, scales, orientation } = spec;
     const { x: xKey, y: yKey, fill: fillKey } = mapping;
 
-    const fillOrder = scales.fill?.order;
+    // Resolve scales.fill.colors (named map) into order + palette when present.
+    // colors takes precedence over any separately provided order/palette.
+    const fillColors = scales.fill?.colors;
+    const fillOrder = fillColors ? Object.keys(fillColors) : scales.fill?.order;
+    const palette = fillColors
+        ? Object.values(fillColors)
+        : scales.fill?.palette;
+
     const activeData =
         fillKey && fillOrder
             ? (() => {
@@ -75,8 +82,7 @@ export default function structureData(spec) {
         datasets = reorderDatasets(datasets, fillOrder);
     }
 
-    const palette = scales.fill?.palette;
-    if (palette) {
+    if (palette && palette.length > 0) {
         if (fillKey) {
             const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
             datasets.forEach((ds, i) => {

@@ -399,7 +399,10 @@ describe('bars/getPlugins/buildTooltip', () => {
                 chart,
                 dataset: datasets[datasetIndex],
                 dataIndex: 0,
-                parsed: { x: 'cat1', y: datasets[datasetIndex].data[0]?.y ?? 0 },
+                parsed: {
+                    x: 'cat1',
+                    y: datasets[datasetIndex].data[0]?.y ?? 0,
+                },
             };
         }
 
