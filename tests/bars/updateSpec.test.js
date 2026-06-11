@@ -120,7 +120,9 @@ describe('bars/updateSpec', () => {
 
         expect(chart.options.plugins.datalabels.labels.segment).toBeDefined();
         expect(chart.data._spec_.annotations.labels.segment.display).toBe(true);
-        expect(chart.data._spec_.annotations.labels.segment.placement).toBe('end');
+        expect(chart.data._spec_.annotations.labels.segment.placement).toBe(
+            'end'
+        );
     });
 
     test('rebuilds datalabel options after a data update', () => {
@@ -154,7 +156,11 @@ describe('bars/updateSpec', () => {
             ...spec,
             annotations: {
                 labels: {
-                    total: { display: true, placement: 'inside', color: '#ffffff' },
+                    total: {
+                        display: true,
+                        placement: 'inside',
+                        color: '#ffffff',
+                    },
                 },
             },
         });
@@ -162,7 +168,9 @@ describe('bars/updateSpec', () => {
         updateSpec(chart, { labels: { title: 'Updated' } });
 
         expect(chart.data._spec_.annotations.labels.total.display).toBe(true);
-        expect(chart.data._spec_.annotations.labels.total.placement).toBe('inside');
+        expect(chart.data._spec_.annotations.labels.total.placement).toBe(
+            'inside'
+        );
         expect(chart.data._spec_.annotations.labels.total.color).toBe(
             '#ffffff'
         );
@@ -181,6 +189,8 @@ describe('bars/updateSpec', () => {
 
         expect(chart.options.plugins.datalabels.labels.total).toBeDefined();
         expect(chart.data._spec_.annotations.labels.total.display).toBe(true);
-        expect(chart.data._spec_.annotations.labels.total.placement).toBe('inside');
+        expect(chart.data._spec_.annotations.labels.total.placement).toBe(
+            'inside'
+        );
     });
 });

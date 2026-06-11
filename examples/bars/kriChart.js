@@ -28,8 +28,7 @@ Promise.all(dataPromises)
 
         // KRI-only results for the bar chart.
         const results = allResults.filter(
-            (d) =>
-                !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
+            (d) => !EXCLUDED_PREFIXES.some((p) => d.MetricID.startsWith(p))
         );
 
         const metricMetadata = datasets[1];
@@ -56,7 +55,9 @@ Promise.all(dataPromises)
             hoverTableEl.innerHTML = '';
 
             const heading = document.createElement('h4');
-            heading.textContent = `${point.x}${flagLabel} — ${rows.length} site${rows.length !== 1 ? 's' : ''}`;
+            heading.textContent = `${point.x}${flagLabel} — ${
+                rows.length
+            } site${rows.length !== 1 ? 's' : ''}`;
             hoverTableEl.appendChild(heading);
 
             const table = document.createElement('table');

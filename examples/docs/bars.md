@@ -101,26 +101,26 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 ### Defaults
 
-| Key                                  | Default                        |
-| ------------------------------------ | ------------------------------ |
-| `orientation`                        | `'vertical'`                   |
-| `position`                           | `'stack'`                      |
-| `scales.x.type`                      | `'category'`                   |
-| `scales.y.type`                      | `'linear'`                     |
-| `scales.fill.palette`                | Tableau-10 categorical palette |
-| `annotations.labels.*.display`       | `false`                        |
-| `annotations.labels.segment.value`   | `'auto'`                       |
-| `annotations.labels.segment.placement` | `'center'`                   |
-| `annotations.labels.segment.minSize` | `16`                           |
-| `annotations.labels.total.placement` | `'outside'`                    |
-| `theme.maintainAspectRatio`          | `false`                        |
-| `theme.animation`                    | `false`                        |
-| `theme.dynamicSizing`                | `false`                        |
-| `theme.dynamicCategoryAxis`          | `false`                        |
-| `tooltip.format`                     | `undefined`                    |
-| `tooltip.formatter`                  | `undefined`                    |
-| `callbacks.onClick`                  | `null`                         |
-| `callbacks.onHover`                  | `null`                         |
+| Key                                    | Default                        |
+| -------------------------------------- | ------------------------------ |
+| `orientation`                          | `'vertical'`                   |
+| `position`                             | `'stack'`                      |
+| `scales.x.type`                        | `'category'`                   |
+| `scales.y.type`                        | `'linear'`                     |
+| `scales.fill.palette`                  | Tableau-10 categorical palette |
+| `annotations.labels.*.display`         | `false`                        |
+| `annotations.labels.segment.value`     | `'auto'`                       |
+| `annotations.labels.segment.placement` | `'center'`                     |
+| `annotations.labels.segment.minSize`   | `16`                           |
+| `annotations.labels.total.placement`   | `'outside'`                    |
+| `theme.maintainAspectRatio`            | `false`                        |
+| `theme.animation`                      | `false`                        |
+| `theme.dynamicSizing`                  | `false`                        |
+| `theme.dynamicCategoryAxis`            | `false`                        |
+| `tooltip.format`                       | `undefined`                    |
+| `tooltip.formatter`                    | `undefined`                    |
+| `callbacks.onClick`                    | `null`                         |
+| `callbacks.onHover`                    | `null`                         |
 
 ### Mapping modes
 
@@ -148,25 +148,25 @@ default to percentages unless you provide `tooltip.callbacks.label`.
 `chartjs-plugin-datalabels`. Labels are disabled by default and can be enabled
 independently:
 
-| Mode      | Description                                                                             |
-| --------- | --------------------------------------------------------------------------------------- |
-| `segment` | Draws a value label for each rendered bar segment; placement controlled by `placement`  |
+| Mode      | Description                                                                               |
+| --------- | ----------------------------------------------------------------------------------------- |
+| `segment` | Draws a value label for each rendered bar segment; placement controlled by `placement`    |
 | `total`   | Draws one total label at the end of each stacked bar; placement controlled by `placement` |
 
 #### `segment.placement`
 
-| Value      | Behaviour                                                               |
-| ---------- | ----------------------------------------------------------------------- |
-| `'center'` | Label rendered at the center of the segment (default)                   |
-| `'end'`    | Label rendered outside the end of the segment, beyond the bar           |
+| Value      | Behaviour                                                     |
+| ---------- | ------------------------------------------------------------- |
+| `'center'` | Label rendered at the center of the segment (default)         |
+| `'end'`    | Label rendered outside the end of the segment, beyond the bar |
 
 Use `placement: 'end'` to annotate individual segments outside the bar — useful for unstacked or dodge charts where each segment spans the full bar.
 
 #### `total.placement`
 
-| Value      | Behaviour                                                               |
-| ---------- | ----------------------------------------------------------------------- |
-| `'outside'` | Total label placed beyond the end of the bar (default)                 |
+| Value       | Behaviour                                                                  |
+| ----------- | -------------------------------------------------------------------------- |
+| `'outside'` | Total label placed beyond the end of the bar (default)                     |
 | `'inside'`  | Total label placed inside the bar at the end (`anchor: end, align: start`) |
 
 Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `position: 'fill'` with `orientation: 'vertical'`). The raw stack total is always shown regardless of placement.
@@ -247,7 +247,6 @@ gsmViz.default.bars(element, data, {
     },
 });
 ```
-
 
 ### Color palettes
 
@@ -365,7 +364,6 @@ gsmViz.default.bars(element, data, {
 });
 ```
 
-
 ### Ordering and labels
 
 Categories are sorted alphanumerically by default. Set `scales.x.order` to
@@ -405,12 +403,12 @@ gsmViz.default.bars(element, data, {
 
 ### Point object
 
-| Property  | Description                                                                         |
-| --------- | ----------------------------------------------------------------------------------- |
-| `x`       | Category value (or numeric value in `horizontal` orientation)                       |
-| `y`       | Numeric bar value (or category value in `horizontal` orientation; percentage when `position: 'fill'`) |
-| `_fill`   | Fill group value for this segment (`undefined` when no `mapping.fill`)              |
-| `_datum`  | Original input row, or (in count mode) the array of rows that make up the bar       |
+| Property | Description                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `x`      | Category value (or numeric value in `horizontal` orientation)                                         |
+| `y`      | Numeric bar value (or category value in `horizontal` orientation; percentage when `position: 'fill'`) |
+| `_fill`  | Fill group value for this segment (`undefined` when no `mapping.fill`)                                |
+| `_datum` | Original input row, or (in count mode) the array of rows that make up the bar                         |
 
 > **Note on horizontal orientation:** When `spec.orientation` is `'horizontal'`, Chart.js swaps the axes internally. As a result, `point.x` holds the numeric value and `point.y` holds the category value — the reverse of vertical (default) orientation.
 
@@ -420,9 +418,9 @@ When either `callbacks.onClick` or `callbacks.onHover` is registered, the cursor
 
 ### Notes
 
-- `callbacks.onClick` is called only when the pointer is directly over a bar element. Clicks on empty chart areas are ignored.
-- Both callbacks are optional and independent. You can supply one without the other.
-- `callbacks` defaults to `{ onClick: null, onHover: null }`.
+-   `callbacks.onClick` is called only when the pointer is directly over a bar element. Clicks on empty chart areas are ignored.
+-   Both callbacks are optional and independent. You can supply one without the other.
+-   `callbacks` defaults to `{ onClick: null, onHover: null }`.
 
 ---
 

@@ -77,14 +77,18 @@ export default function validateSpec(data, spec) {
             callbacks.onClick !== null &&
             typeof callbacks.onClick !== 'function'
         ) {
-            throw new Error('spec.callbacks.onClick must be a function or null');
+            throw new Error(
+                'spec.callbacks.onClick must be a function or null'
+            );
         }
         if (
             callbacks.onHover !== undefined &&
             callbacks.onHover !== null &&
             typeof callbacks.onHover !== 'function'
         ) {
-            throw new Error('spec.callbacks.onHover must be a function or null');
+            throw new Error(
+                'spec.callbacks.onHover must be a function or null'
+            );
         }
     }
 }

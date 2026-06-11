@@ -84,9 +84,7 @@ describe('bars entry point', () => {
         expect(
             instance.options.plugins.datalabels.labels.segment
         ).toBeDefined();
-        expect(
-            instance.options.plugins.datalabels.labels.total
-        ).toBeDefined();
+        expect(instance.options.plugins.datalabels.labels.total).toBeDefined();
     });
 
     test('registers the ChartDataLabels plugin for bars charts', () => {

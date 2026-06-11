@@ -189,6 +189,40 @@ These apply at all times, across all tasks:
 
 ---
 
+## Pull Requests
+
+### Opening a PR
+
+-   **Target branch:** Always target `dev` (the default branch). Never open PRs against `main`.
+-   Use `gh pr create --base dev` or set the base branch explicitly in the GitHub UI.
+
+### PR Description Structure
+
+```
+## Summary
+
+<Short description of what this PR does and why.>
+
+## Changes
+
+- <Bullet list of notable changes>
+
+## Resolved Issues
+
+- Resolves #<issue-number>
+- Closes #<issue-number>
+```
+
+Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresses so GitHub auto-closes them on merge.
+
+### After Opening
+
+-   Monitor Copilot's review comments on the PR.
+-   Address any meaningful findings (bugs, logic errors, missing tests, security concerns).
+-   Dismiss or note findings that are style-only or out of scope, but do not silently ignore substantive feedback.
+
+---
+
 ## Boundaries
 
 ### Always Do
@@ -216,3 +250,4 @@ These apply at all times, across all tasks:
 -   Remove failing tests without approval
 -   Skip TDD for any code change
 -   Push to `main` without review
+-   Open PRs targeting `main` directly (always use `dev`)

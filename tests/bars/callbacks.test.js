@@ -51,7 +51,11 @@ describe('bars callbacks', () => {
             const onClick = jest.fn();
             const chart = makeChart({ callbacks: { onClick } });
             const event = { type: 'click' };
-            chart.options.onClick(event, [{ datasetIndex: 0, index: 0 }], chart);
+            chart.options.onClick(
+                event,
+                [{ datasetIndex: 0, index: 0 }],
+                chart
+            );
             const [, receivedEvent] = onClick.mock.calls[0];
             expect(receivedEvent).toBe(event);
         });
@@ -75,7 +79,11 @@ describe('bars callbacks', () => {
             const chart = makeChart();
             expect(() => chart.options.onClick({}, [], chart)).not.toThrow();
             expect(() =>
-                chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }], chart)
+                chart.options.onClick(
+                    {},
+                    [{ datasetIndex: 0, index: 0 }],
+                    chart
+                )
             ).not.toThrow();
         });
     });
@@ -96,7 +104,11 @@ describe('bars callbacks', () => {
             const chart = makeChart({ callbacks: { onHover } });
             const target = { style: { cursor: '' } };
             const event = { native: { target } };
-            chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart);
+            chart.options.onHover(
+                event,
+                [{ datasetIndex: 0, index: 0 }],
+                chart
+            );
             const [, receivedEvent] = onHover.mock.calls[0];
             expect(receivedEvent).toBe(event);
         });
@@ -131,18 +143,24 @@ describe('bars callbacks', () => {
             const target = { style: { cursor: '' } };
             const event = { native: { target } };
             expect(() =>
-                chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart)
+                chart.options.onHover(
+                    event,
+                    [{ datasetIndex: 0, index: 0 }],
+                    chart
+                )
             ).not.toThrow();
-            expect(() =>
-                chart.options.onHover(event, [], chart)
-            ).not.toThrow();
+            expect(() => chart.options.onHover(event, [], chart)).not.toThrow();
         });
 
         test('does not set cursor when no callbacks are provided', () => {
             const chart = makeChart();
             const target = { style: { cursor: '' } };
             const event = { native: { target } };
-            chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart);
+            chart.options.onHover(
+                event,
+                [{ datasetIndex: 0, index: 0 }],
+                chart
+            );
             expect(target.style.cursor).toBe('');
         });
 
@@ -150,7 +168,11 @@ describe('bars callbacks', () => {
             const chart = makeChart({ callbacks: { onClick: jest.fn() } });
             const event = { native: null };
             expect(() =>
-                chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart)
+                chart.options.onHover(
+                    event,
+                    [{ datasetIndex: 0, index: 0 }],
+                    chart
+                )
             ).not.toThrow();
         });
 
@@ -158,7 +180,11 @@ describe('bars callbacks', () => {
             const chart = makeChart({ callbacks: { onHover: jest.fn() } });
             const event = {};
             expect(() =>
-                chart.options.onHover(event, [{ datasetIndex: 0, index: 0 }], chart)
+                chart.options.onHover(
+                    event,
+                    [{ datasetIndex: 0, index: 0 }],
+                    chart
+                )
             ).not.toThrow();
         });
     });
