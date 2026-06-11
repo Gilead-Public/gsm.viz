@@ -33,10 +33,64 @@
             .tab-panel.active {
                 display: block;
             }
+            #kri-output {
+                display: flex;
+                gap: 0;
+                margin-top: 12px;
+                border-top: 1px solid #e0e0e0;
+            }
+            #kri-hover-table-panel,
+            #kri-scatter-panel {
+                padding: 10px 16px;
+            }
+            #kri-hover-table-panel {
+                flex: 1 1 33.33%;
+                border-right: 1px solid #e0e0e0;
+                min-width: 0;
+            }
+            #kri-scatter-panel {
+                flex: 2 1 66.67%;
+                min-width: 0;
+            }
+            .kri-panel-label {
+                font-size: 11px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #888;
+                margin: 0 0 8px;
+            }
+            #kri-hover-table {
+                font-size: 13px;
+            }
+            #kri-hover-table table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            #kri-hover-table th,
+            #kri-hover-table td {
+                border: 1px solid #ddd;
+                padding: 4px 8px;
+                text-align: left;
+            }
+            #kri-hover-table th {
+                background: #f0f0f0;
+                font-weight: bold;
+            }
+            #kri-hover-table tr:nth-child(even) {
+                background: #fafafa;
+            }
+            #kri-scatter-container {
+                height: 400px;
+            }
         </style>
 
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="../index.js"></script>
+
+        <script src="../data/helpers/filterOnMetricID.js"></script>
+        <script src="../data/helpers/selectMetricID.js"></script>
+        <script src="../groupTooltipKeys.js"></script>
     </head>
 
     <body>
@@ -165,6 +219,17 @@
 
             <div id="kri-container">
                 <canvas id="canvas"></canvas>
+            </div>
+
+            <div id="kri-output">
+                <div id="kri-hover-table-panel">
+                    <p class="kri-panel-label">Hover for Data</p>
+                    <div id="kri-hover-table"></div>
+                </div>
+                <div id="kri-scatter-panel">
+                    <p class="kri-panel-label">Click for Scatter Plot</p>
+                    <div id="kri-scatter-container"></div>
+                </div>
             </div>
         </div>
 
