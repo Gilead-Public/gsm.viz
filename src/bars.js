@@ -13,6 +13,10 @@ import displayWhiteBackground from './util/displayWhiteBackground.js';
 import updateData from './bars/updateData.js';
 import updateSpec from './bars/updateSpec.js';
 
+// event callbacks
+import onClick from './bars/onClick.js';
+import onHover from './bars/onHover.js';
+
 /**
  * Render a bar chart using a ggplot2-inspired spec.
  *
@@ -60,6 +64,8 @@ export default function bars(element = 'body', data = [], spec = {}) {
         animation: merged.theme.animation,
         indexAxis: scalesConfig._indexAxis,
         maintainAspectRatio: merged.theme.maintainAspectRatio,
+        onClick,
+        onHover,
         plugins: getPlugins(merged),
         scales: {
             x: scalesConfig.x,

@@ -86,6 +86,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         // All standard Chart.js tooltip plugin options and callbacks are also supported.
         // callbacks.label takes precedence over format / formatter.
     },
+    callbacks: {
+        onClick: null,   // (point, event) => void — called when a bar element is clicked
+        onHover: null,   // (point, event) => void — called when a bar element is hovered
+    },
     theme: {
         maintainAspectRatio: false,
         animation: false,
@@ -115,6 +119,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `theme.dynamicCategoryAxis`          | `false`                        |
 | `tooltip.format`                     | `undefined`                    |
 | `tooltip.formatter`                  | `undefined`                    |
+| `callbacks.onClick`                  | `null`                         |
+| `callbacks.onHover`                  | `null`                         |
 
 ### Mapping modes
 
@@ -376,6 +382,45 @@ fill values are absent from the data.
 Axis labels default to `mapping.x` and `mapping.y`. The legend title defaults to
 `mapping.fill`. Set `scales.x.label`, `scales.y.label`, or
 `scales.fill.label` to `null` or `''` to hide the corresponding label.
+
+---
+
+## Callbacks
+
+Use `spec.callbacks` to hook into click and hover interactions. Each callback receives the Chart.js **point object** for the active bar element plus the raw Chart.js event.
+
+```js
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'category', y: 'value', fill: 'group' },
+    callbacks: {
+        onClick: (point, event) => {
+            console.log('clicked:', point.x, point.y, point._datum);
+        },
+        onHover: (point, event) => {
+            console.log('hovered:', point.x, point.y);
+        },
+    },
+});
+```
+
+### Point object
+
+| Property  | Description                                                                         |
+| --------- | ----------------------------------------------------------------------------------- |
+| `x`       | Category value                                                                      |
+| `y`       | Numeric bar value (or percentage when `position: 'fill'`)                           |
+| `_fill`   | Fill group value for this segment (`undefined` when no `mapping.fill`)              |
+| `_datum`  | Original input row, or (in count mode) the array of rows that make up the bar       |
+
+### Cursor behaviour
+
+When either `callbacks.onClick` or `callbacks.onHover` is registered, the cursor automatically changes to `pointer` when hovering over a bar element, and resets to `default` when the cursor moves off. No cursor changes occur when no callbacks are set.
+
+### Notes
+
+- `callbacks.onClick` is called only when the pointer is directly over a bar element. Clicks on empty chart areas are ignored.
+- Both callbacks are optional and independent. You can supply one without the other.
+- `callbacks` defaults to `{ onClick: null, onHover: null }`.
 
 ---
 
