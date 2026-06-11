@@ -36,8 +36,6 @@ Promise.all(dataPromises)
         const groupMetadata = datasets[2];
 
         const hoverTableEl = document.getElementById('kri-hover-table');
-        const scatterEl = document.getElementById('kri-scatter');
-        const scatterTitleEl = scatterEl.querySelector('h4');
         const scatterContainerEl = document.getElementById(
             'kri-scatter-container'
         );
@@ -85,9 +83,6 @@ Promise.all(dataPromises)
 
             config.displayTitle = true;
             config.groupTooltipKeys = groupTooltipKeys[config.GroupLevel];
-
-            scatterTitleEl.textContent = config.Metric || metricID;
-            scatterEl.style.display = 'block';
 
             gsmViz.default.scatterPlot(
                 scatterContainerEl,
@@ -185,7 +180,7 @@ Promise.all(dataPromises)
 
         function rerender() {
             hoverTableEl.innerHTML = '';
-            scatterEl.style.display = 'none';
+            scatterContainerEl.innerHTML = '';
             instance.destroy();
             instance = gsmViz.default.bars(
                 container,

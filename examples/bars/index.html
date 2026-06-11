@@ -33,8 +33,34 @@
             .tab-panel.active {
                 display: block;
             }
+            #kri-output {
+                display: flex;
+                gap: 0;
+                margin-top: 12px;
+                border-top: 1px solid #e0e0e0;
+            }
+            #kri-hover-table-panel,
+            #kri-scatter-panel {
+                padding: 10px 16px;
+            }
+            #kri-hover-table-panel {
+                flex: 1 1 33.33%;
+                border-right: 1px solid #e0e0e0;
+                min-width: 0;
+            }
+            #kri-scatter-panel {
+                flex: 2 1 66.67%;
+                min-width: 0;
+            }
+            .kri-panel-label {
+                font-size: 11px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #888;
+                margin: 0 0 8px;
+            }
             #kri-hover-table {
-                margin: 12px 16px 0;
                 font-size: 13px;
             }
             #kri-hover-table table {
@@ -44,7 +70,7 @@
             #kri-hover-table th,
             #kri-hover-table td {
                 border: 1px solid #ddd;
-                padding: 4px 10px;
+                padding: 4px 8px;
                 text-align: left;
             }
             #kri-hover-table th {
@@ -53,14 +79,6 @@
             }
             #kri-hover-table tr:nth-child(even) {
                 background: #fafafa;
-            }
-            #kri-scatter {
-                margin: 16px;
-                display: none;
-            }
-            #kri-scatter h4 {
-                margin: 0 0 6px;
-                font-size: 14px;
             }
             #kri-scatter-container {
                 height: 400px;
@@ -195,11 +213,15 @@
                 <canvas id="canvas"></canvas>
             </div>
 
-            <div id="kri-hover-table"></div>
-
-            <div id="kri-scatter">
-                <h4></h4>
-                <div id="kri-scatter-container"></div>
+            <div id="kri-output">
+                <div id="kri-hover-table-panel">
+                    <p class="kri-panel-label">Hover for Data</p>
+                    <div id="kri-hover-table"></div>
+                </div>
+                <div id="kri-scatter-panel">
+                    <p class="kri-panel-label">Click for Scatter Plot</p>
+                    <div id="kri-scatter-container"></div>
+                </div>
             </div>
         </div>
 
