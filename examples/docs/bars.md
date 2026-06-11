@@ -442,11 +442,22 @@ always the first argument.
 Captures the rendered chart canvas (including the white background) and
 triggers a browser download.
 
+When `filename` is omitted the name is derived from the chart spec using
+this priority order:
+
+1. `spec.labels.title` — sanitized to lowercase with spaces replaced by dashes
+2. `spec.scales.fill.label` + `-by-` + `spec.scales.x.label` (both must be present)
+3. `spec.mapping.fill` (if set) + `-by-` + `spec.mapping.x`
+4. `bars.png` — hard fallback when none of the above are available
+
+In all cases the filename is lowercased, invalid characters stripped, and
+spaces replaced with dashes.
+
 ```js
-// Default filename: "bars.png"
+// Auto-derived from spec — e.g. "retention-status-by-site.png"
 chart.helpers.exportImage(chart);
 
-// Custom filename
+// Explicit filename
 chart.helpers.exportImage(chart, 'retention-by-site.png');
 ```
 

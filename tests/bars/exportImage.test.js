@@ -5,9 +5,10 @@
 import exportImage from '../../src/bars/exportImage.js';
 
 // Minimal chart stub that mimics Chart.js instance shape used by exportImage.
-function makeChartStub(dataURL = 'data:image/png;base64,abc123') {
+function makeChartStub(dataURL = 'data:image/png;base64,abc123', spec = null) {
     return {
         toBase64Image: jest.fn().mockReturnValue(dataURL),
+        data: { _spec_: spec },
     };
 }
 
@@ -52,10 +53,34 @@ describe('exportImage', () => {
         expect(createdAnchors).toHaveLength(1);
     });
 
-    test('sets download attribute to "bars.png" by default', () => {
+    test('sets download attribute to "bars.png" when no filename and no spec', () => {
         const chart = makeChartStub();
         exportImage(chart);
         expect(createdAnchors[0].download).toBe('bars.png');
+    });
+
+    test('derives default filename from spec.labels.title when no filename given', () => {
+        const chart = makeChartStub('data:image/png;base64,abc', {
+            labels: { title: 'Retention Status by Site' },
+        });
+        exportImage(chart);
+        expect(createdAnchors[0].download).toBe('retention-status-by-site.png');
+    });
+
+    test('derives default filename from scale labels when title absent', () => {
+        const chart = makeChartStub('data:image/png;base64,abc', {
+            scales: { fill: { label: 'Flag' }, x: { label: 'Metric ID' } },
+        });
+        exportImage(chart);
+        expect(createdAnchors[0].download).toBe('flag-by-metric-id.png');
+    });
+
+    test('derives default filename from mapping when title and scale labels absent', () => {
+        const chart = makeChartStub('data:image/png;base64,abc', {
+            mapping: { fill: 'Flag', x: 'MetricID' },
+        });
+        exportImage(chart);
+        expect(createdAnchors[0].download).toBe('flag-by-metricid.png');
     });
 
     test('sets download attribute to the provided filename', () => {

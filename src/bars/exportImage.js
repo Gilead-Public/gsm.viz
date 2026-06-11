@@ -5,13 +5,26 @@
  * displayWhiteBackground plugin, so toBase64Image() produces a clean,
  * opaque PNG suitable for inclusion in documents.
  *
+ * When no filename is supplied the name is derived from the chart spec
+ * using the following priority order:
+ *  1. spec.labels.title (sanitized)
+ *  2. spec.scales.fill.label + "-by-" + spec.scales.x.label
+ *  3. spec.mapping.fill (if set) + "-by-" + spec.mapping.x
+ *  4. "bars.png" (hard fallback)
+ *
  * @param {Object} chart    - Chart.js chart instance
- * @param {string} [filename='bars.png'] - target download filename
+ * @param {string} [filename] - target download filename; auto-derived when omitted
  */
-export default function exportImage(chart, filename = 'bars.png') {
+import defaultFilename from './defaultFilename.js';
+
+export default function exportImage(chart, filename) {
+    const name =
+        filename !== undefined
+            ? filename
+            : defaultFilename(chart.data?._spec_);
     const dataURL = chart.toBase64Image();
     const a = document.createElement('a');
-    a.download = filename;
+    a.download = name;
     a.href = dataURL;
     document.body.appendChild(a);
     a.click();
