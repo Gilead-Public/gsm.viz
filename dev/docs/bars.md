@@ -432,6 +432,38 @@ After instantiation the chart exposes `chart.helpers`:
 | ------------------------------- | ----------------------------------------------- |
 | `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
 | `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
+| `exportImage(chart, filename?)` | Download the chart as a PNG file                |
+
+All three helpers follow the same calling convention: the chart instance is
+always the first argument.
+
+### `exportImage(chart, filename?)`
+
+Captures the rendered chart canvas (including the white background) and
+triggers a browser download.
+
+When `filename` is omitted the name is derived from the chart spec using
+this priority order:
+
+1. `spec.labels.title` — sanitized to lowercase with spaces replaced by dashes
+2. `spec.scales.fill.label` + `-by-` + `spec.scales.x.label` (both must be present)
+3. `spec.mapping.fill` (if set) + `-by-` + `spec.mapping.x`
+4. `bars.png` — hard fallback when none of the above are available
+
+In all cases the filename is lowercased, invalid characters stripped, and
+spaces replaced with dashes.
+
+```js
+// Auto-derived from spec — e.g. "retention-status-by-site.png"
+chart.helpers.exportImage(chart);
+
+// Explicit filename
+chart.helpers.exportImage(chart, 'retention-by-site.png');
+```
+
+The chart already renders with a white background (applied by the
+`displayWhiteBackground` plugin), so the exported PNG is fully opaque and
+suitable for inclusion in documents and reports.
 
 ---
 

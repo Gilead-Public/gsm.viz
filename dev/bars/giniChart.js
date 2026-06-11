@@ -114,6 +114,12 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
         }
 
         render();
+
+        document
+            .getElementById('gini-export-btn')
+            .addEventListener('click', () =>
+                instance.helpers.exportImage(instance, 'gini-index.png')
+            );
         onAnyChange(
             [
                 'gini-year',

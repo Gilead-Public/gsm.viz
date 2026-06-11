@@ -22710,6 +22710,37 @@ var gsmViz = (() => {
     chart.update();
   }
 
+  // src/bars/defaultFilename.js
+  function toFilename(str) {
+    return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  }
+  function defaultFilename(spec) {
+    const { labels = {}, scales: scales2 = {}, mapping = {} } = spec || {};
+    if (labels.title) {
+      return toFilename(labels.title) + ".png";
+    }
+    if (scales2.fill?.label && scales2.x?.label) {
+      return toFilename(scales2.fill.label) + "-by-" + toFilename(scales2.x.label) + ".png";
+    }
+    if (mapping.x) {
+      const prefix = mapping.fill ? toFilename(mapping.fill) + "-by-" : "";
+      return prefix + toFilename(mapping.x) + ".png";
+    }
+    return "bars.png";
+  }
+
+  // src/bars/exportImage.js
+  function exportImage(chart, filename) {
+    const name = filename !== void 0 ? filename : defaultFilename(chart.data?._spec_);
+    const dataURL = chart.toBase64Image();
+    const a = document.createElement("a");
+    a.download = name;
+    a.href = dataURL;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   // src/bars/onClick.js
   function onClick2(event, activeElements, chart) {
     const spec = chart.data._spec_;
@@ -22810,7 +22841,8 @@ var gsmViz = (() => {
     }
     chart.helpers = {
       updateData: updateData2,
-      updateSpec
+      updateSpec,
+      exportImage
     };
     return chart;
   }

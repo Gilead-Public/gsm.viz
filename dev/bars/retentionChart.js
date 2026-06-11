@@ -95,6 +95,12 @@ fetch('data/retention.csv')
             )
         );
 
+        document
+            .getElementById('retention-export-btn')
+            .addEventListener('click', () =>
+                instance.helpers.exportImage(instance, 'retention-by-site.png')
+            );
+
         function rerender() {
             instance.destroy();
             instance = gsmViz.default.bars(
