@@ -1054,6 +1054,34 @@ describe('bars/getPlugins', () => {
                     '#333333'
                 );
             });
+
+            test("segment placement='end' uses static '#333333' (no dynamic contrast)", () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, placement: 'end' },
+                        },
+                    },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe('#333333');
+            });
+
+            test("segment placement='end' with explicit color uses that color", () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: {
+                                display: true,
+                                placement: 'end',
+                                color: '#ff0000',
+                            },
+                        },
+                    },
+                });
+                expect(plugins.datalabels.labels.segment.color).toBe('#ff0000');
+            });
         });
     });
 

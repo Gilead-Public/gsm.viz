@@ -232,6 +232,8 @@ function buildSegmentLabel(options, spec) {
 
     if (options.color !== undefined) {
         config.color = options.color;
+    } else if (isEnd) {
+        config.color = '#333333';
     } else {
         config.color = (context) =>
             getContrastColor(context.dataset.backgroundColor);
