@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21839,6 +21840,14 @@ var gsmViz = (() => {
         );
       }
     }
+    const captionsOptions = spec.labels?.captionsOptions;
+    if (captionsOptions !== void 0) {
+      if (captionsOptions === null || typeof captionsOptions !== "object" || Array.isArray(captionsOptions) || Object.getPrototypeOf(captionsOptions) !== Object.prototype && Object.getPrototypeOf(captionsOptions) !== null) {
+        throw new Error(
+          "spec.labels.captionsOptions must be a plain object"
+        );
+      }
+    }
   }
 
   // src/bars/defaults.js
@@ -22648,9 +22657,10 @@ var gsmViz = (() => {
       },
       subtitle: {
         display: captionsArray.length > 0,
-        text: captionsArray,
         position: "bottom",
-        align: "start"
+        align: "start",
+        ...labels.captionsOptions,
+        text: captionsArray
       },
       tooltip: buildTooltip(tooltip5, position),
       legend: legend5,
