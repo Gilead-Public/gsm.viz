@@ -21830,6 +21830,24 @@ var gsmViz = (() => {
         );
       }
     }
+    const captions = spec.labels?.captions;
+    if (captions !== void 0 && captions !== null) {
+      const isValidString = typeof captions === "string";
+      const isValidStringArray = Array.isArray(captions) && captions.every((item) => typeof item === "string");
+      if (!isValidString && !isValidStringArray) {
+        throw new Error(
+          "spec.labels.captions must be a string or an array of strings"
+        );
+      }
+    }
+    const captionsOptions = spec.labels?.captionsOptions;
+    if (captionsOptions !== void 0) {
+      if (captionsOptions === null || typeof captionsOptions !== "object" || Array.isArray(captionsOptions) || Object.getPrototypeOf(captionsOptions) !== Object.prototype && Object.getPrototypeOf(captionsOptions) !== null) {
+        throw new Error(
+          "spec.labels.captionsOptions must be a plain object"
+        );
+      }
+    }
   }
 
   // src/bars/defaults.js
@@ -21861,7 +21879,9 @@ var gsmViz = (() => {
         palette: DEFAULT_PALETTE
       }
     },
-    labels: {},
+    labels: {
+      captions: void 0
+    },
     annotations: {
       labels: {
         segment: {
@@ -22628,10 +22648,19 @@ var gsmViz = (() => {
     if (theme?.dynamicCategoryAxis) {
       legend5.onClick = dynamicCategoryLegendOnClick;
     }
+    const captionsRaw = labels.captions;
+    const captionsArray = Array.isArray(captionsRaw) ? captionsRaw : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
     return {
       title: {
         display: !!labels.title,
         text: labels.title || ""
+      },
+      subtitle: {
+        display: captionsArray.length > 0,
+        position: "bottom",
+        align: "start",
+        ...labels.captionsOptions,
+        text: captionsArray
       },
       tooltip: buildTooltip(tooltip5, position),
       legend: legend5,
