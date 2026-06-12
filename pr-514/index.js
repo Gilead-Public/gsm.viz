@@ -21878,13 +21878,19 @@ var gsmViz = (() => {
         if (line.color !== void 0 && typeof line.color !== "string") {
           throw new Error(`${prefix}.color must be a string`);
         }
-        if (line.lineWidth !== void 0 && (typeof line.lineWidth !== "number" || line.lineWidth <= 0)) {
+        if (line.lineWidth !== void 0 && (!Number.isFinite(line.lineWidth) || line.lineWidth <= 0)) {
           throw new Error(
             `${prefix}.lineWidth must be a positive number`
           );
         }
-        if (line.lineDash !== void 0 && !Array.isArray(line.lineDash)) {
-          throw new Error(`${prefix}.lineDash must be an array`);
+        if (line.lineDash !== void 0) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every(
+            (n) => Number.isFinite(n) && n >= 0
+          )) {
+            throw new Error(
+              `${prefix}.lineDash must be an array of non-negative numbers`
+            );
+          }
         }
         if (line.labelPosition !== void 0 && line.labelPosition !== "start" && line.labelPosition !== "center" && line.labelPosition !== "end") {
           throw new Error(
@@ -22724,7 +22730,7 @@ var gsmViz = (() => {
   // src/bars/getPlugins/referenceLines.js
   function referenceLines(spec) {
     const lines = spec.annotations?.referenceLines;
-    if (!lines || lines.length === 0) return null;
+    if (!Array.isArray(lines) || lines.length === 0) return null;
     const isHorizontal = spec.orientation === "horizontal";
     return lines.map((line) => {
       const color3 = line.color ?? "#666666";
