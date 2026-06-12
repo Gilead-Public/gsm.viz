@@ -1483,4 +1483,58 @@ describe('bars/getPlugins', () => {
             expect(userCaptions[0]).toBe('Note: preliminary data.');
         });
     });
+
+    describe('annotation plugin (referenceLines)', () => {
+        const baseSpec = {
+            mapping: { x: 'category', y: 'value' },
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+            position: 'stack',
+            orientation: 'vertical',
+        };
+
+        test('annotation key is present in the plugins output', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { referenceLines: [{ value: 0.05 }] },
+            });
+            expect(plugins.annotation).toBeDefined();
+        });
+
+        test('annotation.annotations is null when referenceLines is absent', () => {
+            const plugins = getPlugins({ ...baseSpec, annotations: {} });
+            expect(plugins.annotation.annotations).toBeNull();
+        });
+
+        test('annotation.annotations is null when referenceLines is empty', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { referenceLines: [] },
+            });
+            expect(plugins.annotation.annotations).toBeNull();
+        });
+
+        test('annotation.annotations is an array when referenceLines are provided', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: {
+                    referenceLines: [
+                        { value: 0.05, label: 'Upper', color: '#e15759' },
+                        { value: -0.05, label: 'Lower', color: '#4e79a7' },
+                    ],
+                },
+            });
+            expect(Array.isArray(plugins.annotation.annotations)).toBe(true);
+            expect(plugins.annotation.annotations).toHaveLength(2);
+        });
+
+        test('annotation.clip is false', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                annotations: { referenceLines: [{ value: 1 }] },
+            });
+            expect(plugins.annotation.clip).toBe(false);
+        });
+    });
 });

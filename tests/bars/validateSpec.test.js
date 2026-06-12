@@ -485,4 +485,197 @@ describe('bars/validateSpec', () => {
             ).toThrow("spec.scales.x.sort must be 'total' or 'alphanumeric'");
         });
     });
+
+    describe('annotations.referenceLines', () => {
+        test('does not throw when referenceLines is absent', () => {
+            expect(() => validateSpec(data, spec)).not.toThrow();
+        });
+
+        test('does not throw when referenceLines is an empty array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [] },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when referenceLines is not an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: 'bad' },
+                })
+            ).toThrow('spec.annotations.referenceLines must be an array');
+        });
+
+        test('throws when a reference line entry is not a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: ['not-an-object'] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0] must be a plain object'
+            );
+        });
+
+        test('throws when a reference line entry is missing value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ label: 'x' }] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].value is required and must be a finite number'
+            );
+        });
+
+        test('throws when value is not a finite number', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: 'bad' }] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].value is required and must be a finite number'
+            );
+        });
+
+        test('throws when value is Infinity', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: Infinity }] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].value is required and must be a finite number'
+            );
+        });
+
+        test('does not throw for a valid entry with only value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: 0.05 }] },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when label is not a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: 1, label: 42 }] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].label must be a string'
+            );
+        });
+
+        test('does not throw when label is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, label: 'Threshold' }],
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when label is null', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: 1, label: null }] },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when color is not a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: { referenceLines: [{ value: 1, color: 123 }] },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].color must be a string'
+            );
+        });
+
+        test('throws when lineWidth is not a positive number', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineWidth: 0 }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineWidth must be a positive number'
+            );
+        });
+
+        test('throws when lineDash is not an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineDash: '4 4' }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineDash must be an array'
+            );
+        });
+
+        test('throws when labelPosition is not a valid value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [
+                            { value: 1, label: 'x', labelPosition: 'middle' },
+                        ],
+                    },
+                })
+            ).toThrow(
+                "spec.annotations.referenceLines[0].labelPosition must be 'start', 'center', or 'end'"
+            );
+        });
+
+        test('does not throw for all valid properties', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [
+                            {
+                                value: 0.05,
+                                label: 'Upper',
+                                color: '#e15759',
+                                lineWidth: 2,
+                                lineDash: [4, 4],
+                                labelPosition: 'end',
+                            },
+                        ],
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('validates all entries in the array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 0.05 }, { value: 'bad' }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[1].value is required and must be a finite number'
+            );
+        });
+    });
 });

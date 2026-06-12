@@ -135,4 +135,65 @@ export default function validateSpec(data, spec) {
             );
         }
     }
+
+    const referenceLines = spec.annotations?.referenceLines;
+    if (referenceLines !== undefined) {
+        if (!Array.isArray(referenceLines)) {
+            throw new Error(
+                'spec.annotations.referenceLines must be an array'
+            );
+        }
+
+        referenceLines.forEach((line, i) => {
+            const prefix = `spec.annotations.referenceLines[${i}]`;
+
+            if (
+                line === null ||
+                typeof line !== 'object' ||
+                Array.isArray(line) ||
+                (Object.getPrototypeOf(line) !== Object.prototype &&
+                    Object.getPrototypeOf(line) !== null)
+            ) {
+                throw new Error(`${prefix} must be a plain object`);
+            }
+
+            if (!Number.isFinite(line.value)) {
+                throw new Error(
+                    `${prefix}.value is required and must be a finite number`
+                );
+            }
+
+            if (line.label !== undefined && line.label !== null && typeof line.label !== 'string') {
+                throw new Error(`${prefix}.label must be a string`);
+            }
+
+            if (line.color !== undefined && typeof line.color !== 'string') {
+                throw new Error(`${prefix}.color must be a string`);
+            }
+
+            if (
+                line.lineWidth !== undefined &&
+                (typeof line.lineWidth !== 'number' || line.lineWidth <= 0)
+            ) {
+                throw new Error(
+                    `${prefix}.lineWidth must be a positive number`
+                );
+            }
+
+            if (line.lineDash !== undefined && !Array.isArray(line.lineDash)) {
+                throw new Error(`${prefix}.lineDash must be an array`);
+            }
+
+            if (
+                line.labelPosition !== undefined &&
+                line.labelPosition !== 'start' &&
+                line.labelPosition !== 'center' &&
+                line.labelPosition !== 'end'
+            ) {
+                throw new Error(
+                    `${prefix}.labelPosition must be 'start', 'center', or 'end'`
+                );
+            }
+        });
+    }
 }

@@ -36,6 +36,7 @@ const defaults = {
         captions: undefined,
     },
     annotations: {
+        referenceLines: [],
         labels: {
             segment: {
                 display: false,
