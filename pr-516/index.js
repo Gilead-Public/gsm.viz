@@ -21862,11 +21862,11 @@ var gsmViz = (() => {
     }
     validateFormatter(
       spec.annotations?.labels?.segment?.formatter,
-      "annotations.labels.segment.formatter"
+      "spec.annotations.labels.segment.formatter"
     );
     validateFormatter(
       spec.annotations?.labels?.total?.formatter,
-      "annotations.labels.total.formatter"
+      "spec.annotations.labels.total.formatter"
     );
     const referenceLines2 = spec.annotations?.referenceLines;
     if (referenceLines2 !== void 0) {
@@ -22540,12 +22540,12 @@ var gsmViz = (() => {
     const rawValue = getRawValue2(point, context);
     const rawTotal = getRawTotal2(context);
     const labelValue = mode === "total" ? value : rawValue;
-    const percent = rawTotal === 0 ? 0 : rawValue / rawTotal * 100;
+    const percent = rawTotal === 0 ? 0 : labelValue / rawTotal * 100;
     return {
       mode,
       valueType,
       point,
-      total: mode === "total" ? value : rawTotal,
+      total: rawTotal,
       fill: point?._fill,
       value: labelValue,
       percent,
