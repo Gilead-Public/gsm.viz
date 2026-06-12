@@ -201,17 +201,17 @@ Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `p
 
 When using a `formatter` function, `details` exposes:
 
-| Field      | Type                     | Description                                                                          |
-| ---------- | ------------------------ | ------------------------------------------------------------------------------------ |
-| `fill`     | `string \| undefined`    | Value from `mapping.fill` for this bar segment (`undefined` when `fill` is not set)  |
-| `value`    | `number`                 | Raw/count value of the segment (or the visible stack total for `total` mode)         |
-| `percent`  | `number`                 | The segment's raw value as a percentage of the category total (0–100)                |
-| `category` | `string`                 | The axis category label for this bar                                                 |
-| `datum`    | `Object \| Object[]`     | The source data row(s); a single object in y-mapping mode, an array in count mode    |
-| `mode`     | `'segment' \| 'total'`   | Whether this is a segment or total label                                             |
-| `valueType`| `'raw' \| 'percent' \| 'value'` | The resolved value type (controlled by `segment.value`)                     |
-| `total`    | `number`                 | Raw total for the category across all datasets                                       |
-| `point`    | `Object`                 | The raw Chart.js data point object                                                   |
+| Field      | Type                          | Description                                                                                            |
+| ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `fill`     | `any \| undefined`            | Value from `mapping.fill` for this bar segment (`undefined` when `fill` is not set or point has none)  |
+| `value`    | `number`                      | Raw/count value of the segment; for `total` mode, the visible stack total                              |
+| `percent`  | `number`                      | `value` as a percentage of the full category total across all datasets (0–100)                         |
+| `category` | `any`                         | The axis category value for this bar (type matches your source data field)                             |
+| `datum`    | `Object \| Object[] \| undefined` | The source data row(s); single object in y-mapping mode, array in count mode, `undefined` if absent |
+| `mode`     | `'segment' \| 'total'`        | Whether this is a segment or total label                                                               |
+| `valueType`| `'raw' \| 'percent' \| 'value'` | The resolved value type (controlled by `segment.value`)                                              |
+| `total`    | `number`                      | Full raw total for the category across all datasets (including hidden ones)                            |
+| `point`    | `Object`                      | The raw Chart.js data point object                                                                     |
 
 #### Template string tokens
 

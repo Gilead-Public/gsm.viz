@@ -529,7 +529,7 @@ describe('bars/validateSpec', () => {
                     },
                 })
             ).toThrow(
-                'annotations.labels.segment.formatter must be a string or function'
+                'spec.annotations.labels.segment.formatter must be a string or function'
             );
         });
 
@@ -542,7 +542,7 @@ describe('bars/validateSpec', () => {
                     },
                 })
             ).toThrow(
-                'annotations.labels.segment.formatter must be a string or function'
+                'spec.annotations.labels.segment.formatter must be a string or function'
             );
         });
 
@@ -577,7 +577,7 @@ describe('bars/validateSpec', () => {
                     },
                 })
             ).toThrow(
-                'annotations.labels.total.formatter must be a string or function'
+                'spec.annotations.labels.total.formatter must be a string or function'
             );
         });
     });

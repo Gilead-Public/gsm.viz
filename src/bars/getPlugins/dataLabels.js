@@ -148,13 +148,13 @@ function buildDetails(point, context, mode, value, valueType) {
     const rawValue = getRawValue(point, context);
     const rawTotal = getRawTotal(context);
     const labelValue = mode === 'total' ? value : rawValue;
-    const percent = rawTotal === 0 ? 0 : (rawValue / rawTotal) * 100;
+    const percent = rawTotal === 0 ? 0 : (labelValue / rawTotal) * 100;
 
     return {
         mode,
         valueType,
         point,
-        total: mode === 'total' ? value : rawTotal,
+        total: rawTotal,
         fill: point?._fill,
         value: labelValue,
         percent,

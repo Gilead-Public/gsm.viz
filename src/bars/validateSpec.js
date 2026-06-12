@@ -148,11 +148,11 @@ export default function validateSpec(data, spec) {
 
     validateFormatter(
         spec.annotations?.labels?.segment?.formatter,
-        'annotations.labels.segment.formatter'
+        'spec.annotations.labels.segment.formatter'
     );
     validateFormatter(
         spec.annotations?.labels?.total?.formatter,
-        'annotations.labels.total.formatter'
+        'spec.annotations.labels.total.formatter'
     );
 
     const referenceLines = spec.annotations?.referenceLines;

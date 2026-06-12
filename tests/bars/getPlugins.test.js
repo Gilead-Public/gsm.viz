@@ -1210,6 +1210,73 @@ describe('bars/getPlugins', () => {
                     })
                 );
             });
+
+            test('total formatter details.total is full raw category total (including hidden datasets)', () => {
+                const formatter = jest.fn(() => '');
+                const datasets = [
+                    {
+                        label: 'A',
+                        data: [],
+                        _backup_: [{ x: 'cat', y: 10 }],
+                    },
+                    {
+                        label: 'B',
+                        data: [{ x: 'cat', y: 20 }],
+                    },
+                ];
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { total: { display: true, formatter } } },
+                });
+                const context = makeContext({
+                    datasetIndex: 1,
+                    datasets,
+                    hidden: [0],
+                });
+
+                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    20,
+                    context,
+                    expect.objectContaining({ total: 30 })
+                );
+            });
+
+            test('total formatter details.percent uses visible stack total relative to full total', () => {
+                const formatter = jest.fn(() => '');
+                const datasets = [
+                    {
+                        label: 'A',
+                        data: [],
+                        _backup_: [{ x: 'cat', y: 10 }],
+                    },
+                    {
+                        label: 'B',
+                        data: [{ x: 'cat', y: 20 }],
+                    },
+                ];
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { total: { display: true, formatter } } },
+                });
+                const context = makeContext({
+                    datasetIndex: 1,
+                    datasets,
+                    hidden: [0],
+                });
+
+                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+
+                // visible total = 20, full total = 30 → ~66.7%
+                expect(formatter).toHaveBeenCalledWith(
+                    20,
+                    context,
+                    expect.objectContaining({
+                        percent: expect.closeTo(66.667, 2),
+                    })
+                );
+            });
         });
 
         describe('template string formatter', () => {
