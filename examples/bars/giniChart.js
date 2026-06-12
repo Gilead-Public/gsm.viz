@@ -37,6 +37,14 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 .sort((a, b) => Number(b.gini) - Number(a.gini));
         }
 
+        const RDYLBU_5 = ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'];
+        const GINI_REFERENCE_LINES = [30, 35, 40, 45, 50].map((value, i) => ({
+            value,
+            label: String(value),
+            color: RDYLBU_5[i],
+            lineDash: [4, 4],
+        }));
+
         function buildAnnotations(mode) {
             if (mode === 'none') return {};
             if (mode === 'total-outside')
@@ -100,7 +108,10 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 theme: {
                     dynamicSizing,
                 },
-                annotations: buildAnnotations(annotationsMode),
+                annotations: {
+                    ...buildAnnotations(annotationsMode),
+                    referenceLines: GINI_REFERENCE_LINES,
+                },
             };
         }
 

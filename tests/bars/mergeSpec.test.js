@@ -265,4 +265,44 @@ describe('bars/mergeSpec', () => {
             expect(merged.labels.captionsOptions).toEqual(captionsOptions);
         });
     });
+
+    describe('annotations.referenceLines', () => {
+        test('defaults referenceLines to an empty array', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.annotations.referenceLines).toEqual([]);
+        });
+
+        test('passes through a user-supplied referenceLines array', () => {
+            const referenceLines = [{ value: 0.05, label: 'Threshold' }];
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: { referenceLines },
+            });
+            expect(merged.annotations.referenceLines).toEqual(referenceLines);
+        });
+
+        test('user referenceLines replaces the default (not merged)', () => {
+            const referenceLines = [
+                { value: 0.1, color: '#e15759' },
+                { value: -0.1, color: '#e15759' },
+            ];
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: { referenceLines },
+            });
+            expect(merged.annotations.referenceLines).toHaveLength(2);
+        });
+
+        test('referenceLines coexists with labels annotations', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: {
+                    referenceLines: [{ value: 0.05 }],
+                    labels: { segment: { display: true } },
+                },
+            });
+            expect(merged.annotations.referenceLines).toHaveLength(1);
+            expect(merged.annotations.labels.segment.display).toBe(true);
+        });
+    });
 });

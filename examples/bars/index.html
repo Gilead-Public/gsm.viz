@@ -98,6 +98,7 @@
             <button class="active" data-tab="retention">Retention</button>
             <button data-tab="kri">KRI by Flag</button>
             <button data-tab="gini">World Gini Index</button>
+            <button data-tab="kri-site">KRI by Site</button>
         </nav>
 
         <!-- Retention tab -->
@@ -337,6 +338,50 @@
             <div id="gini-container"></div>
         </div>
 
+        <!-- KRI by Site tab -->
+        <div id="kri-site" class="tab-panel gsm-viz--example">
+            <div id="kri-site-controls">
+                <fieldset>
+                    <legend>Metric</legend>
+                    <select id="kri-site-metric"></select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Y-axis</legend>
+                    <select id="kri-site-y-axis">
+                        <option value="Score" selected>Score</option>
+                        <option value="Numerator">Numerator</option>
+                        <option value="Metric">Metric</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Threshold</legend>
+                    <input
+                        type="checkbox"
+                        id="kri-site-threshold"
+                        name="Threshold"
+                        checked
+                    />
+                </fieldset>
+
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="kri-site-orientation">
+                        <option value="vertical" selected>Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Export</legend>
+                    <button id="kri-site-export-btn">Export PNG</button>
+                </fieldset>
+            </div>
+
+            <div id="kri-site-container"></div>
+        </div>
+
         <script>
             // Tab switching
             const tabButtons = document.querySelectorAll('.tab-nav button');
@@ -357,6 +402,7 @@
         <script src="retentionChart.js"></script>
         <script src="kriChart.js"></script>
         <script src="giniChart.js"></script>
+        <script src="kriSiteChart.js"></script>
         <script src="../nav.js"></script>
     </body>
 </html>

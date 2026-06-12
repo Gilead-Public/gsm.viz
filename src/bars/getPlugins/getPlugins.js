@@ -1,6 +1,7 @@
 import buildTooltip from './buildTooltip.js';
 import dataLabels from './dataLabels.js';
 import dynamicCategoryLegendOnClick from './dynamicCategoryLegendOnClick.js';
+import referenceLines from './referenceLines.js';
 
 /**
  * Build Chart.js plugins configuration from the merged spec.
@@ -66,6 +67,10 @@ export default function getPlugins(spec) {
             align: 'start',
             ...labels.captionsOptions,
             text: captionsArray,
+        },
+        annotation: {
+            annotations: referenceLines(spec),
+            clip: false,
         },
         tooltip: buildTooltip(tooltip, position),
         legend,
