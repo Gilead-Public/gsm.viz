@@ -11,7 +11,7 @@
 export default function referenceLines(spec) {
     const lines = spec.annotations?.referenceLines;
 
-    if (!lines || lines.length === 0) return null;
+    if (!Array.isArray(lines) || lines.length === 0) return null;
 
     const isHorizontal = spec.orientation === 'horizontal';
 

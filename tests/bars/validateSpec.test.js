@@ -626,7 +626,59 @@ describe('bars/validateSpec', () => {
                     },
                 })
             ).toThrow(
-                'spec.annotations.referenceLines[0].lineDash must be an array'
+                'spec.annotations.referenceLines[0].lineDash must be an array of non-negative numbers'
+            );
+        });
+
+        test('throws when lineDash contains non-finite values', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineDash: [4, Infinity] }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineDash must be an array of non-negative numbers'
+            );
+        });
+
+        test('throws when lineDash contains negative values', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineDash: [4, -1] }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineDash must be an array of non-negative numbers'
+            );
+        });
+
+        test('throws when lineWidth is NaN', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineWidth: NaN }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineWidth must be a positive number'
+            );
+        });
+
+        test('throws when lineWidth is Infinity', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        referenceLines: [{ value: 1, lineWidth: Infinity }],
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.referenceLines[0].lineWidth must be a positive number'
             );
         });
 

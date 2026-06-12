@@ -13,6 +13,10 @@ describe('bars/getPlugins/referenceLines', () => {
         test('returns null when annotations is absent', () => {
             expect(referenceLines({})).toBeNull();
         });
+
+        test('returns null when referenceLines is a non-array truthy value', () => {
+            expect(referenceLines({ annotations: { referenceLines: {} } })).toBeNull();
+        });
     });
 
     describe('vertical orientation (default)', () => {

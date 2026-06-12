@@ -173,15 +173,24 @@ export default function validateSpec(data, spec) {
 
             if (
                 line.lineWidth !== undefined &&
-                (typeof line.lineWidth !== 'number' || line.lineWidth <= 0)
+                (!Number.isFinite(line.lineWidth) || line.lineWidth <= 0)
             ) {
                 throw new Error(
                     `${prefix}.lineWidth must be a positive number`
                 );
             }
 
-            if (line.lineDash !== undefined && !Array.isArray(line.lineDash)) {
-                throw new Error(`${prefix}.lineDash must be an array`);
+            if (line.lineDash !== undefined) {
+                if (
+                    !Array.isArray(line.lineDash) ||
+                    !line.lineDash.every(
+                        (n) => Number.isFinite(n) && n >= 0
+                    )
+                ) {
+                    throw new Error(
+                        `${prefix}.lineDash must be an array of non-negative numbers`
+                    );
+                }
             }
 
             if (
