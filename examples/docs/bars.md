@@ -70,7 +70,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 placement: 'center', // 'center' (inside segment) | 'end' (outside segment end)
                 value: 'auto',     // 'auto' | 'value' | 'raw' | 'percent'
                 format: undefined, // optional d3-format string, e.g. ',.0f'
-                formatter: undefined,
+                formatter: undefined,  // string template (e.g. '{fill}: {value} ({percent})') or (value, context, details) => string
                 minSize: 16,       // hide if the segment is smaller than this many px
                 color: undefined,
                 font: undefined,
@@ -79,7 +79,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 display: false,    // end-of-stack total label for each category
                 placement: 'outside', // 'outside' (beyond bar end) | 'inside' (within bar end)
                 format: undefined,
-                formatter: undefined,
+                formatter: undefined,  // string template or (value, context, details) => string
                 color: undefined,
                 font: undefined,
             },
@@ -191,8 +191,38 @@ Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `p
 | `'percent'` | Percentage of the category total                                        |
 
 `format` accepts a d3-format string such as `',.0f'`, `'.1f'`, or `'.2%'`.
-Use `formatter(value, context, details)` for full control. `details` includes
-`mode`, `valueType`, `point`, and `total`.
+
+`formatter` accepts a **function** or a **template string**:
+
+- **Function:** `formatter(value, context, details)` — full control over the label.
+- **Template string:** a string with `{token}` placeholders that are interpolated automatically.
+
+#### Formatter details object
+
+When using a `formatter` function, `details` exposes:
+
+| Field      | Type                     | Description                                                                          |
+| ---------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| `fill`     | `string \| undefined`    | Value from `mapping.fill` for this bar segment (`undefined` when `fill` is not set)  |
+| `value`    | `number`                 | Raw/count value of the segment (or the visible stack total for `total` mode)         |
+| `percent`  | `number`                 | The segment's raw value as a percentage of the category total (0–100)                |
+| `category` | `string`                 | The axis category label for this bar                                                 |
+| `datum`    | `Object \| Object[]`     | The source data row(s); a single object in y-mapping mode, an array in count mode    |
+| `mode`     | `'segment' \| 'total'`   | Whether this is a segment or total label                                             |
+| `valueType`| `'raw' \| 'percent' \| 'value'` | The resolved value type (controlled by `segment.value`)                     |
+| `total`    | `number`                 | Raw total for the category across all datasets                                       |
+| `point`    | `Object`                 | The raw Chart.js data point object                                                   |
+
+#### Template string tokens
+
+| Token        | Resolves to                                                |
+| ------------ | ---------------------------------------------------------- |
+| `{fill}`     | `fill` value (empty string when not set)                   |
+| `{value}`    | Raw/count value, formatted with d3 `~g`                    |
+| `{percent}`  | Percentage of the category total, formatted to 1 decimal   |
+| `{category}` | Axis category label                                        |
+
+Unknown `{tokens}` are left unchanged in the output string.
 
 Inside segment labels automatically hide when the rendered segment is smaller
 than `segment.minSize` pixels. Set `minSize: 0` to disable this rule.
@@ -222,6 +252,35 @@ gsmViz.default.bars(element, data, {
                 display: true,
                 placement: 'end',
                 format: '.1f',
+            },
+        },
+    },
+});
+
+// Template string — fill group, count, and percent on each segment
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'country', fill: 'flag' },
+    annotations: {
+        labels: {
+            segment: {
+                display: true,
+                formatter: '{fill}: {value} ({percent})',
+                color: 'white',
+            },
+        },
+    },
+});
+
+// Custom formatter function using enriched details
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', fill: 'flag' },
+    annotations: {
+        labels: {
+            segment: {
+                display: true,
+                formatter: (value, context, details) => {
+                    return `${details.fill}\n${details.value} (${details.percent.toFixed(1)}%)`;
+                },
             },
         },
     },

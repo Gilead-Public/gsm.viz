@@ -136,6 +136,25 @@ export default function validateSpec(data, spec) {
         }
     }
 
+    function validateFormatter(value, path) {
+        if (
+            value !== undefined &&
+            typeof value !== 'string' &&
+            typeof value !== 'function'
+        ) {
+            throw new Error(`${path} must be a string or function`);
+        }
+    }
+
+    validateFormatter(
+        spec.annotations?.labels?.segment?.formatter,
+        'annotations.labels.segment.formatter'
+    );
+    validateFormatter(
+        spec.annotations?.labels?.total?.formatter,
+        'annotations.labels.total.formatter'
+    );
+
     const referenceLines = spec.annotations?.referenceLines;
     if (referenceLines !== undefined) {
         if (!Array.isArray(referenceLines)) {

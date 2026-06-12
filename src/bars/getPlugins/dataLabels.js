@@ -132,6 +132,37 @@ function defaultFormat(value, valueType) {
     return `${formatter(value)}${suffix}`;
 }
 
+function interpolateTemplate(template, details) {
+    const knownTokens = {
+        fill: String(details.fill ?? ''),
+        value: d3Format('~g')(details.value),
+        percent: `${d3Format('.1f')(details.percent)}%`,
+        category: String(details.category ?? ''),
+    };
+    return template.replace(/\{(\w+)\}/g, (match, key) =>
+        key in knownTokens ? knownTokens[key] : match
+    );
+}
+
+function buildDetails(point, context, mode, value, valueType) {
+    const rawValue = getRawValue(point, context);
+    const rawTotal = getRawTotal(context);
+    const labelValue = mode === 'total' ? value : rawValue;
+    const percent = rawTotal === 0 ? 0 : (rawValue / rawTotal) * 100;
+
+    return {
+        mode,
+        valueType,
+        point,
+        total: mode === 'total' ? value : rawTotal,
+        fill: point?._fill,
+        value: labelValue,
+        percent,
+        category: getCategory(point, context),
+        datum: point?._datum,
+    };
+}
+
 function formatLabel(point, context, options, mode, spec) {
     const { value, valueType } = resolveLabelValue(
         point,
@@ -141,13 +172,13 @@ function formatLabel(point, context, options, mode, spec) {
         spec
     );
 
-    if (typeof options.formatter === 'function') {
-        const details = {
-            mode,
-            valueType,
-            point,
-            total: mode === 'total' ? value : getRawTotal(context),
-        };
+    if (options.formatter !== undefined) {
+        const details = buildDetails(point, context, mode, value, valueType);
+
+        if (typeof options.formatter === 'string') {
+            return interpolateTemplate(options.formatter, details);
+        }
+
         return options.formatter(value, context, details);
     }
 

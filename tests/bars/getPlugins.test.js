@@ -1081,6 +1081,278 @@ describe('bars/getPlugins', () => {
                 expect(plugins.datalabels.labels.segment.color).toBe('#ff0000');
             });
         });
+
+        describe('enriched formatter details', () => {
+            test('segment formatter details exposes fill from point._fill', () => {
+                const formatter = jest.fn(() => '');
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true, formatter } } },
+                });
+                const point = { x: 'A', y: 10, _fill: 'Treatment', _datum: { id: 1 } };
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
+
+                plugins.datalabels.labels.segment.formatter(point, context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    10,
+                    context,
+                    expect.objectContaining({ fill: 'Treatment' })
+                );
+            });
+
+            test('segment formatter details exposes value as raw count', () => {
+                const formatter = jest.fn(() => '');
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true, formatter } } },
+                });
+                const point = { x: 'A', y: 10 };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                plugins.datalabels.labels.segment.formatter(point, context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    10,
+                    context,
+                    expect.objectContaining({ value: 10 })
+                );
+            });
+
+            test('segment formatter details exposes percent of category total', () => {
+                const formatter = jest.fn(() => '');
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true, formatter } } },
+                });
+                const datasets = [
+                    { data: [{ x: 'A', y: 10 }] },
+                    { data: [{ x: 'A', y: 30 }] },
+                ];
+                const context = makeContext({ datasetIndex: 0, datasets });
+
+                plugins.datalabels.labels.segment.formatter(datasets[0].data[0], context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    10,
+                    context,
+                    expect.objectContaining({ percent: 25 })
+                );
+            });
+
+            test('segment formatter details exposes category (x value)', () => {
+                const formatter = jest.fn(() => '');
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true, formatter } } },
+                });
+                const point = { x: 'Site 003', y: 10 };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                plugins.datalabels.labels.segment.formatter(point, context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    10,
+                    context,
+                    expect.objectContaining({ category: 'Site 003' })
+                );
+            });
+
+            test('segment formatter details exposes datum from point._datum', () => {
+                const formatter = jest.fn(() => '');
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { segment: { display: true, formatter } } },
+                });
+                const datum = { site: 'A', flag: 1 };
+                const point = { x: 'A', y: 10, _datum: datum };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                plugins.datalabels.labels.segment.formatter(point, context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    10,
+                    context,
+                    expect.objectContaining({ datum })
+                );
+            });
+
+            test('total formatter details exposes fill, category, datum', () => {
+                const formatter = jest.fn(() => '');
+                const datasets = [
+                    {
+                        label: 'A',
+                        data: [{ x: 'cat', y: 10, _fill: 'A', _datum: { id: 1 } }],
+                    },
+                    {
+                        label: 'B',
+                        data: [{ x: 'cat', y: 20, _fill: 'B', _datum: { id: 2 } }],
+                    },
+                ];
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: { labels: { total: { display: true, formatter } } },
+                });
+                const context = makeContext({ datasetIndex: 1, datasets });
+
+                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+
+                expect(formatter).toHaveBeenCalledWith(
+                    30,
+                    context,
+                    expect.objectContaining({
+                        fill: 'B',
+                        category: 'cat',
+                        datum: { id: 2 },
+                    })
+                );
+            });
+        });
+
+        describe('template string formatter', () => {
+            test('segment template string interpolates {fill}', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, formatter: '{fill}' },
+                        },
+                    },
+                });
+                const point = { x: 'A', y: 10, _fill: 'Treatment A' };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(point, context)
+                ).toBe('Treatment A');
+            });
+
+            test('segment template string interpolates {value}', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, formatter: '{value}' },
+                        },
+                    },
+                });
+                const point = { x: 'A', y: 42 };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(point, context)
+                ).toBe('42');
+            });
+
+            test('segment template string interpolates {percent}', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, formatter: '{percent}' },
+                        },
+                    },
+                });
+                const datasets = [
+                    { data: [{ x: 'A', y: 1 }] },
+                    { data: [{ x: 'A', y: 3 }] },
+                ];
+                const context = makeContext({ datasetIndex: 0, datasets });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(
+                        datasets[0].data[0],
+                        context
+                    )
+                ).toBe('25.0%');
+            });
+
+            test('segment template string interpolates {category}', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, formatter: '{category}' },
+                        },
+                    },
+                });
+                const point = { x: 'Site 007', y: 10 };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(point, context)
+                ).toBe('Site 007');
+            });
+
+            test('segment template string composes multiple tokens', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: {
+                                display: true,
+                                formatter: '{fill}: {value} ({percent})',
+                            },
+                        },
+                    },
+                });
+                const datasets = [
+                    { data: [{ x: 'A', y: 1, _fill: 'Treatment A' }] },
+                    { data: [{ x: 'A', y: 3 }] },
+                ];
+                const context = makeContext({ datasetIndex: 0, datasets });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(
+                        datasets[0].data[0],
+                        context
+                    )
+                ).toBe('Treatment A: 1 (25.0%)');
+            });
+
+            test('template string leaves unknown tokens unchanged', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            segment: { display: true, formatter: '{unknown}' },
+                        },
+                    },
+                });
+                const point = { x: 'A', y: 10 };
+                const context = makeContext({ point, datasets: [{ data: [point] }] });
+
+                expect(
+                    plugins.datalabels.labels.segment.formatter(point, context)
+                ).toBe('{unknown}');
+            });
+
+            test('total template string interpolates {value} as visible stack total', () => {
+                const plugins = getPlugins({
+                    ...baseSpec,
+                    annotations: {
+                        labels: {
+                            total: { display: true, formatter: '{value}' },
+                        },
+                    },
+                });
+                const datasets = [
+                    { label: 'A', data: [{ x: 'cat', y: 10 }] },
+                    { label: 'B', data: [{ x: 'cat', y: 20 }] },
+                ];
+                const context = makeContext({ datasetIndex: 1, datasets });
+
+                expect(
+                    plugins.datalabels.labels.total.formatter(
+                        datasets[1].data[0],
+                        context
+                    )
+                ).toBe('30');
+            });
+        });
     });
 
     describe('tooltip', () => {
