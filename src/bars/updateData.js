@@ -12,7 +12,8 @@ import getPlugins from './getPlugins.js';
  */
 export default function updateData(chart, data, spec) {
     const merged = mergeSpec(data, spec);
-    const { datasets, labels } = structureData(merged);
+    const { datasets, labels, nExcluded } = structureData(merged);
+    merged._nExcluded = nExcluded;
     const scalesConfig = getScales(merged);
 
     chart.data.datasets = datasets;

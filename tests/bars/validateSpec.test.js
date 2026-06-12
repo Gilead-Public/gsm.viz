@@ -354,7 +354,9 @@ describe('bars/validateSpec', () => {
             expect(() =>
                 validateSpec(data, {
                     mapping: { x: 'a', y: 'b' },
-                    labels: { captionsOptions: { position: 'top', align: 'end' } },
+                    labels: {
+                        captionsOptions: { position: 'top', align: 'end' },
+                    },
                 })
             ).not.toThrow();
         });
@@ -393,6 +395,94 @@ describe('bars/validateSpec', () => {
                     labels: { captionsOptions: null },
                 })
             ).toThrow('spec.labels.captionsOptions must be a plain object');
+        });
+    });
+
+    describe('spec.nCategories validation', () => {
+        test('does not throw when nCategories is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when nCategories is a positive integer', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    nCategories: 10,
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when nCategories is not an integer', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    nCategories: 2.5,
+                })
+            ).toThrow('spec.nCategories must be a positive integer');
+        });
+
+        test('throws when nCategories is zero', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    nCategories: 0,
+                })
+            ).toThrow('spec.nCategories must be a positive integer');
+        });
+
+        test('throws when nCategories is negative', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    nCategories: -5,
+                })
+            ).toThrow('spec.nCategories must be a positive integer');
+        });
+
+        test('throws when nCategories is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    nCategories: '10',
+                })
+            ).toThrow('spec.nCategories must be a positive integer');
+        });
+    });
+
+    describe('spec.scales.x.sort validation', () => {
+        test('does not throw when scales.x.sort is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.sort is total', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sort: 'total' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.sort is alphanumeric', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sort: 'alphanumeric' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when scales.x.sort is an invalid value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sort: 'random' } },
+                })
+            ).toThrow("spec.scales.x.sort must be 'total' or 'alphanumeric'");
         });
     });
 });

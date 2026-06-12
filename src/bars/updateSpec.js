@@ -51,7 +51,8 @@ export default function updateSpec(chart, spec) {
     };
 
     const merged = mergeSpec(existing.data, combined);
-    const { datasets, labels } = structureData(merged);
+    const { datasets, labels, nExcluded } = structureData(merged);
+    merged._nExcluded = nExcluded;
     const scalesConfig = getScales(merged);
 
     chart.data.datasets = datasets;

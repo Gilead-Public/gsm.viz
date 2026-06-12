@@ -50,6 +50,20 @@ export default function validateSpec(data, spec) {
         throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
     }
 
+    if (
+        spec.nCategories !== undefined &&
+        (typeof spec.nCategories !== 'number' ||
+            !Number.isInteger(spec.nCategories) ||
+            spec.nCategories < 1)
+    ) {
+        throw new Error('spec.nCategories must be a positive integer');
+    }
+
+    const xSort = spec.scales?.x?.sort;
+    if (xSort !== undefined && xSort !== 'total' && xSort !== 'alphanumeric') {
+        throw new Error("spec.scales.x.sort must be 'total' or 'alphanumeric'");
+    }
+
     const colors = spec.scales?.fill?.colors;
     if (colors !== undefined) {
         if (

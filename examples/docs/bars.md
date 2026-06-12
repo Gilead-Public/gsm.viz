@@ -38,11 +38,13 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     },
     orientation: 'vertical',   // 'vertical' | 'horizontal'
     position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity'
+    nCategories: undefined,    // optional positive integer — limit displayed categories to top N
     scales: {
         x: {
             type: 'category',  // Chart.js scale type
             label: undefined,  // defaults to mapping.x; null or '' hides label
             order: undefined,  // optional category order array
+            sort: undefined,   // 'total' | 'alphanumeric' — selection mode when nCategories is set
         },
         y: {
             type: 'linear',
@@ -107,7 +109,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | -------------------------------------- | ------------------------------ |
 | `orientation`                          | `'vertical'`                   |
 | `position`                             | `'stack'`                      |
+| `nCategories`                          | `undefined` (all categories)   |
 | `scales.x.type`                        | `'category'`                   |
+| `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
 | `scales.y.type`                        | `'linear'`                     |
 | `scales.fill.palette`                  | Tableau-10 categorical palette |
 | `annotations.labels.*.display`         | `false`                        |
@@ -429,8 +433,8 @@ gsmViz.default.bars(element, data, {
     labels: {
         captions: 'Source: Study XYZ',
         captionsOptions: {
-            position: 'top',       // 'top' | 'bottom' (default: 'bottom')
-            align: 'end',          // 'start' | 'center' | 'end' (default: 'start')
+            position: 'top', // 'top' | 'bottom' (default: 'bottom')
+            align: 'end', // 'start' | 'center' | 'end' (default: 'start')
             font: { size: 10, style: 'italic' },
             padding: { top: 8 },
         },
@@ -442,6 +446,49 @@ gsmViz.default.bars(element, data, {
 [subtitle plugin option](https://www.chartjs.org/docs/latest/configuration/title.html)
 is accepted. `text` is always derived from `labels.captions` and cannot be
 overridden through `captionsOptions`.
+
+---
+
+## Top-N category limiting
+
+Set `spec.nCategories` to a positive integer to display only the top N
+categories, automatically excluding the rest.
+
+```js
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'count' },
+    nCategories: 10,
+    scales: {
+        x: {
+            label: 'Site',
+            sort: 'total',   // 'total' (default) | 'alphanumeric'
+        },
+    },
+});
+```
+
+### Selection modes (`scales.x.sort`)
+
+| Value | Behaviour |
+| ----- | --------- |
+| `'total'` (default) | Keeps the top N categories by descending aggregate value (sum of `y`, or row count in count mode). Ties broken alphanumerically. Displayed in descending-total order. |
+| `'alphanumeric'` | Keeps the first N categories in alphanumeric order. No reordering. |
+
+When `nCategories` is omitted or `undefined`, all categories are shown and
+`sort` has no effect.
+
+### Auto-caption
+
+When `scales.x.sort` is `'total'` (or unset, which defaults to `'total'`) and
+at least one category is excluded, a caption line is automatically appended to
+the chart subtitle:
+
+> `Displaying top N values of {label} by total. Remaining M values of {label} are hidden.`
+
+where `{label}` is `scales.x.label` (or `mapping.x` when the label is unset).
+The auto-caption is appended after any captions supplied via `labels.captions`.
+
+No auto-caption is generated for `'alphanumeric'` sort.
 
 ---
 

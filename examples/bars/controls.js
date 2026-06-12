@@ -29,6 +29,21 @@ function getDynamicSizing(id) {
 }
 
 /**
+ * Returns the current value of a number input as a positive integer, or
+ * undefined when the field is empty or the value is not a valid positive
+ * integer. Uses strict integer checking (e.g. "2.9" is rejected, not
+ * truncated to 2).
+ *
+ * @param {string} id - element ID
+ * @returns {number|undefined}
+ */
+function getNCategories(id) {
+    const raw = document.getElementById(id).value;
+    const val = Number(raw);
+    return Number.isInteger(val) && val >= 1 ? val : undefined;
+}
+
+/**
  * Attaches a 'change' listener on each listed element ID that calls fn.
  *
  * @param {string[]} ids - element IDs to listen on

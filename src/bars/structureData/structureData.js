@@ -1,5 +1,6 @@
 import aggregateCounts from './aggregateCounts.js';
 import darkenHex from './darkenHex.js';
+import limitCategories from './limitCategories.js';
 import normalizeFill from './normalizeFill.js';
 import reorderDatasets from './reorderDatasets.js';
 import resolveCategories from './resolveCategories.js';
@@ -15,7 +16,7 @@ import swapPointAxes from './swapPointAxes.js';
  * { x: value, y: category } so Chart.js renders correctly with indexAxis 'y'.
  *
  * @param {Object} spec - merged spec object
- * @returns {{ datasets: Array, labels: Array }}
+ * @returns {{ datasets: Array, labels: Array, nExcluded: number }}
  */
 export default function structureData(spec) {
     const { data, mapping, scales, orientation } = spec;
@@ -29,7 +30,7 @@ export default function structureData(spec) {
         ? Object.values(fillColors)
         : scales.fill?.palette;
 
-    const activeData =
+    let activeData =
         fillKey && fillOrder
             ? (() => {
                   const allowed = new Set(fillOrder.map(String));
@@ -37,7 +38,25 @@ export default function structureData(spec) {
               })()
             : data;
 
-    const labels = resolveCategories(activeData, xKey, scales.x?.order);
+    let labels = resolveCategories(activeData, xKey, scales.x?.order);
+
+    // Apply top-N category limit when spec.nCategories is set.
+    let nExcluded = 0;
+    if (spec.nCategories) {
+        const result = limitCategories(
+            labels,
+            activeData,
+            xKey,
+            yKey,
+            spec.nCategories,
+            scales.x?.sort
+        );
+        labels = result.limitedCategories;
+        nExcluded = result.nExcluded;
+        const allowed = new Set(labels);
+        activeData = activeData.filter((d) => allowed.has(d[xKey]));
+    }
+
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
 
     let datasets;
@@ -114,5 +133,5 @@ export default function structureData(spec) {
         normalizeFill(datasets, orientation === 'horizontal');
     }
 
-    return { datasets, labels };
+    return { datasets, labels, nExcluded };
 }

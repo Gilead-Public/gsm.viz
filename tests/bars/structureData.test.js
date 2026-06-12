@@ -1178,3 +1178,95 @@ describe('bars/structureData — scales.fill.colors named map', () => {
         });
     });
 });
+
+describe('bars/structureData – nCategories', () => {
+    const data = [
+        { site: 'A', score: 5 },
+        { site: 'B', score: 30 },
+        { site: 'C', score: 10 },
+        { site: 'D', score: 20 },
+        { site: 'E', score: 1 },
+    ];
+
+    const baseSpec = {
+        data,
+        mapping: { x: 'site', y: 'score' },
+        orientation: 'vertical',
+        scales: { x: {}, y: {}, fill: {} },
+    };
+
+    describe("sort='total' (default)", () => {
+        test('limits labels to top N by total', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 3,
+                scales: { ...baseSpec.scales, x: { sort: 'total' } },
+            };
+            const result = structureData(spec);
+            expect(result.labels).toHaveLength(3);
+            expect(result.labels).toEqual(['B', 'D', 'C']);
+        });
+
+        test('filters dataset data to limited categories', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 3,
+                scales: { ...baseSpec.scales, x: { sort: 'total' } },
+            };
+            const result = structureData(spec);
+            const xValues = result.datasets[0].data.map((d) => d.x);
+            expect(xValues).not.toContain('A');
+            expect(xValues).not.toContain('E');
+        });
+
+        test('returns correct nExcluded', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 3,
+                scales: { ...baseSpec.scales, x: { sort: 'total' } },
+            };
+            const result = structureData(spec);
+            expect(result.nExcluded).toBe(2);
+        });
+
+        test('defaults to total sort when scales.x.sort is not set', () => {
+            const spec = { ...baseSpec, nCategories: 2 };
+            const result = structureData(spec);
+            expect(result.labels).toEqual(['B', 'D']);
+        });
+    });
+
+    describe("sort='alphanumeric'", () => {
+        test('limits labels to first N in alphanumeric order', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 3,
+                scales: { ...baseSpec.scales, x: { sort: 'alphanumeric' } },
+            };
+            const result = structureData(spec);
+            expect(result.labels).toEqual(['A', 'B', 'C']);
+        });
+
+        test('returns correct nExcluded', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 2,
+                scales: { ...baseSpec.scales, x: { sort: 'alphanumeric' } },
+            };
+            const result = structureData(spec);
+            expect(result.nExcluded).toBe(3);
+        });
+    });
+
+    describe('no-op when nCategories not set', () => {
+        test('returns nExcluded of 0', () => {
+            const result = structureData(baseSpec);
+            expect(result.nExcluded).toBe(0);
+        });
+
+        test('returns all categories', () => {
+            const result = structureData(baseSpec);
+            expect(result.labels).toHaveLength(5);
+        });
+    });
+});

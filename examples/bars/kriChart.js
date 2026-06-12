@@ -141,7 +141,8 @@ Promise.all(dataPromises)
             position,
             dynamicSizing,
             dynamicCategoryAxis,
-            annotationsMode
+            annotationsMode,
+            nCategories
         ) {
             const spec = {
                 mapping: {
@@ -149,8 +150,9 @@ Promise.all(dataPromises)
                 },
                 orientation: orientation,
                 position: position,
+                nCategories,
                 scales: {
-                    x: { label: 'Metric ID' },
+                    x: { label: 'Metric ID', sort: 'total' },
                     y: { label: 'Count' },
                 },
                 labels: {
@@ -189,7 +191,8 @@ Promise.all(dataPromises)
                 getValue('position'),
                 getDynamicSizing('dynamic-sizing'),
                 getBoolean('dynamic-category-axis'),
-                getValue('kri-annotations')
+                getValue('kri-annotations'),
+                getNCategories('kri-n-categories')
             )
         );
 
@@ -212,7 +215,8 @@ Promise.all(dataPromises)
                     getValue('position'),
                     getDynamicSizing('dynamic-sizing'),
                     getBoolean('dynamic-category-axis'),
-                    getValue('kri-annotations')
+                    getValue('kri-annotations'),
+                    getNCategories('kri-n-categories')
                 )
             );
         }
@@ -225,6 +229,7 @@ Promise.all(dataPromises)
                 'dynamic-sizing',
                 'dynamic-category-axis',
                 'kri-annotations',
+                'kri-n-categories',
             ],
             rerender
         );

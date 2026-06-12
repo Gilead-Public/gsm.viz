@@ -1377,4 +1377,110 @@ describe('bars/getPlugins', () => {
             });
         });
     });
+
+    describe('nCategories auto-caption', () => {
+        const baseSpec = {
+            mapping: { x: 'site', fill: undefined },
+            scales: { x: { label: 'Site', sort: 'total' }, fill: {} },
+            labels: {},
+            tooltip: {},
+        };
+
+        test('appends auto-caption when nCategories and total sort are set with exclusions', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 5,
+                _nExcluded: 3,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toContain(
+                'Displaying top 5 values of Site by total. Remaining 3 values of Site are hidden.'
+            );
+        });
+
+        test('does not append auto-caption when nExcluded is 0', () => {
+            const spec = {
+                ...baseSpec,
+                nCategories: 10,
+                _nExcluded: 0,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toHaveLength(0);
+        });
+
+        test('does not append auto-caption when nCategories is not set', () => {
+            const spec = { ...baseSpec, _nExcluded: 3 };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toHaveLength(0);
+        });
+
+        test('does not append auto-caption when sort is alphanumeric', () => {
+            const spec = {
+                ...baseSpec,
+                scales: {
+                    ...baseSpec.scales,
+                    x: { label: 'Site', sort: 'alphanumeric' },
+                },
+                nCategories: 5,
+                _nExcluded: 3,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toHaveLength(0);
+        });
+
+        test('uses mapping.x as label fallback when scales.x.label is absent', () => {
+            const spec = {
+                mapping: { x: 'site' },
+                scales: { x: { sort: 'total' }, fill: {} },
+                labels: {},
+                nCategories: 5,
+                _nExcluded: 2,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toContain(
+                'Displaying top 5 values of site by total. Remaining 2 values of site are hidden.'
+            );
+        });
+
+        test('appends auto-caption after existing captions', () => {
+            const spec = {
+                ...baseSpec,
+                labels: { captions: 'Note: data is preliminary.' },
+                nCategories: 5,
+                _nExcluded: 2,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text[0]).toBe('Note: data is preliminary.');
+            expect(plugins.subtitle.text[1]).toBe(
+                'Displaying top 5 values of Site by total. Remaining 2 values of Site are hidden.'
+            );
+        });
+
+        test('auto-caption is added when sort is undefined (defaults to total)', () => {
+            const spec = {
+                ...baseSpec,
+                scales: { ...baseSpec.scales, x: { label: 'Site' } },
+                nCategories: 5,
+                _nExcluded: 1,
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.subtitle.text).toContain(
+                'Displaying top 5 values of Site by total. Remaining 1 values of Site are hidden.'
+            );
+        });
+
+        test('does not mutate a user-supplied captions array', () => {
+            const userCaptions = ['Note: preliminary data.'];
+            const spec = {
+                ...baseSpec,
+                labels: { captions: userCaptions },
+                nCategories: 5,
+                _nExcluded: 2,
+            };
+            getPlugins(spec);
+            // The original array must remain unchanged
+            expect(userCaptions).toHaveLength(1);
+            expect(userCaptions[0]).toBe('Note: preliminary data.');
+        });
+    });
 });

@@ -68,7 +68,8 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
             orientation,
             position,
             dynamicSizing,
-            annotationsMode
+            annotationsMode,
+            nCategories
         ) {
             const countryOrder = data.map((d) => d.country);
 
@@ -79,10 +80,12 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 },
                 orientation,
                 position,
+                nCategories,
                 scales: {
                     x: {
                         label: 'Country',
                         order: countryOrder,
+                        sort: 'total',
                     },
                     y: {
                         label: 'Gini Index (0–100)',
@@ -90,7 +93,9 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 },
                 labels: {
                     title: `Gini Index by Country (${year})`,
-                    captions: `Includes ${data.length} ${data.length === 1 ? 'country' : 'countries'} with data available.`,
+                    captions: `Includes ${data.length} ${
+                        data.length === 1 ? 'country' : 'countries'
+                    } with data available.`,
                 },
                 theme: {
                     dynamicSizing,
@@ -108,7 +113,8 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 getValue('gini-orientation'),
                 getValue('gini-position'),
                 getDynamicSizing('gini-dynamic-sizing'),
-                getValue('gini-annotations')
+                getValue('gini-annotations'),
+                getNCategories('gini-n-categories')
             );
             if (instance) instance.destroy();
             instance = gsmViz.default.bars(container, data, spec);
@@ -128,6 +134,7 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 'gini-position',
                 'gini-dynamic-sizing',
                 'gini-annotations',
+                'gini-n-categories',
             ],
             render
         );
