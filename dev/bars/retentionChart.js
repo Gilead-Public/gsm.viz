@@ -42,7 +42,8 @@ fetch('data/retention.csv')
             position,
             dynamicSizing,
             dynamicCategoryAxis,
-            annotationsMode
+            annotationsMode,
+            nCategories
         ) {
             return {
                 mapping: {
@@ -51,8 +52,9 @@ fetch('data/retention.csv')
                 },
                 orientation,
                 position,
+                nCategories,
                 scales: {
-                    x: { label: 'Site ID' },
+                    x: { label: 'Site ID', sort: 'total' },
                     y: { label: 'Count' },
                     fill: {
                         label: 'Retention Status',
@@ -91,7 +93,8 @@ fetch('data/retention.csv')
                 getValue('retention-position'),
                 getDynamicSizing('retention-dynamic-sizing'),
                 getBoolean('retention-dynamic-category-axis'),
-                getValue('retention-annotations')
+                getValue('retention-annotations'),
+                getNCategories('retention-n-categories')
             )
         );
 
@@ -111,7 +114,8 @@ fetch('data/retention.csv')
                     getValue('retention-position'),
                     getDynamicSizing('retention-dynamic-sizing'),
                     getBoolean('retention-dynamic-category-axis'),
-                    getValue('retention-annotations')
+                    getValue('retention-annotations'),
+                    getNCategories('retention-n-categories')
                 )
             );
         }
@@ -123,6 +127,7 @@ fetch('data/retention.csv')
                 'retention-dynamic-sizing',
                 'retention-dynamic-category-axis',
                 'retention-annotations',
+                'retention-n-categories',
             ],
             rerender
         );
