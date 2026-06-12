@@ -63,6 +63,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         captionsOptions: undefined,   // plain object; any Chart.js subtitle plugin option (position, align, font, padding, …)
     },
     annotations: {
+        referenceLines: [],    // array of reference line config objects (see Reference lines section)
         labels: {
             segment: {
                 display: false,    // value label inside or at the end of each bar segment
@@ -119,6 +120,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `annotations.labels.segment.placement` | `'center'`                                                    |
 | `annotations.labels.segment.minSize`   | `16`                                                          |
 | `annotations.labels.total.placement`   | `'outside'`                                                   |
+| `annotations.referenceLines`           | `[]` (no reference lines)                                     |
 | `theme.maintainAspectRatio`            | `false`                                                       |
 | `theme.animation`                      | `false`                                                       |
 | `theme.dynamicSizing`                  | `false`                                                       |
@@ -251,6 +253,89 @@ gsmViz.default.bars(element, data, {
                 placement: 'inside',
                 format: ',.0f',
             },
+        },
+    },
+});
+```
+
+### Reference lines
+
+`annotations.referenceLines` draws one or more lines across the chart at a specified value on the value axis. Lines are orientation-aware: for `orientation: 'vertical'` a horizontal line is drawn; for `orientation: 'horizontal'` a vertical line is drawn.
+
+Each entry in the array is a plain object:
+
+| Property        | Type                           | Default      | Description                                                       |
+| --------------- | ------------------------------ | ------------ | ----------------------------------------------------------------- |
+| `value`         | `number` (required)            | —            | Position of the line on the value axis                            |
+| `label`         | `string \| null`               | `undefined`  | Text label displayed along the line; omit or pass `null` for none |
+| `color`         | `string`                       | `'#666666'`  | CSS colour string for both the line and its label                 |
+| `lineWidth`     | `number` (positive)            | `1`          | Width of the line in pixels                                       |
+| `lineDash`      | `number[]`                     | `[]` (solid) | Dash pattern passed to `CanvasRenderingContext2D.setLineDash`     |
+| `labelPosition` | `'start' \| 'center' \| 'end'` | `'end'`      | Position of the label along the line                              |
+
+```js
+// Single reference line (no label)
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'score' },
+    annotations: {
+        referenceLines: [{ value: 0, color: '#333333' }],
+    },
+});
+
+// Dashed threshold with a label
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'score' },
+    annotations: {
+        referenceLines: [
+            {
+                value: 0.05,
+                label: 'Upper threshold',
+                color: '#e15759',
+                lineDash: [4, 4],
+            },
+        ],
+    },
+});
+
+// Reproducing the barChart positive/negative threshold pattern
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'score' },
+    annotations: {
+        referenceLines: [
+            { value: 0.05, label: 'Amber ↑', color: '#e5a919', lineDash: [2] },
+            {
+                value: -0.05,
+                label: '↓ Amber',
+                color: '#e5a919',
+                lineDash: [2],
+                labelPosition: 'start',
+            },
+            { value: 0.1, label: 'Red ↑', color: '#e15759', lineDash: [2] },
+            {
+                value: -0.1,
+                label: '↓ Red',
+                color: '#e15759',
+                lineDash: [2],
+                labelPosition: 'start',
+            },
+        ],
+    },
+});
+
+// Reference lines coexist with label annotations
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'score' },
+    annotations: {
+        referenceLines: [
+            {
+                value: 0.05,
+                label: 'Threshold',
+                color: '#e15759',
+                lineDash: [4, 4],
+            },
+        ],
+        labels: {
+            segment: { display: true },
         },
     },
 });

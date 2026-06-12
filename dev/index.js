@@ -21855,6 +21855,50 @@ var gsmViz = (() => {
         );
       }
     }
+    const referenceLines2 = spec.annotations?.referenceLines;
+    if (referenceLines2 !== void 0) {
+      if (!Array.isArray(referenceLines2)) {
+        throw new Error(
+          "spec.annotations.referenceLines must be an array"
+        );
+      }
+      referenceLines2.forEach((line, i) => {
+        const prefix = `spec.annotations.referenceLines[${i}]`;
+        if (line === null || typeof line !== "object" || Array.isArray(line) || Object.getPrototypeOf(line) !== Object.prototype && Object.getPrototypeOf(line) !== null) {
+          throw new Error(`${prefix} must be a plain object`);
+        }
+        if (!Number.isFinite(line.value)) {
+          throw new Error(
+            `${prefix}.value is required and must be a finite number`
+          );
+        }
+        if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+          throw new Error(`${prefix}.label must be a string`);
+        }
+        if (line.color !== void 0 && typeof line.color !== "string") {
+          throw new Error(`${prefix}.color must be a string`);
+        }
+        if (line.lineWidth !== void 0 && (!Number.isFinite(line.lineWidth) || line.lineWidth <= 0)) {
+          throw new Error(
+            `${prefix}.lineWidth must be a positive number`
+          );
+        }
+        if (line.lineDash !== void 0) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every(
+            (n) => Number.isFinite(n) && n >= 0
+          )) {
+            throw new Error(
+              `${prefix}.lineDash must be an array of non-negative numbers`
+            );
+          }
+        }
+        if (line.labelPosition !== void 0 && line.labelPosition !== "start" && line.labelPosition !== "center" && line.labelPosition !== "end") {
+          throw new Error(
+            `${prefix}.labelPosition must be 'start', 'center', or 'end'`
+          );
+        }
+      });
+    }
   }
 
   // src/bars/defaults.js
@@ -21890,6 +21934,7 @@ var gsmViz = (() => {
       captions: void 0
     },
     annotations: {
+      referenceLines: [],
       labels: {
         segment: {
           display: false,
@@ -22682,6 +22727,43 @@ var gsmViz = (() => {
     }
   }
 
+  // src/bars/getPlugins/referenceLines.js
+  function referenceLines(spec) {
+    const lines = spec.annotations?.referenceLines;
+    if (!Array.isArray(lines) || lines.length === 0) return null;
+    const isHorizontal = spec.orientation === "horizontal";
+    return lines.map((line) => {
+      const color3 = line.color ?? "#666666";
+      const annotation2 = {
+        type: "line",
+        adjustScaleRange: false,
+        borderColor: color3,
+        borderWidth: line.lineWidth ?? 1,
+        borderDash: line.lineDash ?? []
+      };
+      if (isHorizontal) {
+        annotation2.xMin = line.value;
+        annotation2.xMax = line.value;
+      } else {
+        annotation2.yMin = line.value;
+        annotation2.yMax = line.value;
+      }
+      if (line.label) {
+        annotation2.label = {
+          display: true,
+          content: line.label,
+          color: color3,
+          backgroundColor: "white",
+          position: line.labelPosition ?? "end",
+          rotation: "auto",
+          font: { size: 12 },
+          padding: 2
+        };
+      }
+      return annotation2;
+    });
+  }
+
   // src/bars/getPlugins/getPlugins.js
   function getPlugins2(spec) {
     const { labels, mapping, scales: scales2, tooltip: tooltip5, theme, position } = spec;
@@ -22717,6 +22799,10 @@ var gsmViz = (() => {
         align: "start",
         ...labels.captionsOptions,
         text: captionsArray
+      },
+      annotation: {
+        annotations: referenceLines(spec),
+        clip: false
       },
       tooltip: buildTooltip(tooltip5, position),
       legend: legend5,
