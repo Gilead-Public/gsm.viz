@@ -173,9 +173,6 @@ Promise.all(kriSiteDataPromises)
                 annotations: {
                     referenceLines: buildReferenceLines(config, yAxis, results),
                 },
-                tooltip: {
-                    format: 'count+percent',
-                },
                 theme: {
                     dynamicSizing: false,
                     dynamicCategoryAxis: false,
