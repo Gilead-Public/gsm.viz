@@ -486,6 +486,102 @@ describe('bars/validateSpec', () => {
         });
     });
 
+    describe('annotations.labels formatter validation', () => {
+        test('does not throw when segment formatter is a function', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { segment: { formatter: () => '' } },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when segment formatter is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { segment: { formatter: '{fill}: {value}' } },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when segment formatter is undefined', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { segment: { formatter: undefined } },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when segment formatter is a number', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { segment: { formatter: 42 } },
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.labels.segment.formatter must be a string or function'
+            );
+        });
+
+        test('throws when segment formatter is an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { segment: { formatter: [] } },
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.labels.segment.formatter must be a string or function'
+            );
+        });
+
+        test('does not throw when total formatter is a function', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { total: { formatter: () => '' } },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when total formatter is a string', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { total: { formatter: '{value}' } },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when total formatter is a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    annotations: {
+                        labels: { total: { formatter: true } },
+                    },
+                })
+            ).toThrow(
+                'spec.annotations.labels.total.formatter must be a string or function'
+            );
+        });
+    });
+
     describe('annotations.referenceLines', () => {
         test('does not throw when referenceLines is absent', () => {
             expect(() => validateSpec(data, spec)).not.toThrow();
