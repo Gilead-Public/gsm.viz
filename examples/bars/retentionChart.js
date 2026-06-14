@@ -12,26 +12,57 @@ fetch('data/retention.csv')
 
         const container = document.getElementById('retention-container');
 
-        function buildAnnotations(mode) {
-            if (mode === 'none') return {};
+        function buildSegmentOverrides(barLabelMode) {
+            if (barLabelMode === 'count') return { value: 'raw' };
+            if (barLabelMode === 'percent') return { value: 'percent' };
+            if (barLabelMode === 'fill') return { formatter: '{fill}' };
+            if (barLabelMode === 'category') return { formatter: '{category}' };
+            if (barLabelMode === 'custom')
+                return { formatter: '{fill}: {value} ({percent})' };
+            return null;
+        }
+
+        function buildAnnotations(mode, barLabelMode) {
+            const overrides = buildSegmentOverrides(barLabelMode);
+            const segmentLabel = overrides
+                ? { display: true, ...overrides }
+                : null;
+
+            if (mode === 'none') {
+                return segmentLabel ? { labels: { segment: segmentLabel } } : {};
+            }
             if (mode === 'total-outside')
                 return {
-                    labels: { total: { display: true, placement: 'outside' } },
+                    labels: {
+                        total: { display: true, placement: 'outside' },
+                        ...(segmentLabel ? { segment: segmentLabel } : {}),
+                    },
                 };
             if (mode === 'total-inside')
                 return {
-                    labels: { total: { display: true, placement: 'inside' } },
+                    labels: {
+                        total: { display: true, placement: 'inside' },
+                        ...(segmentLabel ? { segment: segmentLabel } : {}),
+                    },
                 };
             if (mode === 'segment-outside')
                 return {
                     labels: {
-                        segment: { display: true, placement: 'end' },
+                        segment: {
+                            display: true,
+                            placement: 'end',
+                            ...overrides,
+                        },
                     },
                 };
             if (mode === 'segment-inside')
                 return {
                     labels: {
-                        segment: { display: true, placement: 'center' },
+                        segment: {
+                            display: true,
+                            placement: 'center',
+                            ...overrides,
+                        },
                     },
                 };
             return {};
@@ -43,7 +74,8 @@ fetch('data/retention.csv')
             dynamicSizing,
             dynamicCategoryAxis,
             annotationsMode,
-            nCategories
+            nCategories,
+            barLabelMode
         ) {
             return {
                 mapping: {
@@ -68,7 +100,7 @@ fetch('data/retention.csv')
                     dynamicSizing,
                     dynamicCategoryAxis,
                 },
-                annotations: buildAnnotations(annotationsMode),
+                annotations: buildAnnotations(annotationsMode, barLabelMode),
                 tooltip: {
                     format: 'count+percent',
                     callbacks: {
@@ -94,7 +126,8 @@ fetch('data/retention.csv')
                 getDynamicSizing('retention-dynamic-sizing'),
                 getBoolean('retention-dynamic-category-axis'),
                 getValue('retention-annotations'),
-                getNCategories('retention-n-categories')
+                getNCategories('retention-n-categories'),
+                getValue('retention-bar-label')
             )
         );
 
@@ -115,7 +148,8 @@ fetch('data/retention.csv')
                     getDynamicSizing('retention-dynamic-sizing'),
                     getBoolean('retention-dynamic-category-axis'),
                     getValue('retention-annotations'),
-                    getNCategories('retention-n-categories')
+                    getNCategories('retention-n-categories'),
+                    getValue('retention-bar-label')
                 )
             );
         }
@@ -128,6 +162,7 @@ fetch('data/retention.csv')
                 'retention-dynamic-category-axis',
                 'retention-annotations',
                 'retention-n-categories',
+                'retention-bar-label',
             ],
             rerender
         );

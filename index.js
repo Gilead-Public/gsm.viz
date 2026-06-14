@@ -1,4 +1,3 @@
-'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21855,6 +21854,19 @@ var gsmViz = (() => {
         );
       }
     }
+    function validateFormatter(value, path) {
+      if (value !== void 0 && typeof value !== "string" && typeof value !== "function") {
+        throw new Error(`${path} must be a string or function`);
+      }
+    }
+    validateFormatter(
+      spec.annotations?.labels?.segment?.formatter,
+      "spec.annotations.labels.segment.formatter"
+    );
+    validateFormatter(
+      spec.annotations?.labels?.total?.formatter,
+      "spec.annotations.labels.total.formatter"
+    );
     const referenceLines2 = spec.annotations?.referenceLines;
     if (referenceLines2 !== void 0) {
       if (!Array.isArray(referenceLines2)) {
@@ -21878,13 +21890,19 @@ var gsmViz = (() => {
         if (line.color !== void 0 && typeof line.color !== "string") {
           throw new Error(`${prefix}.color must be a string`);
         }
-        if (line.lineWidth !== void 0 && (typeof line.lineWidth !== "number" || line.lineWidth <= 0)) {
+        if (line.lineWidth !== void 0 && (!Number.isFinite(line.lineWidth) || line.lineWidth <= 0)) {
           throw new Error(
             `${prefix}.lineWidth must be a positive number`
           );
         }
-        if (line.lineDash !== void 0 && !Array.isArray(line.lineDash)) {
-          throw new Error(`${prefix}.lineDash must be an array`);
+        if (line.lineDash !== void 0) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every(
+            (n) => Number.isFinite(n) && n >= 0
+          )) {
+            throw new Error(
+              `${prefix}.lineDash must be an array of non-negative numbers`
+            );
+          }
         }
         if (line.labelPosition !== void 0 && line.labelPosition !== "start" && line.labelPosition !== "center" && line.labelPosition !== "end") {
           throw new Error(
@@ -22505,6 +22523,35 @@ var gsmViz = (() => {
     const suffix = valueType === "percent" ? "%" : "";
     return `${formatter2(value)}${suffix}`;
   }
+  function interpolateTemplate(template, details) {
+    const knownTokens = {
+      fill: String(details.fill ?? ""),
+      value: format("~g")(details.value),
+      percent: `${format(".1f")(details.percent)}%`,
+      category: String(details.category ?? "")
+    };
+    return template.replace(
+      /\{(\w+)\}/g,
+      (match, key) => key in knownTokens ? knownTokens[key] : match
+    );
+  }
+  function buildDetails(point, context, mode, value, valueType) {
+    const rawValue = getRawValue2(point, context);
+    const rawTotal = getRawTotal2(context);
+    const labelValue = mode === "total" ? value : rawValue;
+    const percent = rawTotal === 0 ? 0 : labelValue / rawTotal * 100;
+    return {
+      mode,
+      valueType,
+      point,
+      total: rawTotal,
+      fill: point?._fill,
+      value: labelValue,
+      percent,
+      category: getCategory2(point, context),
+      datum: point?._datum
+    };
+  }
   function formatLabel(point, context, options, mode, spec) {
     const { value, valueType } = resolveLabelValue(
       point,
@@ -22513,13 +22560,11 @@ var gsmViz = (() => {
       mode,
       spec
     );
-    if (typeof options.formatter === "function") {
-      const details = {
-        mode,
-        valueType,
-        point,
-        total: mode === "total" ? value : getRawTotal2(context)
-      };
+    if (options.formatter !== void 0) {
+      const details = buildDetails(point, context, mode, value, valueType);
+      if (typeof options.formatter === "string") {
+        return interpolateTemplate(options.formatter, details);
+      }
       return options.formatter(value, context, details);
     }
     if (options.format) {
@@ -22724,7 +22769,7 @@ var gsmViz = (() => {
   // src/bars/getPlugins/referenceLines.js
   function referenceLines(spec) {
     const lines = spec.annotations?.referenceLines;
-    if (!lines || lines.length === 0) return null;
+    if (!Array.isArray(lines) || lines.length === 0) return null;
     const isHorizontal = spec.orientation === "horizontal";
     return lines.map((line) => {
       const color3 = line.color ?? "#666666";
