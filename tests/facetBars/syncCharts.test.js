@@ -1,0 +1,177 @@
+import syncCharts from '../../src/facetBars/syncCharts.js';
+
+const makeChart = (labels, datasets, indexAxis = 'x') => {
+    const setActiveElements = jest.fn();
+    const update = jest.fn();
+    return {
+        data: {
+            labels,
+            datasets: datasets.map((d, i) => ({
+                label: `ds${i}`,
+                data: d,
+            })),
+        },
+        options: {
+            indexAxis,
+            onHover: null,
+        },
+        setActiveElements,
+        update,
+    };
+};
+
+describe('facetBars/syncCharts', () => {
+    test('replaces onHover on every chart', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+        ];
+        syncCharts(charts);
+        charts.forEach((c) => expect(typeof c.options.onHover).toBe('function'));
+    });
+
+    test('calls setActiveElements on sibling charts when a bar is hovered', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 3 }, { x: 'B', y: 7 }]]),
+        ];
+        syncCharts(charts);
+
+        // Simulate hovering over label 'A' (index 0) in chart[0]
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        // Siblings (charts[1] and charts[2]) should have setActiveElements called
+        expect(charts[1].setActiveElements).toHaveBeenCalled();
+        expect(charts[2].setActiveElements).toHaveBeenCalled();
+        // The hovering chart itself should NOT have setActiveElements called
+        expect(charts[0].setActiveElements).not.toHaveBeenCalled();
+    });
+
+    test('highlights matching category index in sibling charts', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+        ];
+        syncCharts(charts);
+
+        // Hover 'B' (index 1) in chart[0]
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 1 }],
+            charts[0]
+        );
+
+        const callArg = charts[1].setActiveElements.mock.calls[0][0];
+        // Should point to index 1 in chart[1] (matching 'B')
+        expect(callArg[0].index).toBe(1);
+    });
+
+    test('clears sibling active elements when hover leaves a chart', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+        ];
+        syncCharts(charts);
+
+        // Empty activeElements = mouse left chart
+        charts[0].options.onHover({ native: null }, [], charts[0]);
+
+        expect(charts[1].setActiveElements).toHaveBeenCalledWith([]);
+        expect(charts[1].update).toHaveBeenCalledWith('none');
+    });
+
+    test('calls update("none") on sibling charts after setting active elements', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+        ];
+        syncCharts(charts);
+
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        expect(charts[1].update).toHaveBeenCalledWith('none');
+    });
+
+    test('preserves original onHover callback', () => {
+        const original = jest.fn();
+        const chart0 = makeChart(['A'], [[{ x: 'A', y: 10 }]]);
+        const chart1 = makeChart(['A'], [[{ x: 'A', y: 5 }]]);
+        chart0.options.onHover = original;
+
+        syncCharts([chart0, chart1]);
+
+        chart0.options.onHover({ native: null }, [{ datasetIndex: 0, index: 0 }], chart0);
+
+        expect(original).toHaveBeenCalled();
+    });
+
+    test('skips highlighting when hovered category is not in sibling labels', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['C', 'D'], [[{ x: 'C', y: 5 }, { x: 'D', y: 15 }]]),
+        ];
+        syncCharts(charts);
+
+        // Hover 'A' in chart[0]; 'A' does not exist in chart[1]
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        expect(charts[1].setActiveElements).not.toHaveBeenCalled();
+    });
+
+    test('handles multiple datasets in sibling charts', () => {
+        const charts = [
+            makeChart(['A', 'B'], [
+                [{ x: 'A', y: 10 }, { x: 'B', y: 20 }],
+                [{ x: 'A', y: 3 }, { x: 'B', y: 7 }],
+            ]),
+            makeChart(['A', 'B'], [
+                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
+                [{ x: 'A', y: 2 }, { x: 'B', y: 8 }],
+            ]),
+        ];
+        syncCharts(charts);
+
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        const activeElements = charts[1].setActiveElements.mock.calls[0][0];
+        // Should have one entry per dataset
+        expect(activeElements).toHaveLength(2);
+        expect(activeElements[0]).toEqual({ datasetIndex: 0, index: 0 });
+        expect(activeElements[1]).toEqual({ datasetIndex: 1, index: 0 });
+    });
+
+    test('handles horizontal charts (indexAxis y, category in point.y)', () => {
+        // For horizontal, after swapPointAxes: point.x = value, point.y = category
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 10, y: 'A' }, { x: 20, y: 'B' }]], 'y'),
+            makeChart(['A', 'B'], [[{ x: 5, y: 'A' }, { x: 15, y: 'B' }]], 'y'),
+        ];
+        syncCharts(charts);
+
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 1 }], // hovering 'B' at index 1
+            charts[0]
+        );
+
+        const callArg = charts[1].setActiveElements.mock.calls[0][0];
+        expect(callArg[0].index).toBe(1); // 'B' is at index 1 in sibling too
+    });
+});

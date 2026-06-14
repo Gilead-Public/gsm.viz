@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -1732,8 +1733,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults4 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults4.scriptable, _indexable = defaults4.indexable, _allKeys = defaults4.allKeys } = proxy;
+  function _descriptors(proxy, defaults5 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults5.scriptable, _indexable = defaults5.indexable, _allKeys = defaults5.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -20949,10 +20950,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults4, _config_, customSettings = null) {
+  function configure2(defaults5, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults4) {
-      config[key] = coalesce(config[key], defaults4[key]);
+    for (const key in defaults5) {
+      config[key] = coalesce(config[key], defaults5[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -21073,31 +21074,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults4 = {};
-    defaults4.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults4.GroupLevel = "Site";
-    defaults4.groupLabelKey = "InvestigatorLastName";
-    defaults4.groupParticipantCountKey = "ParticipantCount";
-    defaults4.groupTooltipKeys = null;
-    defaults4.x = "GroupID";
-    defaults4.xType = "category";
-    defaults4.y = "Score";
-    defaults4.yType = "linear";
-    defaults4.color = "Flag";
-    defaults4.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.x = "GroupID";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults4.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults4.displayTitle = false;
-    defaults4.dynamicSizing = false;
-    defaults4.maintainAspectRatio = false;
-    const config = configure2(defaults4, _config_ || {}, {
+    defaults5.displayTitle = false;
+    defaults5.dynamicSizing = false;
+    defaults5.maintainAspectRatio = false;
+    const config = configure2(defaults5, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -23061,6 +23062,320 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/facetBars/validateSpec.js
+  function validateSpec2(data, spec) {
+    validateSpec(data, spec);
+    if (!spec.facet) {
+      throw new Error("spec.facet is required");
+    }
+    if (spec.facet === null || typeof spec.facet !== "object" || Array.isArray(spec.facet) || Object.getPrototypeOf(spec.facet) !== Object.prototype && Object.getPrototypeOf(spec.facet) !== null) {
+      throw new Error("spec.facet must be a plain object");
+    }
+    if (!spec.facet.field) {
+      throw new Error("spec.facet.field is required");
+    }
+    if (typeof spec.facet.field !== "string") {
+      throw new Error("spec.facet.field must be a string");
+    }
+    if (spec.facet.nCol !== void 0 && (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)) {
+      throw new Error("spec.facet.nCol must be a positive integer");
+    }
+    const xFree = spec.facet?.scales?.x?.free;
+    if (xFree !== void 0 && typeof xFree !== "boolean") {
+      throw new Error("spec.facet.scales.x.free must be a boolean");
+    }
+    const yFree = spec.facet?.scales?.y?.free;
+    if (yFree !== void 0 && typeof yFree !== "boolean") {
+      throw new Error("spec.facet.scales.y.free must be a boolean");
+    }
+    const legendChart = spec.facet?.legend?.chart;
+    if (legendChart !== void 0 && typeof legendChart !== "string") {
+      throw new Error(
+        "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
+      );
+    }
+  }
+
+  // src/facetBars/defaults.js
+  var defaults4 = {
+    facet: {
+      field: void 0,
+      order: void 0,
+      nCol: void 0,
+      label: {
+        position: "top",
+        font: void 0
+      },
+      scales: {
+        x: { free: false },
+        y: { free: false }
+      },
+      legend: {
+        display: true,
+        chart: "first"
+      }
+    }
+  };
+  var defaults_default2 = defaults4;
+
+  // src/facetBars/mergeSpec.js
+  function mergeSpec2(data, spec) {
+    const barsMerged = mergeSpec(data, spec);
+    const userFacet = spec.facet ?? {};
+    const defaultFacet = defaults_default2.facet;
+    const userLabel = userFacet.label ?? {};
+    const userScales = userFacet.scales ?? {};
+    const userLegend = userFacet.legend ?? {};
+    return {
+      ...barsMerged,
+      facet: {
+        field: userFacet.field,
+        order: userFacet.order,
+        nCol: userFacet.nCol,
+        label: {
+          ...defaultFacet.label,
+          ...userLabel
+        },
+        scales: {
+          x: {
+            ...defaultFacet.scales.x,
+            ...userScales.x ?? {}
+          },
+          y: {
+            ...defaultFacet.scales.y,
+            ...userScales.y ?? {}
+          }
+        },
+        legend: {
+          ...defaultFacet.legend,
+          ...userLegend
+        }
+      }
+    };
+  }
+
+  // src/facetBars/splitData.js
+  function splitData(data, field, order) {
+    const map4 = /* @__PURE__ */ new Map();
+    if (order) {
+      for (const val of order) {
+        map4.set(String(val), []);
+      }
+    }
+    for (const row of data) {
+      const key = String(row[field]);
+      if (order && !map4.has(key)) continue;
+      if (!map4.has(key)) map4.set(key, []);
+      map4.get(key).push(row);
+    }
+    return map4;
+  }
+
+  // src/facetBars/computeGlobalScales.js
+  function computeGlobalScales(facetDataMap, spec) {
+    const { position, orientation, mapping, scales: scales2, facet } = spec;
+    const horizontal = orientation === "horizontal";
+    if (position === "fill") {
+      return { yMin: 0, yMax: 100 };
+    }
+    const yFree = facet?.scales?.y?.free ?? false;
+    if (yFree) return {};
+    const stacked = position === "stack";
+    let globalMax = 0;
+    for (const [, facetData] of facetDataMap) {
+      const subSpec = {
+        data: facetData,
+        mapping,
+        orientation,
+        position,
+        scales: scales2,
+        nCategories: void 0
+      };
+      const { datasets, labels } = structureData2(subSpec);
+      if (stacked) {
+        const categoryTotals = new Map(labels.map((l) => [l, 0]));
+        for (const ds of datasets) {
+          for (const point of ds.data) {
+            const cat = horizontal ? point.y : point.x;
+            const val = horizontal ? point.x : point.y;
+            if (categoryTotals.has(String(cat))) {
+              const current = categoryTotals.get(String(cat));
+              categoryTotals.set(String(cat), current + Math.max(0, Number(val) || 0));
+            }
+          }
+        }
+        for (const total of categoryTotals.values()) {
+          if (total > globalMax) globalMax = total;
+        }
+      } else {
+        for (const ds of datasets) {
+          for (const point of ds.data) {
+            const val = horizontal ? point.x : point.y;
+            const num = Number(val) || 0;
+            if (num > globalMax) globalMax = num;
+          }
+        }
+      }
+    }
+    return { yMin: 0, yMax: globalMax };
+  }
+
+  // src/facetBars/buildSubSpec.js
+  function buildSubSpec(facetValue, mergedSpec) {
+    const {
+      mapping,
+      orientation,
+      position,
+      nCategories,
+      scales: scales2,
+      labels,
+      annotations: annotations5,
+      tooltip: tooltip5,
+      theme,
+      callbacks
+    } = mergedSpec;
+    return {
+      mapping,
+      orientation,
+      position,
+      nCategories,
+      scales: scales2,
+      labels,
+      annotations: annotations5,
+      tooltip: tooltip5,
+      theme,
+      callbacks: {
+        onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
+        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null
+      }
+    };
+  }
+
+  // src/facetBars/renderGrid.js
+  function renderGrid(parentElement, facetValues, mergedSpec) {
+    const existing = parentElement.querySelector(".gsm-facet-grid");
+    if (existing) existing.remove();
+    const { facet } = mergedSpec;
+    const nCol = facet.nCol ?? Math.min(facetValues.length, 3);
+    const labelPosition = facet.label?.position ?? "top";
+    const grid = document.createElement("div");
+    grid.className = "gsm-facet-grid";
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = `repeat(${nCol}, 1fr)`;
+    grid.style.gap = "8px";
+    const containers = /* @__PURE__ */ new Map();
+    for (const facetValue of facetValues) {
+      const cell = document.createElement("div");
+      cell.className = "gsm-facet-cell";
+      const label = document.createElement("div");
+      label.className = "gsm-facet-label";
+      label.textContent = String(facetValue);
+      if (facet.label?.font) {
+        label.style.font = facet.label.font;
+      }
+      const canvasContainer = document.createElement("div");
+      canvasContainer.className = "gsm-facet-canvas";
+      if (labelPosition === "bottom") {
+        cell.appendChild(canvasContainer);
+        cell.appendChild(label);
+      } else {
+        cell.appendChild(label);
+        cell.appendChild(canvasContainer);
+      }
+      grid.appendChild(cell);
+      containers.set(String(facetValue), canvasContainer);
+    }
+    parentElement.appendChild(grid);
+    return { containers, grid };
+  }
+
+  // src/facetBars/syncCharts.js
+  function syncCharts(charts) {
+    charts.forEach((chart) => {
+      const originalOnHover = chart.options.onHover;
+      chart.options.onHover = (event, activeElements, chartInstance) => {
+        if (originalOnHover) {
+          originalOnHover(event, activeElements, chartInstance);
+        }
+        const horizontal = chartInstance.options.indexAxis === "y";
+        if (activeElements.length > 0) {
+          const { datasetIndex, index: index3 } = activeElements[0];
+          const point = chartInstance.data.datasets[datasetIndex].data[index3];
+          const hoveredCategory = horizontal ? point.y : point.x;
+          charts.forEach((sibling) => {
+            if (sibling === chartInstance) return;
+            const siblingLabels = sibling.data.labels;
+            const labelIndex = siblingLabels.indexOf(hoveredCategory);
+            if (labelIndex === -1) return;
+            const newActiveElements = sibling.data.datasets.map((_, dsIndex) => ({
+              datasetIndex: dsIndex,
+              index: labelIndex
+            }));
+            sibling.setActiveElements(newActiveElements);
+            sibling.update("none");
+          });
+        } else {
+          charts.forEach((sibling) => {
+            if (sibling === chartInstance) return;
+            sibling.setActiveElements([]);
+            sibling.update("none");
+          });
+        }
+      };
+    });
+  }
+
+  // src/facetBars.js
+  function facetBars(element = "body", data = [], spec = {}) {
+    validateSpec2(data, spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(
+          `facetBars: could not find element matching "${element}"`
+        );
+      }
+    }
+    const merged = mergeSpec2(data, spec);
+    const facetDataMap = splitData(data, merged.facet.field, merged.facet.order);
+    const facetValues = [...facetDataMap.keys()];
+    const globalScales = computeGlobalScales(facetDataMap, merged);
+    const { containers, grid } = renderGrid(el, facetValues, merged);
+    const charts = [];
+    for (const facetValue of facetValues) {
+      const facetData = facetDataMap.get(facetValue);
+      const subSpec = buildSubSpec(facetValue, merged);
+      const chart = bars(containers.get(facetValue), facetData, subSpec);
+      charts.push(chart);
+    }
+    const horizontal = merged.orientation === "horizontal";
+    const valueAxisKey = horizontal ? "x" : "y";
+    const yFree = merged.facet.scales.y.free;
+    const legendDisplay = merged.facet.legend.display;
+    const legendChart = merged.facet.legend.chart;
+    const hasFill = !!merged.mapping.fill;
+    charts.forEach((chart, i) => {
+      let needsUpdate = false;
+      if (!yFree && globalScales.yMax !== void 0) {
+        chart.options.scales[valueAxisKey].min = globalScales.yMin ?? 0;
+        chart.options.scales[valueAxisKey].max = globalScales.yMax;
+        needsUpdate = true;
+      }
+      if (hasFill) {
+        const facetVal = facetValues[i];
+        const showLegend = legendDisplay && (legendChart === "first" ? i === 0 : legendChart === "last" ? i === facetValues.length - 1 : facetVal === String(legendChart));
+        if (chart.options.plugins.legend.display !== showLegend) {
+          chart.options.plugins.legend.display = showLegend;
+          needsUpdate = true;
+        }
+      }
+      if (needsUpdate) chart.update("none");
+    });
+    syncCharts(charts);
+    return { charts, container: grid };
+  }
+
   // src/groupOverview/checkInputs.js
   function checkInputs2(_results_, _config_, _groupMetadata_, _metricMetadata_) {
     checkInput({
@@ -23085,26 +23400,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults4 = {};
-    defaults4.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults4.GroupLevel = "Site";
-    defaults4.groupLabelKey = null;
-    defaults4.groupParticipantCountKey = "ParticipantCount";
-    defaults4.groupTooltipKeys = null;
-    defaults4.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults4.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults4.groupClickCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = null;
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults5.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults5.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults4.metricClickCallback = (datum2) => {
+    defaults5.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults4, _config_);
+    const config = configure2(defaults5, _config_);
     return config;
   }
 
@@ -23800,34 +24115,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults4 = {};
-    defaults4.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults4.GroupLevel = "Site";
-    defaults4.groupLabelKey = "InvestigatorLastName";
-    defaults4.groupParticipantCountKey = "ParticipantCount";
-    defaults4.groupTooltipKeys = null;
-    defaults4.x = "Denominator";
-    defaults4[defaults4.x] = defaults4.x;
-    defaults4.xType = "logarithmic";
-    defaults4.y = "Numerator";
-    defaults4[defaults4.y] = defaults4.y;
-    defaults4.yType = "linear";
-    defaults4.color = "Flag";
-    defaults4.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.x = "Denominator";
+    defaults5[defaults5.x] = defaults5.x;
+    defaults5.xType = "logarithmic";
+    defaults5.y = "Numerator";
+    defaults5[defaults5.y] = defaults5.y;
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults4.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults4.displayTitle = false;
-    defaults4.displayLegend = true;
-    defaults4.displayTrendLine = false;
-    defaults4.maintainAspectRatio = false;
-    const config = configure2(defaults4, _config_, {
+    defaults5.displayTitle = false;
+    defaults5.displayLegend = true;
+    defaults5.displayTrendLine = false;
+    defaults5.maintainAspectRatio = false;
+    const config = configure2(defaults5, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -24327,21 +24642,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults4 = {};
-    defaults4.x = "SnapshotDate";
-    defaults4.xType = "category";
-    defaults4.y = "Score";
-    defaults4.yType = "linear";
-    defaults4.color = "Flag";
-    defaults4.hoverCallback = (datum2) => {
+    const defaults5 = {};
+    defaults5.x = "SnapshotDate";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults4.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults4.maintainAspectRatio = false;
-    defaults4.nSnapshots = 5;
-    defaults4.displayThresholds = false;
-    const config = configure2(defaults4, _config_, {
+    defaults5.maintainAspectRatio = false;
+    defaults5.nSnapshots = 5;
+    defaults5.displayThresholds = false;
+    const config = configure2(defaults5, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -24649,39 +24964,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults4 = {};
-    defaults4.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults4.GroupLevel = "Site";
-    defaults4.groupLabelKey = "InvestigatorLastName";
-    defaults4.groupParticipantCountKey = "ParticipantCount";
-    defaults4.groupTooltipKeys = null;
-    defaults4.dataType = "continuous";
-    defaults4.discreteUnit = null;
-    defaults4.distributionDisplay = "boxplot";
-    defaults4.x = "SnapshotDate";
-    defaults4.xType = "category";
-    defaults4.y = "Score";
-    defaults4.yType = "linear";
-    defaults4.color = "Flag";
-    defaults4.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.dataType = "continuous";
+    defaults5.discreteUnit = null;
+    defaults5.distributionDisplay = "boxplot";
+    defaults5.x = "SnapshotDate";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults4.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults4.aggregateLabel = "Study";
-    defaults4.annotateThreshold = _thresholds_ !== null;
-    defaults4.displayTitle = false;
-    defaults4.maintainAspectRatio = false;
+    defaults5.aggregateLabel = "Study";
+    defaults5.annotateThreshold = _thresholds_ !== null;
+    defaults5.displayTitle = false;
+    defaults5.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults4, _config_, {
+    const config = configure2(defaults5, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -24694,7 +25009,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults4.dataType === "discrete")
+    if (defaults5.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -25529,6 +25844,7 @@ var gsmViz = (() => {
   var gsmViz = {
     barChart,
     bars,
+    facetBars,
     groupOverview,
     scatterPlot,
     sparkline,
