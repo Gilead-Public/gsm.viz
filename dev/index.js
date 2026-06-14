@@ -21855,6 +21855,19 @@ var gsmViz = (() => {
         );
       }
     }
+    function validateFormatter(value, path) {
+      if (value !== void 0 && typeof value !== "string" && typeof value !== "function") {
+        throw new Error(`${path} must be a string or function`);
+      }
+    }
+    validateFormatter(
+      spec.annotations?.labels?.segment?.formatter,
+      "spec.annotations.labels.segment.formatter"
+    );
+    validateFormatter(
+      spec.annotations?.labels?.total?.formatter,
+      "spec.annotations.labels.total.formatter"
+    );
     const referenceLines2 = spec.annotations?.referenceLines;
     if (referenceLines2 !== void 0) {
       if (!Array.isArray(referenceLines2)) {
@@ -22511,6 +22524,35 @@ var gsmViz = (() => {
     const suffix = valueType === "percent" ? "%" : "";
     return `${formatter2(value)}${suffix}`;
   }
+  function interpolateTemplate(template, details) {
+    const knownTokens = {
+      fill: String(details.fill ?? ""),
+      value: format("~g")(details.value),
+      percent: `${format(".1f")(details.percent)}%`,
+      category: String(details.category ?? "")
+    };
+    return template.replace(
+      /\{(\w+)\}/g,
+      (match, key) => key in knownTokens ? knownTokens[key] : match
+    );
+  }
+  function buildDetails(point, context, mode, value, valueType) {
+    const rawValue = getRawValue2(point, context);
+    const rawTotal = getRawTotal2(context);
+    const labelValue = mode === "total" ? value : rawValue;
+    const percent = rawTotal === 0 ? 0 : labelValue / rawTotal * 100;
+    return {
+      mode,
+      valueType,
+      point,
+      total: rawTotal,
+      fill: point?._fill,
+      value: labelValue,
+      percent,
+      category: getCategory2(point, context),
+      datum: point?._datum
+    };
+  }
   function formatLabel(point, context, options, mode, spec) {
     const { value, valueType } = resolveLabelValue(
       point,
@@ -22519,13 +22561,11 @@ var gsmViz = (() => {
       mode,
       spec
     );
-    if (typeof options.formatter === "function") {
-      const details = {
-        mode,
-        valueType,
-        point,
-        total: mode === "total" ? value : getRawTotal2(context)
-      };
+    if (options.formatter !== void 0) {
+      const details = buildDetails(point, context, mode, value, valueType);
+      if (typeof options.formatter === "string") {
+        return interpolateTemplate(options.formatter, details);
+      }
       return options.formatter(value, context, details);
     }
     if (options.format) {
