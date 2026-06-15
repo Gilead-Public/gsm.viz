@@ -182,8 +182,9 @@ Promise.all(kriFacetDataPromises)
             if (!currentResult) return;
 
             currentResult.charts.forEach((chart) => {
-                const labels = chart.data.labels;
-                const siteIndex = siteID ? labels.indexOf(siteID) : -1;
+                // Determine category axis: horizontal bars use point.y for site,
+                // vertical bars use point.x.
+                const isHorizontal = chart.options.indexAxis === 'y';
 
                 chart.data.datasets.forEach((ds) => {
                     const origBg =
@@ -206,19 +207,27 @@ Promise.all(kriFacetDataPromises)
                         ds.backgroundColor = origBg;
                         if (origBorder) ds.borderColor = origBorder;
                     } else {
-                        // siteIndex === -1 means site absent: dim every bar.
-                        // siteIndex >= 0: highlight that bar, dim the rest.
-                        ds.backgroundColor = labels.map((_, i) =>
-                            siteIndex >= 0 && i === siteIndex
+                        // Build per-point colors by matching each data point's
+                        // category value against the target siteID. This is
+                        // necessary because datasets are sparse — each fill
+                        // group only includes rows where that flag value exists,
+                        // so a dataset's data array index does not correspond to
+                        // the label index. Comparing by category value handles
+                        // absent sites naturally: if no point matches, all bars
+                        // in the dataset are dimmed.
+                        ds.backgroundColor = ds.data.map((point) => {
+                            const cat = isHorizontal ? point.y : point.x;
+                            return String(cat) === String(siteID)
                                 ? origBg
-                                : hexToRgba(origBg, 0.15)
-                        );
+                                : hexToRgba(origBg, 0.15);
+                        });
                         if (origBorder) {
-                            ds.borderColor = labels.map((_, i) =>
-                                siteIndex >= 0 && i === siteIndex
+                            ds.borderColor = ds.data.map((point) => {
+                                const cat = isHorizontal ? point.y : point.x;
+                                return String(cat) === String(siteID)
                                     ? origBorder
-                                    : hexToRgba(origBorder, 0.15)
-                            );
+                                    : hexToRgba(origBorder, 0.15);
+                            });
                         }
                     }
                 });
@@ -319,7 +328,7 @@ Promise.all(kriFacetDataPromises)
                 facet: {
                     field: 'MetricID',
                     order: allMetrics,
-                    nCol: 2,
+                    nCol: 1,
                     label: { position: 'top' },
                     scales: { y: { free: yFree } },
                     legend: { display: false },
