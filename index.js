@@ -23183,13 +23183,15 @@ var gsmViz = (() => {
     const stacked = position === "stack";
     let globalMax = 0;
     let globalMin = 0;
-    for (const [, facetData] of facetDataMap) {
+    for (const [facetValue, facetData] of facetDataMap) {
+      const xOrder = typeof scales2?.x?.order === "function" ? scales2.x.order(facetValue, facetData) : scales2?.x?.order;
+      const resolvedScales = xOrder !== scales2?.x?.order ? { ...scales2, x: { ...scales2?.x, order: xOrder } } : scales2;
       const subSpec = {
         data: facetData,
         mapping,
         orientation,
         position,
-        scales: scales2,
+        scales: resolvedScales,
         nCategories: void 0
       };
       const { datasets, labels } = structureData2(subSpec);

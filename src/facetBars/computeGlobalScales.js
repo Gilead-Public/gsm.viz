@@ -34,14 +34,24 @@ export default function computeGlobalScales(facetDataMap, spec) {
     let globalMax = 0;
     let globalMin = 0;
 
-    for (const [, facetData] of facetDataMap) {
+    for (const [facetValue, facetData] of facetDataMap) {
+        // Resolve a function-based x order to a per-facet array.
+        const xOrder =
+            typeof scales?.x?.order === 'function'
+                ? scales.x.order(facetValue, facetData)
+                : scales?.x?.order;
+        const resolvedScales =
+            xOrder !== scales?.x?.order
+                ? { ...scales, x: { ...scales?.x, order: xOrder } }
+                : scales;
+
         // Build a minimal spec compatible with bars/structureData
         const subSpec = {
             data: facetData,
             mapping,
             orientation,
             position,
-            scales,
+            scales: resolvedScales,
             nCategories: undefined,
         };
 

@@ -131,4 +131,45 @@ describe('facetBars/computeGlobalScales', () => {
             expect(result.yMax).toBe(0);
         });
     });
+
+    describe('function scales.x.order', () => {
+        test('does not throw when scales.x.order is a function', () => {
+            const spec = makeSpec({
+                scales: {
+                    x: { type: 'category', order: () => ['A', 'B'] },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            expect(() => computeGlobalScales(makeData(), spec)).not.toThrow();
+        });
+
+        test('calls order function with (facetValue, facetData) for each facet', () => {
+            const orderFn = jest.fn().mockReturnValue([]);
+            const spec = makeSpec({
+                scales: {
+                    x: { type: 'category', order: orderFn },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            const data = makeData();
+            computeGlobalScales(data, spec);
+            expect(orderFn).toHaveBeenCalledWith('US', data.get('US'));
+            expect(orderFn).toHaveBeenCalledWith('EU', data.get('EU'));
+        });
+
+        test('still computes correct global yMax when order is a function', () => {
+            const spec = makeSpec({
+                mapping: { x: 'site', y: 'value' },
+                scales: {
+                    x: { type: 'category', order: (fv, fd) => fd.map((d) => d.site) },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            const result = computeGlobalScales(makeData(), spec);
+            expect(result.yMax).toBe(20);
+        });
+    });
 });
