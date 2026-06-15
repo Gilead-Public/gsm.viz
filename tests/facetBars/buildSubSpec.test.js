@@ -93,4 +93,50 @@ describe('facetBars/buildSubSpec', () => {
         const result = buildSubSpec('US', makeMergedSpec());
         expect(result.facet).toBeUndefined();
     });
+
+    describe('function scales.x.order', () => {
+        test('calls order function with (facetValue, facetData) when order is a function', () => {
+            const orderFn = jest.fn().mockReturnValue(['B', 'A', 'C']);
+            const merged = makeMergedSpec({
+                scales: {
+                    x: { type: 'category', order: orderFn },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            const facetData = [{ site: 'A' }, { site: 'B' }];
+            buildSubSpec('EU', merged, facetData);
+            expect(orderFn).toHaveBeenCalledWith('EU', facetData);
+        });
+
+        test('uses return value of order function as scales.x.order in sub-spec', () => {
+            const orderFn = jest.fn().mockReturnValue(['B', 'A', 'C']);
+            const merged = makeMergedSpec({
+                scales: {
+                    x: { type: 'category', order: orderFn },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            const result = buildSubSpec('EU', merged, []);
+            expect(result.scales.x.order).toEqual(['B', 'A', 'C']);
+        });
+
+        test('passes array order through unchanged (backward-compatible)', () => {
+            const merged = makeMergedSpec({
+                scales: {
+                    x: { type: 'category', order: ['X', 'Y', 'Z'] },
+                    y: { type: 'linear' },
+                    fill: { palette: [] },
+                },
+            });
+            const result = buildSubSpec('US', merged, []);
+            expect(result.scales.x.order).toEqual(['X', 'Y', 'Z']);
+        });
+
+        test('leaves scales.x.order undefined when not provided', () => {
+            const result = buildSubSpec('US', makeMergedSpec(), []);
+            expect(result.scales.x.order).toBeUndefined();
+        });
+    });
 });

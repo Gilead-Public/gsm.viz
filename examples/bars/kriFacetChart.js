@@ -216,7 +216,7 @@ Promise.all(kriFacetDataPromises)
         }
 
 
-         * Called after every render when the threshold checkbox is checked.
+        /* Called after every render when the threshold checkbox is checked.
          *
          * @param {string[]} facetValues - MetricIDs in the same order as currentResult.charts
          */
@@ -263,8 +263,6 @@ Promise.all(kriFacetDataPromises)
                 return 0;
             });
 
-            const siteOrder = getFacetSortedOrder(kriResults, yAxis);
-
             currentResult = gsmViz.default.facetBars(
                 container,
                 sortedResults,
@@ -279,7 +277,8 @@ Promise.all(kriFacetDataPromises)
                     scales: {
                         x: {
                             label: 'Site',
-                            order: siteOrder,
+                            order: (facetValue, facetData) =>
+                                getFacetSortedOrder(facetData, yAxis),
                         },
                         y: {
                             label: yAxis,
@@ -293,7 +292,7 @@ Promise.all(kriFacetDataPromises)
                     facet: {
                         field: 'MetricID',
                         order: allMetrics,
-                        nCol: 3,
+                        nCol: 2,
                         label: { position: 'top' },
                         scales: { y: { free: yFree } },
                         legend: { display: false },

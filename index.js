@@ -23228,7 +23228,7 @@ var gsmViz = (() => {
   }
 
   // src/facetBars/buildSubSpec.js
-  function buildSubSpec(facetValue, mergedSpec) {
+  function buildSubSpec(facetValue, mergedSpec, facetData = []) {
     const {
       mapping,
       orientation,
@@ -23241,12 +23241,14 @@ var gsmViz = (() => {
       theme,
       callbacks
     } = mergedSpec;
+    const xOrder = typeof scales2?.x?.order === "function" ? scales2.x.order(facetValue, facetData) : scales2?.x?.order;
+    const resolvedScales = xOrder !== scales2?.x?.order ? { ...scales2, x: { ...scales2?.x, order: xOrder } } : scales2;
     return {
       mapping,
       orientation,
       position,
       nCategories,
-      scales: scales2,
+      scales: resolvedScales,
       labels,
       annotations: annotations5,
       tooltip: tooltip5,
@@ -23352,7 +23354,7 @@ var gsmViz = (() => {
     const charts = [];
     for (const facetValue of facetValues) {
       const facetData = facetDataMap.get(facetValue);
-      const subSpec = buildSubSpec(facetValue, merged);
+      const subSpec = buildSubSpec(facetValue, merged, facetData);
       const chart = bars(containers.get(facetValue), facetData, subSpec);
       charts.push(chart);
     }

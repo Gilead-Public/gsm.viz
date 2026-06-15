@@ -60,7 +60,7 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     const charts = [];
     for (const facetValue of facetValues) {
         const facetData = facetDataMap.get(facetValue);
-        const subSpec = buildSubSpec(facetValue, merged);
+        const subSpec = buildSubSpec(facetValue, merged, facetData);
         const chart = bars(containers.get(facetValue), facetData, subSpec);
         charts.push(chart);
     }

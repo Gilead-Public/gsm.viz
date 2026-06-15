@@ -5,11 +5,15 @@
  * annotations, tooltip, theme) through unchanged, and wraps user-provided
  * callbacks to forward the facet value as the second argument.
  *
+ * When `scales.x.order` is a function it is called with `(facetValue, facetData)`
+ * and its return value is used as the per-facet category order.
+ *
  * @param {string} facetValue  - the current facet group value
  * @param {Object} mergedSpec  - merged facetBars spec (output of mergeSpec)
+ * @param {Array}  [facetData] - data rows for this facet (required when scales.x.order is a function)
  * @returns {Object} a spec object suitable for passing to bars()
  */
-export default function buildSubSpec(facetValue, mergedSpec) {
+export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
     const {
         mapping,
         orientation,
@@ -23,12 +27,23 @@ export default function buildSubSpec(facetValue, mergedSpec) {
         callbacks,
     } = mergedSpec;
 
+    // Resolve a function-based x order to a per-facet array.
+    const xOrder =
+        typeof scales?.x?.order === 'function'
+            ? scales.x.order(facetValue, facetData)
+            : scales?.x?.order;
+
+    const resolvedScales =
+        xOrder !== scales?.x?.order
+            ? { ...scales, x: { ...scales?.x, order: xOrder } }
+            : scales;
+
     return {
         mapping,
         orientation,
         position,
         nCategories,
-        scales,
+        scales: resolvedScales,
         labels,
         annotations,
         tooltip,
