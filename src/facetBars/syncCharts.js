@@ -23,7 +23,8 @@ export default function syncCharts(charts) {
 
             if (activeElements.length > 0) {
                 const { datasetIndex, index } = activeElements[0];
-                const point = chartInstance.data.datasets[datasetIndex].data[index];
+                const point =
+                    chartInstance.data.datasets[datasetIndex].data[index];
 
                 // For vertical: category is in point.x; for horizontal: point.y
                 const hoveredCategory = horizontal ? point.y : point.x;

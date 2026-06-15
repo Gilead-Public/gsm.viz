@@ -124,26 +124,126 @@
             // Simulated adverse-event (AE) flag counts by site and flag type,
             // for three geographic regions.
             const data = [
-                { region: 'North America', site: 'Site 01', flag: 'AE Rate',      count: 12 },
-                { region: 'North America', site: 'Site 01', flag: 'SAE Rate',     count: 3  },
-                { region: 'North America', site: 'Site 02', flag: 'AE Rate',      count: 8  },
-                { region: 'North America', site: 'Site 02', flag: 'SAE Rate',     count: 1  },
-                { region: 'North America', site: 'Site 03', flag: 'AE Rate',      count: 15 },
-                { region: 'North America', site: 'Site 03', flag: 'SAE Rate',     count: 5  },
-                { region: 'North America', site: 'Site 04', flag: 'AE Rate',      count: 6  },
-                { region: 'North America', site: 'Site 04', flag: 'SAE Rate',     count: 2  },
-                { region: 'Europe',        site: 'Site 05', flag: 'AE Rate',      count: 10 },
-                { region: 'Europe',        site: 'Site 05', flag: 'SAE Rate',     count: 4  },
-                { region: 'Europe',        site: 'Site 06', flag: 'AE Rate',      count: 7  },
-                { region: 'Europe',        site: 'Site 06', flag: 'SAE Rate',     count: 2  },
-                { region: 'Europe',        site: 'Site 07', flag: 'AE Rate',      count: 18 },
-                { region: 'Europe',        site: 'Site 07', flag: 'SAE Rate',     count: 6  },
-                { region: 'Asia-Pacific',  site: 'Site 08', flag: 'AE Rate',      count: 9  },
-                { region: 'Asia-Pacific',  site: 'Site 08', flag: 'SAE Rate',     count: 2  },
-                { region: 'Asia-Pacific',  site: 'Site 09', flag: 'AE Rate',      count: 14 },
-                { region: 'Asia-Pacific',  site: 'Site 09', flag: 'SAE Rate',     count: 5  },
-                { region: 'Asia-Pacific',  site: 'Site 10', flag: 'AE Rate',      count: 5  },
-                { region: 'Asia-Pacific',  site: 'Site 10', flag: 'SAE Rate',     count: 1  },
+                {
+                    region: 'North America',
+                    site: 'Site 01',
+                    flag: 'AE Rate',
+                    count: 12,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 01',
+                    flag: 'SAE Rate',
+                    count: 3,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 02',
+                    flag: 'AE Rate',
+                    count: 8,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 02',
+                    flag: 'SAE Rate',
+                    count: 1,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 03',
+                    flag: 'AE Rate',
+                    count: 15,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 03',
+                    flag: 'SAE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 04',
+                    flag: 'AE Rate',
+                    count: 6,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 04',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 05',
+                    flag: 'AE Rate',
+                    count: 10,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 05',
+                    flag: 'SAE Rate',
+                    count: 4,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 06',
+                    flag: 'AE Rate',
+                    count: 7,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 06',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 07',
+                    flag: 'AE Rate',
+                    count: 18,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 07',
+                    flag: 'SAE Rate',
+                    count: 6,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 08',
+                    flag: 'AE Rate',
+                    count: 9,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 08',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 09',
+                    flag: 'AE Rate',
+                    count: 14,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 09',
+                    flag: 'SAE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 10',
+                    flag: 'AE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 10',
+                    flag: 'SAE Rate',
+                    count: 1,
+                },
             ];
 
             const container = document.getElementById('chart-container');
@@ -152,10 +252,13 @@
             let currentResult = null;
 
             function render() {
-                const orientation = document.getElementById('orientation').value;
+                const orientation =
+                    document.getElementById('orientation').value;
                 const position = document.getElementById('position').value;
-                const freeY = document.getElementById('free-y').value === 'free';
-                const legendChartVal = document.getElementById('legend-chart').value;
+                const freeY =
+                    document.getElementById('free-y').value === 'free';
+                const legendChartVal =
+                    document.getElementById('legend-chart').value;
                 const nColRaw = document.getElementById('ncol').value;
                 const nCol = nColRaw ? parseInt(nColRaw, 10) : undefined;
 
@@ -191,20 +294,22 @@
                     },
                     callbacks: {
                         onHover: (point, facetValue, event) => {
-                            hoverInfo.textContent =
-                                `Hovered: ${point._fill || ''} — ${
-                                    orientation === 'horizontal' ? point.y : point.x
-                                } = ${
-                                    orientation === 'horizontal' ? point.x : point.y
-                                } (Region: ${facetValue})`;
+                            hoverInfo.textContent = `Hovered: ${
+                                point._fill || ''
+                            } — ${
+                                orientation === 'horizontal' ? point.y : point.x
+                            } = ${
+                                orientation === 'horizontal' ? point.x : point.y
+                            } (Region: ${facetValue})`;
                         },
                         onClick: (point, facetValue, event) => {
-                            hoverInfo.textContent =
-                                `Clicked: ${point._fill || ''} — ${
-                                    orientation === 'horizontal' ? point.y : point.x
-                                } = ${
-                                    orientation === 'horizontal' ? point.x : point.y
-                                } (Region: ${facetValue})`;
+                            hoverInfo.textContent = `Clicked: ${
+                                point._fill || ''
+                            } — ${
+                                orientation === 'horizontal' ? point.y : point.x
+                            } = ${
+                                orientation === 'horizontal' ? point.x : point.y
+                            } (Region: ${facetValue})`;
                         },
                     },
                 });
@@ -214,8 +319,14 @@
             render();
 
             // Re-render on control change
-            ['orientation', 'position', 'free-y', 'legend-chart', 'ncol'].forEach(
-                (id) => document.getElementById(id).addEventListener('change', render)
+            [
+                'orientation',
+                'position',
+                'free-y',
+                'legend-chart',
+                'ncol',
+            ].forEach((id) =>
+                document.getElementById(id).addEventListener('change', render)
             );
         </script>
     </body>

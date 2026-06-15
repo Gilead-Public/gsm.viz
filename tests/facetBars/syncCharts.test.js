@@ -28,18 +28,60 @@ const makeChart = (labels, datasets, indexAxis = 'x') => {
 describe('facetBars/syncCharts', () => {
     test('replaces onHover on every chart', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
-        charts.forEach((c) => expect(typeof c.options.onHover).toBe('function'));
+        charts.forEach((c) =>
+            expect(typeof c.options.onHover).toBe('function')
+        );
     });
 
     test('calls setActiveElements on sibling charts when a bar is hovered', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 3 }, { x: 'B', y: 7 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 3 },
+                        { x: 'B', y: 7 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -59,8 +101,24 @@ describe('facetBars/syncCharts', () => {
 
     test('highlights matching category index in sibling charts', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -78,8 +136,24 @@ describe('facetBars/syncCharts', () => {
 
     test('clears sibling active elements when hover leaves a chart', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -92,8 +166,24 @@ describe('facetBars/syncCharts', () => {
 
     test('calls update("none") on sibling charts after setting active elements', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [[{ x: 'A', y: 5 }, { x: 'B', y: 15 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -114,15 +204,35 @@ describe('facetBars/syncCharts', () => {
 
         syncCharts([chart0, chart1]);
 
-        chart0.options.onHover({ native: null }, [{ datasetIndex: 0, index: 0 }], chart0);
+        chart0.options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            chart0
+        );
 
         expect(original).toHaveBeenCalled();
     });
 
     test('skips highlighting when hovered category is not in sibling labels', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['C', 'D'], [[{ x: 'C', y: 5 }, { x: 'D', y: 15 }]]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['C', 'D'],
+                [
+                    [
+                        { x: 'C', y: 5 },
+                        { x: 'D', y: 15 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -138,14 +248,32 @@ describe('facetBars/syncCharts', () => {
 
     test('handles multiple datasets in sibling charts', () => {
         const charts = [
-            makeChart(['A', 'B'], [
-                [{ x: 'A', y: 10 }, { x: 'B', y: 20 }],
-                [{ x: 'A', y: 3 }, { x: 'B', y: 7 }],
-            ]),
-            makeChart(['A', 'B'], [
-                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
-                [{ x: 'A', y: 2 }, { x: 'B', y: 8 }],
-            ]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                    [
+                        { x: 'A', y: 3 },
+                        { x: 'B', y: 7 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                    [
+                        { x: 'A', y: 2 },
+                        { x: 'B', y: 8 },
+                    ],
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -165,8 +293,26 @@ describe('facetBars/syncCharts', () => {
     test('handles horizontal charts (indexAxis y, category in point.y)', () => {
         // For horizontal, after swapPointAxes: point.x = value, point.y = category
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 10, y: 'A' }, { x: 20, y: 'B' }]], 'y'),
-            makeChart(['A', 'B'], [[{ x: 5, y: 'A' }, { x: 15, y: 'B' }]], 'y'),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 10, y: 'A' },
+                        { x: 20, y: 'B' },
+                    ],
+                ],
+                'y'
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 5, y: 'A' },
+                        { x: 15, y: 'B' },
+                    ],
+                ],
+                'y'
+            ),
         ];
         syncCharts(charts);
 
@@ -183,11 +329,25 @@ describe('facetBars/syncCharts', () => {
     test('finds correct data-array index within each dataset when categories are sparse', () => {
         // ds1 in sibling only has data for 'B', not 'A' — its 'B' is at data[0], not labels[1]
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [
-                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
-                [{ x: 'B', y: 8 }], // sparse: only 'B'
-            ]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                    [{ x: 'B', y: 8 }], // sparse: only 'B'
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -207,11 +367,25 @@ describe('facetBars/syncCharts', () => {
     test('skips dataset when hovered category is absent from that dataset data', () => {
         // ds1 only has 'B'; hovering 'A' should not include ds1
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [
-                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
-                [{ x: 'B', y: 8 }], // sparse: only 'B'
-            ]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                    [{ x: 'B', y: 8 }], // sparse: only 'B'
+                ]
+            ),
         ];
         syncCharts(charts);
 
@@ -229,11 +403,28 @@ describe('facetBars/syncCharts', () => {
 
     test('excludes dataset indices with no rendered element at the resolved data index', () => {
         const charts = [
-            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
-            makeChart(['A', 'B'], [
-                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
-                [{ x: 'A', y: 2 }, { x: 'B', y: 8 }],
-            ]),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 10 },
+                        { x: 'B', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                ['A', 'B'],
+                [
+                    [
+                        { x: 'A', y: 5 },
+                        { x: 'B', y: 15 },
+                    ],
+                    [
+                        { x: 'A', y: 2 },
+                        { x: 'B', y: 8 },
+                    ],
+                ]
+            ),
         ];
         // Simulate ds1 in sibling having no rendered Chart.js element at data index 0
         charts[1].getDatasetMeta = jest.fn((dsIndex) => {

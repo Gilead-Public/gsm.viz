@@ -43,7 +43,11 @@ describe('facetBars/renderGrid', () => {
     });
 
     test('creates a canvas container for each facet value', () => {
-        const { containers } = renderGrid(parent, ['US', 'EU'], makeMergedSpec());
+        const { containers } = renderGrid(
+            parent,
+            ['US', 'EU'],
+            makeMergedSpec()
+        );
         expect(containers.size).toBe(2);
         expect(containers.has('US')).toBe(true);
         expect(containers.has('EU')).toBe(true);
@@ -68,8 +72,12 @@ describe('facetBars/renderGrid', () => {
             renderGrid(parent, ['US'], makeMergedSpec());
             const cell = parent.querySelector('.gsm-facet-cell');
             const children = [...cell.children];
-            const labelIdx = children.findIndex((c) => c.classList.contains('gsm-facet-label'));
-            const canvasIdx = children.findIndex((c) => c.classList.contains('gsm-facet-canvas'));
+            const labelIdx = children.findIndex((c) =>
+                c.classList.contains('gsm-facet-label')
+            );
+            const canvasIdx = children.findIndex((c) =>
+                c.classList.contains('gsm-facet-canvas')
+            );
             expect(labelIdx).toBeLessThan(canvasIdx);
         });
 
@@ -77,19 +85,32 @@ describe('facetBars/renderGrid', () => {
             renderGrid(
                 parent,
                 ['US'],
-                makeMergedSpec({ facet: { ...makeMergedSpec().facet, label: { position: 'bottom' } } })
+                makeMergedSpec({
+                    facet: {
+                        ...makeMergedSpec().facet,
+                        label: { position: 'bottom' },
+                    },
+                })
             );
             const cell = parent.querySelector('.gsm-facet-cell');
             const children = [...cell.children];
-            const labelIdx = children.findIndex((c) => c.classList.contains('gsm-facet-label'));
-            const canvasIdx = children.findIndex((c) => c.classList.contains('gsm-facet-canvas'));
+            const labelIdx = children.findIndex((c) =>
+                c.classList.contains('gsm-facet-label')
+            );
+            const canvasIdx = children.findIndex((c) =>
+                c.classList.contains('gsm-facet-canvas')
+            );
             expect(labelIdx).toBeGreaterThan(canvasIdx);
         });
     });
 
     describe('column count (nCol)', () => {
         test('auto-computes nCol as min(facetCount, 3) when not specified', () => {
-            const { grid } = renderGrid(parent, ['A', 'B', 'C', 'D'], makeMergedSpec());
+            const { grid } = renderGrid(
+                parent,
+                ['A', 'B', 'C', 'D'],
+                makeMergedSpec()
+            );
             expect(grid.style.gridTemplateColumns).toBe('repeat(3, 1fr)');
         });
 
@@ -97,7 +118,9 @@ describe('facetBars/renderGrid', () => {
             const { grid } = renderGrid(
                 parent,
                 ['A', 'B', 'C', 'D'],
-                makeMergedSpec({ facet: { ...makeMergedSpec().facet, nCol: 2 } })
+                makeMergedSpec({
+                    facet: { ...makeMergedSpec().facet, nCol: 2 },
+                })
             );
             expect(grid.style.gridTemplateColumns).toBe('repeat(2, 1fr)');
         });
@@ -120,7 +143,10 @@ describe('facetBars/renderGrid', () => {
             parent,
             ['US'],
             makeMergedSpec({
-                facet: { ...makeMergedSpec().facet, label: { position: 'top', font: 'bold 14px sans-serif' } },
+                facet: {
+                    ...makeMergedSpec().facet,
+                    label: { position: 'top', font: 'bold 14px sans-serif' },
+                },
             })
         );
         const label = parent.querySelector('.gsm-facet-label');

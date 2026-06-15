@@ -16,7 +16,13 @@ const KRI_SITE_COLORS = {
 
 // Symmetric traffic-light palette: Red, Amber, Green, Amber, Red
 // Maps to flag order: -2, -1, 0, 1, 2
-const KRI_SITE_FLAG_PALETTE = ['#FF5859', '#FEAA02', '#3DAF06', '#FEAA02', '#FF5859'];
+const KRI_SITE_FLAG_PALETTE = [
+    '#FF5859',
+    '#FEAA02',
+    '#3DAF06',
+    '#FEAA02',
+    '#FF5859',
+];
 const KRI_SITE_FLAG_ORDER = ['-2', '-1', '0', '1', '2'];
 
 const KRI_SITE_DEFAULT_METRIC = 'kri0001';
@@ -221,11 +227,7 @@ Promise.all(kriSiteDataPromises)
         }
 
         onAnyChange(
-            [
-                'kri-site-metric',
-                'kri-site-y-axis',
-                'kri-site-orientation',
-            ],
+            ['kri-site-metric', 'kri-site-y-axis', 'kri-site-orientation'],
             rerender
         );
 

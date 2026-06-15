@@ -29,7 +29,9 @@ fetch('data/retention.csv')
                 : null;
 
             if (mode === 'none') {
-                return segmentLabel ? { labels: { segment: segmentLabel } } : {};
+                return segmentLabel
+                    ? { labels: { segment: segmentLabel } }
+                    : {};
             }
             if (mode === 'total-outside')
                 return {

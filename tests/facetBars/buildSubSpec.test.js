@@ -36,12 +36,18 @@ describe('facetBars/buildSubSpec', () => {
     });
 
     test('passes orientation through unchanged', () => {
-        const result = buildSubSpec('US', makeMergedSpec({ orientation: 'horizontal' }));
+        const result = buildSubSpec(
+            'US',
+            makeMergedSpec({ orientation: 'horizontal' })
+        );
         expect(result.orientation).toBe('horizontal');
     });
 
     test('passes position through unchanged', () => {
-        const result = buildSubSpec('US', makeMergedSpec({ position: 'dodge' }));
+        const result = buildSubSpec(
+            'US',
+            makeMergedSpec({ position: 'dodge' })
+        );
         expect(result.position).toBe('dodge');
     });
 
@@ -54,36 +60,52 @@ describe('facetBars/buildSubSpec', () => {
     describe('callback wrapping', () => {
         test('onClick receives facetValue as second argument', () => {
             const userOnClick = jest.fn();
-            const merged = makeMergedSpec({ callbacks: { onClick: userOnClick, onHover: null } });
+            const merged = makeMergedSpec({
+                callbacks: { onClick: userOnClick, onHover: null },
+            });
             const result = buildSubSpec('EU', merged);
 
             const fakePoint = { x: 'A', y: 10 };
             const fakeEvent = {};
             result.callbacks.onClick(fakePoint, fakeEvent);
 
-            expect(userOnClick).toHaveBeenCalledWith(fakePoint, 'EU', fakeEvent);
+            expect(userOnClick).toHaveBeenCalledWith(
+                fakePoint,
+                'EU',
+                fakeEvent
+            );
         });
 
         test('onHover receives facetValue as second argument', () => {
             const userOnHover = jest.fn();
-            const merged = makeMergedSpec({ callbacks: { onClick: null, onHover: userOnHover } });
+            const merged = makeMergedSpec({
+                callbacks: { onClick: null, onHover: userOnHover },
+            });
             const result = buildSubSpec('APAC', merged);
 
             const fakePoint = { x: 'B', y: 5 };
             const fakeEvent = {};
             result.callbacks.onHover(fakePoint, fakeEvent);
 
-            expect(userOnHover).toHaveBeenCalledWith(fakePoint, 'APAC', fakeEvent);
+            expect(userOnHover).toHaveBeenCalledWith(
+                fakePoint,
+                'APAC',
+                fakeEvent
+            );
         });
 
         test('null onClick passes through as null', () => {
-            const merged = makeMergedSpec({ callbacks: { onClick: null, onHover: null } });
+            const merged = makeMergedSpec({
+                callbacks: { onClick: null, onHover: null },
+            });
             const result = buildSubSpec('US', merged);
             expect(result.callbacks.onClick).toBeNull();
         });
 
         test('null onHover passes through as null', () => {
-            const merged = makeMergedSpec({ callbacks: { onClick: null, onHover: null } });
+            const merged = makeMergedSpec({
+                callbacks: { onClick: null, onHover: null },
+            });
             const result = buildSubSpec('US', merged);
             expect(result.callbacks.onHover).toBeNull();
         });

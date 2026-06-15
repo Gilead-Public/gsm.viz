@@ -9,7 +9,13 @@ const kriFacetDataPromises = kriFacetDataFiles.map((dataFile) =>
 );
 
 // Traffic-light palette — matches kriSiteChart
-const KRI_FACET_FLAG_PALETTE = ['#FF5859', '#FEAA02', '#3DAF06', '#FEAA02', '#FF5859'];
+const KRI_FACET_FLAG_PALETTE = [
+    '#FF5859',
+    '#FEAA02',
+    '#3DAF06',
+    '#FEAA02',
+    '#FF5859',
+];
 const KRI_FACET_FLAG_ORDER = ['-2', '-1', '0', '1', '2'];
 
 // Metric ID sort order
@@ -115,7 +121,9 @@ Promise.all(kriFacetDataPromises)
         const metricMetadata = datasets[1];
 
         // Filter to KRI metrics only
-        const kriResults = allResults.filter((d) => d.MetricID.startsWith('kri'));
+        const kriResults = allResults.filter((d) =>
+            d.MetricID.startsWith('kri')
+        );
 
         // Populate site dropdown from kri-filtered unique sites, sorted alphabetically.
         const siteDropdown = document.getElementById('kri-facet-site');
@@ -130,8 +138,12 @@ Promise.all(kriFacetDataPromises)
         // Derive the sorted list of MetricIDs (kri only) for facet ordering.
         const allMetrics = [...new Set(kriResults.map((d) => d.MetricID))].sort(
             (a, b) => {
-                const aIdx = METRIC_PREFIX_ORDER.findIndex((p) => a.startsWith(p));
-                const bIdx = METRIC_PREFIX_ORDER.findIndex((p) => b.startsWith(p));
+                const aIdx = METRIC_PREFIX_ORDER.findIndex((p) =>
+                    a.startsWith(p)
+                );
+                const bIdx = METRIC_PREFIX_ORDER.findIndex((p) =>
+                    b.startsWith(p)
+                );
                 if (aIdx !== bIdx) return aIdx - bIdx;
                 return a.localeCompare(b);
             }
@@ -231,7 +243,6 @@ Promise.all(kriFacetDataPromises)
             return el ? el.value : 'constant';
         }
 
-
         /* Called after every render when the threshold checkbox is checked.
          *
          * @param {string[]} facetValues - MetricIDs in the same order as currentResult.charts
@@ -245,7 +256,7 @@ Promise.all(kriFacetDataPromises)
 
             facetValues.forEach((metricID, i) => {
                 const config = selectMetricID(metricMetadata, metricID);
-                const rawStr = (config.Threshold || config.Thresholds || '');
+                const rawStr = config.Threshold || config.Thresholds || '';
                 const rawValues = rawStr
                     .split(',')
                     .map((v) => v.trim())
@@ -255,7 +266,10 @@ Promise.all(kriFacetDataPromises)
 
                 if (rawValues.length === 0) return;
 
-                const annotations = buildKriFacetAnnotations(rawValues, orientation);
+                const annotations = buildKriFacetAnnotations(
+                    rawValues,
+                    orientation
+                );
                 const chart = currentResult.charts[i];
 
                 // chartjs-plugin-annotation accepts an array of annotation objects.
@@ -279,72 +293,75 @@ Promise.all(kriFacetDataPromises)
                 return 0;
             });
 
-            currentResult = gsmViz.default.facetBars(
-                container,
-                sortedResults,
-                {
-                    mapping: {
-                        x: 'GroupID',
-                        y: yAxis,
-                        fill: 'Flag',
+            currentResult = gsmViz.default.facetBars(container, sortedResults, {
+                mapping: {
+                    x: 'GroupID',
+                    y: yAxis,
+                    fill: 'Flag',
+                },
+                orientation,
+                position: 'stack',
+                scales: {
+                    x: {
+                        label: 'Site',
+                        order: (facetValue, facetData) =>
+                            getFacetSortedOrder(facetData, yAxis),
                     },
-                    orientation,
-                    position: 'stack',
-                    scales: {
-                        x: {
-                            label: 'Site',
-                            order: (facetValue, facetData) =>
-                                getFacetSortedOrder(facetData, yAxis),
-                        },
-                        y: {
-                            label: yAxis,
-                        },
-                        fill: {
-                            order: KRI_FACET_FLAG_ORDER,
-                            palette: KRI_FACET_FLAG_PALETTE,
-                            label: 'Flag',
-                        },
+                    y: {
+                        label: yAxis,
                     },
-                    facet: {
-                        field: 'MetricID',
-                        order: allMetrics,
-                        nCol: 2,
-                        label: { position: 'top' },
-                        scales: { y: { free: yFree } },
-                        legend: { display: false },
+                    fill: {
+                        order: KRI_FACET_FLAG_ORDER,
+                        palette: KRI_FACET_FLAG_PALETTE,
+                        label: 'Flag',
                     },
-                    theme: {
-                        dynamicSizing: false,
-                        dynamicCategoryAxis: false,
+                },
+                facet: {
+                    field: 'MetricID',
+                    order: allMetrics,
+                    nCol: 2,
+                    label: { position: 'top' },
+                    scales: { y: { free: yFree } },
+                    legend: { display: false },
+                },
+                theme: {
+                    dynamicSizing: false,
+                    dynamicCategoryAxis: false,
+                },
+                callbacks: {
+                    onClick: (point, facetValue, event) => {
+                        const site =
+                            orientation === 'horizontal' ? point.y : point.x;
+                        siteDropdown.value = site;
+                        highlightSite(site);
+                        statusEl.textContent = `Selected: ${site}`;
                     },
-                    callbacks: {
-                        onClick: (point, facetValue, event) => {
-                            const site =
-                                orientation === 'horizontal' ? point.y : point.x;
-                            siteDropdown.value = site;
-                            highlightSite(site);
-                            statusEl.textContent = `Selected: ${site}`;
-                        },
-                        onHover: (point, facetValue, event) => {
-                            const site =
-                                orientation === 'horizontal' ? point.y : point.x;
-                            statusEl.textContent = `Hovering: ${site} — ${facetValue}`;
-                            applyColorHighlight(site);
-                        },
+                    onHover: (point, facetValue, event) => {
+                        const site =
+                            orientation === 'horizontal' ? point.y : point.x;
+                        statusEl.textContent = `Hovering: ${site} — ${facetValue}`;
+                        applyColorHighlight(site);
                     },
-                }
-            );
+                },
+            });
 
             // Disable category-axis tick labels and grid lines on every facet chart.
             const categoryAxisKey = orientation === 'horizontal' ? 'y' : 'x';
             currentResult.charts.forEach((chart) => {
-                chart.options.scales[categoryAxisKey].ticks = { display: false };
+                chart.options.scales[categoryAxisKey].ticks = {
+                    display: false,
+                };
                 chart.options.scales[categoryAxisKey].grid = { display: false };
 
                 // Wrap onHover to restore persistent highlight when mouse leaves.
                 const existingOnHover = chart.options.onHover;
-                chart.options.onHover = (event, activeElements, chartInstance) => {
-                    if (existingOnHover) existingOnHover(event, activeElements, chartInstance);
+                chart.options.onHover = (
+                    event,
+                    activeElements,
+                    chartInstance
+                ) => {
+                    if (existingOnHover)
+                        existingOnHover(event, activeElements, chartInstance);
                     if (activeElements.length === 0) {
                         applyColorHighlight(lastHighlightedSite);
                     }

@@ -176,9 +176,9 @@ describe('facetBars integration', () => {
         });
 
         test('throws for unknown CSS selector', () => {
-            expect(() =>
-                facetBars('#nonexistent-xyz', data, baseSpec)
-            ).toThrow('facetBars: could not find element matching');
+            expect(() => facetBars('#nonexistent-xyz', data, baseSpec)).toThrow(
+                'facetBars: could not find element matching'
+            );
         });
     });
 
@@ -186,7 +186,9 @@ describe('facetBars integration', () => {
         test('replaces grid on re-render into the same container', () => {
             facetBars(container, data, baseSpec);
             facetBars(container, data, baseSpec);
-            expect(container.querySelectorAll('.gsm-facet-grid').length).toBe(1);
+            expect(container.querySelectorAll('.gsm-facet-grid').length).toBe(
+                1
+            );
         });
     });
 });

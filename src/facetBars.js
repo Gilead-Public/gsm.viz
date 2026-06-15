@@ -47,7 +47,11 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     const merged = mergeSpec(data, spec);
 
     // Split data into per-facet groups
-    const facetDataMap = splitData(data, merged.facet.field, merged.facet.order);
+    const facetDataMap = splitData(
+        data,
+        merged.facet.field,
+        merged.facet.order
+    );
     const facetValues = [...facetDataMap.keys()];
 
     // Compute global axis bounds for constant-scale rendering

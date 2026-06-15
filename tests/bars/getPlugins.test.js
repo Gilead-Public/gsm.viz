@@ -1087,9 +1087,16 @@ describe('bars/getPlugins', () => {
                 const formatter = jest.fn(() => '');
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { segment: { display: true, formatter } } },
+                    annotations: {
+                        labels: { segment: { display: true, formatter } },
+                    },
                 });
-                const point = { x: 'A', y: 10, _fill: 'Treatment', _datum: { id: 1 } };
+                const point = {
+                    x: 'A',
+                    y: 10,
+                    _fill: 'Treatment',
+                    _datum: { id: 1 },
+                };
                 const context = makeContext({
                     point,
                     datasets: [{ data: [point] }],
@@ -1108,10 +1115,15 @@ describe('bars/getPlugins', () => {
                 const formatter = jest.fn(() => '');
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { segment: { display: true, formatter } } },
+                    annotations: {
+                        labels: { segment: { display: true, formatter } },
+                    },
                 });
                 const point = { x: 'A', y: 10 };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 plugins.datalabels.labels.segment.formatter(point, context);
 
@@ -1126,7 +1138,9 @@ describe('bars/getPlugins', () => {
                 const formatter = jest.fn(() => '');
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { segment: { display: true, formatter } } },
+                    annotations: {
+                        labels: { segment: { display: true, formatter } },
+                    },
                 });
                 const datasets = [
                     { data: [{ x: 'A', y: 10 }] },
@@ -1134,7 +1148,10 @@ describe('bars/getPlugins', () => {
                 ];
                 const context = makeContext({ datasetIndex: 0, datasets });
 
-                plugins.datalabels.labels.segment.formatter(datasets[0].data[0], context);
+                plugins.datalabels.labels.segment.formatter(
+                    datasets[0].data[0],
+                    context
+                );
 
                 expect(formatter).toHaveBeenCalledWith(
                     10,
@@ -1147,10 +1164,15 @@ describe('bars/getPlugins', () => {
                 const formatter = jest.fn(() => '');
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { segment: { display: true, formatter } } },
+                    annotations: {
+                        labels: { segment: { display: true, formatter } },
+                    },
                 });
                 const point = { x: 'Site 003', y: 10 };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 plugins.datalabels.labels.segment.formatter(point, context);
 
@@ -1165,11 +1187,16 @@ describe('bars/getPlugins', () => {
                 const formatter = jest.fn(() => '');
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { segment: { display: true, formatter } } },
+                    annotations: {
+                        labels: { segment: { display: true, formatter } },
+                    },
                 });
                 const datum = { site: 'A', flag: 1 };
                 const point = { x: 'A', y: 10, _datum: datum };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 plugins.datalabels.labels.segment.formatter(point, context);
 
@@ -1185,20 +1212,29 @@ describe('bars/getPlugins', () => {
                 const datasets = [
                     {
                         label: 'A',
-                        data: [{ x: 'cat', y: 10, _fill: 'A', _datum: { id: 1 } }],
+                        data: [
+                            { x: 'cat', y: 10, _fill: 'A', _datum: { id: 1 } },
+                        ],
                     },
                     {
                         label: 'B',
-                        data: [{ x: 'cat', y: 20, _fill: 'B', _datum: { id: 2 } }],
+                        data: [
+                            { x: 'cat', y: 20, _fill: 'B', _datum: { id: 2 } },
+                        ],
                     },
                 ];
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { total: { display: true, formatter } } },
+                    annotations: {
+                        labels: { total: { display: true, formatter } },
+                    },
                 });
                 const context = makeContext({ datasetIndex: 1, datasets });
 
-                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+                plugins.datalabels.labels.total.formatter(
+                    datasets[1].data[0],
+                    context
+                );
 
                 expect(formatter).toHaveBeenCalledWith(
                     30,
@@ -1226,7 +1262,9 @@ describe('bars/getPlugins', () => {
                 ];
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { total: { display: true, formatter } } },
+                    annotations: {
+                        labels: { total: { display: true, formatter } },
+                    },
                 });
                 const context = makeContext({
                     datasetIndex: 1,
@@ -1234,7 +1272,10 @@ describe('bars/getPlugins', () => {
                     hidden: [0],
                 });
 
-                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+                plugins.datalabels.labels.total.formatter(
+                    datasets[1].data[0],
+                    context
+                );
 
                 expect(formatter).toHaveBeenCalledWith(
                     20,
@@ -1258,7 +1299,9 @@ describe('bars/getPlugins', () => {
                 ];
                 const plugins = getPlugins({
                     ...baseSpec,
-                    annotations: { labels: { total: { display: true, formatter } } },
+                    annotations: {
+                        labels: { total: { display: true, formatter } },
+                    },
                 });
                 const context = makeContext({
                     datasetIndex: 1,
@@ -1266,7 +1309,10 @@ describe('bars/getPlugins', () => {
                     hidden: [0],
                 });
 
-                plugins.datalabels.labels.total.formatter(datasets[1].data[0], context);
+                plugins.datalabels.labels.total.formatter(
+                    datasets[1].data[0],
+                    context
+                );
 
                 // visible total = 20, full total = 30 → ~66.7%
                 expect(formatter).toHaveBeenCalledWith(
@@ -1290,7 +1336,10 @@ describe('bars/getPlugins', () => {
                     },
                 });
                 const point = { x: 'A', y: 10, _fill: 'Treatment A' };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 expect(
                     plugins.datalabels.labels.segment.formatter(point, context)
@@ -1307,7 +1356,10 @@ describe('bars/getPlugins', () => {
                     },
                 });
                 const point = { x: 'A', y: 42 };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 expect(
                     plugins.datalabels.labels.segment.formatter(point, context)
@@ -1347,7 +1399,10 @@ describe('bars/getPlugins', () => {
                     },
                 });
                 const point = { x: 'Site 007', y: 10 };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 expect(
                     plugins.datalabels.labels.segment.formatter(point, context)
@@ -1390,7 +1445,10 @@ describe('bars/getPlugins', () => {
                     },
                 });
                 const point = { x: 'A', y: 10 };
-                const context = makeContext({ point, datasets: [{ data: [point] }] });
+                const context = makeContext({
+                    point,
+                    datasets: [{ data: [point] }],
+                });
 
                 expect(
                     plugins.datalabels.labels.segment.formatter(point, context)

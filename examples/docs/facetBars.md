@@ -16,15 +16,16 @@ Introduced in v2.4.x. Internally, each sub-chart is a [`bars`](bars.md) instance
 gsmViz.default.facetBars(element, data, spec);
 ```
 
-| Parameter | Type             | Default  | Description                                                   |
-| --------- | ---------------- | -------- | ------------------------------------------------------------- |
+| Parameter | Type             | Default  | Description                                                    |
+| --------- | ---------------- | -------- | -------------------------------------------------------------- |
 | `element` | `Node \| string` | `'body'` | Parent DOM element or CSS selector in which to render the grid |
-| `data`    | `Array`          | `[]`     | Array of plain data objects                                   |
-| `spec`    | `Object`         | required | Chart specification (see [Spec](#spec))                       |
+| `data`    | `Array`          | `[]`     | Array of plain data objects                                    |
+| `spec`    | `Object`         | required | Chart specification (see [Spec](#spec))                        |
 
 **Returns** `{ charts: Chart[], container: Element }`:
-- `charts` — array of Chart.js instances, one per facet value, in facet order
-- `container` — the grid container `<div>` element
+
+-   `charts` — array of Chart.js instances, one per facet value, in facet order
+-   `container` — the grid container `<div>` element
 
 ---
 
@@ -84,15 +85,15 @@ every sub-chart) plus a required `facet` block:
 
 ### Facet defaults
 
-| Key                              | Default                                     |
-| -------------------------------- | ------------------------------------------- |
-| `facet.nCol`                     | `undefined` (auto: `min(facetCount, 3)`)    |
-| `facet.label.position`           | `'top'`                                     |
-| `facet.label.font`               | `undefined`                                 |
-| `facet.scales.x.free`            | `false` (constant, shared axis)             |
-| `facet.scales.y.free`            | `false` (constant, shared axis)             |
-| `facet.legend.display`           | `true`                                      |
-| `facet.legend.chart`             | `'first'`                                   |
+| Key                    | Default                                  |
+| ---------------------- | ---------------------------------------- |
+| `facet.nCol`           | `undefined` (auto: `min(facetCount, 3)`) |
+| `facet.label.position` | `'top'`                                  |
+| `facet.label.font`     | `undefined`                              |
+| `facet.scales.x.free`  | `false` (constant, shared axis)          |
+| `facet.scales.y.free`  | `false` (constant, shared axis)          |
+| `facet.legend.display` | `true`                                   |
+| `facet.legend.chart`   | `'first'`                                |
 
 ---
 
@@ -213,9 +214,16 @@ Sub-charts are arranged in a CSS flexbox/grid container
 Override layout via CSS:
 
 ```css
-.gsm-facet-grid  { gap: 16px; }
-.gsm-facet-canvas { height: 350px; }
-.gsm-facet-label  { font-weight: bold; text-align: center; }
+.gsm-facet-grid {
+    gap: 16px;
+}
+.gsm-facet-canvas {
+    height: 350px;
+}
+.gsm-facet-label {
+    font-weight: bold;
+    text-align: center;
+}
 ```
 
 Control the number of columns via `facet.nCol`:

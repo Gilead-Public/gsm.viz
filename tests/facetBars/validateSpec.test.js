@@ -10,40 +10,55 @@ describe('facetBars/validateSpec', () => {
 
     describe('data validation', () => {
         test('throws when data is null', () => {
-            expect(() => validateSpec(null, minimalSpec)).toThrow('data is required');
+            expect(() => validateSpec(null, minimalSpec)).toThrow(
+                'data is required'
+            );
         });
 
         test('throws when data is undefined', () => {
-            expect(() => validateSpec(undefined, minimalSpec)).toThrow('data is required');
+            expect(() => validateSpec(undefined, minimalSpec)).toThrow(
+                'data is required'
+            );
         });
 
         test('throws when data is not an array', () => {
-            expect(() => validateSpec({}, minimalSpec)).toThrow('data must be an array');
+            expect(() => validateSpec({}, minimalSpec)).toThrow(
+                'data must be an array'
+            );
         });
     });
 
     describe('spec validation', () => {
         test('throws when spec is null', () => {
-            expect(() => validateSpec(minimalData, null)).toThrow('spec is required');
+            expect(() => validateSpec(minimalData, null)).toThrow(
+                'spec is required'
+            );
         });
 
         test('throws when spec is undefined', () => {
-            expect(() => validateSpec(minimalData, undefined)).toThrow('spec is required');
+            expect(() => validateSpec(minimalData, undefined)).toThrow(
+                'spec is required'
+            );
         });
 
         test('throws when spec is not a plain object', () => {
-            expect(() => validateSpec(minimalData, 'bad')).toThrow('spec must be a plain object');
+            expect(() => validateSpec(minimalData, 'bad')).toThrow(
+                'spec must be a plain object'
+            );
         });
 
         test('throws when spec.mapping is missing', () => {
-            expect(() => validateSpec(minimalData, { facet: { field: 'x' } })).toThrow(
-                'spec.mapping is required'
-            );
+            expect(() =>
+                validateSpec(minimalData, { facet: { field: 'x' } })
+            ).toThrow('spec.mapping is required');
         });
 
         test('throws when spec.mapping.x is missing', () => {
             expect(() =>
-                validateSpec(minimalData, { mapping: {}, facet: { field: 'x' } })
+                validateSpec(minimalData, {
+                    mapping: {},
+                    facet: { field: 'x' },
+                })
             ).toThrow('spec.mapping.x is required');
         });
     });
@@ -57,7 +72,10 @@ describe('facetBars/validateSpec', () => {
 
         test('throws when spec.facet is not a plain object', () => {
             expect(() =>
-                validateSpec(minimalData, { mapping: { x: 'site' }, facet: 'bad' })
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: 'bad',
+                })
             ).toThrow('spec.facet must be a plain object');
         });
 
@@ -69,7 +87,10 @@ describe('facetBars/validateSpec', () => {
 
         test('throws when spec.facet.field is not a string', () => {
             expect(() =>
-                validateSpec(minimalData, { mapping: { x: 'site' }, facet: { field: 123 } })
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 123 },
+                })
             ).toThrow('spec.facet.field must be a string');
         });
 
@@ -93,7 +114,10 @@ describe('facetBars/validateSpec', () => {
 
         test('throws when spec.facet.nCol is not a positive integer', () => {
             expect(() =>
-                validateSpec(minimalData, { mapping: { x: 'site' }, facet: { field: 'r', nCol: 0 } })
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', nCol: 0 },
+                })
             ).toThrow('spec.facet.nCol must be a positive integer');
         });
 
@@ -121,7 +145,9 @@ describe('facetBars/validateSpec', () => {
                     mapping: { x: 'site' },
                     facet: { field: 'r', legend: { chart: 123 } },
                 })
-            ).toThrow("spec.facet.legend.chart must be 'first', 'last', or a string facet value");
+            ).toThrow(
+                "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
+            );
         });
 
         test('accepts spec.facet.legend.chart as a non-reserved string (facet value)', () => {

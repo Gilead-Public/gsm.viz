@@ -37,7 +37,13 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 .sort((a, b) => Number(b.gini) - Number(a.gini));
         }
 
-        const RDYLBU_5 = ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'];
+        const RDYLBU_5 = [
+            '#2c7bb6',
+            '#abd9e9',
+            '#ffffbf',
+            '#fdae61',
+            '#d7191c',
+        ];
         const GINI_REFERENCE_LINES = [30, 35, 40, 45, 50].map((value, i) => ({
             value,
             label: String(value),

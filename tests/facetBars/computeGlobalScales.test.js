@@ -4,24 +4,35 @@ const makeSpec = (overrides = {}) => ({
     mapping: { x: 'site', y: 'value' },
     orientation: 'vertical',
     position: 'stack',
-    scales: { x: { type: 'category' }, y: { type: 'linear' }, fill: { palette: [] } },
+    scales: {
+        x: { type: 'category' },
+        y: { type: 'linear' },
+        fill: { palette: [] },
+    },
     nCategories: undefined,
     facet: { scales: { x: { free: false }, y: { free: false } } },
     ...overrides,
 });
 
-const makeData = () => new Map([
-    ['US', [
-        { site: 'A', value: 10, group: 'X' },
-        { site: 'A', value: 5, group: 'Y' },
-        { site: 'B', value: 20, group: 'X' },
-    ]],
-    ['EU', [
-        { site: 'A', value: 8, group: 'X' },
-        { site: 'C', value: 15, group: 'X' },
-        { site: 'C', value: 3, group: 'Y' },
-    ]],
-]);
+const makeData = () =>
+    new Map([
+        [
+            'US',
+            [
+                { site: 'A', value: 10, group: 'X' },
+                { site: 'A', value: 5, group: 'Y' },
+                { site: 'B', value: 20, group: 'X' },
+            ],
+        ],
+        [
+            'EU',
+            [
+                { site: 'A', value: 8, group: 'X' },
+                { site: 'C', value: 15, group: 'X' },
+                { site: 'C', value: 3, group: 'Y' },
+            ],
+        ],
+    ]);
 
 describe('facetBars/computeGlobalScales', () => {
     describe('stacked position (default)', () => {
@@ -43,11 +54,14 @@ describe('facetBars/computeGlobalScales', () => {
     describe('negative values (stacked)', () => {
         test('returns yMin as the most negative per-category sum', () => {
             const negData = new Map([
-                ['US', [
-                    { site: 'A', value: -5 },
-                    { site: 'A', value: -3 },
-                    { site: 'B', value: 10 },
-                ]],
+                [
+                    'US',
+                    [
+                        { site: 'A', value: -5 },
+                        { site: 'A', value: -3 },
+                        { site: 'B', value: 10 },
+                    ],
+                ],
             ]);
             const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
             const result = computeGlobalScales(negData, spec);
@@ -58,10 +72,13 @@ describe('facetBars/computeGlobalScales', () => {
 
         test('returns yMin as the most negative individual value for dodge', () => {
             const negData = new Map([
-                ['US', [
-                    { site: 'A', value: -5 },
-                    { site: 'B', value: 10 },
-                ]],
+                [
+                    'US',
+                    [
+                        { site: 'A', value: -5 },
+                        { site: 'B', value: 10 },
+                    ],
+                ],
             ]);
             const spec = makeSpec({
                 mapping: { x: 'site', y: 'value' },
@@ -125,7 +142,10 @@ describe('facetBars/computeGlobalScales', () => {
 
     describe('empty facet data', () => {
         test('handles a facet with no rows', () => {
-            const emptyMap = new Map([['US', []], ['EU', []]]);
+            const emptyMap = new Map([
+                ['US', []],
+                ['EU', []],
+            ]);
             const spec = makeSpec();
             const result = computeGlobalScales(emptyMap, spec);
             expect(result.yMax).toBe(0);
@@ -163,7 +183,10 @@ describe('facetBars/computeGlobalScales', () => {
             const spec = makeSpec({
                 mapping: { x: 'site', y: 'value' },
                 scales: {
-                    x: { type: 'category', order: (fv, fd) => fd.map((d) => d.site) },
+                    x: {
+                        type: 'category',
+                        order: (fv, fd) => fd.map((d) => d.site),
+                    },
                     y: { type: 'linear' },
                     fill: { palette: [] },
                 },
@@ -177,10 +200,13 @@ describe('facetBars/computeGlobalScales', () => {
         test('correctly sums stacked values when category keys are numeric strings', () => {
             // Labels like '1', '2' — String(cat) must match String(l) map key
             const numericData = new Map([
-                ['F1', [
-                    { site: '1', value: 10 },
-                    { site: '2', value: 5 },
-                ]],
+                [
+                    'F1',
+                    [
+                        { site: '1', value: 10 },
+                        { site: '2', value: 5 },
+                    ],
+                ],
             ]);
             const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
             const result = computeGlobalScales(numericData, spec);
@@ -197,10 +223,13 @@ describe('facetBars/computeGlobalScales', () => {
                 nCategories: 1,
             });
             const data = new Map([
-                ['US', [
-                    { site: 'A', value: 5 },
-                    { site: 'B', value: 20 },
-                ]],
+                [
+                    'US',
+                    [
+                        { site: 'A', value: 5 },
+                        { site: 'B', value: 20 },
+                    ],
+                ],
             ]);
             const result = computeGlobalScales(data, spec);
             expect(result.yMax).toBe(20);

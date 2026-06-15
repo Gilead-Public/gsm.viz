@@ -7,7 +7,9 @@ describe('bars/getPlugins/referenceLines', () => {
         });
 
         test('returns null when referenceLines is an empty array', () => {
-            expect(referenceLines({ annotations: { referenceLines: [] } })).toBeNull();
+            expect(
+                referenceLines({ annotations: { referenceLines: [] } })
+            ).toBeNull();
         });
 
         test('returns null when annotations is absent', () => {
@@ -15,7 +17,9 @@ describe('bars/getPlugins/referenceLines', () => {
         });
 
         test('returns null when referenceLines is a non-array truthy value', () => {
-            expect(referenceLines({ annotations: { referenceLines: {} } })).toBeNull();
+            expect(
+                referenceLines({ annotations: { referenceLines: {} } })
+            ).toBeNull();
         });
     });
 
@@ -152,7 +156,9 @@ describe('bars/getPlugins/referenceLines', () => {
         test('label color matches line color', () => {
             const spec = {
                 annotations: {
-                    referenceLines: [{ value: 1, label: 'Ref', color: '#4e79a7' }],
+                    referenceLines: [
+                        { value: 1, label: 'Ref', color: '#4e79a7' },
+                    ],
                 },
             };
             const [line] = referenceLines(spec);
@@ -172,7 +178,9 @@ describe('bars/getPlugins/referenceLines', () => {
         test('uses provided labelPosition', () => {
             const spec = {
                 annotations: {
-                    referenceLines: [{ value: 1, label: 'Ref', labelPosition: 'start' }],
+                    referenceLines: [
+                        { value: 1, label: 'Ref', labelPosition: 'start' },
+                    ],
                 },
             };
             const [line] = referenceLines(spec);
@@ -228,10 +236,32 @@ describe('bars/getPlugins/referenceLines', () => {
                 orientation: 'vertical',
                 annotations: {
                     referenceLines: [
-                        { value: 0.05, label: 'Amber ↑', color: '#e5a919', lineDash: [2] },
-                        { value: -0.05, label: '↓ Amber', color: '#e5a919', lineDash: [2], labelPosition: 'start' },
-                        { value: 0.1, label: 'Red ↑', color: '#e15759', lineDash: [2] },
-                        { value: -0.1, label: '↓ Red', color: '#e15759', lineDash: [2], labelPosition: 'start' },
+                        {
+                            value: 0.05,
+                            label: 'Amber ↑',
+                            color: '#e5a919',
+                            lineDash: [2],
+                        },
+                        {
+                            value: -0.05,
+                            label: '↓ Amber',
+                            color: '#e5a919',
+                            lineDash: [2],
+                            labelPosition: 'start',
+                        },
+                        {
+                            value: 0.1,
+                            label: 'Red ↑',
+                            color: '#e15759',
+                            lineDash: [2],
+                        },
+                        {
+                            value: -0.1,
+                            label: '↓ Red',
+                            color: '#e15759',
+                            lineDash: [2],
+                            labelPosition: 'start',
+                        },
                     ],
                 },
             };
