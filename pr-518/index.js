@@ -23077,6 +23077,9 @@ var gsmViz = (() => {
     if (typeof spec.facet.field !== "string") {
       throw new Error("spec.facet.field must be a string");
     }
+    if (spec.facet.order !== void 0 && !Array.isArray(spec.facet.order)) {
+      throw new Error("spec.facet.order must be an array");
+    }
     if (spec.facet.nCol !== void 0 && (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)) {
       throw new Error("spec.facet.nCol must be a positive integer");
     }
@@ -23192,12 +23195,12 @@ var gsmViz = (() => {
         orientation,
         position,
         scales: resolvedScales,
-        nCategories: void 0
+        nCategories: spec.nCategories
       };
       const { datasets, labels } = structureData2(subSpec);
       if (stacked) {
-        const positiveTotals = new Map(labels.map((l) => [l, 0]));
-        const negativeTotals = new Map(labels.map((l) => [l, 0]));
+        const positiveTotals = new Map(labels.map((l) => [String(l), 0]));
+        const negativeTotals = new Map(labels.map((l) => [String(l), 0]));
         for (const ds of datasets) {
           for (const point of ds.data) {
             const cat = horizontal ? point.y : point.x;
@@ -23265,7 +23268,13 @@ var gsmViz = (() => {
   // src/facetBars/renderGrid.js
   function renderGrid(parentElement, facetValues, mergedSpec) {
     const existing = parentElement.querySelector(".gsm-facet-grid");
-    if (existing) existing.remove();
+    if (existing) {
+      existing.querySelectorAll("canvas").forEach((canvas) => {
+        const chart = Chart.getChart(canvas);
+        if (chart) chart.destroy();
+      });
+      existing.remove();
+    }
     const { facet } = mergedSpec;
     const nCol = facet.nCol ?? Math.min(facetValues.length, 3);
     const labelPosition = facet.label?.position ?? "top";
@@ -23316,12 +23325,16 @@ var gsmViz = (() => {
           charts.forEach((sibling) => {
             if (sibling === chartInstance) return;
             const siblingLabels = sibling.data.labels;
-            const labelIndex = siblingLabels.indexOf(hoveredCategory);
-            if (labelIndex === -1) return;
-            const newActiveElements = sibling.data.datasets.map((_, dsIndex) => {
+            if (!siblingLabels.includes(hoveredCategory)) return;
+            const newActiveElements = sibling.data.datasets.map((ds, dsIndex) => {
+              const pointIndex = ds.data.findIndex((p) => {
+                const cat = horizontal ? p.y : p.x;
+                return String(cat) === String(hoveredCategory);
+              });
+              if (pointIndex === -1) return null;
               const meta = sibling.getDatasetMeta(dsIndex);
-              if (!meta?.data?.[labelIndex]) return null;
-              return { datasetIndex: dsIndex, index: labelIndex };
+              if (!meta?.data?.[pointIndex]) return null;
+              return { datasetIndex: dsIndex, index: pointIndex };
             }).filter(Boolean);
             sibling.setActiveElements(newActiveElements);
             sibling.update("none");
