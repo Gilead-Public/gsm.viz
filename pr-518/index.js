@@ -21871,9 +21871,7 @@ var gsmViz = (() => {
     const referenceLines2 = spec.annotations?.referenceLines;
     if (referenceLines2 !== void 0) {
       if (!Array.isArray(referenceLines2)) {
-        throw new Error(
-          "spec.annotations.referenceLines must be an array"
-        );
+        throw new Error("spec.annotations.referenceLines must be an array");
       }
       referenceLines2.forEach((line, i) => {
         const prefix = `spec.annotations.referenceLines[${i}]`;
@@ -21897,9 +21895,7 @@ var gsmViz = (() => {
           );
         }
         if (line.lineDash !== void 0) {
-          if (!Array.isArray(line.lineDash) || !line.lineDash.every(
-            (n) => Number.isFinite(n) && n >= 0
-          )) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every((n) => Number.isFinite(n) && n >= 0)) {
             throw new Error(
               `${prefix}.lineDash must be an array of non-negative numbers`
             );
@@ -23363,7 +23359,11 @@ var gsmViz = (() => {
       }
     }
     const merged = mergeSpec2(data, spec);
-    const facetDataMap = splitData(data, merged.facet.field, merged.facet.order);
+    const facetDataMap = splitData(
+      data,
+      merged.facet.field,
+      merged.facet.order
+    );
     const facetValues = [...facetDataMap.keys()];
     const globalScales = computeGlobalScales(facetDataMap, merged);
     const { containers, grid } = renderGrid(el, facetValues, merged);
