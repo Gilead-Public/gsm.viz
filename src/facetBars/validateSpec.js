@@ -37,6 +37,10 @@ export default function validateSpec(data, spec) {
         throw new Error('spec.facet.field must be a string');
     }
 
+    if (spec.facet.order !== undefined && !Array.isArray(spec.facet.order)) {
+        throw new Error('spec.facet.order must be an array');
+    }
+
     if (
         spec.facet.nCol !== undefined &&
         (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)

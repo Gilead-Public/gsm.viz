@@ -1,4 +1,3 @@
-import barsDefaults from '../bars/defaults.js';
 import facetDefaults from './defaults.js';
 import barsmergeSpec from '../bars/mergeSpec.js';
 

@@ -1,6 +1,11 @@
+import { Chart } from 'chart.js';
+
 /**
  * Create a CSS grid layout inside a parent element, with one cell per facet
  * value. Each cell contains a label and a canvas container div.
+ *
+ * Any previously rendered `.gsm-facet-grid` is removed after destroying its
+ * Chart.js instances to avoid memory leaks.
  *
  * @param {Element}  parentElement - DOM element in which to build the grid
  * @param {string[]} facetValues   - ordered array of facet value strings
@@ -8,9 +13,16 @@
  * @returns {{ containers: Map<string, Element>, grid: Element }}
  */
 export default function renderGrid(parentElement, facetValues, mergedSpec) {
-    // Remove any previously rendered grid
+    // Destroy existing Chart.js instances before removing the old grid DOM to
+    // prevent memory leaks (Chart.js holds internal state on canvas elements).
     const existing = parentElement.querySelector('.gsm-facet-grid');
-    if (existing) existing.remove();
+    if (existing) {
+        existing.querySelectorAll('canvas').forEach((canvas) => {
+            const chart = Chart.getChart(canvas);
+            if (chart) chart.destroy();
+        });
+        existing.remove();
+    }
 
     const { facet } = mergedSpec;
     const nCol = facet.nCol ?? Math.min(facetValues.length, 3);

@@ -32,17 +32,21 @@ export default function syncCharts(charts) {
                     if (sibling === chartInstance) return;
 
                     const siblingLabels = sibling.data.labels;
-                    const labelIndex = siblingLabels.indexOf(hoveredCategory);
-                    if (labelIndex === -1) return;
+                    if (!siblingLabels.includes(hoveredCategory)) return;
 
-                    // Highlight the matching category across datasets in the sibling.
-                    // Only include datasets that have a rendered element at labelIndex —
-                    // Chart.js setActiveElements will crash on undefined elements.
+                    // For each dataset, find the actual data-array index for the
+                    // hovered category (a dataset may omit categories it has no data
+                    // for, so the data index can differ from the labels index).
                     const newActiveElements = sibling.data.datasets
-                        .map((_, dsIndex) => {
+                        .map((ds, dsIndex) => {
+                            const pointIndex = ds.data.findIndex((p) => {
+                                const cat = horizontal ? p.y : p.x;
+                                return String(cat) === String(hoveredCategory);
+                            });
+                            if (pointIndex === -1) return null;
                             const meta = sibling.getDatasetMeta(dsIndex);
-                            if (!meta?.data?.[labelIndex]) return null;
-                            return { datasetIndex: dsIndex, index: labelIndex };
+                            if (!meta?.data?.[pointIndex]) return null;
+                            return { datasetIndex: dsIndex, index: pointIndex };
                         })
                         .filter(Boolean);
 

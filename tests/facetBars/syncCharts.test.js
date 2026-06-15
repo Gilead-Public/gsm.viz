@@ -180,7 +180,54 @@ describe('facetBars/syncCharts', () => {
         expect(callArg[0].index).toBe(1); // 'B' is at index 1 in sibling too
     });
 
-    test('excludes dataset indices with no rendered element at labelIndex', () => {
+    test('finds correct data-array index within each dataset when categories are sparse', () => {
+        // ds1 in sibling only has data for 'B', not 'A' — its 'B' is at data[0], not labels[1]
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [
+                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
+                [{ x: 'B', y: 8 }], // sparse: only 'B'
+            ]),
+        ];
+        syncCharts(charts);
+
+        // Hover 'B' (label index 1) in chart[0]
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 1 }],
+            charts[0]
+        );
+
+        const activeElements = charts[1].setActiveElements.mock.calls[0][0];
+        expect(activeElements).toHaveLength(2);
+        expect(activeElements[0]).toEqual({ datasetIndex: 0, index: 1 }); // 'B' at data[1] in ds0
+        expect(activeElements[1]).toEqual({ datasetIndex: 1, index: 0 }); // 'B' at data[0] in ds1
+    });
+
+    test('skips dataset when hovered category is absent from that dataset data', () => {
+        // ds1 only has 'B'; hovering 'A' should not include ds1
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [
+                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
+                [{ x: 'B', y: 8 }], // sparse: only 'B'
+            ]),
+        ];
+        syncCharts(charts);
+
+        // Hover 'A' (label index 0) — ds1 has no 'A'
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        const activeElements = charts[1].setActiveElements.mock.calls[0][0];
+        expect(activeElements).toHaveLength(1);
+        expect(activeElements[0]).toEqual({ datasetIndex: 0, index: 0 });
+    });
+
+    test('excludes dataset indices with no rendered element at the resolved data index', () => {
         const charts = [
             makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
             makeChart(['A', 'B'], [
@@ -188,7 +235,7 @@ describe('facetBars/syncCharts', () => {
                 [{ x: 'A', y: 2 }, { x: 'B', y: 8 }],
             ]),
         ];
-        // Simulate ds1 in sibling having no rendered element at index 0 (e.g. flag absent for that site)
+        // Simulate ds1 in sibling having no rendered Chart.js element at data index 0
         charts[1].getDatasetMeta = jest.fn((dsIndex) => {
             if (dsIndex === 1) return { data: [undefined, {}] };
             return { data: [{}, {}] };
@@ -202,7 +249,7 @@ describe('facetBars/syncCharts', () => {
         );
 
         const activeElements = charts[1].setActiveElements.mock.calls[0][0];
-        // ds1 has no element at index 0 — should be excluded
+        // ds1 has no element at data index 0 — should be excluded
         expect(activeElements).toHaveLength(1);
         expect(activeElements[0]).toEqual({ datasetIndex: 0, index: 0 });
     });

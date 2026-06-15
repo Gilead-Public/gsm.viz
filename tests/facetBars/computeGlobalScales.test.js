@@ -172,4 +172,39 @@ describe('facetBars/computeGlobalScales', () => {
             expect(result.yMax).toBe(20);
         });
     });
+
+    describe('String coercion for category keys', () => {
+        test('correctly sums stacked values when category keys are numeric strings', () => {
+            // Labels like '1', '2' — String(cat) must match String(l) map key
+            const numericData = new Map([
+                ['F1', [
+                    { site: '1', value: 10 },
+                    { site: '2', value: 5 },
+                ]],
+            ]);
+            const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
+            const result = computeGlobalScales(numericData, spec);
+            expect(result.yMax).toBe(10);
+        });
+    });
+
+    describe('nCategories passthrough', () => {
+        test('respects nCategories to limit axis bounds to top-N categories', () => {
+            // With nCategories=1, only the top category (B=20) is included;
+            // yMax should be 20 not the broader aggregate
+            const spec = makeSpec({
+                mapping: { x: 'site', y: 'value' },
+                nCategories: 1,
+            });
+            const data = new Map([
+                ['US', [
+                    { site: 'A', value: 5 },
+                    { site: 'B', value: 20 },
+                ]],
+            ]);
+            const result = computeGlobalScales(data, spec);
+            expect(result.yMax).toBe(20);
+            expect(result.yMin).toBe(0);
+        });
+    });
 });

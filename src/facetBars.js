@@ -69,6 +69,8 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     const horizontal = merged.orientation === 'horizontal';
     const valueAxisKey = horizontal ? 'x' : 'y';
     const yFree = merged.facet.scales.y.free;
+    // NOTE: facet.scales.x.free (per-facet category domain) is not yet implemented.
+    // Per-facet category ordering is supported via a function for scales.x.order instead.
     const legendDisplay = merged.facet.legend.display;
     const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;

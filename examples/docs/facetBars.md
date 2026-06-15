@@ -6,7 +6,7 @@ common axis range (constant axes by default) and a common Chart.js legend shown
 on one designated sub-chart. Hover interactions are linked across facets:
 highlighting a bar in one chart highlights the matching category in all siblings.
 
-Introduced in v2.5.0. Internally, each sub-chart is a [`bars`](bars.md) instance.
+Introduced in v2.4.x. Internally, each sub-chart is a [`bars`](bars.md) instance.
 
 ---
 

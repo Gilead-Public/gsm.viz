@@ -52,7 +52,7 @@ export default function computeGlobalScales(facetDataMap, spec) {
             orientation,
             position,
             scales: resolvedScales,
-            nCategories: undefined,
+            nCategories: spec.nCategories,
         };
 
         const { datasets, labels } = structureData(subSpec);
@@ -60,8 +60,9 @@ export default function computeGlobalScales(facetDataMap, spec) {
         if (stacked) {
             // Track positive and negative sums independently per category so
             // that bars stacking below zero are correctly included in globalMin.
-            const positiveTotals = new Map(labels.map((l) => [l, 0]));
-            const negativeTotals = new Map(labels.map((l) => [l, 0]));
+            // Use String keys to match how String(cat) is used in point lookups below.
+            const positiveTotals = new Map(labels.map((l) => [String(l), 0]));
+            const negativeTotals = new Map(labels.map((l) => [String(l), 0]));
 
             for (const ds of datasets) {
                 for (const point of ds.data) {

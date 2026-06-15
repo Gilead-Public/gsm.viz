@@ -73,6 +73,24 @@ describe('facetBars/validateSpec', () => {
             ).toThrow('spec.facet.field must be a string');
         });
 
+        test('throws when spec.facet.order is not an array', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', order: 'US,EU' },
+                })
+            ).toThrow('spec.facet.order must be an array');
+        });
+
+        test('does not throw when spec.facet.order is a valid array', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', order: ['US', 'EU'] },
+                })
+            ).not.toThrow();
+        });
+
         test('throws when spec.facet.nCol is not a positive integer', () => {
             expect(() =>
                 validateSpec(minimalData, { mapping: { x: 'site' }, facet: { field: 'r', nCol: 0 } })
