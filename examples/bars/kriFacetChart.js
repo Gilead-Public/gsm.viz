@@ -159,21 +159,21 @@ Promise.all(kriFacetDataPromises)
         }
 
         /**
-         * Highlight one site across all facet charts by dimming all others.
-         * Pass null or '' to clear and restore original colours.
+         * Apply color highlight to one site across all facet charts without
+         * updating the persisted selection. When siteID is falsy, restores all
+         * bars to full opacity. When siteID is set but absent in a given facet,
+         * all bars in that facet are dimmed.
          *
          * @param {string|null} siteID
          */
-        function highlightSite(siteID) {
+        function applyColorHighlight(siteID) {
             if (!currentResult) return;
-            lastHighlightedSite = siteID || null;
 
             currentResult.charts.forEach((chart) => {
                 const labels = chart.data.labels;
                 const siteIndex = siteID ? labels.indexOf(siteID) : -1;
 
                 chart.data.datasets.forEach((ds) => {
-                    // Store the original solid-colour string on first call.
                     const origBg =
                         ds._origBgColor ??
                         (typeof ds.backgroundColor === 'string'
@@ -189,18 +189,23 @@ Promise.all(kriFacetDataPromises)
                     ds._origBgColor = origBg;
                     if (origBorder) ds._origBorderColor = origBorder;
 
-                    if (!siteID || siteIndex === -1) {
-                        // Clear highlight — restore original single colour.
+                    if (!siteID) {
+                        // No selection — restore full opacity on all bars.
                         ds.backgroundColor = origBg;
                         if (origBorder) ds.borderColor = origBorder;
                     } else {
-                        // Dim all sites except the selected one.
+                        // siteIndex === -1 means site absent: dim every bar.
+                        // siteIndex >= 0: highlight that bar, dim the rest.
                         ds.backgroundColor = labels.map((_, i) =>
-                            i === siteIndex ? origBg : hexToRgba(origBg, 0.15)
+                            siteIndex >= 0 && i === siteIndex
+                                ? origBg
+                                : hexToRgba(origBg, 0.15)
                         );
                         if (origBorder) {
                             ds.borderColor = labels.map((_, i) =>
-                                i === siteIndex ? origBorder : hexToRgba(origBorder, 0.15)
+                                siteIndex >= 0 && i === siteIndex
+                                    ? origBorder
+                                    : hexToRgba(origBorder, 0.15)
                             );
                         }
                     }
@@ -208,6 +213,17 @@ Promise.all(kriFacetDataPromises)
 
                 chart.update('none');
             });
+        }
+
+        /**
+         * Persistently highlight one site: updates lastHighlightedSite then
+         * delegates to applyColorHighlight.
+         *
+         * @param {string|null} siteID
+         */
+        function highlightSite(siteID) {
+            lastHighlightedSite = siteID || null;
+            applyColorHighlight(lastHighlightedSite);
         }
 
         function getYScale() {
@@ -313,6 +329,7 @@ Promise.all(kriFacetDataPromises)
                             const site =
                                 orientation === 'horizontal' ? point.y : point.x;
                             statusEl.textContent = `Hovering: ${site} — ${facetValue}`;
+                            applyColorHighlight(site);
                         },
                     },
                 }
@@ -323,6 +340,16 @@ Promise.all(kriFacetDataPromises)
             currentResult.charts.forEach((chart) => {
                 chart.options.scales[categoryAxisKey].ticks = { display: false };
                 chart.options.scales[categoryAxisKey].grid = { display: false };
+
+                // Wrap onHover to restore persistent highlight when mouse leaves.
+                const existingOnHover = chart.options.onHover;
+                chart.options.onHover = (event, activeElements, chartInstance) => {
+                    if (existingOnHover) existingOnHover(event, activeElements, chartInstance);
+                    if (activeElements.length === 0) {
+                        applyColorHighlight(lastHighlightedSite);
+                    }
+                };
+
                 chart.update('none');
             });
 
