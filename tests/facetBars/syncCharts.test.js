@@ -3,18 +3,23 @@ import syncCharts from '../../src/facetBars/syncCharts.js';
 const makeChart = (labels, datasets, indexAxis = 'x') => {
     const setActiveElements = jest.fn();
     const update = jest.fn();
+    const chartDatasets = datasets.map((d, i) => ({
+        label: `ds${i}`,
+        data: d,
+    }));
     return {
         data: {
             labels,
-            datasets: datasets.map((d, i) => ({
-                label: `ds${i}`,
-                data: d,
-            })),
+            datasets: chartDatasets,
         },
         options: {
             indexAxis,
             onHover: null,
         },
+        // Default: every dataset has a truthy element at every data index
+        getDatasetMeta: jest.fn((dsIndex) => ({
+            data: (chartDatasets[dsIndex]?.data ?? []).map(() => ({})),
+        })),
         setActiveElements,
         update,
     };
@@ -173,5 +178,32 @@ describe('facetBars/syncCharts', () => {
 
         const callArg = charts[1].setActiveElements.mock.calls[0][0];
         expect(callArg[0].index).toBe(1); // 'B' is at index 1 in sibling too
+    });
+
+    test('excludes dataset indices with no rendered element at labelIndex', () => {
+        const charts = [
+            makeChart(['A', 'B'], [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]),
+            makeChart(['A', 'B'], [
+                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
+                [{ x: 'A', y: 2 }, { x: 'B', y: 8 }],
+            ]),
+        ];
+        // Simulate ds1 in sibling having no rendered element at index 0 (e.g. flag absent for that site)
+        charts[1].getDatasetMeta = jest.fn((dsIndex) => {
+            if (dsIndex === 1) return { data: [undefined, {}] };
+            return { data: [{}, {}] };
+        });
+        syncCharts(charts);
+
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        const activeElements = charts[1].setActiveElements.mock.calls[0][0];
+        // ds1 has no element at index 0 — should be excluded
+        expect(activeElements).toHaveLength(1);
+        expect(activeElements[0]).toEqual({ datasetIndex: 0, index: 0 });
     });
 });

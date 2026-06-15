@@ -318,10 +318,11 @@ Promise.all(kriFacetDataPromises)
                 }
             );
 
-            // Disable category-axis tick labels on every facet chart.
+            // Disable category-axis tick labels and grid lines on every facet chart.
             const categoryAxisKey = orientation === 'horizontal' ? 'y' : 'x';
             currentResult.charts.forEach((chart) => {
                 chart.options.scales[categoryAxisKey].ticks = { display: false };
+                chart.options.scales[categoryAxisKey].grid = { display: false };
                 chart.update('none');
             });
 

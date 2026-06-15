@@ -23318,10 +23318,11 @@ var gsmViz = (() => {
             const siblingLabels = sibling.data.labels;
             const labelIndex = siblingLabels.indexOf(hoveredCategory);
             if (labelIndex === -1) return;
-            const newActiveElements = sibling.data.datasets.map((_, dsIndex) => ({
-              datasetIndex: dsIndex,
-              index: labelIndex
-            }));
+            const newActiveElements = sibling.data.datasets.map((_, dsIndex) => {
+              const meta = sibling.getDatasetMeta(dsIndex);
+              if (!meta?.data?.[labelIndex]) return null;
+              return { datasetIndex: dsIndex, index: labelIndex };
+            }).filter(Boolean);
             sibling.setActiveElements(newActiveElements);
             sibling.update("none");
           });

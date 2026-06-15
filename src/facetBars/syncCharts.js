@@ -35,11 +35,16 @@ export default function syncCharts(charts) {
                     const labelIndex = siblingLabels.indexOf(hoveredCategory);
                     if (labelIndex === -1) return;
 
-                    // Highlight the matching category across all datasets in the sibling
-                    const newActiveElements = sibling.data.datasets.map((_, dsIndex) => ({
-                        datasetIndex: dsIndex,
-                        index: labelIndex,
-                    }));
+                    // Highlight the matching category across datasets in the sibling.
+                    // Only include datasets that have a rendered element at labelIndex —
+                    // Chart.js setActiveElements will crash on undefined elements.
+                    const newActiveElements = sibling.data.datasets
+                        .map((_, dsIndex) => {
+                            const meta = sibling.getDatasetMeta(dsIndex);
+                            if (!meta?.data?.[labelIndex]) return null;
+                            return { datasetIndex: dsIndex, index: labelIndex };
+                        })
+                        .filter(Boolean);
 
                     sibling.setActiveElements(newActiveElements);
                     sibling.update('none');
