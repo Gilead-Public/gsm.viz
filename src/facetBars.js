@@ -78,7 +78,7 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
 
         // Inject global axis bounds (only when axis is constant and bounds were computed)
         if (!yFree && globalScales.yMax !== undefined) {
-            chart.options.scales[valueAxisKey].min = globalScales.yMin ?? 0;
+            chart.options.scales[valueAxisKey].min = globalScales.yMin;
             chart.options.scales[valueAxisKey].max = globalScales.yMax;
             needsUpdate = true;
         }

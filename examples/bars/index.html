@@ -397,7 +397,7 @@
 
         <!-- KRI Facet tab -->
         <div id="kri-facet" class="tab-panel gsm-viz--example">
-            <div id="kri-facet-controls">
+            <div id="kri-facet-controls" style="width:fit-content;">
                 <fieldset>
                     <legend>Site</legend>
                     <select id="kri-facet-site">
@@ -411,6 +411,14 @@
                         <option value="Score" selected>Score</option>
                         <option value="Numerator">Numerator</option>
                         <option value="Metric">Metric</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Y-axis Scale</legend>
+                    <select id="kri-facet-y-scale">
+                        <option value="constant" selected>Constant</option>
+                        <option value="free">Free</option>
                     </select>
                 </fieldset>
 

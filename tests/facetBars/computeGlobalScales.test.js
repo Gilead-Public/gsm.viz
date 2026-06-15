@@ -25,18 +25,51 @@ const makeData = () => new Map([
 
 describe('facetBars/computeGlobalScales', () => {
     describe('stacked position (default)', () => {
-        test('returns yMin of 0', () => {
+        test('returns yMin of 0 when all values are non-negative', () => {
             const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
             const result = computeGlobalScales(makeData(), spec);
             expect(result.yMin).toBe(0);
         });
 
-        test('returns yMax as the max per-category sum across all facets', () => {
+        test('returns yMax as the max per-category positive sum across all facets', () => {
             // US site A: 10+5=15, site B: 20. EU site A: 8, site C: 15+3=18
             // Global max = 20
             const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
             const result = computeGlobalScales(makeData(), spec);
             expect(result.yMax).toBe(20);
+        });
+    });
+
+    describe('negative values (stacked)', () => {
+        test('returns yMin as the most negative per-category sum', () => {
+            const negData = new Map([
+                ['US', [
+                    { site: 'A', value: -5 },
+                    { site: 'A', value: -3 },
+                    { site: 'B', value: 10 },
+                ]],
+            ]);
+            const spec = makeSpec({ mapping: { x: 'site', y: 'value' } });
+            const result = computeGlobalScales(negData, spec);
+            // site A: negative sum = -8; site B: positive sum = 10
+            expect(result.yMin).toBe(-8);
+            expect(result.yMax).toBe(10);
+        });
+
+        test('returns yMin as the most negative individual value for dodge', () => {
+            const negData = new Map([
+                ['US', [
+                    { site: 'A', value: -5 },
+                    { site: 'B', value: 10 },
+                ]],
+            ]);
+            const spec = makeSpec({
+                mapping: { x: 'site', y: 'value' },
+                position: 'dodge',
+            });
+            const result = computeGlobalScales(negData, spec);
+            expect(result.yMin).toBe(-5);
+            expect(result.yMax).toBe(10);
         });
     });
 

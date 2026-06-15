@@ -47,22 +47,12 @@ function buildKriFacetAnnotations(rawThresholds, orientation) {
     negatives.forEach((val, i) => {
         const flag = -(i + 1);
         const color = flag === -1 ? '#FEAA02' : '#FF5859';
-        const label = flag === -1 ? '↓ Amber Flag' : '↓ Red Flag';
         const annotation = {
             type: 'line',
             adjustScaleRange: false,
             borderColor: color,
             borderWidth: 1,
             borderDash: [2],
-            label: {
-                display: true,
-                content: label,
-                color,
-                backgroundColor: 'white',
-                position: 'start',
-                font: { size: 11 },
-                padding: 2,
-            },
         };
         if (isHorizontal) {
             annotation.xMin = val;
@@ -77,22 +67,12 @@ function buildKriFacetAnnotations(rawThresholds, orientation) {
     positives.forEach((val, i) => {
         const flag = i + 1;
         const color = flag === 1 ? '#FEAA02' : '#FF5859';
-        const label = flag === 1 ? 'Amber Flag ↑' : 'Red Flag ↑';
         const annotation = {
             type: 'line',
             adjustScaleRange: false,
             borderColor: color,
             borderWidth: 1,
             borderDash: [2],
-            label: {
-                display: true,
-                content: label,
-                color,
-                backgroundColor: 'white',
-                position: 'end',
-                font: { size: 11 },
-                padding: 2,
-            },
         };
         if (isHorizontal) {
             annotation.xMin = val;
@@ -134,9 +114,12 @@ Promise.all(kriFacetDataPromises)
         );
         const metricMetadata = datasets[1];
 
-        // Populate site dropdown from all unique sites, sorted alphabetically.
+        // Filter to KRI metrics only
+        const kriResults = allResults.filter((d) => d.MetricID.startsWith('kri'));
+
+        // Populate site dropdown from kri-filtered unique sites, sorted alphabetically.
         const siteDropdown = document.getElementById('kri-facet-site');
-        const allSites = [...new Set(allResults.map((d) => d.GroupID))].sort();
+        const allSites = [...new Set(kriResults.map((d) => d.GroupID))].sort();
         for (const site of allSites) {
             const option = document.createElement('option');
             option.value = site;
@@ -144,8 +127,8 @@ Promise.all(kriFacetDataPromises)
             siteDropdown.appendChild(option);
         }
 
-        // Derive the sorted list of MetricIDs once for use in facet ordering.
-        const allMetrics = [...new Set(allResults.map((d) => d.MetricID))].sort(
+        // Derive the sorted list of MetricIDs (kri only) for facet ordering.
+        const allMetrics = [...new Set(kriResults.map((d) => d.MetricID))].sort(
             (a, b) => {
                 const aIdx = METRIC_PREFIX_ORDER.findIndex((p) => a.startsWith(p));
                 const bIdx = METRIC_PREFIX_ORDER.findIndex((p) => b.startsWith(p));
@@ -227,8 +210,12 @@ Promise.all(kriFacetDataPromises)
             });
         }
 
-        /**
-         * Apply per-metric threshold reference lines to each facet chart.
+        function getYScale() {
+            const el = document.getElementById('kri-facet-y-scale');
+            return el ? el.value : 'constant';
+        }
+
+
          * Called after every render when the threshold checkbox is checked.
          *
          * @param {string[]} facetValues - MetricIDs in the same order as currentResult.charts
@@ -266,16 +253,17 @@ Promise.all(kriFacetDataPromises)
         function render() {
             const yAxis = getYAxis();
             const orientation = getOrientation();
+            const yFree = getYScale() === 'free';
 
             // Sort data so facets appear in metric ID order.
-            const sortedResults = [...allResults].sort((a, b) => {
+            const sortedResults = [...kriResults].sort((a, b) => {
                 const ai = allMetrics.indexOf(a.MetricID);
                 const bi = allMetrics.indexOf(b.MetricID);
                 if (ai !== bi) return ai - bi;
                 return 0;
             });
 
-            const siteOrder = getFacetSortedOrder(allResults, yAxis);
+            const siteOrder = getFacetSortedOrder(kriResults, yAxis);
 
             currentResult = gsmViz.default.facetBars(
                 container,
@@ -307,8 +295,8 @@ Promise.all(kriFacetDataPromises)
                         order: allMetrics,
                         nCol: 3,
                         label: { position: 'top' },
-                        scales: { y: { free: false } },
-                        legend: { display: true, chart: 'first' },
+                        scales: { y: { free: yFree } },
+                        legend: { display: false },
                     },
                     theme: {
                         dynamicSizing: false,
@@ -331,6 +319,13 @@ Promise.all(kriFacetDataPromises)
                 }
             );
 
+            // Disable category-axis tick labels on every facet chart.
+            const categoryAxisKey = orientation === 'horizontal' ? 'y' : 'x';
+            currentResult.charts.forEach((chart) => {
+                chart.options.scales[categoryAxisKey].ticks = { display: false };
+                chart.update('none');
+            });
+
             // Apply per-metric threshold reference lines.
             applyThresholdLines(allMetrics);
 
@@ -352,7 +347,7 @@ Promise.all(kriFacetDataPromises)
         });
 
         onAnyChange(
-            ['kri-facet-y-axis', 'kri-facet-orientation'],
+            ['kri-facet-y-axis', 'kri-facet-orientation', 'kri-facet-y-scale'],
             render
         );
 

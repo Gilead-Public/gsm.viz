@@ -7,6 +7,9 @@ import structureData from '../bars/structureData/structureData.js';
  * that would be rendered, then returns the overall min/max for the value axis
  * (always expressed in spec-y terms, regardless of orientation).
  *
+ * For stacked position, positive and negative contributions are summed
+ * independently per category so that negative stacks are correctly captured.
+ *
  * For position='fill', bounds are always [0, 100].
  * Returns {} when the relevant axis is configured as free (per-facet auto-scale).
  *
@@ -29,6 +32,7 @@ export default function computeGlobalScales(facetDataMap, spec) {
 
     const stacked = position === 'stack';
     let globalMax = 0;
+    let globalMin = 0;
 
     for (const [, facetData] of facetDataMap) {
         // Build a minimal spec compatible with bars/structureData
@@ -44,35 +48,42 @@ export default function computeGlobalScales(facetDataMap, spec) {
         const { datasets, labels } = structureData(subSpec);
 
         if (stacked) {
-            // Max value is the per-category sum of positive dataset contributions
-            const categoryTotals = new Map(labels.map((l) => [l, 0]));
+            // Track positive and negative sums independently per category so
+            // that bars stacking below zero are correctly included in globalMin.
+            const positiveTotals = new Map(labels.map((l) => [l, 0]));
+            const negativeTotals = new Map(labels.map((l) => [l, 0]));
 
             for (const ds of datasets) {
                 for (const point of ds.data) {
                     // After swapPointAxes, horizontal data has value in .x, category in .y
                     const cat = horizontal ? point.y : point.x;
-                    const val = horizontal ? point.x : point.y;
-                    if (categoryTotals.has(String(cat))) {
-                        const current = categoryTotals.get(String(cat));
-                        categoryTotals.set(String(cat), current + Math.max(0, Number(val) || 0));
+                    const val = Number(horizontal ? point.x : point.y) || 0;
+                    const key = String(cat);
+                    if (val > 0 && positiveTotals.has(key)) {
+                        positiveTotals.set(key, positiveTotals.get(key) + val);
+                    } else if (val < 0 && negativeTotals.has(key)) {
+                        negativeTotals.set(key, negativeTotals.get(key) + val);
                     }
                 }
             }
 
-            for (const total of categoryTotals.values()) {
+            for (const total of positiveTotals.values()) {
                 if (total > globalMax) globalMax = total;
             }
+            for (const total of negativeTotals.values()) {
+                if (total < globalMin) globalMin = total;
+            }
         } else {
-            // dodge / identity: max of individual values
+            // dodge / identity: min and max of individual values
             for (const ds of datasets) {
                 for (const point of ds.data) {
-                    const val = horizontal ? point.x : point.y;
-                    const num = Number(val) || 0;
-                    if (num > globalMax) globalMax = num;
+                    const val = Number(horizontal ? point.x : point.y) || 0;
+                    if (val > globalMax) globalMax = val;
+                    if (val < globalMin) globalMin = val;
                 }
             }
         }
     }
 
-    return { yMin: 0, yMax: globalMax };
+    return { yMin: globalMin, yMax: globalMax };
 }
