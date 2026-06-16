@@ -23079,6 +23079,9 @@ var gsmViz = (() => {
     if (spec.facet.nCol !== void 0 && (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)) {
       throw new Error("spec.facet.nCol must be a positive integer");
     }
+    if (spec.facet.chartHeight !== void 0 && (typeof spec.facet.chartHeight !== "number" || spec.facet.chartHeight <= 0)) {
+      throw new Error("spec.facet.chartHeight must be a positive number");
+    }
     const xFree = spec.facet?.scales?.x?.free;
     if (xFree !== void 0 && typeof xFree !== "boolean") {
       throw new Error("spec.facet.scales.x.free must be a boolean");
@@ -23101,6 +23104,7 @@ var gsmViz = (() => {
       field: void 0,
       order: void 0,
       nCol: void 0,
+      chartHeight: void 0,
       label: {
         position: "top",
         font: void 0
@@ -23291,6 +23295,9 @@ var gsmViz = (() => {
       }
       const canvasContainer = document.createElement("div");
       canvasContainer.className = "gsm-facet-canvas";
+      if (facet.chartHeight) {
+        canvasContainer.style.height = `${facet.chartHeight}px`;
+      }
       if (labelPosition === "bottom") {
         cell.appendChild(canvasContainer);
         cell.appendChild(label);

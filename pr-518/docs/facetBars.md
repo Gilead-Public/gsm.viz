@@ -58,6 +58,8 @@ every sub-chart) plus a required `facet` block:
                                 //   values absent from order are excluded
         nCol: undefined,        // optional positive integer — grid columns
                                 //   (auto-computed as min(facetCount, 3) if omitted)
+        chartHeight: undefined, // optional positive number — height in px of each
+                                //   sub-chart canvas container (e.g. 300)
         label: {
             position: 'top',    // 'top' | 'bottom' — facet title relative to chart
             font: undefined,    // CSS font string for facet title (e.g. 'bold 13px sans-serif')
@@ -85,15 +87,16 @@ every sub-chart) plus a required `facet` block:
 
 ### Facet defaults
 
-| Key                    | Default                                  |
-| ---------------------- | ---------------------------------------- |
-| `facet.nCol`           | `undefined` (auto: `min(facetCount, 3)`) |
-| `facet.label.position` | `'top'`                                  |
-| `facet.label.font`     | `undefined`                              |
-| `facet.scales.x.free`  | `false` (constant, shared axis)          |
-| `facet.scales.y.free`  | `false` (constant, shared axis)          |
-| `facet.legend.display` | `true`                                   |
-| `facet.legend.chart`   | `'first'`                                |
+| Key                    | Default                                     |
+| ---------------------- | ------------------------------------------- |
+| `facet.nCol`           | `undefined` (auto: `min(facetCount, 3)`)    |
+| `facet.chartHeight`    | `undefined` (Chart.js default aspect ratio) |
+| `facet.label.position` | `'top'`                                     |
+| `facet.label.font`     | `undefined`                                 |
+| `facet.scales.x.free`  | `false` (constant, shared axis)             |
+| `facet.scales.y.free`  | `false` (constant, shared axis)             |
+| `facet.legend.display` | `true`                                      |
+| `facet.legend.chart`   | `'first'`                                   |
 
 ---
 
