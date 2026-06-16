@@ -6,6 +6,7 @@ const defaults = {
         field: undefined,
         order: undefined,
         nCol: undefined,
+        chartHeight: undefined,
         label: {
             position: 'top',
             font: undefined,

@@ -138,6 +138,30 @@ describe('facetBars/renderGrid', () => {
         expect(parent.querySelectorAll('.gsm-facet-cell').length).toBe(2);
     });
 
+    describe('chartHeight', () => {
+        test('sets height on each canvas container when facet.chartHeight is specified', () => {
+            const { containers } = renderGrid(
+                parent,
+                ['US', 'EU'],
+                makeMergedSpec({ facet: { ...makeMergedSpec().facet, chartHeight: 300 } })
+            );
+            for (const container of containers.values()) {
+                expect(container.style.height).toBe('300px');
+            }
+        });
+
+        test('does not set height on canvas containers when facet.chartHeight is not specified', () => {
+            const { containers } = renderGrid(
+                parent,
+                ['US', 'EU'],
+                makeMergedSpec()
+            );
+            for (const container of containers.values()) {
+                expect(container.style.height).toBe('');
+            }
+        });
+    });
+
     test('sets custom font style on label when specified', () => {
         renderGrid(
             parent,

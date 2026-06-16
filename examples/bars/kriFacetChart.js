@@ -328,7 +328,8 @@ Promise.all(kriFacetDataPromises)
                 facet: {
                     field: 'MetricID',
                     order: allMetrics,
-                    nCol: 1,
+                    nCol: 2,
+                    chartHeight: 250,
                     label: { position: 'top' },
                     scales: { y: { free: yFree } },
                     legend: { display: false },

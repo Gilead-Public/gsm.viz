@@ -49,6 +49,9 @@ export default function renderGrid(parentElement, facetValues, mergedSpec) {
 
         const canvasContainer = document.createElement('div');
         canvasContainer.className = 'gsm-facet-canvas';
+        if (facet.chartHeight) {
+            canvasContainer.style.height = `${facet.chartHeight}px`;
+        }
 
         if (labelPosition === 'bottom') {
             cell.appendChild(canvasContainer);

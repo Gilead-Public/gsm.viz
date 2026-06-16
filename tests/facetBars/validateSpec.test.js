@@ -158,5 +158,32 @@ describe('facetBars/validateSpec', () => {
                 })
             ).not.toThrow();
         });
+
+        test('throws when spec.facet.chartHeight is not a positive number', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', chartHeight: -50 },
+                })
+            ).toThrow('spec.facet.chartHeight must be a positive number');
+        });
+
+        test('throws when spec.facet.chartHeight is a string', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', chartHeight: '300px' },
+                })
+            ).toThrow('spec.facet.chartHeight must be a positive number');
+        });
+
+        test('does not throw when spec.facet.chartHeight is a positive number', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', chartHeight: 300 },
+                })
+            ).not.toThrow();
+        });
     });
 });

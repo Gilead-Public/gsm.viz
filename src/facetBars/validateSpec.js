@@ -48,6 +48,13 @@ export default function validateSpec(data, spec) {
         throw new Error('spec.facet.nCol must be a positive integer');
     }
 
+    if (
+        spec.facet.chartHeight !== undefined &&
+        (typeof spec.facet.chartHeight !== 'number' || spec.facet.chartHeight <= 0)
+    ) {
+        throw new Error('spec.facet.chartHeight must be a positive number');
+    }
+
     const xFree = spec.facet?.scales?.x?.free;
     if (xFree !== undefined && typeof xFree !== 'boolean') {
         throw new Error('spec.facet.scales.x.free must be a boolean');
