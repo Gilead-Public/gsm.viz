@@ -36,6 +36,19 @@ describe('facetBars/mergeSpec', () => {
         expect(result.facet.nCol).toBe(4);
     });
 
+    test('user facet.chartHeight is preserved in merged spec', () => {
+        const result = mergeSpec(minimalData, {
+            ...minimalSpec,
+            facet: { field: 'region', chartHeight: 300 },
+        });
+        expect(result.facet.chartHeight).toBe(300);
+    });
+
+    test('facet.chartHeight is undefined when not specified', () => {
+        const result = mergeSpec(minimalData, minimalSpec);
+        expect(result.facet.chartHeight).toBeUndefined();
+    });
+
     test('user facet.scales.y.free overrides default', () => {
         const result = mergeSpec(minimalData, {
             ...minimalSpec,

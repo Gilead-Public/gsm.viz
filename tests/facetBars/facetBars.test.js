@@ -191,4 +191,25 @@ describe('facetBars integration', () => {
             );
         });
     });
+
+    describe('chartHeight', () => {
+        test('applies chartHeight to each canvas container after bars() renders', () => {
+            facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', chartHeight: 300 },
+            });
+            const canvasContainers = container.querySelectorAll('.gsm-facet-canvas');
+            canvasContainers.forEach((el) => {
+                expect(el.style.height).toBe('300px');
+            });
+        });
+
+        test('does not set height on canvas containers when chartHeight is omitted', () => {
+            facetBars(container, data, baseSpec);
+            const canvasContainers = container.querySelectorAll('.gsm-facet-canvas');
+            canvasContainers.forEach((el) => {
+                expect(el.style.height).toBe('');
+            });
+        });
+    });
 });

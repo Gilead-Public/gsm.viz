@@ -23135,6 +23135,7 @@ var gsmViz = (() => {
         field: userFacet.field,
         order: userFacet.order,
         nCol: userFacet.nCol,
+        chartHeight: userFacet.chartHeight,
         label: {
           ...defaultFacet.label,
           ...userLabel
@@ -23378,7 +23379,12 @@ var gsmViz = (() => {
     for (const facetValue of facetValues) {
       const facetData = facetDataMap.get(facetValue);
       const subSpec = buildSubSpec(facetValue, merged, facetData);
-      const chart = bars(containers.get(facetValue), facetData, subSpec);
+      const container = containers.get(facetValue);
+      const chart = bars(container, facetData, subSpec);
+      if (merged.facet.chartHeight) {
+        container.style.height = `${merged.facet.chartHeight}px`;
+        chart.resize();
+      }
       charts.push(chart);
     }
     const horizontal = merged.orientation === "horizontal";

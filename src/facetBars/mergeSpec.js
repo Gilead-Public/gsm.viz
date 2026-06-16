@@ -28,6 +28,7 @@ export default function mergeSpec(data, spec) {
             field: userFacet.field,
             order: userFacet.order,
             nCol: userFacet.nCol,
+            chartHeight: userFacet.chartHeight,
             label: {
                 ...defaultFacet.label,
                 ...userLabel,
