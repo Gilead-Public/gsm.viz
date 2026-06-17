@@ -159,6 +159,63 @@ describe('facetBars/validateSpec', () => {
             ).not.toThrow();
         });
 
+        test('throws when spec.facet.legend.display is not a boolean', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', legend: { display: 'yes' } },
+                })
+            ).toThrow('spec.facet.legend.display must be a boolean');
+        });
+
+        test('does not throw when spec.facet.legend.display is a boolean', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', legend: { display: false } },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when spec.facet.label.position is an invalid value', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', label: { position: 'left' } },
+                })
+            ).toThrow("spec.facet.label.position must be 'top' or 'bottom'");
+        });
+
+        test('does not throw when spec.facet.label.position is top or bottom', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', label: { position: 'bottom' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when spec.facet.label.font is not a string', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: { field: 'r', label: { font: 14 } },
+                })
+            ).toThrow('spec.facet.label.font must be a string');
+        });
+
+        test('does not throw when spec.facet.label.font is a valid string', () => {
+            expect(() =>
+                validateSpec(minimalData, {
+                    mapping: { x: 'site' },
+                    facet: {
+                        field: 'r',
+                        label: { font: 'bold 13px sans-serif' },
+                    },
+                })
+            ).not.toThrow();
+        });
+
         test('throws when spec.facet.chartHeight is not a positive number', () => {
             expect(() =>
                 validateSpec(minimalData, {

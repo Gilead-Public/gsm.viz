@@ -71,4 +71,23 @@ export default function validateSpec(data, spec) {
             "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
         );
     }
+
+    const legendDisplay = spec.facet?.legend?.display;
+    if (legendDisplay !== undefined && typeof legendDisplay !== 'boolean') {
+        throw new Error('spec.facet.legend.display must be a boolean');
+    }
+
+    const labelPosition = spec.facet?.label?.position;
+    if (
+        labelPosition !== undefined &&
+        labelPosition !== 'top' &&
+        labelPosition !== 'bottom'
+    ) {
+        throw new Error("spec.facet.label.position must be 'top' or 'bottom'");
+    }
+
+    const labelFont = spec.facet?.label?.font;
+    if (labelFont !== undefined && typeof labelFont !== 'string') {
+        throw new Error('spec.facet.label.font must be a string');
+    }
 }

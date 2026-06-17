@@ -246,6 +246,43 @@ describe('facetBars/syncCharts', () => {
         expect(charts[1].setActiveElements).not.toHaveBeenCalled();
     });
 
+    test('highlights sibling when hovered category matches only by string coercion (numeric label vs string point.x)', () => {
+        // Sibling labels are numeric (1, 2) but hovered category is a string ('1') from point.x.
+        // The check must coerce both sides to string before comparing.
+        const charts = [
+            makeChart(
+                ['1', '2'],
+                [
+                    [
+                        { x: '1', y: 10 },
+                        { x: '2', y: 20 },
+                    ],
+                ]
+            ),
+            makeChart(
+                [1, 2], // numeric labels
+                [
+                    [
+                        { x: 1, y: 5 },
+                        { x: 2, y: 15 },
+                    ],
+                ]
+            ),
+        ];
+        syncCharts(charts);
+
+        // Hover '1' (string) in chart[0]; sibling has numeric label 1
+        charts[0].options.onHover(
+            { native: null },
+            [{ datasetIndex: 0, index: 0 }],
+            charts[0]
+        );
+
+        expect(charts[1].setActiveElements).toHaveBeenCalled();
+        const callArg = charts[1].setActiveElements.mock.calls[0][0];
+        expect(callArg[0].index).toBe(0);
+    });
+
     test('handles multiple datasets in sibling charts', () => {
         const charts = [
             makeChart(

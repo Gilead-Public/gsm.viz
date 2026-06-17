@@ -1,5 +1,5 @@
 import facetDefaults from './defaults.js';
-import barsmergeSpec from '../bars/mergeSpec.js';
+import barsMergeSpec from '../bars/mergeSpec.js';
 
 /**
  * Deep-merge user spec with facetBars defaults.
@@ -13,7 +13,7 @@ import barsmergeSpec from '../bars/mergeSpec.js';
  */
 export default function mergeSpec(data, spec) {
     // Delegate all bars-level keys to the existing bars merge.
-    const barsMerged = barsmergeSpec(data, spec);
+    const barsMerged = barsMergeSpec(data, spec);
 
     const userFacet = spec.facet ?? {};
     const defaultFacet = facetDefaults.facet;
