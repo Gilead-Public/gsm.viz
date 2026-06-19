@@ -84,6 +84,7 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     // visibility in a single update pass.
     const horizontal = merged.orientation === 'horizontal';
     const valueAxisKey = horizontal ? 'x' : 'y';
+    const categoryAxisKey = horizontal ? 'y' : 'x';
     const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
@@ -93,9 +94,19 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     charts.forEach((chart, i) => {
         let needsUpdate = false;
 
-        // Inject global category domain (only when axis is constant)
+        // Inject global category domain (only when axis is constant).
+        //
+        // Setting data.labels alone is insufficient: Chart.js CategoryScale
+        // computes its visible range (min/max) from the parsed data indices,
+        // which are bounded to the range actually present in each facet's
+        // datasets. This would silently trim the axis to the per-facet data
+        // range, making constant and free look identical. Explicitly pinning
+        // min=0 and max=N-1 forces the full global domain to render on every
+        // facet chart, producing visible empty positions for absent categories.
         if (!xFree && globalCategories) {
             chart.data.labels = globalCategories;
+            chart.options.scales[categoryAxisKey].min = 0;
+            chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
             needsUpdate = true;
         }
 

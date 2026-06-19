@@ -90,6 +90,29 @@ describe('facetBars integration', () => {
             });
         });
 
+        test('category axis min/max are pinned to the full global domain', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+            // Global union = ['A','B','C'] — 3 entries, indices 0–2
+            // Without pinning, Chart.js trims the visible axis to each facet's
+            // data range, making "constant" and "free" look identical.
+            charts.forEach((c) => {
+                expect(c.options.scales.x.min).toBe(0);
+                expect(c.options.scales.x.max).toBe(2);
+            });
+        });
+
+        test('horizontal orientation pins category axis (y) min/max', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                orientation: 'horizontal',
+            });
+            // Horizontal bars: category axis is y (not x)
+            charts.forEach((c) => {
+                expect(c.options.scales.y.min).toBe(0);
+                expect(c.options.scales.y.max).toBe(2);
+            });
+        });
+
         test('a facet missing a category still includes it in its labels', () => {
             const { charts } = facetBars(container, data, baseSpec);
             // APAC only has 'B' in data, but global set is A, B, C
@@ -106,6 +129,54 @@ describe('facetBars integration', () => {
             });
             charts.forEach((c) => {
                 expect(c.data.labels).toEqual(['C', 'B', 'A']);
+            });
+        });
+
+        test('function order: global union is injected when x.free is false', () => {
+            // US has A,B; EU has A,C; APAC has B — per-facet function sorts descending by value
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                scales: {
+                    x: {
+                        order: (_facetValue, facetData) =>
+                            [...new Set(facetData.map((d) => d.site))].sort(
+                                (a, b) => b.localeCompare(a) // Z→A
+                            ),
+                    },
+                },
+            });
+            // Each per-facet result: US→[B,A], EU→[C,A], APAC→[B]
+            // Global union in first-seen order: B, A, C
+            charts.forEach((c) => {
+                expect(c.data.labels).toEqual(['B', 'A', 'C']);
+            });
+        });
+
+        test('function order: facets with disjoint categories all get the full global label set', () => {
+            // Simulate filtered data: US has only A, EU has only C (disjoint after filtering)
+            const filteredData = [
+                { region: 'US', site: 'A', value: 10, group: 'X' },
+                { region: 'EU', site: 'C', value: 15, group: 'X' },
+            ];
+            const { charts } = facetBars(container, filteredData, {
+                mapping: { x: 'site', y: 'value' },
+                facet: { field: 'region' },
+                scales: {
+                    x: {
+                        order: (_facetValue, facetData) =>
+                            facetData.map((d) => d.site),
+                    },
+                },
+            });
+            // globalCategories = union(['A'], ['C']) = ['A', 'C']
+            // Both charts must have labels = ['A', 'C'] and axis pinned to 0–1
+            // so that the empty position is visible (not trimmed by Chart.js)
+            charts.forEach((c) => {
+                expect(c.data.labels).toContain('A');
+                expect(c.data.labels).toContain('C');
+                expect(c.data.labels).toHaveLength(2);
+                expect(c.options.scales.x.min).toBe(0);
+                expect(c.options.scales.x.max).toBe(1);
             });
         });
     });
@@ -129,6 +200,18 @@ describe('facetBars integration', () => {
             });
             const labelSets = charts.map((c) => c.data.labels.join(','));
             expect(new Set(labelSets).size).toBeGreaterThan(1);
+        });
+
+        test('x.free:true does not pin category axis min/max', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', scales: { x: { free: true } } },
+            });
+            // With free domain, no explicit min/max should be set on the axis
+            charts.forEach((c) => {
+                expect(c.options.scales.x.min).toBeUndefined();
+                expect(c.options.scales.x.max).toBeUndefined();
+            });
         });
     });
 
