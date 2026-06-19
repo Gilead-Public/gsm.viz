@@ -95,14 +95,15 @@
 
     <body>
         <nav class="tab-nav">
-            <button class="active" data-tab="retention">Retention</button>
+            <button data-tab="retention">Retention</button>
             <button data-tab="kri">KRI by Flag</button>
             <button data-tab="gini">World Gini Index</button>
             <button data-tab="kri-site">KRI by Site</button>
+            <button class="active" data-tab="kri-facet">KRI Facet</button>
         </nav>
 
         <!-- Retention tab -->
-        <div id="retention" class="tab-panel active gsm-viz--example">
+        <div id="retention" class="tab-panel gsm-viz--example">
             <div id="retention-controls">
                 <fieldset>
                     <legend>Orientation</legend>
@@ -394,6 +395,83 @@
             <div id="kri-site-container"></div>
         </div>
 
+        <!-- KRI Facet tab -->
+        <div id="kri-facet" class="tab-panel active gsm-viz--example">
+            <div id="kri-facet-controls">
+                <fieldset>
+                    <legend>Site</legend>
+                    <select id="kri-facet-site">
+                        <option value="">All Sites</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Y-axis</legend>
+                    <select id="kri-facet-y-axis">
+                        <option value="Score" selected>Score</option>
+                        <option value="Numerator">Numerator</option>
+                        <option value="Metric">Metric</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Y-axis Scale</legend>
+                    <select id="kri-facet-y-scale">
+                        <option value="constant" selected>Constant</option>
+                        <option value="free">Free</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>X-axis Scale</legend>
+                    <select id="kri-facet-x-scale">
+                        <option value="constant" selected>Constant</option>
+                        <option value="free">Free</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Threshold</legend>
+                    <input
+                        type="checkbox"
+                        id="kri-facet-threshold"
+                        name="Threshold"
+                        checked
+                    />
+                </fieldset>
+
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="kri-facet-orientation">
+                        <option value="vertical" selected>Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Flag Filter</legend>
+                    <select id="kri-facet-flag-filter" multiple size="5">
+                        <option value="-2" selected>-2</option>
+                        <option value="-1" selected>-1</option>
+                        <option value="0" selected>0</option>
+                        <option value="1" selected>1</option>
+                        <option value="2" selected>2</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div
+                id="kri-facet-status"
+                style="
+                    font-size: 13px;
+                    color: #555;
+                    min-height: 20px;
+                    padding: 4px 0 4px 2px;
+                "
+            ></div>
+            <div id="kri-facet-container"></div>
+        </div>
+
         <script>
             // Tab switching
             const tabButtons = document.querySelectorAll('.tab-nav button');
@@ -415,6 +493,7 @@
         <script src="kriChart.js"></script>
         <script src="giniChart.js"></script>
         <script src="kriSiteChart.js"></script>
+        <script src="kriFacetChart.js"></script>
         <script src="../nav.js"></script>
     </body>
 </html>
