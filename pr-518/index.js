@@ -23456,6 +23456,7 @@ var gsmViz = (() => {
     }
     const horizontal = merged.orientation === "horizontal";
     const valueAxisKey = horizontal ? "x" : "y";
+    const categoryAxisKey = horizontal ? "y" : "x";
     const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
@@ -23465,6 +23466,8 @@ var gsmViz = (() => {
       let needsUpdate = false;
       if (!xFree && globalCategories) {
         chart.data.labels = globalCategories;
+        chart.options.scales[categoryAxisKey].min = 0;
+        chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
         needsUpdate = true;
       }
       if (!yFree && globalScales.yMax !== void 0) {
