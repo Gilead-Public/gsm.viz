@@ -423,6 +423,14 @@
                 </fieldset>
 
                 <fieldset>
+                    <legend>X-axis Scale</legend>
+                    <select id="kri-facet-x-scale">
+                        <option value="constant" selected>Constant</option>
+                        <option value="free">Free</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
                     <legend>Threshold</legend>
                     <input
                         type="checkbox"
@@ -437,6 +445,17 @@
                     <select id="kri-facet-orientation">
                         <option value="vertical" selected>Vertical</option>
                         <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Flag Filter</legend>
+                    <select id="kri-facet-flag-filter" multiple size="5">
+                        <option value="-2" selected>-2</option>
+                        <option value="-1" selected>-1</option>
+                        <option value="0" selected>0</option>
+                        <option value="1" selected>1</option>
+                        <option value="2" selected>2</option>
                     </select>
                 </fieldset>
             </div>

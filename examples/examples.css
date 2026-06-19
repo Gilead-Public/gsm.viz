@@ -7,6 +7,9 @@
     display: flex;
     justify-content: center;
 }
+.gsm-viz--example #kri-facet-flag-filter {
+    min-width: 60px;
+}
 .gsm-viz--example #kri-facet-controls {
     flex-wrap: wrap;
     gap: 8px;
