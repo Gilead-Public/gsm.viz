@@ -91,4 +91,13 @@ export default function validateSpec(data, spec) {
     if (labelFont !== undefined && typeof labelFont !== 'string') {
         throw new Error('spec.facet.label.font must be a string');
     }
+
+    const xOrder = spec.scales?.x?.order;
+    if (
+        xOrder !== undefined &&
+        !Array.isArray(xOrder) &&
+        typeof xOrder !== 'function'
+    ) {
+        throw new Error('spec.scales.x.order must be an array or a function');
+    }
 }
