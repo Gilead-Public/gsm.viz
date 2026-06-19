@@ -23245,6 +23245,57 @@ var gsmViz = (() => {
     return { yMin: globalMin, yMax: globalMax };
   }
 
+  // src/facetBars/computeGlobalCategories.js
+  function computeGlobalCategories(facetDataMap, spec) {
+    const xFree = spec.facet?.scales?.x?.free ?? false;
+    if (xFree) return null;
+    const xOrder = spec.scales?.x?.order;
+    const xKey = spec.mapping.x;
+    if (Array.isArray(xOrder)) {
+      return xOrder;
+    }
+    if (typeof xOrder === "function") {
+      const seen2 = /* @__PURE__ */ new Set();
+      const ordered = [];
+      for (const [facetValue, facetData] of facetDataMap) {
+        const perFacet = xOrder(facetValue, facetData);
+        for (const cat of perFacet) {
+          const key = String(cat);
+          if (!seen2.has(key)) {
+            seen2.add(key);
+            ordered.push(cat);
+          }
+        }
+      }
+      const allDataCats = [];
+      for (const facetData of facetDataMap.values()) {
+        for (const row of facetData) {
+          const cat = row[xKey];
+          const key = String(cat);
+          if (!seen2.has(key)) {
+            seen2.add(key);
+            allDataCats.push(cat);
+          }
+        }
+      }
+      allDataCats.sort(
+        (a, b) => String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        })
+      );
+      return [...ordered, ...allDataCats];
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (const facetData of facetDataMap.values()) {
+      for (const row of facetData) {
+        seen.add(row[xKey]);
+      }
+    }
+    return [...seen].sort(
+      (a, b) => String(a).localeCompare(String(b), void 0, { sensitivity: "base" })
+    );
+  }
+
   // src/facetBars/buildSubSpec.js
   function buildSubSpec(facetValue, mergedSpec, facetData = []) {
     const {
@@ -23389,6 +23440,7 @@ var gsmViz = (() => {
     );
     const facetValues = [...facetDataMap.keys()];
     const globalScales = computeGlobalScales(facetDataMap, merged);
+    const globalCategories = computeGlobalCategories(facetDataMap, merged);
     const { containers, grid } = renderGrid(el, facetValues, merged);
     const charts = [];
     for (const facetValue of facetValues) {
@@ -23404,12 +23456,17 @@ var gsmViz = (() => {
     }
     const horizontal = merged.orientation === "horizontal";
     const valueAxisKey = horizontal ? "x" : "y";
+    const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
     const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
+      if (!xFree && globalCategories) {
+        chart.data.labels = globalCategories;
+        needsUpdate = true;
+      }
       if (!yFree && globalScales.yMax !== void 0) {
         chart.options.scales[valueAxisKey].min = globalScales.yMin;
         chart.options.scales[valueAxisKey].max = globalScales.yMax;
