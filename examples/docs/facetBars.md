@@ -65,9 +65,8 @@ every sub-chart) plus a required `facet` block:
             font: undefined,    // CSS font string for facet title (e.g. 'bold 13px sans-serif')
         },
         scales: {
-            x: { free: false }, // ⚠ not yet implemented — this option is accepted but
-                                //   has no effect; per-facet category-axis scaling is
-                                //   a planned future feature
+            x: { free: false }, // false (default) = constant axis (shared category domain)
+                                // true = each facet auto-scales to its own categories
             y: { free: false }, // false (default) = constant axis (shared min/max)
                                 // true = each facet auto-scales independently
         },
@@ -95,7 +94,7 @@ every sub-chart) plus a required `facet` block:
 | `facet.chartHeight`    | `undefined` (Chart.js default aspect ratio)                |
 | `facet.label.position` | `'top'`                                                    |
 | `facet.label.font`     | `undefined`                                                |
-| `facet.scales.x.free`  | `false` (not yet implemented — accepted but has no effect) |
+| `facet.scales.x.free`  | `false` (constant, shared category domain)          |
 | `facet.scales.y.free`  | `false` (constant, shared axis)                            |
 | `facet.legend.display` | `true`                                                     |
 | `facet.legend.chart`   | `'first'`                                                  |

@@ -4,6 +4,7 @@ import validateSpec from './facetBars/validateSpec.js';
 import mergeSpec from './facetBars/mergeSpec.js';
 import splitData from './facetBars/splitData.js';
 import computeGlobalScales from './facetBars/computeGlobalScales.js';
+import computeGlobalCategories from './facetBars/computeGlobalCategories.js';
 import buildSubSpec from './facetBars/buildSubSpec.js';
 import renderGrid from './facetBars/renderGrid.js';
 import syncCharts from './facetBars/syncCharts.js';
@@ -57,6 +58,9 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     // Compute global axis bounds for constant-scale rendering
     const globalScales = computeGlobalScales(facetDataMap, merged);
 
+    // Compute global category domain for constant x-axis rendering
+    const globalCategories = computeGlobalCategories(facetDataMap, merged);
+
     // Build the CSS grid layout with one sub-container per facet
     const { containers, grid } = renderGrid(el, facetValues, merged);
 
@@ -76,18 +80,24 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
         charts.push(chart);
     }
 
-    // Apply constant scale bounds and legend visibility in a single update pass
+    // Apply constant scale bounds, constant category domain, and legend
+    // visibility in a single update pass.
     const horizontal = merged.orientation === 'horizontal';
     const valueAxisKey = horizontal ? 'x' : 'y';
+    const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
-    // NOTE: facet.scales.x.free (per-facet category domain) is not yet implemented.
-    // Per-facet category ordering is supported via a function for scales.x.order instead.
     const legendDisplay = merged.facet.legend.display;
     const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;
 
     charts.forEach((chart, i) => {
         let needsUpdate = false;
+
+        // Inject global category domain (only when axis is constant)
+        if (!xFree && globalCategories) {
+            chart.data.labels = globalCategories;
+            needsUpdate = true;
+        }
 
         // Inject global axis bounds (only when axis is constant and bounds were computed)
         if (!yFree && globalScales.yMax !== undefined) {

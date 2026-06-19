@@ -80,7 +80,59 @@ describe('facetBars integration', () => {
         expect(cells[2].textContent).toBe('US');
     });
 
-    describe('constant axes (default)', () => {
+    describe('constant x-axis domain (facet.scales.x.free: false, default)', () => {
+        test('all charts have the same data.labels (global category union)', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+            // Global union of US(A,B), EU(A,C), APAC(B) → A, B, C
+            const allLabels = charts.map((c) => c.data.labels);
+            allLabels.forEach((labels) => {
+                expect(labels).toEqual(['A', 'B', 'C']);
+            });
+        });
+
+        test('a facet missing a category still includes it in its labels', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+            // APAC only has 'B' in data, but global set is A, B, C
+            // chart order: US(0), EU(1), APAC(2)
+            const apacChart = charts[2];
+            expect(apacChart.data.labels).toContain('A');
+            expect(apacChart.data.labels).toContain('C');
+        });
+
+        test('respects explicit scales.x.order as the global domain', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                scales: { x: { order: ['C', 'B', 'A'] } },
+            });
+            charts.forEach((c) => {
+                expect(c.data.labels).toEqual(['C', 'B', 'A']);
+            });
+        });
+    });
+
+    describe('free x-axis domain (facet.scales.x.free: true)', () => {
+        test('each chart has only its own data categories', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', scales: { x: { free: true } } },
+            });
+            // US: A, B; EU: A, C; APAC: B
+            expect(charts[0].data.labels).toEqual(['A', 'B']); // US
+            expect(charts[1].data.labels).toEqual(['A', 'C']); // EU
+            expect(charts[2].data.labels).toEqual(['B']); // APAC
+        });
+
+        test('charts with x.free:true do NOT all share the same labels', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', scales: { x: { free: true } } },
+            });
+            const labelSets = charts.map((c) => c.data.labels.join(','));
+            expect(new Set(labelSets).size).toBeGreaterThan(1);
+        });
+    });
+
+    describe('constant value-axis (default)', () => {
         test('all charts share the same value axis max', () => {
             const { charts } = facetBars(container, data, baseSpec);
             const maxValues = charts.map((c) => c.options.scales.y.max);
