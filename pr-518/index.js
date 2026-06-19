@@ -23108,6 +23108,10 @@ var gsmViz = (() => {
     if (labelFont !== void 0 && typeof labelFont !== "string") {
       throw new Error("spec.facet.label.font must be a string");
     }
+    const xOrder = spec.scales?.x?.order;
+    if (xOrder !== void 0 && !Array.isArray(xOrder) && typeof xOrder !== "function") {
+      throw new Error("spec.scales.x.order must be an array or a function");
+    }
   }
 
   // src/facetBars/defaults.js
