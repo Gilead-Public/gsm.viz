@@ -143,7 +143,9 @@ describe('facetBars/renderGrid', () => {
             const { containers } = renderGrid(
                 parent,
                 ['US', 'EU'],
-                makeMergedSpec({ facet: { ...makeMergedSpec().facet, chartHeight: 300 } })
+                makeMergedSpec({
+                    facet: { ...makeMergedSpec().facet, chartHeight: 300 },
+                })
             );
             for (const container of containers.values()) {
                 expect(container.style.height).toBe('300px');

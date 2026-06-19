@@ -21871,9 +21871,7 @@ var gsmViz = (() => {
     const referenceLines2 = spec.annotations?.referenceLines;
     if (referenceLines2 !== void 0) {
       if (!Array.isArray(referenceLines2)) {
-        throw new Error(
-          "spec.annotations.referenceLines must be an array"
-        );
+        throw new Error("spec.annotations.referenceLines must be an array");
       }
       referenceLines2.forEach((line, i) => {
         const prefix = `spec.annotations.referenceLines[${i}]`;
@@ -21897,9 +21895,7 @@ var gsmViz = (() => {
           );
         }
         if (line.lineDash !== void 0) {
-          if (!Array.isArray(line.lineDash) || !line.lineDash.every(
-            (n) => Number.isFinite(n) && n >= 0
-          )) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every((n) => Number.isFinite(n) && n >= 0)) {
             throw new Error(
               `${prefix}.lineDash must be an array of non-negative numbers`
             );
@@ -23083,6 +23079,9 @@ var gsmViz = (() => {
     if (spec.facet.nCol !== void 0 && (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)) {
       throw new Error("spec.facet.nCol must be a positive integer");
     }
+    if (spec.facet.chartHeight !== void 0 && (typeof spec.facet.chartHeight !== "number" || spec.facet.chartHeight <= 0)) {
+      throw new Error("spec.facet.chartHeight must be a positive number");
+    }
     const xFree = spec.facet?.scales?.x?.free;
     if (xFree !== void 0 && typeof xFree !== "boolean") {
       throw new Error("spec.facet.scales.x.free must be a boolean");
@@ -23097,6 +23096,18 @@ var gsmViz = (() => {
         "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
       );
     }
+    const legendDisplay = spec.facet?.legend?.display;
+    if (legendDisplay !== void 0 && typeof legendDisplay !== "boolean") {
+      throw new Error("spec.facet.legend.display must be a boolean");
+    }
+    const labelPosition = spec.facet?.label?.position;
+    if (labelPosition !== void 0 && labelPosition !== "top" && labelPosition !== "bottom") {
+      throw new Error("spec.facet.label.position must be 'top' or 'bottom'");
+    }
+    const labelFont = spec.facet?.label?.font;
+    if (labelFont !== void 0 && typeof labelFont !== "string") {
+      throw new Error("spec.facet.label.font must be a string");
+    }
   }
 
   // src/facetBars/defaults.js
@@ -23105,6 +23116,7 @@ var gsmViz = (() => {
       field: void 0,
       order: void 0,
       nCol: void 0,
+      chartHeight: void 0,
       label: {
         position: "top",
         font: void 0
@@ -23135,6 +23147,7 @@ var gsmViz = (() => {
         field: userFacet.field,
         order: userFacet.order,
         nCol: userFacet.nCol,
+        chartHeight: userFacet.chartHeight,
         label: {
           ...defaultFacet.label,
           ...userLabel
@@ -23295,6 +23308,9 @@ var gsmViz = (() => {
       }
       const canvasContainer = document.createElement("div");
       canvasContainer.className = "gsm-facet-canvas";
+      if (facet.chartHeight) {
+        canvasContainer.style.height = `${facet.chartHeight}px`;
+      }
       if (labelPosition === "bottom") {
         cell.appendChild(canvasContainer);
         cell.appendChild(label);
@@ -23325,7 +23341,7 @@ var gsmViz = (() => {
           charts.forEach((sibling) => {
             if (sibling === chartInstance) return;
             const siblingLabels = sibling.data.labels;
-            if (!siblingLabels.includes(hoveredCategory)) return;
+            if (!siblingLabels.some((l) => String(l) === String(hoveredCategory))) return;
             const newActiveElements = sibling.data.datasets.map((ds, dsIndex) => {
               const pointIndex = ds.data.findIndex((p) => {
                 const cat = horizontal ? p.y : p.x;
@@ -23363,7 +23379,11 @@ var gsmViz = (() => {
       }
     }
     const merged = mergeSpec2(data, spec);
-    const facetDataMap = splitData(data, merged.facet.field, merged.facet.order);
+    const facetDataMap = splitData(
+      data,
+      merged.facet.field,
+      merged.facet.order
+    );
     const facetValues = [...facetDataMap.keys()];
     const globalScales = computeGlobalScales(facetDataMap, merged);
     const { containers, grid } = renderGrid(el, facetValues, merged);
@@ -23371,7 +23391,12 @@ var gsmViz = (() => {
     for (const facetValue of facetValues) {
       const facetData = facetDataMap.get(facetValue);
       const subSpec = buildSubSpec(facetValue, merged, facetData);
-      const chart = bars(containers.get(facetValue), facetData, subSpec);
+      const container = containers.get(facetValue);
+      const chart = bars(container, facetData, subSpec);
+      if (merged.facet.chartHeight) {
+        container.style.height = `${merged.facet.chartHeight}px`;
+        chart.resize();
+      }
       charts.push(chart);
     }
     const horizontal = merged.orientation === "horizontal";

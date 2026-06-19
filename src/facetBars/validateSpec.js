@@ -50,7 +50,8 @@ export default function validateSpec(data, spec) {
 
     if (
         spec.facet.chartHeight !== undefined &&
-        (typeof spec.facet.chartHeight !== 'number' || spec.facet.chartHeight <= 0)
+        (typeof spec.facet.chartHeight !== 'number' ||
+            spec.facet.chartHeight <= 0)
     ) {
         throw new Error('spec.facet.chartHeight must be a positive number');
     }

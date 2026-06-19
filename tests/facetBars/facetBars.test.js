@@ -198,7 +198,8 @@ describe('facetBars integration', () => {
                 ...baseSpec,
                 facet: { field: 'region', chartHeight: 300 },
             });
-            const canvasContainers = container.querySelectorAll('.gsm-facet-canvas');
+            const canvasContainers =
+                container.querySelectorAll('.gsm-facet-canvas');
             canvasContainers.forEach((el) => {
                 expect(el.style.height).toBe('300px');
             });
@@ -206,7 +207,8 @@ describe('facetBars integration', () => {
 
         test('does not set height on canvas containers when chartHeight is omitted', () => {
             facetBars(container, data, baseSpec);
-            const canvasContainers = container.querySelectorAll('.gsm-facet-canvas');
+            const canvasContainers =
+                container.querySelectorAll('.gsm-facet-canvas');
             canvasContainers.forEach((el) => {
                 expect(el.style.height).toBe('');
             });

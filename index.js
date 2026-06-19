@@ -23096,6 +23096,18 @@ var gsmViz = (() => {
         "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
       );
     }
+    const legendDisplay = spec.facet?.legend?.display;
+    if (legendDisplay !== void 0 && typeof legendDisplay !== "boolean") {
+      throw new Error("spec.facet.legend.display must be a boolean");
+    }
+    const labelPosition = spec.facet?.label?.position;
+    if (labelPosition !== void 0 && labelPosition !== "top" && labelPosition !== "bottom") {
+      throw new Error("spec.facet.label.position must be 'top' or 'bottom'");
+    }
+    const labelFont = spec.facet?.label?.font;
+    if (labelFont !== void 0 && typeof labelFont !== "string") {
+      throw new Error("spec.facet.label.font must be a string");
+    }
   }
 
   // src/facetBars/defaults.js
@@ -23329,7 +23341,7 @@ var gsmViz = (() => {
           charts.forEach((sibling) => {
             if (sibling === chartInstance) return;
             const siblingLabels = sibling.data.labels;
-            if (!siblingLabels.includes(hoveredCategory)) return;
+            if (!siblingLabels.some((l) => String(l) === String(hoveredCategory))) return;
             const newActiveElements = sibling.data.datasets.map((ds, dsIndex) => {
               const pointIndex = ds.data.findIndex((p) => {
                 const cat = horizontal ? p.y : p.x;

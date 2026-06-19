@@ -33,7 +33,12 @@ export default function syncCharts(charts) {
                     if (sibling === chartInstance) return;
 
                     const siblingLabels = sibling.data.labels;
-                    if (!siblingLabels.some((l) => String(l) === String(hoveredCategory))) return;
+                    if (
+                        !siblingLabels.some(
+                            (l) => String(l) === String(hoveredCategory)
+                        )
+                    )
+                        return;
 
                     // For each dataset, find the actual data-array index for the
                     // hovered category (a dataset may omit categories it has no data
