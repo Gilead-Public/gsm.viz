@@ -106,7 +106,8 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
         if (!xFree && globalCategories && globalCategories.length > 0) {
             chart.data.labels = globalCategories;
             chart.options.scales[categoryAxisKey].min = 0;
-            chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
+            chart.options.scales[categoryAxisKey].max =
+                globalCategories.length - 1;
             needsUpdate = true;
         }
 

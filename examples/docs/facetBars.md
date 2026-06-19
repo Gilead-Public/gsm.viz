@@ -88,16 +88,16 @@ every sub-chart) plus a required `facet` block:
 
 ### Facet defaults
 
-| Key                    | Default                                                    |
-| ---------------------- | ---------------------------------------------------------- |
-| `facet.nCol`           | `undefined` (auto: `min(facetCount, 3)`)                   |
-| `facet.chartHeight`    | `undefined` (Chart.js default aspect ratio)                |
-| `facet.label.position` | `'top'`                                                    |
-| `facet.label.font`     | `undefined`                                                |
-| `facet.scales.x.free`  | `false` (constant, shared category domain)          |
-| `facet.scales.y.free`  | `false` (constant, shared axis)                            |
-| `facet.legend.display` | `true`                                                     |
-| `facet.legend.chart`   | `'first'`                                                  |
+| Key                    | Default                                     |
+| ---------------------- | ------------------------------------------- |
+| `facet.nCol`           | `undefined` (auto: `min(facetCount, 3)`)    |
+| `facet.chartHeight`    | `undefined` (Chart.js default aspect ratio) |
+| `facet.label.position` | `'top'`                                     |
+| `facet.label.font`     | `undefined`                                 |
+| `facet.scales.x.free`  | `false` (constant, shared category domain)  |
+| `facet.scales.y.free`  | `false` (constant, shared axis)             |
+| `facet.legend.display` | `true`                                      |
+| `facet.legend.chart`   | `'first'`                                   |
 
 ---
 

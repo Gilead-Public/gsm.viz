@@ -421,7 +421,12 @@ Promise.all(kriFacetDataPromises)
         });
 
         onAnyChange(
-            ['kri-facet-y-axis', 'kri-facet-orientation', 'kri-facet-y-scale', 'kri-facet-x-scale'],
+            [
+                'kri-facet-y-axis',
+                'kri-facet-orientation',
+                'kri-facet-y-scale',
+                'kri-facet-x-scale',
+            ],
             render
         );
 

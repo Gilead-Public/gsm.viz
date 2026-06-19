@@ -23108,6 +23108,10 @@ var gsmViz = (() => {
     if (labelFont !== void 0 && typeof labelFont !== "string") {
       throw new Error("spec.facet.label.font must be a string");
     }
+    const xOrder = spec.scales?.x?.order;
+    if (xOrder !== void 0 && !Array.isArray(xOrder) && typeof xOrder !== "function") {
+      throw new Error("spec.scales.x.order must be an array or a function");
+    }
   }
 
   // src/facetBars/defaults.js
@@ -23259,6 +23263,11 @@ var gsmViz = (() => {
       const ordered = [];
       for (const [facetValue, facetData] of facetDataMap) {
         const perFacet = xOrder(facetValue, facetData);
+        if (!Array.isArray(perFacet)) {
+          throw new Error(
+            "spec.scales.x.order (function) must return an array of categories"
+          );
+        }
         for (const cat of perFacet) {
           const key = String(cat);
           if (!seen2.has(key)) {
@@ -23464,7 +23473,7 @@ var gsmViz = (() => {
     const hasFill = !!merged.mapping.fill;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
-      if (!xFree && globalCategories) {
+      if (!xFree && globalCategories && globalCategories.length > 0) {
         chart.data.labels = globalCategories;
         chart.options.scales[categoryAxisKey].min = 0;
         chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;

@@ -149,14 +149,8 @@ describe('facetBars/computeGlobalCategories', () => {
             const spec = baseSpec({ scales: { x: { order: orderFn } } });
             computeGlobalCategories(facetDataMap, spec);
             expect(orderFn).toHaveBeenCalledTimes(2);
-            expect(orderFn).toHaveBeenCalledWith(
-                'US',
-                facetDataMap.get('US')
-            );
-            expect(orderFn).toHaveBeenCalledWith(
-                'EU',
-                facetDataMap.get('EU')
-            );
+            expect(orderFn).toHaveBeenCalledWith('US', facetDataMap.get('US'));
+            expect(orderFn).toHaveBeenCalledWith('EU', facetDataMap.get('EU'));
         });
 
         test('unions per-facet results preserving first-seen order', () => {
