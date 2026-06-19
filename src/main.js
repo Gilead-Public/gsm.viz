@@ -11,6 +11,7 @@ import {
 // modules
 import barChart from './barChart.js';
 import bars from './bars.js';
+import facetBars from './facetBars.js';
 import groupOverview from './groupOverview.js';
 import scatterPlot from './scatterPlot.js';
 import sparkline from './sparkline.js';
@@ -30,6 +31,7 @@ Chart.register(
 const gsmViz = {
     barChart,
     bars,
+    facetBars,
     groupOverview,
     scatterPlot,
     sparkline,

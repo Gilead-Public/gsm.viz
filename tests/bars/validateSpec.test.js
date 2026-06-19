@@ -684,7 +684,9 @@ describe('bars/validateSpec', () => {
             expect(() =>
                 validateSpec(data, {
                     ...spec,
-                    annotations: { referenceLines: [{ value: 1, label: null }] },
+                    annotations: {
+                        referenceLines: [{ value: 1, label: null }],
+                    },
                 })
             ).not.toThrow();
         });

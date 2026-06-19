@@ -158,9 +158,7 @@ export default function validateSpec(data, spec) {
     const referenceLines = spec.annotations?.referenceLines;
     if (referenceLines !== undefined) {
         if (!Array.isArray(referenceLines)) {
-            throw new Error(
-                'spec.annotations.referenceLines must be an array'
-            );
+            throw new Error('spec.annotations.referenceLines must be an array');
         }
 
         referenceLines.forEach((line, i) => {
@@ -182,7 +180,11 @@ export default function validateSpec(data, spec) {
                 );
             }
 
-            if (line.label !== undefined && line.label !== null && typeof line.label !== 'string') {
+            if (
+                line.label !== undefined &&
+                line.label !== null &&
+                typeof line.label !== 'string'
+            ) {
                 throw new Error(`${prefix}.label must be a string`);
             }
 
@@ -202,9 +204,7 @@ export default function validateSpec(data, spec) {
             if (line.lineDash !== undefined) {
                 if (
                     !Array.isArray(line.lineDash) ||
-                    !line.lineDash.every(
-                        (n) => Number.isFinite(n) && n >= 0
-                    )
+                    !line.lineDash.every((n) => Number.isFinite(n) && n >= 0)
                 ) {
                     throw new Error(
                         `${prefix}.lineDash must be an array of non-negative numbers`

@@ -106,31 +106,31 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 ### Defaults
 
-| Key                                    | Default                        |
-| -------------------------------------- | ------------------------------ |
-| `orientation`                          | `'vertical'`                   |
-| `position`                             | `'stack'`                      |
-| `nCategories`                          | `undefined` (all categories)   |
-| `scales.x.type`                        | `'category'`                   |
+| Key                                    | Default                                                       |
+| -------------------------------------- | ------------------------------------------------------------- |
+| `orientation`                          | `'vertical'`                                                  |
+| `position`                             | `'stack'`                                                     |
+| `nCategories`                          | `undefined` (all categories)                                  |
+| `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
-| `scales.y.type`                        | `'linear'`                     |
-| `scales.fill.palette`                  | Tableau-10 categorical palette |
-| `annotations.labels.*.display`         | `false`                        |
-| `annotations.labels.segment.value`     | `'auto'`                       |
-| `annotations.labels.segment.placement` | `'center'`                     |
-| `annotations.labels.segment.minSize`   | `16`                           |
-| `annotations.labels.total.placement`   | `'outside'`                    |
-| `annotations.referenceLines`           | `[]` (no reference lines)      |
-| `theme.maintainAspectRatio`            | `false`                        |
-| `theme.animation`                      | `false`                        |
-| `theme.dynamicSizing`                  | `false`                        |
-| `theme.dynamicCategoryAxis`            | `false`                        |
-| `tooltip.format`                       | `undefined`                    |
-| `tooltip.formatter`                    | `undefined`                    |
-| `callbacks.onClick`                    | `null`                         |
-| `callbacks.onHover`                    | `null`                         |
-| `labels.captions`                      | `undefined`                    |
-| `labels.captionsOptions`               | `undefined`                    |
+| `scales.y.type`                        | `'linear'`                                                    |
+| `scales.fill.palette`                  | Tableau-10 categorical palette                                |
+| `annotations.labels.*.display`         | `false`                                                       |
+| `annotations.labels.segment.value`     | `'auto'`                                                      |
+| `annotations.labels.segment.placement` | `'center'`                                                    |
+| `annotations.labels.segment.minSize`   | `16`                                                          |
+| `annotations.labels.total.placement`   | `'outside'`                                                   |
+| `annotations.referenceLines`           | `[]` (no reference lines)                                     |
+| `theme.maintainAspectRatio`            | `false`                                                       |
+| `theme.animation`                      | `false`                                                       |
+| `theme.dynamicSizing`                  | `false`                                                       |
+| `theme.dynamicCategoryAxis`            | `false`                                                       |
+| `tooltip.format`                       | `undefined`                                                   |
+| `tooltip.formatter`                    | `undefined`                                                   |
+| `callbacks.onClick`                    | `null`                                                        |
+| `callbacks.onHover`                    | `null`                                                        |
+| `labels.captions`                      | `undefined`                                                   |
+| `labels.captionsOptions`               | `undefined`                                                   |
 
 ### Mapping modes
 
@@ -194,33 +194,33 @@ Use `placement: 'inside'` when `total` labels would overlap the legend (e.g., `p
 
 `formatter` accepts a **function** or a **template string**:
 
-- **Function:** `formatter(value, context, details)` — full control over the label.
-- **Template string:** a string with `{token}` placeholders that are interpolated automatically.
+-   **Function:** `formatter(value, context, details)` — full control over the label.
+-   **Template string:** a string with `{token}` placeholders that are interpolated automatically.
 
 #### Formatter details object
 
 When using a `formatter` function, `details` exposes:
 
-| Field      | Type                          | Description                                                                                            |
-| ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `fill`     | `any \| undefined`            | Value from `mapping.fill` for this bar segment (`undefined` when `fill` is not set or point has none)  |
-| `value`    | `number`                      | Raw/count value of the segment; for `total` mode, the visible stack total                              |
-| `percent`  | `number`                      | `value` as a percentage of the full category total across all datasets (0–100)                         |
-| `category` | `any`                         | The axis category value for this bar (type matches your source data field)                             |
-| `datum`    | `Object \| Object[] \| undefined` | The source data row(s); single object in y-mapping mode, array in count mode, `undefined` if absent |
-| `mode`     | `'segment' \| 'total'`        | Whether this is a segment or total label                                                               |
-| `valueType`| `'raw' \| 'percent' \| 'value'` | The resolved value type (controlled by `segment.value`)                                              |
-| `total`    | `number`                      | Full raw total for the category across all datasets (including hidden ones)                            |
-| `point`    | `Object`                      | The raw Chart.js data point object                                                                     |
+| Field       | Type                              | Description                                                                                           |
+| ----------- | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `fill`      | `any \| undefined`                | Value from `mapping.fill` for this bar segment (`undefined` when `fill` is not set or point has none) |
+| `value`     | `number`                          | Raw/count value of the segment; for `total` mode, the visible stack total                             |
+| `percent`   | `number`                          | `value` as a percentage of the full category total across all datasets (0–100)                        |
+| `category`  | `any`                             | The axis category value for this bar (type matches your source data field)                            |
+| `datum`     | `Object \| Object[] \| undefined` | The source data row(s); single object in y-mapping mode, array in count mode, `undefined` if absent   |
+| `mode`      | `'segment' \| 'total'`            | Whether this is a segment or total label                                                              |
+| `valueType` | `'raw' \| 'percent' \| 'value'`   | The resolved value type (controlled by `segment.value`)                                               |
+| `total`     | `number`                          | Full raw total for the category across all datasets (including hidden ones)                           |
+| `point`     | `Object`                          | The raw Chart.js data point object                                                                    |
 
 #### Template string tokens
 
-| Token        | Resolves to                                                |
-| ------------ | ---------------------------------------------------------- |
-| `{fill}`     | `fill` value (empty string when not set)                   |
-| `{value}`    | Raw/count value, formatted with d3 `~g`                    |
-| `{percent}`  | Percentage of the category total, formatted to 1 decimal   |
-| `{category}` | Axis category label                                        |
+| Token        | Resolves to                                              |
+| ------------ | -------------------------------------------------------- |
+| `{fill}`     | `fill` value (empty string when not set)                 |
+| `{value}`    | Raw/count value, formatted with d3 `~g`                  |
+| `{percent}`  | Percentage of the category total, formatted to 1 decimal |
+| `{category}` | Axis category label                                      |
 
 Unknown `{tokens}` are left unchanged in the output string.
 
@@ -279,7 +279,9 @@ gsmViz.default.bars(element, data, {
             segment: {
                 display: true,
                 formatter: (value, context, details) => {
-                    return `${details.fill}\n${details.value} (${details.percent.toFixed(1)}%)`;
+                    return `${details.fill}\n${
+                        details.value
+                    } (${details.percent.toFixed(1)}%)`;
                 },
             },
         },
@@ -323,23 +325,21 @@ gsmViz.default.bars(element, data, {
 
 Each entry in the array is a plain object:
 
-| Property        | Type                              | Default      | Description                                                       |
-| --------------- | --------------------------------- | ------------ | ----------------------------------------------------------------- |
-| `value`         | `number` (required)               | —            | Position of the line on the value axis                            |
-| `label`         | `string \| null`                  | `undefined`  | Text label displayed along the line; omit or pass `null` for none |
-| `color`         | `string`                          | `'#666666'`  | CSS colour string for both the line and its label                 |
-| `lineWidth`     | `number` (positive)               | `1`          | Width of the line in pixels                                       |
-| `lineDash`      | `number[]`                        | `[]` (solid) | Dash pattern passed to `CanvasRenderingContext2D.setLineDash`     |
-| `labelPosition` | `'start' \| 'center' \| 'end'`   | `'end'`      | Position of the label along the line                              |
+| Property        | Type                           | Default      | Description                                                       |
+| --------------- | ------------------------------ | ------------ | ----------------------------------------------------------------- |
+| `value`         | `number` (required)            | —            | Position of the line on the value axis                            |
+| `label`         | `string \| null`               | `undefined`  | Text label displayed along the line; omit or pass `null` for none |
+| `color`         | `string`                       | `'#666666'`  | CSS colour string for both the line and its label                 |
+| `lineWidth`     | `number` (positive)            | `1`          | Width of the line in pixels                                       |
+| `lineDash`      | `number[]`                     | `[]` (solid) | Dash pattern passed to `CanvasRenderingContext2D.setLineDash`     |
+| `labelPosition` | `'start' \| 'center' \| 'end'` | `'end'`      | Position of the label along the line                              |
 
 ```js
 // Single reference line (no label)
 gsmViz.default.bars(element, data, {
     mapping: { x: 'site', y: 'score' },
     annotations: {
-        referenceLines: [
-            { value: 0, color: '#333333' },
-        ],
+        referenceLines: [{ value: 0, color: '#333333' }],
     },
 });
 
@@ -363,10 +363,22 @@ gsmViz.default.bars(element, data, {
     mapping: { x: 'site', y: 'score' },
     annotations: {
         referenceLines: [
-            { value:  0.05, label: 'Amber ↑', color: '#e5a919', lineDash: [2] },
-            { value: -0.05, label: '↓ Amber', color: '#e5a919', lineDash: [2], labelPosition: 'start' },
-            { value:  0.10, label: 'Red ↑',   color: '#e15759', lineDash: [2] },
-            { value: -0.10, label: '↓ Red',   color: '#e15759', lineDash: [2], labelPosition: 'start' },
+            { value: 0.05, label: 'Amber ↑', color: '#e5a919', lineDash: [2] },
+            {
+                value: -0.05,
+                label: '↓ Amber',
+                color: '#e5a919',
+                lineDash: [2],
+                labelPosition: 'start',
+            },
+            { value: 0.1, label: 'Red ↑', color: '#e15759', lineDash: [2] },
+            {
+                value: -0.1,
+                label: '↓ Red',
+                color: '#e15759',
+                lineDash: [2],
+                labelPosition: 'start',
+            },
         ],
     },
 });
@@ -376,7 +388,12 @@ gsmViz.default.bars(element, data, {
     mapping: { x: 'site', y: 'score' },
     annotations: {
         referenceLines: [
-            { value: 0.05, label: 'Threshold', color: '#e15759', lineDash: [4, 4] },
+            {
+                value: 0.05,
+                label: 'Threshold',
+                color: '#e15759',
+                lineDash: [4, 4],
+            },
         ],
         labels: {
             segment: { display: true },
@@ -590,7 +607,7 @@ gsmViz.default.bars(element, data, {
     scales: {
         x: {
             label: 'Site',
-            sort: 'total',   // 'total' (default) | 'alphanumeric'
+            sort: 'total', // 'total' (default) | 'alphanumeric'
         },
     },
 });
@@ -598,10 +615,10 @@ gsmViz.default.bars(element, data, {
 
 ### Selection modes (`scales.x.sort`)
 
-| Value | Behaviour |
-| ----- | --------- |
+| Value               | Behaviour                                                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'total'` (default) | Keeps the top N categories by descending aggregate value (sum of `y`, or row count in count mode). Ties broken alphanumerically. Displayed in descending-total order. |
-| `'alphanumeric'` | Keeps the first N categories in alphanumeric order. No reordering. |
+| `'alphanumeric'`    | Keeps the first N categories in alphanumeric order. No reordering.                                                                                                    |
 
 When `nCategories` is omitted or `undefined`, all categories are shown and
 `sort` has no effect.

@@ -2,9 +2,18 @@
 .gsm-viz--example #bites-controls,
 .gsm-viz--example #retention-controls,
 .gsm-viz--example #gini-controls,
-.gsm-viz--example #kri-site-controls {
+.gsm-viz--example #kri-site-controls,
+.gsm-viz--example #kri-facet-controls {
     display: flex;
     justify-content: center;
+}
+.gsm-viz--example #kri-facet-flag-filter {
+    min-width: 60px;
+}
+.gsm-viz--example #kri-facet-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
 }
 .gsm-viz--example fieldset {
     display: flex;
