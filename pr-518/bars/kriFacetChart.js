@@ -252,6 +252,18 @@ Promise.all(kriFacetDataPromises)
             return el ? el.value : 'constant';
         }
 
+        function getXScale() {
+            const el = document.getElementById('kri-facet-x-scale');
+            return el ? el.value : 'constant';
+        }
+
+        function getFlagFilter() {
+            const el = document.getElementById('kri-facet-flag-filter');
+            return el
+                ? Array.from(el.selectedOptions).map((o) => o.value)
+                : KRI_FACET_FLAG_ORDER;
+        }
+
         /* Called after every render when the threshold checkbox is checked.
          *
          * @param {string[]} facetValues - MetricIDs in the same order as currentResult.charts
@@ -293,9 +305,17 @@ Promise.all(kriFacetDataPromises)
             const yAxis = getYAxis();
             const orientation = getOrientation();
             const yFree = getYScale() === 'free';
+            const xFree = getXScale() === 'free';
+
+            // Subset data to rows whose Flag is in the current selection.
+            const flagFilter = getFlagFilter();
+            const filteredResults =
+                flagFilter.length > 0
+                    ? kriResults.filter((d) => flagFilter.includes(d.Flag))
+                    : kriResults;
 
             // Sort data so facets appear in metric ID order.
-            const sortedResults = [...kriResults].sort((a, b) => {
+            const sortedResults = [...filteredResults].sort((a, b) => {
                 const ai = allMetrics.indexOf(a.MetricID);
                 const bi = allMetrics.indexOf(b.MetricID);
                 if (ai !== bi) return ai - bi;
@@ -331,7 +351,7 @@ Promise.all(kriFacetDataPromises)
                     nCol: 2,
                     chartHeight: 250,
                     label: { position: 'top' },
-                    scales: { y: { free: yFree } },
+                    scales: { y: { free: yFree }, x: { free: xFree } },
                     legend: { display: false },
                 },
                 theme: {
@@ -401,11 +421,20 @@ Promise.all(kriFacetDataPromises)
         });
 
         onAnyChange(
-            ['kri-facet-y-axis', 'kri-facet-orientation', 'kri-facet-y-scale'],
+            [
+                'kri-facet-y-axis',
+                'kri-facet-orientation',
+                'kri-facet-y-scale',
+                'kri-facet-x-scale',
+            ],
             render
         );
 
         document
             .getElementById('kri-facet-threshold')
+            .addEventListener('change', render);
+
+        document
+            .getElementById('kri-facet-flag-filter')
             .addEventListener('change', render);
     });
