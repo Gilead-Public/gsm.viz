@@ -23341,7 +23341,10 @@ var gsmViz = (() => {
           charts.forEach((sibling) => {
             if (sibling === chartInstance) return;
             const siblingLabels = sibling.data.labels;
-            if (!siblingLabels.some((l) => String(l) === String(hoveredCategory))) return;
+            if (!siblingLabels.some(
+              (l) => String(l) === String(hoveredCategory)
+            ))
+              return;
             const newActiveElements = sibling.data.datasets.map((ds, dsIndex) => {
               const pointIndex = ds.data.findIndex((p) => {
                 const cat = horizontal ? p.y : p.x;
