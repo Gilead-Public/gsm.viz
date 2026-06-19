@@ -35,8 +35,12 @@ export default function computeGlobalCategories(facetDataMap, spec) {
 
         for (const [facetValue, facetData] of facetDataMap) {
             const perFacet = xOrder(facetValue, facetData);
+            if (!Array.isArray(perFacet)) {
+                throw new Error(
+                    'spec.scales.x.order (function) must return an array of categories'
+                );
+            }
             for (const cat of perFacet) {
-                const key = String(cat);
                 if (!seen.has(key)) {
                     seen.add(key);
                     ordered.push(cat);
