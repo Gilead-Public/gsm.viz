@@ -23464,7 +23464,7 @@ var gsmViz = (() => {
     const hasFill = !!merged.mapping.fill;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
-      if (!xFree && globalCategories) {
+      if (!xFree && globalCategories && globalCategories.length > 0) {
         chart.data.labels = globalCategories;
         chart.options.scales[categoryAxisKey].min = 0;
         chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
