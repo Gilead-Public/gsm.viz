@@ -41,6 +41,7 @@ export default function computeGlobalCategories(facetDataMap, spec) {
                 );
             }
             for (const cat of perFacet) {
+                const key = String(cat);
                 if (!seen.has(key)) {
                     seen.add(key);
                     ordered.push(cat);
