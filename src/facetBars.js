@@ -103,7 +103,7 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
         // range, making constant and free look identical. Explicitly pinning
         // min=0 and max=N-1 forces the full global domain to render on every
         // facet chart, producing visible empty positions for absent categories.
-        if (!xFree && globalCategories) {
+        if (!xFree && globalCategories && globalCategories.length > 0) {
             chart.data.labels = globalCategories;
             chart.options.scales[categoryAxisKey].min = 0;
             chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
