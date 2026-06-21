@@ -359,10 +359,14 @@ describe('facetBars integration', () => {
             });
             // Without the fix, all charts would share ['A','B','C'] (global domain).
             // With the fix, each chart should only contain its own categories.
-            expect(charts[0].data.labels).toEqual(expect.arrayContaining(['A', 'B']));
+            expect(charts[0].data.labels).toEqual(
+                expect.arrayContaining(['A', 'B'])
+            );
             expect(charts[0].data.labels).toHaveLength(2); // US: A, B only
 
-            expect(charts[1].data.labels).toEqual(expect.arrayContaining(['A', 'C']));
+            expect(charts[1].data.labels).toEqual(
+                expect.arrayContaining(['A', 'C'])
+            );
             expect(charts[1].data.labels).toHaveLength(2); // EU: A, C only
 
             expect(charts[2].data.labels).toEqual(['B']); // APAC: B only

@@ -78,7 +78,11 @@ async function fetchCsv(filepath) {
 function onDatasetLoaded(data, label) {
     rawData = data;
     colTypes = detectColumnTypes(data);
-    setStatus(`${label} — ${data.length.toLocaleString()} rows, ${Object.keys(data[0] || {}).length} columns`);
+    setStatus(
+        `${label} — ${data.length.toLocaleString()} rows, ${
+            Object.keys(data[0] || {}).length
+        } columns`
+    );
     renderMappingControls();
     // Sync control disabled states after mapping controls repopulate.
     document.getElementById('settings-y-agg').disabled = !getVal('mapping-y');
@@ -166,9 +170,9 @@ function renderFilters() {
     const { categoricalCols, numericCols } = colTypes;
 
     for (const col of categoricalCols) {
-        const uniqueVals = [...new Set(rawData.map((d) => String(d[col])))].sort(
-            (a, b) => a.localeCompare(b, undefined, { numeric: true })
-        );
+        const uniqueVals = [
+            ...new Set(rawData.map((d) => String(d[col]))),
+        ].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
         const fieldset = document.createElement('fieldset');
         fieldset.className = 'filter-fieldset';
@@ -273,7 +277,8 @@ function applyFilters(data) {
         if (selected.size < sel.options.length) {
             filtered = filtered.filter((d) => selected.has(String(d[col])));
         }
-        if (filtered.length === 0) console.warn(`Filter on column "${col}" excluded all data.`);
+        if (filtered.length === 0)
+            console.warn(`Filter on column "${col}" excluded all data.`);
     }
 
     for (const col of numericCols) {
@@ -286,7 +291,8 @@ function applyFilters(data) {
             const v = Number(d[col]);
             return Number.isFinite(v) && v >= lo && v <= hi;
         });
-        if (filtered.length === 0) console.warn(`Filter on column "${col}" excluded all data.`);
+        if (filtered.length === 0)
+            console.warn(`Filter on column "${col}" excluded all data.`);
     }
 
     return filtered;
@@ -350,8 +356,6 @@ function aggregateData(data, xKey, yKey, fillKey, aggFn) {
         });
 }
 
-
-
 function getVal(id) {
     return document.getElementById(id).value;
 }
@@ -383,9 +387,13 @@ function buildAnnotations(mode, barLabelMode) {
     const base = (() => {
         if (mode === 'none') return {};
         if (mode === 'total-outside')
-            return { labels: { total: { display: true, placement: 'outside' } } };
+            return {
+                labels: { total: { display: true, placement: 'outside' } },
+            };
         if (mode === 'total-inside')
-            return { labels: { total: { display: true, placement: 'inside' } } };
+            return {
+                labels: { total: { display: true, placement: 'inside' } },
+            };
         if (mode === 'segment-outside')
             return {
                 labels: { segment: { display: true, placement: 'end' } },
@@ -399,7 +407,10 @@ function buildAnnotations(mode, barLabelMode) {
 
     if (segmentLabel) {
         base.labels = base.labels || {};
-        base.labels.segment = { ...(base.labels.segment || {}), ...segmentLabel };
+        base.labels.segment = {
+            ...(base.labels.segment || {}),
+            ...segmentLabel,
+        };
     }
 
     return base;
@@ -487,7 +498,13 @@ function render() {
     }
 
     if (yKey && aggMode) {
-        filtered = aggregateData(filtered, xKey, yKey, fillKey, AGG_FNS[aggMode]);
+        filtered = aggregateData(
+            filtered,
+            xKey,
+            yKey,
+            fillKey,
+            AGG_FNS[aggMode]
+        );
     }
 
     const spec = buildSpec(xKey, yKey, fillKey, facetKey);
@@ -568,7 +585,12 @@ DATASETS.forEach(({ label, file }) => {
 datasetSelect.addEventListener('change', () => {
     const selected = DATASETS.find((d) => d.file === datasetSelect.value);
     fetchCsv(`data/${datasetSelect.value}`)
-        .then((data) => onDatasetLoaded(data, selected ? selected.label : datasetSelect.value))
+        .then((data) =>
+            onDatasetLoaded(
+                data,
+                selected ? selected.label : datasetSelect.value
+            )
+        )
         .catch((e) => {
             setStatus(`Failed to load dataset: ${e.message}`);
             console.error(e);

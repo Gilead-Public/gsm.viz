@@ -26,10 +26,22 @@ function makeChart(datasets, { indexAxis = 'x', hasOnClick = true } = {}) {
 
     return {
         data: {
-            labels: [...new Set(datasets.flat().map((p) => p[indexAxis === 'y' ? 'y' : 'x']))],
+            labels: [
+                ...new Set(
+                    datasets.flat().map((p) => p[indexAxis === 'y' ? 'y' : 'x'])
+                ),
+            ],
             datasets: chartDatasets,
-            _allLabels_: [...new Set(datasets.flat().map((p) => p[indexAxis === 'y' ? 'y' : 'x']))],
-            _spec_: { orientation: indexAxis === 'y' ? 'horizontal' : 'vertical', position: 'stack', mapping: { fill: 'fill' } },
+            _allLabels_: [
+                ...new Set(
+                    datasets.flat().map((p) => p[indexAxis === 'y' ? 'y' : 'x'])
+                ),
+            ],
+            _spec_: {
+                orientation: indexAxis === 'y' ? 'horizontal' : 'vertical',
+                position: 'stack',
+                mapping: { fill: 'fill' },
+            },
         },
         options: {
             indexAxis,
@@ -193,12 +205,24 @@ describe('facetBars/syncLegendClicks', () => {
     test('updates sibling data.labels to only visible categories after hide', () => {
         const charts = [
             makeChart([
-                [{ x: 'A', y: 10 }, { x: 'B', y: 20 }],
-                [{ x: 'A', y: 5 }, { x: 'B', y: 15 }],
+                [
+                    { x: 'A', y: 10 },
+                    { x: 'B', y: 20 },
+                ],
+                [
+                    { x: 'A', y: 5 },
+                    { x: 'B', y: 15 },
+                ],
             ]),
             makeChart([
-                [{ x: 'A', y: 8 }, { x: 'B', y: 18 }],
-                [{ x: 'A', y: 3 }, { x: 'B', y: 13 }],
+                [
+                    { x: 'A', y: 8 },
+                    { x: 'B', y: 18 },
+                ],
+                [
+                    { x: 'A', y: 3 },
+                    { x: 'B', y: 13 },
+                ],
             ]),
         ];
 

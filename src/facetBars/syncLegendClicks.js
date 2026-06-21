@@ -22,7 +22,11 @@ export default function syncLegendClicks(charts) {
         const original = chart.options.plugins?.legend?.onClick;
         if (!original) return;
 
-        chart.options.plugins.legend.onClick = function (e, legendItem, legendRef) {
+        chart.options.plugins.legend.onClick = function (
+            e,
+            legendItem,
+            legendRef
+        ) {
             // Run the original handler for the clicked chart first.
             original(e, legendItem, legendRef);
 
