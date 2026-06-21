@@ -17,23 +17,24 @@
     const root = src.replace('nav.js', '');
 
     const examples = [
-        { label: 'Bar Chart', href: root + 'barChart/' },
-        { label: 'Bars', href: root + 'bars/' },
+        { label: 'Bar Chart', href: root + 'bars/' },
+        { label: 'Bar Chart Builder', href: root + 'bars/explorer.html' },
         { label: 'Scatter Plot', href: root + 'scatterPlot/' },
+        { label: 'Bar Chart', href: root + 'barChart/' },
         { label: 'Time Series', href: root + 'timeSeriesContinuous/' },
         { label: 'Time Series (with CI)', href: root + 'timeSeriesWithCI/' },
-        { label: 'Sparkline', href: root + 'sparkline/' },
         { label: 'Group Overview — Site', href: root + 'groupOverview/site/' },
         { label: 'Group Overview — Country', href: root + 'groupOverview/country/' },
+        { label: 'Metric Sparkline', href: root + 'sparkline/' },
     ];
 
     const apiDocs = [
+        { label: 'bars', href: root + '#/docs/bars' },
         { label: 'scatterPlot', href: root + '#/docs/scatterPlot' },
         { label: 'barChart', href: root + '#/docs/barChart' },
         { label: 'timeSeries', href: root + '#/docs/timeSeries' },
-        { label: 'sparkline', href: root + '#/docs/sparkline' },
         { label: 'groupOverview', href: root + '#/docs/groupOverview' },
-        { label: 'bars', href: root + '#/docs/bars' },
+        { label: 'sparkline', href: root + '#/docs/sparkline' },
     ];
 
     function buildLinks(items) {

@@ -23429,6 +23429,46 @@ var gsmViz = (() => {
     });
   }
 
+  // src/facetBars/syncLegendClicks.js
+  function syncLegendClicks(charts) {
+    charts.forEach((chart) => {
+      const original = chart.options.plugins?.legend?.onClick;
+      if (!original) return;
+      chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
+        original(e, legendItem, legendRef);
+        const { datasetIndex } = legendItem;
+        const isNowVisible = chart.isDatasetVisible(datasetIndex);
+        charts.forEach((sibling) => {
+          if (sibling === chart) return;
+          const siblingDataset = sibling.data.datasets[datasetIndex];
+          if (!siblingDataset) return;
+          initializeDynamicCategoryData(sibling.data.datasets);
+          if (!isNowVisible) {
+            siblingDataset.data = [];
+            siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
+            sibling.setDatasetVisibility(datasetIndex, false);
+          } else {
+            delete siblingDataset._backup_;
+            sibling.setDatasetVisibility(datasetIndex, true);
+          }
+          const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
+          const valKey = catKey === "x" ? "y" : "x";
+          const visibleCats = getVisibleCategories(sibling, catKey);
+          sibling.data.labels = getAllLabels(sibling, visibleCats).filter(
+            (cat) => visibleCats.has(cat)
+          );
+          refreshDynamicCategoryData(
+            sibling,
+            sibling.data.labels,
+            catKey,
+            valKey
+          );
+          sibling.update();
+        });
+      };
+    });
+  }
+
   // src/facetBars.js
   function facetBars(element = "body", data = [], spec = {}) {
     validateSpec2(data, spec);
@@ -23473,7 +23513,7 @@ var gsmViz = (() => {
     const hasFill = !!merged.mapping.fill;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
-      if (!xFree && globalCategories && globalCategories.length > 0) {
+      if (!xFree && !merged.theme?.dynamicCategoryAxis && globalCategories && globalCategories.length > 0) {
         chart.data.labels = globalCategories;
         chart.options.scales[categoryAxisKey].min = 0;
         chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
@@ -23495,6 +23535,9 @@ var gsmViz = (() => {
       if (needsUpdate) chart.update("none");
     });
     syncCharts(charts);
+    if (merged.theme?.dynamicCategoryAxis) {
+      syncLegendClicks(charts);
+    }
     return { charts, container: grid };
   }
 
