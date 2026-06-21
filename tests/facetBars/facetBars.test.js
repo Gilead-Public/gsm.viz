@@ -349,4 +349,43 @@ describe('facetBars integration', () => {
             });
         });
     });
+
+    describe('dynamicCategoryAxis with facets', () => {
+        test('each facet shows only its own categories when dynamicCategoryAxis is true', () => {
+            // data: US={A,B}, EU={A,C}, APAC={B}
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                theme: { dynamicCategoryAxis: true },
+            });
+            // Without the fix, all charts would share ['A','B','C'] (global domain).
+            // With the fix, each chart should only contain its own categories.
+            expect(charts[0].data.labels).toEqual(expect.arrayContaining(['A', 'B']));
+            expect(charts[0].data.labels).toHaveLength(2); // US: A, B only
+
+            expect(charts[1].data.labels).toEqual(expect.arrayContaining(['A', 'C']));
+            expect(charts[1].data.labels).toHaveLength(2); // EU: A, C only
+
+            expect(charts[2].data.labels).toEqual(['B']); // APAC: B only
+        });
+
+        test('category axis min/max are NOT pinned when dynamicCategoryAxis is true', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                theme: { dynamicCategoryAxis: true },
+            });
+            // With dynamicCategoryAxis, each facet manages its own axis — no global pinning.
+            charts.forEach((c) => {
+                expect(c.options.scales.x.min).toBeUndefined();
+                expect(c.options.scales.x.max).toBeUndefined();
+            });
+        });
+
+        test('constant x-axis (dynamicCategoryAxis false) still injects global domain', () => {
+            // Regression: the existing "constant" behaviour must not be broken.
+            const { charts } = facetBars(container, data, baseSpec);
+            charts.forEach((c) => {
+                expect(c.data.labels).toEqual(['A', 'B', 'C']);
+            });
+        });
+    });
 });

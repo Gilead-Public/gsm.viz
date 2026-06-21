@@ -8,6 +8,7 @@ import computeGlobalCategories from './facetBars/computeGlobalCategories.js';
 import buildSubSpec from './facetBars/buildSubSpec.js';
 import renderGrid from './facetBars/renderGrid.js';
 import syncCharts from './facetBars/syncCharts.js';
+import syncLegendClicks from './facetBars/syncLegendClicks.js';
 
 /**
  * Render a faceted set of bar charts — one chart per unique value of a
@@ -94,7 +95,13 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     charts.forEach((chart, i) => {
         let needsUpdate = false;
 
-        // Inject global category domain (only when axis is constant).
+        // Inject global category domain (only when axis is constant and
+        // dynamicCategoryAxis is not active).
+        //
+        // When dynamicCategoryAxis is true, each facet is responsible for
+        // managing its own visible category set (per-facet categories only).
+        // Injecting the global domain would override that intent and show empty
+        // positions for categories absent from a given facet.
         //
         // Setting data.labels alone is insufficient: Chart.js CategoryScale
         // computes its visible range (min/max) from the parsed data indices,
@@ -103,7 +110,12 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
         // range, making constant and free look identical. Explicitly pinning
         // min=0 and max=N-1 forces the full global domain to render on every
         // facet chart, producing visible empty positions for absent categories.
-        if (!xFree && globalCategories && globalCategories.length > 0) {
+        if (
+            !xFree &&
+            !merged.theme?.dynamicCategoryAxis &&
+            globalCategories &&
+            globalCategories.length > 0
+        ) {
             chart.data.labels = globalCategories;
             chart.options.scales[categoryAxisKey].min = 0;
             chart.options.scales[categoryAxisKey].max =
@@ -139,6 +151,11 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
 
     // Wire cross-chart hover highlight synchronisation
     syncCharts(charts);
+
+    // Wire cross-chart legend-click synchronisation for dynamic category axis.
+    if (merged.theme?.dynamicCategoryAxis) {
+        syncLegendClicks(charts);
+    }
 
     return { charts, container: grid };
 }
