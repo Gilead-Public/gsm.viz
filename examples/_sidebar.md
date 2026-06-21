@@ -2,21 +2,24 @@
 
 -   **Examples**
 
-    -   Charts
+    -   Generics
+        -   [Bar Chart](bars/ ':ignore')
+        -   [Bar Chart Builder](bars/explorer.html ':ignore')
+    -   Metrics
         -   [Bar Chart](barChart/ ':ignore')
-        -   [Bars](bars/ ':ignore')
+        -   [Group Overview — Country](groupOverview/country ':ignore')
+        -   [Group Overview — Site](groupOverview/site ':ignore')
         -   [Scatter Plot](scatterPlot/ ':ignore')
+        -   [Sparkline](sparkline/ ':ignore')
         -   [Time Series](timeSeriesContinuous/ ':ignore')
         -   [Time Series (with CI)](timeSeriesWithCI/ ':ignore')
-        -   [Sparkline](sparkline/ ':ignore')
-    -   Tables
-        -   [Group Overview — Site](groupOverview/site ':ignore')
-        -   [Group Overview — Country](groupOverview/country ':ignore')
 
 -   **API Reference**
-    -   [scatterPlot](docs/scatterPlot)
-    -   [barChart](docs/barChart)
-    -   [timeSeries](docs/timeSeries)
-    -   [sparkline](docs/sparkline)
-    -   [groupOverview](docs/groupOverview)
-    -   [bars](docs/bars)
+    -   Generics
+        -   [bars](docs/bars)
+    -   Metrics
+        -   [barChart](docs/barChart)
+        -   [groupOverview](docs/groupOverview)
+        -   [scatterPlot](docs/scatterPlot)
+        -   [sparkline](docs/sparkline)
+        -   [timeSeries](docs/timeSeries)

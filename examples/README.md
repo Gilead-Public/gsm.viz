@@ -10,29 +10,30 @@
 
 ## Modules
 
-| Module                              | Description                                                      |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| [scatterPlot](docs/scatterPlot)     | Scatter plot of two numeric KRI metrics, coloured by flag status |
-| [barChart](docs/barChart)           | Bar chart of a single KRI metric across groups                   |
-| [timeSeries](docs/timeSeries)       | Time-series chart of metric trends across snapshot dates         |
-| [sparkline](docs/sparkline)         | Compact sparkline for embedding in tables and dashboards         |
-| [groupOverview](docs/groupOverview) | Sortable summary table of all groups across all metrics          |
-| [bars](docs/bars)                   | ggplot2-inspired bar chart with flexible spec-based API          |
+| Type    | Module                              | Description                                                      |
+| ------- | ----------------------------------- | ---------------------------------------------------------------- |
+| Generic | [bars](docs/bars)                   | ggplot2-inspired bar chart with flexible spec-based API          |
+| Metrics | [barChart](docs/barChart)           | Bar chart of a single KRI metric across groups                   |
+| Metrics | [groupOverview](docs/groupOverview) | Sortable summary table of all groups across all metrics          |
+| Metrics | [scatterPlot](docs/scatterPlot)     | Scatter plot of two numeric KRI metrics, coloured by flag status |
+| Metrics | [sparkline](docs/sparkline)         | Compact sparkline for embedding in tables and dashboards         |
+| Metrics | [timeSeries](docs/timeSeries)       | Time-series chart of metric trends across snapshot dates         |
 
 ---
 
 ## Interactive Examples
 
--   Charts
+-   Generics
+    -   [Bar Chart](bars/ ':ignore')
+    -   [Bar Chart Builder](bars/explorer.html ':ignore')
+-   Metrics
     -   [Bar Chart](barChart/ ':ignore')
-    -   [Bars](bars/ ':ignore')
+    -   [Group Overview — Country](groupOverview/country ':ignore')
+    -   [Group Overview — Site](groupOverview/site ':ignore')
     -   [Scatter Plot](scatterPlot/ ':ignore')
+    -   [Sparkline](sparkline/ ':ignore')
     -   [Time Series](timeSeriesContinuous/ ':ignore')
     -   [Time Series (with CI)](timeSeriesWithCI/ ':ignore')
-    -   [Sparkline](sparkline/ ':ignore')
--   Tables
-    -   [Group Overview — Site](groupOverview/site ':ignore')
-    -   [Group Overview — Country](groupOverview/country ':ignore')
 
 ---
 

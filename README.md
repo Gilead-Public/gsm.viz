@@ -7,12 +7,18 @@
 Production examples of `gsm.viz` modules are accessible [here](https://gilead-biostats.github.io/gsm.viz/)
 and development examples [here](https://gilead-biostats.github.io/gsm.viz/dev/).
 
-- [scatter plot](https://gilead-biostats.github.io/gsm.viz/scatterPlot/)
+**Generics**
+- [bar chart](https://gilead-biostats.github.io/gsm.viz/bars/)
+- [bar chart builder](https://gilead-biostats.github.io/gsm.viz/bars/explorer.html)
+
+**Metrics**
 - [bar chart](https://gilead-biostats.github.io/gsm.viz/barChart/)
-- [time series](https://gilead-biostats.github.io/gsm.viz/timeSeriesContinuous/)
+- [group overview — country](https://gilead-biostats.github.io/gsm.viz/groupOverview/country/)
+- [group overview — site](https://gilead-biostats.github.io/gsm.viz/groupOverview/site/)
+- [scatter plot](https://gilead-biostats.github.io/gsm.viz/scatterPlot/)
 - [sparkline](https://gilead-biostats.github.io/gsm.viz/sparkline/)
-- [site overview](https://gilead-biostats.github.io/gsm.viz/siteOverview/)
-- [country overview](https://gilead-biostats.github.io/gsm.viz/groupOverview/)
+- [time series](https://gilead-biostats.github.io/gsm.viz/timeSeriesContinuous/)
+- [time series (with CI)](https://gilead-biostats.github.io/gsm.viz/timeSeriesWithCI/)
 
 ## Installation
 
