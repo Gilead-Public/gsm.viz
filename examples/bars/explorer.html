@@ -151,6 +151,23 @@
                 background: #0860ca;
             }
 
+            .btn-export-spec {
+                width: 100%;
+                font-size: 12px;
+                padding: 6px 10px;
+                border: 1px solid #d0d7de;
+                border-radius: 4px;
+                background: #f6f8fa;
+                color: #24292f;
+                cursor: pointer;
+                font-weight: 600;
+            }
+
+            .btn-export-spec:hover {
+                background: #eaeef2;
+                border-color: #8c959f;
+            }
+
             /* ── Dynamic filter fieldsets ── */
             .filter-fieldset {
                 border: 1px solid #d0d7de;
@@ -484,9 +501,12 @@
                 </div>
 
                 <!-- Export -->
-                <div class="sidebar-section">
+                <div class="sidebar-section" style="display: flex; flex-direction: column; gap: 6px;">
                     <button class="btn-export" id="export-btn">
                         Export PNG
+                    </button>
+                    <button class="btn-export-spec" id="export-spec-btn">
+                        Export Spec
                     </button>
                 </div>
 
