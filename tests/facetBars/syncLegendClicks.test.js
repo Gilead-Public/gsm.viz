@@ -96,7 +96,7 @@ describe('facetBars/syncLegendClicks', () => {
         syncLegendClicks(charts);
 
         const e = {};
-        const legendItem = { datasetIndex: 0 };
+        const legendItem = { datasetIndex: 0, text: 'ds0' };
         const legendRef = { chart: charts[0] };
         charts[0].options.plugins.legend.onClick(e, legendItem, legendRef);
 
@@ -119,11 +119,12 @@ describe('facetBars/syncLegendClicks', () => {
 
         charts[0].options.plugins.legend.onClick(
             {},
-            { datasetIndex: 0 },
+            { datasetIndex: 0, text: 'ds0' },
             { chart: charts[0] }
         );
 
-        // Siblings should have setDatasetVisibility(0, false) called.
+        // Siblings should have setDatasetVisibility called for the dataset
+        // matching label 'ds0', which is index 0 in both siblings.
         expect(charts[1].setDatasetVisibility).toHaveBeenCalledWith(0, false);
         expect(charts[2].setDatasetVisibility).toHaveBeenCalledWith(0, false);
     });
@@ -147,7 +148,7 @@ describe('facetBars/syncLegendClicks', () => {
 
         charts[0].options.plugins.legend.onClick(
             {},
-            { datasetIndex: 1 },
+            { datasetIndex: 1, text: 'ds1' },
             { chart: charts[0] }
         );
 
@@ -170,7 +171,7 @@ describe('facetBars/syncLegendClicks', () => {
 
         charts[0].options.plugins.legend.onClick(
             {},
-            { datasetIndex: 0 },
+            { datasetIndex: 0, text: 'ds0' },
             { chart: charts[0] }
         );
 
@@ -180,10 +181,10 @@ describe('facetBars/syncLegendClicks', () => {
         expect(charts[0].update).not.toHaveBeenCalled();
     });
 
-    test('skips sibling datasets that do not exist at the clicked datasetIndex', () => {
+    test('skips sibling when no dataset matches the clicked label', () => {
         const charts = [
             makeChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
-            makeChart([[{ x: 'A', y: 8 }]]), // only 1 dataset
+            makeChart([[{ x: 'A', y: 8 }]]), // only dataset 'ds0', no 'ds1'
         ];
 
         charts[0].options.plugins.legend.onClick.mockImplementation(() => {
@@ -192,14 +193,16 @@ describe('facetBars/syncLegendClicks', () => {
 
         syncLegendClicks(charts);
 
-        // Clicking datasetIndex 1 which doesn't exist in sibling should not throw.
+        // Clicking 'ds1' which doesn't exist in sibling should not throw.
         expect(() => {
             charts[0].options.plugins.legend.onClick(
                 {},
-                { datasetIndex: 1 },
+                { datasetIndex: 1, text: 'ds1' },
                 { chart: charts[0] }
             );
         }).not.toThrow();
+        // And sibling should NOT have had setDatasetVisibility called.
+        expect(charts[1].setDatasetVisibility).not.toHaveBeenCalled();
     });
 
     test('updates sibling data.labels to only visible categories after hide', () => {
@@ -236,11 +239,49 @@ describe('facetBars/syncLegendClicks', () => {
 
         charts[0].options.plugins.legend.onClick(
             {},
-            { datasetIndex: 0 },
+            { datasetIndex: 0, text: 'ds0' },
             { chart: charts[0] }
         );
 
         // Sibling should still have labels (refreshed from remaining visible data).
         expect(Array.isArray(charts[1].data.labels)).toBe(true);
+    });
+
+    test('propagates by label so mismatched dataset ordering in siblings is handled', () => {
+        // chart[0]: datasets [A-fill, B-fill] → indices 0, 1
+        // chart[1]: datasets [B-fill, A-fill] → indices 0, 1 (reversed order)
+        const chartA = makeChart([
+            [{ x: 'Cat1', y: 10 }],
+            [{ x: 'Cat1', y: 5 }],
+        ]);
+        // Manually override labels to simulate reversed ordering in sibling.
+        chartA.data.datasets[0].label = 'A-fill';
+        chartA.data.datasets[1].label = 'B-fill';
+
+        const chartB = makeChart([
+            [{ x: 'Cat1', y: 8 }],
+            [{ x: 'Cat1', y: 3 }],
+        ]);
+        chartB.data.datasets[0].label = 'B-fill'; // index 0 = B-fill in sibling
+        chartB.data.datasets[1].label = 'A-fill'; // index 1 = A-fill in sibling
+
+        const charts = [chartA, chartB];
+
+        charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+            charts[0].setDatasetVisibility(0, false); // hides 'A-fill' (index 0 in chartA)
+        });
+
+        syncLegendClicks(charts);
+
+        charts[0].options.plugins.legend.onClick(
+            {},
+            { datasetIndex: 0, text: 'A-fill' },
+            { chart: charts[0] }
+        );
+
+        // In chartB, 'A-fill' is at index 1 — so setDatasetVisibility should be
+        // called with index 1, not index 0 (which would be 'B-fill' — wrong).
+        expect(chartB.setDatasetVisibility).toHaveBeenCalledWith(1, false);
+        expect(chartB.setDatasetVisibility).not.toHaveBeenCalledWith(0, false);
     });
 });

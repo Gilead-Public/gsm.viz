@@ -27,18 +27,26 @@ export default function syncLegendClicks(charts) {
             legendItem,
             legendRef
         ) {
-            // Run the original handler for the clicked chart first.
-            original(e, legendItem, legendRef);
+            // Run the original handler for the clicked chart, preserving its
+            // expected `this` context (Chart.js passes the legend instance).
+            original.call(this, e, legendItem, legendRef);
 
-            const { datasetIndex } = legendItem;
-            const isNowVisible = chart.isDatasetVisible(datasetIndex);
+            // Match by label so that siblings with different dataset ordering
+            // (e.g. a fill level absent in one facet) still toggle the right
+            // dataset rather than one at the same numeric index.
+            const clickedLabel = legendItem.text;
+            const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
 
             // Propagate the resulting visibility state to every sibling chart.
             charts.forEach((sibling) => {
                 if (sibling === chart) return;
 
-                const siblingDataset = sibling.data.datasets[datasetIndex];
-                if (!siblingDataset) return;
+                const siblingIdx = sibling.data.datasets.findIndex(
+                    (ds) => ds.label === clickedLabel
+                );
+                if (siblingIdx === -1) return;
+
+                const siblingDataset = sibling.data.datasets[siblingIdx];
 
                 initializeDynamicCategoryData(sibling.data.datasets);
 
@@ -46,10 +54,10 @@ export default function syncLegendClicks(charts) {
                     siblingDataset.data = [];
                     siblingDataset._backup_ =
                         siblingDataset._dynamicCategoryAxisOriginalData_;
-                    sibling.setDatasetVisibility(datasetIndex, false);
+                    sibling.setDatasetVisibility(siblingIdx, false);
                 } else {
                     delete siblingDataset._backup_;
-                    sibling.setDatasetVisibility(datasetIndex, true);
+                    sibling.setDatasetVisibility(siblingIdx, true);
                 }
 
                 const catKey =
@@ -71,6 +79,42 @@ export default function syncLegendClicks(charts) {
                 );
 
                 sibling.update();
+
+                // Propagate dynamic sizing to each sibling when enabled, since
+                // the original handler only resizes the clicked chart's container.
+                if (sibling.data._spec_?.theme?.dynamicSizing) {
+                    const sibContainer = sibling.canvas?.parentElement;
+                    if (sibContainer) {
+                        const numCategories = sibling.data.labels.length;
+                        const pxPerCategory = 30;
+                        const horizontal =
+                            sibling.data._spec_?.orientation === 'horizontal';
+
+                        if (horizontal) {
+                            const area = sibling.chartArea;
+                            const chartAreaHeight = area
+                                ? area.bottom - area.top
+                                : 0;
+                            const overhead =
+                                chartAreaHeight > 0
+                                    ? sibling.height - chartAreaHeight
+                                    : 0;
+                            sibContainer.style.height =
+                                numCategories * pxPerCategory + overhead + 'px';
+                        } else {
+                            const area = sibling.chartArea;
+                            const chartAreaWidth = area
+                                ? area.right - area.left
+                                : 0;
+                            const overhead =
+                                chartAreaWidth > 0
+                                    ? sibling.width - chartAreaWidth
+                                    : 0;
+                            sibContainer.style.width =
+                                numCategories * pxPerCategory + overhead + 'px';
+                        }
+                    }
+                }
             });
         };
     });

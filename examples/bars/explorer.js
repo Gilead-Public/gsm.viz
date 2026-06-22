@@ -287,6 +287,12 @@ function applyFilters(data) {
         if (!minEl || !maxEl) continue;
         const lo = Math.min(Number(minEl.value), Number(maxEl.value));
         const hi = Math.max(Number(minEl.value), Number(maxEl.value));
+        // Skip filtering when sliders are at their full range — avoids
+        // inadvertently dropping rows with missing/non-numeric values in
+        // columns the user hasn't explicitly filtered.
+        const atFullRange =
+            lo <= Number(minEl.min) && hi >= Number(maxEl.max);
+        if (atFullRange) continue;
         filtered = filtered.filter((d) => {
             const v = Number(d[col]);
             return Number.isFinite(v) && v >= lo && v <= hi;
@@ -522,7 +528,11 @@ function render() {
         }
         applyLegendSettings();
     } catch (e) {
-        container.innerHTML = `<p class="explorer-error">Render error: ${e.message}</p>`;
+        const errEl = document.createElement('p');
+        errEl.className = 'explorer-error';
+        errEl.textContent = `Render error: ${e.message}`;
+        container.innerHTML = '';
+        container.appendChild(errEl);
         console.error(e);
     }
 }
