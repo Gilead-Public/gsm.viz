@@ -608,6 +608,51 @@ function handleExport() {
     }
 }
 
+function cleanSpec(obj) {
+    if (obj == null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj;
+
+    const cleaned = {};
+    for (const [k, v] of Object.entries(obj)) {
+        if (v === undefined || v === false) continue;
+        const cv =
+            typeof v === 'object' && !Array.isArray(v) ? cleanSpec(v) : v;
+        if (
+            typeof cv === 'object' &&
+            cv !== null &&
+            !Array.isArray(cv) &&
+            Object.keys(cv).length === 0
+        )
+            continue;
+        cleaned[k] = cv;
+    }
+    return cleaned;
+}
+
+function handleExportSpec() {
+    const xKey = getVal('mapping-x');
+    if (!xKey) return;
+
+    const yKey = getVal('mapping-y') || undefined;
+    const fillKey = getVal('mapping-fill') || undefined;
+    const facetKey = getVal('mapping-facet') || undefined;
+    const spec = cleanSpec(buildSpec(xKey, yKey, fillKey, facetKey));
+    const facetCall = facetKey ? 'facetBars' : 'bars';
+    const text = `gsmViz.${facetCall}(element, data, ${JSON.stringify(
+        spec,
+        null,
+        4
+    )});`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('export-spec-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+            btn.textContent = 'Export Spec';
+        }, 1500);
+    });
+}
+
 // ── Status bar ────────────────────────────────────────────────────────────────
 
 function setStatus(text) {
@@ -700,6 +745,9 @@ document.getElementById('mapping-facet').addEventListener('change', () => {
 });
 
 document.getElementById('export-btn').addEventListener('click', handleExport);
+document
+    .getElementById('export-spec-btn')
+    .addEventListener('click', handleExportSpec);
 
 // Load default dataset on startup.
 fetchCsv('data/retention.csv')
