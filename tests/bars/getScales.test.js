@@ -331,3 +331,76 @@ describe('bars/getScales', () => {
         });
     });
 });
+
+describe('bars/getScales – y min/max pass-through', () => {
+    const baseSpec = {
+        orientation: 'vertical',
+        mapping: { x: 'category', y: 'value' },
+        scales: {
+            x: { type: 'category' },
+            y: { type: 'linear' },
+        },
+    };
+
+    test('passes scales.y.min to the value scale', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { ...baseSpec.scales, y: { type: 'linear', min: 10 } },
+        };
+        const result = getScales(spec);
+        expect(result.y.min).toBe(10);
+    });
+
+    test('passes scales.y.max to the value scale', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { ...baseSpec.scales, y: { type: 'linear', max: 100 } },
+        };
+        const result = getScales(spec);
+        expect(result.y.max).toBe(100);
+    });
+
+    test('passes both min and max together', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { ...baseSpec.scales, y: { type: 'linear', min: 5, max: 95 } },
+        };
+        const result = getScales(spec);
+        expect(result.y.min).toBe(5);
+        expect(result.y.max).toBe(95);
+    });
+
+    test('does not include min when scales.y.min is undefined', () => {
+        const result = getScales(baseSpec);
+        expect(result.y.min).toBeUndefined();
+    });
+
+    test('suppresses beginAtZero when scales.y.min is explicitly set', () => {
+        const spec = {
+            ...baseSpec,
+            scales: { ...baseSpec.scales, y: { type: 'linear', min: 10 } },
+        };
+        const result = getScales(spec);
+        expect(result.y.beginAtZero).toBeUndefined();
+    });
+
+    test('keeps beginAtZero: true when scales.y.min is not set', () => {
+        const result = getScales(baseSpec);
+        expect(result.y.beginAtZero).toBe(true);
+    });
+
+    test('passes min/max through to x axis when orientation is horizontal', () => {
+        const spec = {
+            orientation: 'horizontal',
+            mapping: { x: 'category', y: 'value' },
+            scales: {
+                x: { type: 'category' },
+                y: { type: 'linear', min: 0, max: 50 },
+            },
+        };
+        const result = getScales(spec);
+        // In horizontal mode, the value axis is x
+        expect(result.x.min).toBe(0);
+        expect(result.x.max).toBe(50);
+    });
+});

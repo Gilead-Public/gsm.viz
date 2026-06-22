@@ -264,6 +264,7 @@
                             disabled
                             title="Select a Y variable to enable aggregation"
                         >
+                            <option value="identity" selected>Identity</option>
                             <option value="mean">Mean</option>
                             <option value="min">Min</option>
                             <option value="median">Median</option>
@@ -304,6 +305,7 @@
                         <select id="settings-position">
                             <option value="stack" selected>Stack</option>
                             <option value="dodge">Dodge</option>
+                            <option value="identity">Identity</option>
                             <option value="fill">Fill (100%)</option>
                         </select>
                     </div>
@@ -358,6 +360,33 @@
                     </div>
 
                     <div class="sidebar-row">
+                        <label for="settings-x-sort">Sort By</label>
+                        <select id="settings-x-sort">
+                            <option value="" selected>Alphanumeric</option>
+                            <option value="total">Total</option>
+                        </select>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <label for="settings-x-sort-dir">Sort Direction</label>
+                        <select id="settings-x-sort-dir">
+                            <option value="" selected>Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <label for="settings-tooltip-format">Tooltip Format</label>
+                        <select id="settings-tooltip-format">
+                            <option value="" selected>(default)</option>
+                            <option value="count">Count</option>
+                            <option value="percent">Percent</option>
+                            <option value="count+percent">Count + Percent</option>
+                            <option value="percent+count">Percent + Count</option>
+                        </select>
+                    </div>
+
+                    <div class="sidebar-row">
                         <label for="settings-n-categories"
                             >Top N Categories</label
                         >
@@ -371,10 +400,32 @@
                     </div>
 
                     <div class="sidebar-row">
+                        <label for="settings-y-min">Y Axis Min</label>
+                        <input
+                            type="number"
+                            id="settings-y-min"
+                            step="any"
+                            placeholder="Auto"
+                        />
+                    </div>
+
+                    <div class="sidebar-row">
+                        <label for="settings-y-max">Y Axis Max</label>
+                        <input
+                            type="number"
+                            id="settings-y-max"
+                            step="any"
+                            placeholder="Auto"
+                        />
+                    </div>
+
+                    <div class="sidebar-row">
                         <label for="settings-legend-position">Legend</label>
                         <select id="settings-legend-position">
                             <option value="top" selected>Top</option>
+                            <option value="right">Right</option>
                             <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
                             <option value="none">None</option>
                         </select>
                     </div>
@@ -405,6 +456,30 @@
                             disabled
                             title="Select a Facet variable to enable"
                         />
+                    </div>
+
+                    <div class="sidebar-row">
+                        <label for="settings-facet-y-scale">Facet Y Scale</label>
+                        <select
+                            id="settings-facet-y-scale"
+                            disabled
+                            title="Select a Facet variable to enable"
+                        >
+                            <option value="constant" selected>Constant</option>
+                            <option value="free">Free</option>
+                        </select>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <label for="settings-facet-x-scale">Facet X Scale</label>
+                        <select
+                            id="settings-facet-x-scale"
+                            disabled
+                            title="Select a Facet variable to enable"
+                        >
+                            <option value="constant" selected>Constant</option>
+                            <option value="free">Free</option>
+                        </select>
                     </div>
                 </div>
 

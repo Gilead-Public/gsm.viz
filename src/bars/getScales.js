@@ -42,7 +42,8 @@ export default function getScales(spec) {
             display: !!yLabel,
             text: yLabel,
         },
-        beginAtZero: true,
+        ...(specScales.y.min !== undefined ? { min: specScales.y.min } : { beginAtZero: true }),
+        ...(specScales.y.max !== undefined ? { max: specScales.y.max } : {}),
         ...(stacked ? { stacked: true } : {}),
         ...(fill ? { max: 100, ticks: percentageTicks } : {}),
     };

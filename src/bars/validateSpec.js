@@ -64,6 +64,11 @@ export default function validateSpec(data, spec) {
         throw new Error("spec.scales.x.sort must be 'total' or 'alphanumeric'");
     }
 
+    const xSortDir = spec.scales?.x?.sortDir;
+    if (xSortDir !== undefined && xSortDir !== 'asc' && xSortDir !== 'desc') {
+        throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
+    }
+
     const colors = spec.scales?.fill?.colors;
     if (colors !== undefined) {
         if (

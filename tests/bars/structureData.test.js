@@ -1270,3 +1270,281 @@ describe('bars/structureData – nCategories', () => {
         });
     });
 });
+
+describe('bars/structureData – dynamicCategoryAxis y-filter', () => {
+    test('excludes categories where all y values are missing when dynamicCategoryAxis is true', () => {
+        const spec = {
+            data: [
+                { site: 'A', score: 10 },
+                { site: 'B', score: null },
+                { site: 'C', score: 30 },
+            ],
+            mapping: { x: 'site', y: 'score' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: true },
+        };
+        const { labels } = structureData(spec);
+        expect(labels).not.toContain('B');
+        expect(labels).toContain('A');
+        expect(labels).toContain('C');
+    });
+
+    test('excludes categories where all y values are empty strings when dynamicCategoryAxis is true', () => {
+        const spec = {
+            data: [
+                { site: 'A', score: '10' },
+                { site: 'B', score: '' },
+                { site: 'C', score: '30' },
+            ],
+            mapping: { x: 'site', y: 'score' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: true },
+        };
+        const { labels } = structureData(spec);
+        expect(labels).not.toContain('B');
+        expect(labels).toContain('A');
+        expect(labels).toContain('C');
+    });
+
+    test('keeps a category when it has at least one finite y value among mixed rows', () => {
+        const spec = {
+            data: [
+                { site: 'A', score: null },
+                { site: 'A', score: 5 },
+                { site: 'B', score: null },
+            ],
+            mapping: { x: 'site', y: 'score' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: true },
+        };
+        const { labels } = structureData(spec);
+        expect(labels).toContain('A');
+        expect(labels).not.toContain('B');
+    });
+
+    test('does NOT filter missing-y categories when dynamicCategoryAxis is false', () => {
+        const spec = {
+            data: [
+                { site: 'A', score: 10 },
+                { site: 'B', score: null },
+                { site: 'C', score: 30 },
+            ],
+            mapping: { x: 'site', y: 'score' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: false },
+        };
+        const { labels } = structureData(spec);
+        expect(labels).toContain('B');
+    });
+
+    test('does NOT filter categories when dynamicCategoryAxis is true but no yKey is set (count mode)', () => {
+        const spec = {
+            data: [
+                { site: 'A' },
+                { site: 'B' },
+                { site: 'C' },
+            ],
+            mapping: { x: 'site' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: true },
+        };
+        const { labels } = structureData(spec);
+        expect(labels).toContain('A');
+        expect(labels).toContain('B');
+        expect(labels).toContain('C');
+    });
+
+    test('dataset points do not include missing-y rows when dynamicCategoryAxis is true', () => {
+        const spec = {
+            data: [
+                { site: 'A', score: 10 },
+                { site: 'B', score: null },
+                { site: 'C', score: 30 },
+            ],
+            mapping: { x: 'site', y: 'score' },
+            orientation: 'vertical',
+            scales: { x: {}, y: {} },
+            theme: { dynamicCategoryAxis: true },
+        };
+        const { datasets } = structureData(spec);
+        const xs = datasets[0].data.map((d) => d.x);
+        expect(xs).not.toContain('B');
+    });
+});
+
+describe('bars/structureData – scales.x.sortDir', () => {
+    const data = [
+        { site: 'A', score: 10 },
+        { site: 'B', score: 30 },
+        { site: 'C', score: 20 },
+    ];
+
+    describe('alphanumeric sort', () => {
+        test('default (no sortDir) gives ascending alphanumeric order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: {}, y: {} },
+            };
+            const { labels } = structureData(spec);
+            expect(labels).toEqual(['A', 'B', 'C']);
+        });
+
+        test('sortDir asc gives ascending alphanumeric order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sortDir: 'asc' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            expect(labels).toEqual(['A', 'B', 'C']);
+        });
+
+        test('sortDir desc reverses alphanumeric to descending order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sortDir: 'desc' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            expect(labels).toEqual(['C', 'B', 'A']);
+        });
+
+        test('datasets are ordered to match the reversed category order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sortDir: 'desc' }, y: {} },
+            };
+            const { datasets } = structureData(spec);
+            expect(datasets[0].data.map((d) => d.x)).toEqual(['C', 'B', 'A']);
+        });
+    });
+
+    describe('total sort', () => {
+        test('sort=total with default sortDir gives descending-total order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            // B(30) > C(20) > A(10)
+            expect(labels).toEqual(['B', 'C', 'A']);
+        });
+
+        test('sort=total + sortDir=desc gives descending-total order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total', sortDir: 'desc' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            expect(labels).toEqual(['B', 'C', 'A']);
+        });
+
+        test('sort=total + sortDir=asc gives ascending-total order', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total', sortDir: 'asc' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            // A(10) < C(20) < B(30)
+            expect(labels).toEqual(['A', 'C', 'B']);
+        });
+
+        test('sort=total works in count mode (no yKey)', () => {
+            const countData = [
+                { site: 'A' },
+                { site: 'B' },
+                { site: 'B' },
+                { site: 'C' },
+                { site: 'C' },
+                { site: 'C' },
+            ];
+            const spec = {
+                data: countData,
+                mapping: { x: 'site' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            // C(3) > B(2) > A(1)
+            expect(labels).toEqual(['C', 'B', 'A']);
+        });
+    });
+
+    describe('sort + nCategories', () => {
+        const rankData = [
+            { site: 'A', score: 10 },
+            { site: 'B', score: 50 },
+            { site: 'C', score: 30 },
+            { site: 'D', score: 20 },
+        ];
+
+        test('sort=total + nCategories selects top N in descending-total order', () => {
+            const spec = {
+                data: rankData,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total' }, y: {} },
+                nCategories: 2,
+            };
+            const { labels } = structureData(spec);
+            // Top 2: B(50), C(30)
+            expect(labels).toEqual(['B', 'C']);
+        });
+
+        test('sort=total + sortDir=asc + nCategories displays top N in ascending-total order', () => {
+            const spec = {
+                data: rankData,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'total', sortDir: 'asc' }, y: {} },
+                nCategories: 2,
+            };
+            const { labels } = structureData(spec);
+            // Top 2 by total: B(50), C(30); displayed asc: C, B
+            expect(labels).toEqual(['C', 'B']);
+        });
+
+        test('alphanumeric + sortDir=desc + nCategories takes first N from reversed list', () => {
+            const spec = {
+                data: rankData,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { sort: 'alphanumeric', sortDir: 'desc' }, y: {} },
+                nCategories: 2,
+            };
+            const { labels } = structureData(spec);
+            // Desc alphanumeric: D, C, B, A — first 2: D, C
+            expect(labels).toEqual(['D', 'C']);
+        });
+    });
+
+    describe('explicit order takes precedence over sortDir', () => {
+        test('sortDir is ignored when scales.x.order is set', () => {
+            const spec = {
+                data,
+                mapping: { x: 'site', y: 'score' },
+                orientation: 'vertical',
+                scales: { x: { order: ['C', 'A', 'B'], sortDir: 'desc' }, y: {} },
+            };
+            const { labels } = structureData(spec);
+            expect(labels).toEqual(['C', 'A', 'B']);
+        });
+    });
+});

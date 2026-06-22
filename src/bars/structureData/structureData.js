@@ -40,6 +40,39 @@ export default function structureData(spec) {
 
     let labels = resolveCategories(activeData, xKey, scales.x?.order);
 
+    const xSort = scales.x?.sort;
+    const xSortDir = scales.x?.sortDir;
+
+    // Pre-sort: establish the desired category order before limitCategories
+    // selects the top N. This ensures sortDir affects which categories are
+    // included (not just their display order).
+    //
+    // total   — sort all categories by aggregate value, descending by default.
+    //           Post-sort will reverse this if sortDir='asc'.
+    // alphanumeric + sortDir='desc' — reverse the alphanumeric-asc default so
+    //           limitCategories picks from the Z→A end.
+    if (!scales.x?.order) {
+        if (xSort === 'total') {
+            const totals = new Map();
+            for (const d of activeData) {
+                const cat = d[xKey];
+                const val = yKey ? Number(d[yKey]) || 0 : 1;
+                totals.set(cat, (totals.get(cat) || 0) + val);
+            }
+            labels = [...labels].sort((a, b) => {
+                const diff =
+                    (totals.get(b) || 0) - (totals.get(a) || 0); // always desc here
+                return diff !== 0
+                    ? diff
+                    : String(a).localeCompare(String(b), undefined, {
+                          sensitivity: 'base',
+                      });
+            });
+        } else if (xSortDir === 'desc') {
+            labels = [...labels].reverse();
+        }
+    }
+
     // Apply top-N category limit when spec.nCategories is set.
     let nExcluded = 0;
     if (spec.nCategories) {
@@ -49,7 +82,7 @@ export default function structureData(spec) {
             xKey,
             yKey,
             spec.nCategories,
-            scales.x?.sort
+            xSort
         );
         labels = result.limitedCategories;
         nExcluded = result.nExcluded;
@@ -58,6 +91,32 @@ export default function structureData(spec) {
     }
 
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
+
+    // When dynamicCategoryAxis is active and a y variable is mapped, restrict
+    // to categories that have at least one row with a finite (non-missing) y
+    // value. This prevents phantom bars for categories where all y data is
+    // absent or non-numeric.
+    if (yKey && spec.theme?.dynamicCategoryAxis) {
+        const catsWithData = new Set(
+            activeData
+                .filter((d) => {
+                    const v = d[yKey];
+                    return v != null && v !== '' && Number.isFinite(Number(v));
+                })
+                .map((d) => d[xKey])
+        );
+        labels = labels.filter((cat) => catsWithData.has(cat));
+        activeData = activeData.filter((d) => catsWithData.has(d[xKey]));
+        categoryIndex.clear();
+        labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
+
+    // Post-sort: the total pre-sort is always descending; reverse for asc.
+    if (!scales.x?.order && xSort === 'total' && xSortDir === 'asc') {
+        labels = [...labels].reverse();
+        categoryIndex.clear();
+        labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
 
     let datasets;
 

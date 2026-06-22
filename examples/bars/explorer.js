@@ -52,7 +52,9 @@ function detectColumnTypes(data) {
 
         const allNumeric =
             nonMissing.length > 0 &&
-            nonMissing.every((v) => Number.isFinite(Number(v)));
+            nonMissing.every((v) => Number.isFinite(Number(v))) &&
+            // Exclude columns with low cardinality that happen to be numeric.
+            new Set(nonMissing).size > 10;
 
         if (allNumeric) {
             numericCols.push(col);
@@ -89,6 +91,8 @@ function onDatasetLoaded(data, label) {
     const facetKey = getVal('mapping-facet');
     document.getElementById('settings-facet-ncol').disabled = !facetKey;
     document.getElementById('settings-facet-height').disabled = !facetKey;
+    document.getElementById('settings-facet-y-scale').disabled = !facetKey;
+    document.getElementById('settings-facet-x-scale').disabled = !facetKey;
     renderFilters();
     render();
 }
@@ -208,8 +212,12 @@ function renderFilters() {
 
         if (!vals.length) continue;
 
-        const dataMin = Math.min(...vals);
-        const dataMax = Math.max(...vals);
+        let dataMin = Infinity;
+        let dataMax = -Infinity;
+        for (const v of vals) {
+            if (v < dataMin) dataMin = v;
+            if (v > dataMax) dataMax = v;
+        }
 
         const fieldset = document.createElement('fieldset');
         fieldset.className = 'filter-fieldset';
@@ -382,6 +390,12 @@ function getPositiveInt(id) {
     return Number.isInteger(val) && val >= 1 ? val : undefined;
 }
 
+function getFiniteNumber(id) {
+    const raw = document.getElementById(id).value;
+    const val = Number(raw);
+    return raw !== '' && Number.isFinite(val) ? val : undefined;
+}
+
 // ── Spec builders ─────────────────────────────────────────────────────────────
 
 function buildAnnotations(mode, barLabelMode) {
@@ -439,14 +453,24 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
     const annotationsMode = getVal('settings-annotations');
     const barLabelMode = getVal('settings-bar-label');
     const nCategories = getNCategories();
+    const xSort = getVal('settings-x-sort') || undefined;
+    const xSortDir = getVal('settings-x-sort-dir') || undefined;
+    const tooltipFormat = getVal('settings-tooltip-format') || undefined;
+    const yMin = getFiniteNumber('settings-y-min');
+    const yMax = getFiniteNumber('settings-y-max');
 
     const spec = {
         mapping: { x: xKey },
         orientation,
         position,
         nCategories,
+        scales: {
+            x: { ...(xSort ? { sort: xSort } : {}), ...(xSortDir ? { sortDir: xSortDir } : {}) },
+            y: { ...(yMin !== undefined ? { min: yMin } : {}), ...(yMax !== undefined ? { max: yMax } : {}) },
+        },
         theme: { dynamicSizing, dynamicCategoryAxis },
         annotations: buildAnnotations(annotationsMode, barLabelMode),
+        ...(tooltipFormat ? { tooltip: { format: tooltipFormat } } : {}),
     };
 
     if (yKey) spec.mapping.y = yKey;
@@ -454,11 +478,14 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
 
     if (facetKey) {
         const legendMode = getVal('settings-legend-position');
+        const yFree = getVal('settings-facet-y-scale') === 'free';
+        const xFree = getVal('settings-facet-x-scale') === 'free';
         spec.facet = {
             field: facetKey,
             nCol: getPositiveInt('settings-facet-ncol'),
             chartHeight: getPositiveInt('settings-facet-height'),
             legend: { display: legendMode !== 'none' },
+            scales: { y: { free: yFree }, x: { free: xFree } },
         };
     }
 
@@ -503,7 +530,7 @@ function render() {
         return;
     }
 
-    if (yKey && aggMode) {
+    if (yKey && aggMode && aggMode !== 'identity') {
         filtered = aggregateData(
             filtered,
             xKey,
@@ -546,7 +573,8 @@ function render() {
  */
 function applyLegendSettings() {
     const legendMode = getVal('settings-legend-position');
-    const display = legendMode !== 'none';
+    const fillKey = getVal('mapping-fill') || undefined;
+    const display = legendMode !== 'none' && !!fillKey;
     const position = display ? legendMode : 'top';
 
     if (currentChart) {
@@ -630,9 +658,16 @@ document.getElementById('csv-file-input').addEventListener('change', (e) => {
     'settings-annotations',
     'settings-bar-label',
     'settings-n-categories',
+    'settings-x-sort',
+    'settings-x-sort-dir',
+    'settings-tooltip-format',
+    'settings-y-min',
+    'settings-y-max',
     'settings-legend-position',
     'settings-facet-ncol',
     'settings-facet-height',
+    'settings-facet-y-scale',
+    'settings-facet-x-scale',
     'settings-y-agg',
     'mapping-x',
     'mapping-fill',
@@ -654,6 +689,8 @@ document.getElementById('mapping-facet').addEventListener('change', () => {
     const facetDisabled = !facetKey;
     document.getElementById('settings-facet-ncol').disabled = facetDisabled;
     document.getElementById('settings-facet-height').disabled = facetDisabled;
+    document.getElementById('settings-facet-y-scale').disabled = facetDisabled;
+    document.getElementById('settings-facet-x-scale').disabled = facetDisabled;
     render();
 });
 
