@@ -75,6 +75,7 @@ export default function structureData(spec) {
 
     // Apply top-N category limit when spec.nCategories is set.
     let nExcluded = 0;
+    let nRowsExcluded = 0;
     if (spec.nCategories) {
         const result = limitCategories(
             labels,
@@ -86,6 +87,7 @@ export default function structureData(spec) {
         );
         labels = result.limitedCategories;
         nExcluded = result.nExcluded;
+        nRowsExcluded = result.nRowsExcluded;
         const allowed = new Set(labels);
         activeData = activeData.filter((d) => allowed.has(d[xKey]));
     }
@@ -192,5 +194,5 @@ export default function structureData(spec) {
         normalizeFill(datasets, orientation === 'horizontal');
     }
 
-    return { datasets, labels, nExcluded };
+    return { datasets, labels, nExcluded, nRowsExcluded };
 }

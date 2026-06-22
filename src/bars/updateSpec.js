@@ -51,8 +51,13 @@ export default function updateSpec(chart, spec) {
     };
 
     const merged = mergeSpec(existing.data, combined);
-    const { datasets, labels, nExcluded } = structureData(merged);
+    if (existing._originalNCategories) {
+        merged._originalNCategories = existing._originalNCategories;
+    }
+    const { datasets, labels, nExcluded, nRowsExcluded } =
+        structureData(merged);
     merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales(merged);
 
     chart.data.datasets = datasets;
@@ -68,4 +73,27 @@ export default function updateSpec(chart, spec) {
     chart.options.plugins = getPlugins(merged);
 
     chart.update();
+
+    if (merged.theme.dynamicSizing) {
+        const el = chart.canvas.parentNode;
+        const numCategories = labels.length;
+        const pxPerCategory = 30;
+
+        el.style.height = '';
+        el.style.width = '';
+
+        if (merged.orientation === 'horizontal') {
+            const area = chart.chartArea;
+            const chartAreaHeight = area ? area.bottom - area.top : 0;
+            const overhead =
+                chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+            el.style.height = numCategories * pxPerCategory + overhead + 'px';
+        } else {
+            const area = chart.chartArea;
+            const chartAreaWidth = area ? area.right - area.left : 0;
+            const overhead =
+                chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+            el.style.width = numCategories * pxPerCategory + overhead + 'px';
+        }
+    }
 }

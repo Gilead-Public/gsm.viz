@@ -28,11 +28,16 @@ export default function limitCategories(
     sort = 'total'
 ) {
     if (!nCategories || nCategories >= categories.length) {
-        return { limitedCategories: categories, nExcluded: 0 };
+        return {
+            limitedCategories: categories,
+            nExcluded: 0,
+            nRowsExcluded: 0,
+        };
     }
 
     const nExcluded = categories.length - nCategories;
 
+    let limitedCategories;
     if (sort === 'total') {
         const totals = new Map();
         for (const d of data) {
@@ -49,9 +54,16 @@ export default function limitCategories(
             });
         });
 
-        return { limitedCategories: sorted.slice(0, nCategories), nExcluded };
+        limitedCategories = sorted.slice(0, nCategories);
+    } else {
+        limitedCategories = categories.slice(0, nCategories);
     }
 
-    // 'alphanumeric': categories are already sorted; take first N.
-    return { limitedCategories: categories.slice(0, nCategories), nExcluded };
+    const kept = new Set(limitedCategories);
+    let nRowsExcluded = 0;
+    for (const d of data) {
+        if (!kept.has(d[xKey])) nRowsExcluded++;
+    }
+
+    return { limitedCategories, nExcluded, nRowsExcluded };
 }

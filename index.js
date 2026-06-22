@@ -1,3 +1,4 @@
+'use strict'
 var gsmViz = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -21927,6 +21928,7 @@ var gsmViz = (() => {
     "#bab0ac"
   ];
   var defaults3 = {
+    interactive: true,
     orientation: "vertical",
     position: "stack",
     scales: {
@@ -21992,6 +21994,7 @@ var gsmViz = (() => {
     return {
       data,
       mapping: { ...spec.mapping },
+      interactive: spec.interactive ?? defaults_default.interactive,
       orientation: spec.orientation ?? defaults_default.orientation,
       position: spec.position ?? defaults_default.position,
       nCategories: spec.nCategories,
@@ -22088,9 +22091,14 @@ var gsmViz = (() => {
   // src/bars/structureData/limitCategories.js
   function limitCategories(categories, data, xKey, yKey, nCategories, sort = "total") {
     if (!nCategories || nCategories >= categories.length) {
-      return { limitedCategories: categories, nExcluded: 0 };
+      return {
+        limitedCategories: categories,
+        nExcluded: 0,
+        nRowsExcluded: 0
+      };
     }
     const nExcluded = categories.length - nCategories;
+    let limitedCategories;
     if (sort === "total") {
       const totals = /* @__PURE__ */ new Map();
       for (const d of data) {
@@ -22105,9 +22113,16 @@ var gsmViz = (() => {
           sensitivity: "base"
         });
       });
-      return { limitedCategories: sorted.slice(0, nCategories), nExcluded };
+      limitedCategories = sorted.slice(0, nCategories);
+    } else {
+      limitedCategories = categories.slice(0, nCategories);
     }
-    return { limitedCategories: categories.slice(0, nCategories), nExcluded };
+    const kept = new Set(limitedCategories);
+    let nRowsExcluded = 0;
+    for (const d of data) {
+      if (!kept.has(d[xKey])) nRowsExcluded++;
+    }
+    return { limitedCategories, nExcluded, nRowsExcluded };
   }
 
   // src/bars/structureData/normalizeFill.js
@@ -22208,6 +22223,7 @@ var gsmViz = (() => {
       }
     }
     let nExcluded = 0;
+    let nRowsExcluded = 0;
     if (spec.nCategories) {
       const result = limitCategories(
         labels,
@@ -22219,6 +22235,7 @@ var gsmViz = (() => {
       );
       labels = result.limitedCategories;
       nExcluded = result.nExcluded;
+      nRowsExcluded = result.nRowsExcluded;
       const allowed = new Set(labels);
       activeData = activeData.filter((d) => allowed.has(d[xKey]));
     }
@@ -22300,7 +22317,7 @@ var gsmViz = (() => {
     if (spec.position === "fill") {
       normalizeFill(datasets, orientation === "horizontal");
     }
-    return { datasets, labels, nExcluded };
+    return { datasets, labels, nExcluded, nRowsExcluded };
   }
 
   // src/bars/getScales.js
@@ -22858,11 +22875,21 @@ var gsmViz = (() => {
     const captionsRaw = labels.captions;
     const captionsArray = Array.isArray(captionsRaw) ? [...captionsRaw] : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
     const nExcluded = spec._nExcluded;
+    const nRowsExcluded = spec._nRowsExcluded ?? 0;
+    const origN = spec._originalNCategories;
     if (spec.nCategories && (scales2.x?.sort === "total" || scales2.x?.sort === void 0) && nExcluded > 0) {
       const xLabel = scales2.x?.label || mapping?.x || "category";
       const sort = scales2.x?.sort ?? "total";
+      const rowsNote = nRowsExcluded > 0 ? ` (${nRowsExcluded.toLocaleString()} records)` : "";
+      const clickNote = spec.interactive !== false ? " Click to show all." : "";
       captionsArray.push(
-        `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden.`
+        `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden${rowsNote}.${clickNote}`
+      );
+    } else if (origN && !spec.nCategories) {
+      const xLabel = scales2.x?.label || mapping?.x || "category";
+      const clickNote = spec.interactive !== false ? ` Click to show top ${origN}.` : "";
+      captionsArray.push(
+        `Showing all values of ${xLabel}.${clickNote}`
       );
     }
     return {
@@ -22887,11 +22914,64 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/getPlugins/nCategoriesToggle.js
+  function nCategoriesToggle() {
+    return {
+      id: "nCategoriesToggle",
+      afterEvent(chart, args) {
+        if (args.event.type !== "click") return;
+        const spec = chart.data._spec_;
+        if (!spec || spec.interactive === false) return;
+        const origN = spec._originalNCategories ?? spec.nCategories;
+        if (!origN) return;
+        const subtitle = chart.options.plugins.subtitle;
+        if (!subtitle?.display) return;
+        const { x, y } = args.event;
+        const chartArea = chart.chartArea;
+        if (!chartArea) return;
+        const subtitleTop = chartArea.bottom;
+        const subtitleBottom = chart.height;
+        if (y < subtitleTop || y > subtitleBottom || x < 0 || x > chart.width)
+          return;
+        const isShowingAll = !spec.nCategories;
+        if (isShowingAll) {
+          chart.helpers.updateSpec(chart, { nCategories: origN });
+        } else {
+          spec._originalNCategories = origN;
+          chart.helpers.updateSpec(chart, { nCategories: void 0 });
+        }
+      },
+      afterDraw(chart) {
+        const spec = chart.data._spec_;
+        if (!spec || spec.interactive === false) return;
+        const origN = spec._originalNCategories ?? spec.nCategories;
+        if (!origN) return;
+        const subtitle = chart.options.plugins.subtitle;
+        if (!subtitle?.display) return;
+        const canvas = chart.canvas;
+        const chartArea = chart.chartArea;
+        if (!chartArea) return;
+        const handler = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const my = e.clientY - rect.top;
+          const subtitleTop = chartArea.bottom;
+          const subtitleBottom = chart.height;
+          canvas.style.cursor = my >= subtitleTop && my <= subtitleBottom ? "pointer" : "";
+        };
+        if (!canvas._nCatToggleHandler) {
+          canvas._nCatToggleHandler = handler;
+          canvas.addEventListener("mousemove", handler);
+        }
+      }
+    };
+  }
+
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
     const merged = mergeSpec(data, spec);
-    const { datasets, labels, nExcluded } = structureData2(merged);
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
     merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
@@ -22904,6 +22984,24 @@ var gsmViz = (() => {
     };
     chart.options.plugins = getPlugins2(merged);
     chart.update();
+    if (merged.theme.dynamicSizing) {
+      const el = chart.canvas.parentNode;
+      const numCategories = labels.length;
+      const pxPerCategory = 30;
+      el.style.height = "";
+      el.style.width = "";
+      if (merged.orientation === "horizontal") {
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        el.style.height = numCategories * pxPerCategory + overhead + "px";
+      } else {
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        el.style.width = numCategories * pxPerCategory + overhead + "px";
+      }
+    }
   }
 
   // src/bars/updateSpec.js
@@ -22944,8 +23042,12 @@ var gsmViz = (() => {
       theme: { ...existing.theme, ...spec.theme }
     };
     const merged = mergeSpec(existing.data, combined);
-    const { datasets, labels, nExcluded } = structureData2(merged);
+    if (existing._originalNCategories) {
+      merged._originalNCategories = existing._originalNCategories;
+    }
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
     merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales2(merged);
     chart.data.datasets = datasets;
     chart.data.labels = labels;
@@ -22958,6 +23060,24 @@ var gsmViz = (() => {
     };
     chart.options.plugins = getPlugins2(merged);
     chart.update();
+    if (merged.theme.dynamicSizing) {
+      const el = chart.canvas.parentNode;
+      const numCategories = labels.length;
+      const pxPerCategory = 30;
+      el.style.height = "";
+      el.style.width = "";
+      if (merged.orientation === "horizontal") {
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        el.style.height = numCategories * pxPerCategory + overhead + "px";
+      } else {
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        el.style.width = numCategories * pxPerCategory + overhead + "px";
+      }
+    }
   }
 
   // src/bars/defaultFilename.js
@@ -23045,8 +23165,9 @@ var gsmViz = (() => {
       hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
       clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper
     });
-    const { datasets, labels, nExcluded } = structureData2(merged);
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
     merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales2(merged);
     const options = {
       animation: merged.theme.animation,
@@ -23069,7 +23190,7 @@ var gsmViz = (() => {
         _spec_: merged
       },
       options,
-      plugins: [plugin, displayWhiteBackground()]
+      plugins: [plugin, displayWhiteBackground(), nCategoriesToggle()]
     });
     canvas.chart = chart;
     el.style.height = "";
@@ -23554,6 +23675,25 @@ var gsmViz = (() => {
     const globalScales = computeGlobalScales(facetDataMap, merged);
     const globalCategories = computeGlobalCategories(facetDataMap, merged);
     const { containers, grid } = renderGrid(el, facetValues, merged);
+    const fillKey = merged.mapping.fill;
+    let globalFillDomain;
+    if (fillKey) {
+      if (merged.scales?.fill?.order) {
+        globalFillDomain = merged.scales.fill.order.map(String);
+      } else {
+        const seen = /* @__PURE__ */ new Set();
+        globalFillDomain = [];
+        for (const facetData of facetDataMap.values()) {
+          for (const d of facetData) {
+            const val = String(d[fillKey]);
+            if (!seen.has(val)) {
+              seen.add(val);
+              globalFillDomain.push(val);
+            }
+          }
+        }
+      }
+    }
     const charts = [];
     for (const facetValue of facetValues) {
       const facetData = facetDataMap.get(facetValue);
@@ -23593,6 +23733,20 @@ var gsmViz = (() => {
         if (chart.options.plugins.legend.display !== showLegend) {
           chart.options.plugins.legend.display = showLegend;
           needsUpdate = true;
+        }
+        if (showLegend && globalFillDomain) {
+          const existing = new Set(
+            chart.data.datasets.map((ds) => String(ds.label))
+          );
+          for (const fillVal of globalFillDomain) {
+            if (!existing.has(fillVal)) {
+              chart.data.datasets.push({
+                label: fillVal,
+                data: []
+              });
+              needsUpdate = true;
+            }
+          }
         }
       }
       if (needsUpdate) chart.update("none");

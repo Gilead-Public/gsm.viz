@@ -1791,7 +1791,7 @@ describe('bars/getPlugins', () => {
             };
             const plugins = getPlugins(spec);
             expect(plugins.subtitle.text).toContain(
-                'Displaying top 5 values of Site by total. Remaining 3 values of Site are hidden.'
+                'Displaying top 5 values of Site by total. Remaining 3 values of Site are hidden. Click to show all.'
             );
         });
 
@@ -1835,7 +1835,7 @@ describe('bars/getPlugins', () => {
             };
             const plugins = getPlugins(spec);
             expect(plugins.subtitle.text).toContain(
-                'Displaying top 5 values of site by total. Remaining 2 values of site are hidden.'
+                'Displaying top 5 values of site by total. Remaining 2 values of site are hidden. Click to show all.'
             );
         });
 
@@ -1849,7 +1849,7 @@ describe('bars/getPlugins', () => {
             const plugins = getPlugins(spec);
             expect(plugins.subtitle.text[0]).toBe('Note: data is preliminary.');
             expect(plugins.subtitle.text[1]).toBe(
-                'Displaying top 5 values of Site by total. Remaining 2 values of Site are hidden.'
+                'Displaying top 5 values of Site by total. Remaining 2 values of Site are hidden. Click to show all.'
             );
         });
 
@@ -1862,7 +1862,7 @@ describe('bars/getPlugins', () => {
             };
             const plugins = getPlugins(spec);
             expect(plugins.subtitle.text).toContain(
-                'Displaying top 5 values of Site by total. Remaining 1 values of Site are hidden.'
+                'Displaying top 5 values of Site by total. Remaining 1 values of Site are hidden. Click to show all.'
             );
         });
 

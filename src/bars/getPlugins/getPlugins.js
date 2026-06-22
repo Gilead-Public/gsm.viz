@@ -44,6 +44,8 @@ export default function getPlugins(spec) {
     // Auto-inject a caption when nCategories is active with 'total' sort (or
     // the default) and some categories are excluded.
     const nExcluded = spec._nExcluded;
+    const nRowsExcluded = spec._nRowsExcluded ?? 0;
+    const origN = spec._originalNCategories;
     if (
         spec.nCategories &&
         (scales.x?.sort === 'total' || scales.x?.sort === undefined) &&
@@ -51,8 +53,23 @@ export default function getPlugins(spec) {
     ) {
         const xLabel = scales.x?.label || mapping?.x || 'category';
         const sort = scales.x?.sort ?? 'total';
+        const rowsNote =
+            nRowsExcluded > 0
+                ? ` (${nRowsExcluded.toLocaleString()} records)`
+                : '';
+        const clickNote =
+            spec.interactive !== false ? ' Click to show all.' : '';
         captionsArray.push(
-            `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden.`
+            `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden${rowsNote}.${clickNote}`
+        );
+    } else if (origN && !spec.nCategories) {
+        const xLabel = scales.x?.label || mapping?.x || 'category';
+        const clickNote =
+            spec.interactive !== false
+                ? ` Click to show top ${origN}.`
+                : '';
+        captionsArray.push(
+            `Showing all values of ${xLabel}.${clickNote}`
         );
     }
 

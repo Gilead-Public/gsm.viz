@@ -213,7 +213,7 @@ describe('bars/updateSpec', () => {
             });
             expect(chart.data._spec_._nExcluded).toBe(2);
             expect(chart.options.plugins.subtitle.text).toContain(
-                'Displaying top 3 values of Category by total. Remaining 2 values of Category are hidden.'
+                'Displaying top 3 values of Category by total. Remaining 2 values of Category are hidden (2 records). Click to show all.'
             );
         });
 
@@ -230,7 +230,7 @@ describe('bars/updateSpec', () => {
             });
             expect(chart.data._spec_._nExcluded).toBe(3);
             expect(chart.options.plugins.subtitle.text).toContain(
-                'Displaying top 2 values of Category by total. Remaining 3 values of Category are hidden.'
+                'Displaying top 2 values of Category by total. Remaining 3 values of Category are hidden (3 records). Click to show all.'
             );
         });
     });

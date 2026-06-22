@@ -65,6 +65,28 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     // Build the CSS grid layout with one sub-container per facet
     const { containers, grid } = renderGrid(el, facetValues, merged);
 
+    // Compute global fill domain so the legend chart can display all fill
+    // values, not just those present in a single facet's data.
+    const fillKey = merged.mapping.fill;
+    let globalFillDomain;
+    if (fillKey) {
+        if (merged.scales?.fill?.order) {
+            globalFillDomain = merged.scales.fill.order.map(String);
+        } else {
+            const seen = new Set();
+            globalFillDomain = [];
+            for (const facetData of facetDataMap.values()) {
+                for (const d of facetData) {
+                    const val = String(d[fillKey]);
+                    if (!seen.has(val)) {
+                        seen.add(val);
+                        globalFillDomain.push(val);
+                    }
+                }
+            }
+        }
+    }
+
     // Render one bars chart per facet
     const charts = [];
     for (const facetValue of facetValues) {
@@ -143,6 +165,23 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
             if (chart.options.plugins.legend.display !== showLegend) {
                 chart.options.plugins.legend.display = showLegend;
                 needsUpdate = true;
+            }
+
+            // Ensure the legend chart has datasets for all global fill values
+            // so the legend reflects the full domain, not just this facet's data.
+            if (showLegend && globalFillDomain) {
+                const existing = new Set(
+                    chart.data.datasets.map((ds) => String(ds.label))
+                );
+                for (const fillVal of globalFillDomain) {
+                    if (!existing.has(fillVal)) {
+                        chart.data.datasets.push({
+                            label: fillVal,
+                            data: [],
+                        });
+                        needsUpdate = true;
+                    }
+                }
             }
         }
 
