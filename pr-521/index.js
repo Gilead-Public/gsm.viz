@@ -21815,6 +21815,10 @@ var gsmViz = (() => {
     if (xSort !== void 0 && xSort !== "total" && xSort !== "alphanumeric") {
       throw new Error("spec.scales.x.sort must be 'total' or 'alphanumeric'");
     }
+    const xSortDir = spec.scales?.x?.sortDir;
+    if (xSortDir !== void 0 && xSortDir !== "asc" && xSortDir !== "desc") {
+      throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
+    }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
       if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
@@ -22184,6 +22188,26 @@ var gsmViz = (() => {
       return data.filter((d) => allowed.has(String(d[fillKey])));
     })() : data;
     let labels = resolveCategories(activeData, xKey, scales2.x?.order);
+    const xSort = scales2.x?.sort;
+    const xSortDir = scales2.x?.sortDir;
+    if (!scales2.x?.order) {
+      if (xSort === "total") {
+        const totals = /* @__PURE__ */ new Map();
+        for (const d of activeData) {
+          const cat = d[xKey];
+          const val = yKey ? Number(d[yKey]) || 0 : 1;
+          totals.set(cat, (totals.get(cat) || 0) + val);
+        }
+        labels = [...labels].sort((a, b) => {
+          const diff = (totals.get(b) || 0) - (totals.get(a) || 0);
+          return diff !== 0 ? diff : String(a).localeCompare(String(b), void 0, {
+            sensitivity: "base"
+          });
+        });
+      } else if (xSortDir === "desc") {
+        labels = [...labels].reverse();
+      }
+    }
     let nExcluded = 0;
     if (spec.nCategories) {
       const result = limitCategories(
@@ -22192,7 +22216,7 @@ var gsmViz = (() => {
         xKey,
         yKey,
         spec.nCategories,
-        scales2.x?.sort
+        xSort
       );
       labels = result.limitedCategories;
       nExcluded = result.nExcluded;
@@ -22200,6 +22224,23 @@ var gsmViz = (() => {
       activeData = activeData.filter((d) => allowed.has(d[xKey]));
     }
     const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
+    if (yKey && spec.theme?.dynamicCategoryAxis) {
+      const catsWithData = new Set(
+        activeData.filter((d) => {
+          const v = d[yKey];
+          return v != null && v !== "" && Number.isFinite(Number(v));
+        }).map((d) => d[xKey])
+      );
+      labels = labels.filter((cat) => catsWithData.has(cat));
+      activeData = activeData.filter((d) => catsWithData.has(d[xKey]));
+      categoryIndex.clear();
+      labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
+    if (!scales2.x?.order && xSort === "total" && xSortDir === "asc") {
+      labels = [...labels].reverse();
+      categoryIndex.clear();
+      labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
     let datasets;
     if (!yKey) {
       datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
@@ -22287,7 +22328,8 @@ var gsmViz = (() => {
         display: !!yLabel,
         text: yLabel
       },
-      beginAtZero: true,
+      ...specScales.y.min !== void 0 ? { min: specScales.y.min } : { beginAtZero: true },
+      ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
       ...fill2 ? { max: 100, ticks: percentageTicks } : {}
     };
