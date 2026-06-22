@@ -23435,21 +23435,24 @@ var gsmViz = (() => {
       const original = chart.options.plugins?.legend?.onClick;
       if (!original) return;
       chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
-        original(e, legendItem, legendRef);
-        const { datasetIndex } = legendItem;
-        const isNowVisible = chart.isDatasetVisible(datasetIndex);
+        original.call(this, e, legendItem, legendRef);
+        const clickedLabel = legendItem.text;
+        const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
         charts.forEach((sibling) => {
           if (sibling === chart) return;
-          const siblingDataset = sibling.data.datasets[datasetIndex];
-          if (!siblingDataset) return;
+          const siblingIdx = sibling.data.datasets.findIndex(
+            (ds) => ds.label === clickedLabel
+          );
+          if (siblingIdx === -1) return;
+          const siblingDataset = sibling.data.datasets[siblingIdx];
           initializeDynamicCategoryData(sibling.data.datasets);
           if (!isNowVisible) {
             siblingDataset.data = [];
             siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
-            sibling.setDatasetVisibility(datasetIndex, false);
+            sibling.setDatasetVisibility(siblingIdx, false);
           } else {
             delete siblingDataset._backup_;
-            sibling.setDatasetVisibility(datasetIndex, true);
+            sibling.setDatasetVisibility(siblingIdx, true);
           }
           const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
           const valKey = catKey === "x" ? "y" : "x";
@@ -23464,6 +23467,25 @@ var gsmViz = (() => {
             valKey
           );
           sibling.update();
+          if (sibling.data._spec_?.theme?.dynamicSizing) {
+            const sibContainer = sibling.canvas?.parentElement;
+            if (sibContainer) {
+              const numCategories = sibling.data.labels.length;
+              const pxPerCategory = 30;
+              const horizontal = sibling.data._spec_?.orientation === "horizontal";
+              if (horizontal) {
+                const area = sibling.chartArea;
+                const chartAreaHeight = area ? area.bottom - area.top : 0;
+                const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
+                sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
+              } else {
+                const area = sibling.chartArea;
+                const chartAreaWidth = area ? area.right - area.left : 0;
+                const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
+                sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+              }
+            }
+          }
         });
       };
     });
