@@ -255,6 +255,161 @@ describe('bars/updateSpec', () => {
         });
     });
 
+    test('preserves legend hidden state across spec updates', () => {
+        const fillData = [
+            { category: 'A', value: 10, group: 'X' },
+            { category: 'A', value: 5, group: 'Y' },
+            { category: 'B', value: 20, group: 'X' },
+            { category: 'B', value: 15, group: 'Y' },
+        ];
+        const chart = bars(container, fillData, {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+        });
+
+        // Simulate hiding the first dataset via legend click.
+        chart.setDatasetVisibility(0, false);
+        chart.update();
+        expect(chart.isDatasetVisible(0)).toBe(false);
+        expect(chart.isDatasetVisible(1)).toBe(true);
+
+        // Toggle position — this calls updateSpec internally.
+        updateSpec(chart, { position: 'dodge' });
+
+        // The first dataset (group 'X') should still be hidden.
+        const xIndex = chart.data.datasets.findIndex(
+            (ds) => ds.label === 'X'
+        );
+        expect(chart.isDatasetVisible(xIndex)).toBe(false);
+        const yIndex = chart.data.datasets.findIndex(
+            (ds) => ds.label === 'Y'
+        );
+        expect(chart.isDatasetVisible(yIndex)).toBe(true);
+    });
+
+    test('preserves dynamic category axis state across spec updates', () => {
+        const fillData = [
+            { category: 'A', value: 10, group: 'X' },
+            { category: 'A', value: 5, group: 'Y' },
+            { category: 'B', value: 20, group: 'X' },
+            { category: 'C', value: 15, group: 'Y' },
+        ];
+        const chart = bars(container, fillData, {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+            theme: { dynamicCategoryAxis: true },
+        });
+
+        // Simulate hiding group 'X' via the legend click handler.
+        const legendRef = { chart };
+        const legendPlugin = chart.options.plugins.legend;
+        legendPlugin.onClick(
+            {},
+            { datasetIndex: 0 },
+            legendRef
+        );
+
+        // After hiding 'X', only categories with 'Y' data remain.
+        expect(chart.isDatasetVisible(0)).toBe(false);
+        expect(chart.data.labels).toEqual(['A', 'C']);
+
+        // Toggle position — calls updateSpec internally.
+        updateSpec(chart, { position: 'dodge' });
+
+        // 'X' should still be hidden and labels should still reflect only
+        // categories with visible data.
+        const xIndex = chart.data.datasets.findIndex(
+            (ds) => ds.label === 'X'
+        );
+        expect(chart.isDatasetVisible(xIndex)).toBe(false);
+        expect(chart.data.labels).toEqual(['A', 'C']);
+    });
+
+    test('dynamicSizing uses filtered label count after dynamic category axis update', () => {
+        const fillData = [
+            { category: 'A', value: 10, group: 'X' },
+            { category: 'A', value: 5, group: 'Y' },
+            { category: 'B', value: 20, group: 'X' },
+            { category: 'C', value: 15, group: 'Y' },
+        ];
+        const chart = bars(container, fillData, {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+            theme: { dynamicCategoryAxis: true, dynamicSizing: true },
+            orientation: 'horizontal',
+        });
+
+        // Hide group 'X' via the legend click handler.
+        const legendPlugin = chart.options.plugins.legend;
+        legendPlugin.onClick({}, { datasetIndex: 0 }, { chart });
+
+        // Only categories with 'Y' data remain: A and C.
+        expect(chart.data.labels).toEqual(['A', 'C']);
+
+        updateSpec(chart, { position: 'dodge' });
+
+        // After updateSpec the container height should reflect 2 visible
+        // categories, not all 3.
+        expect(chart.data.labels).toEqual(['A', 'C']);
+        const el = chart.canvas.parentNode;
+        const allCatHeight = el.style.height;
+
+        // Rebuild with all legend items visible to get the "full" height.
+        chart.setDatasetVisibility(0, true);
+        updateSpec(chart, { position: 'stack' });
+        const fullHeight = el.style.height;
+
+        expect(allCatHeight).not.toBe(fullHeight);
+    });
+
+    describe('theme.pxPerCategory', () => {
+        test('updateSpec uses custom pxPerCategory for dynamic sizing', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true, pxPerCategory: 50 },
+            });
+            const el = chart.canvas.parentNode;
+
+            updateSpec(chart, { labels: { title: 'Updated' } });
+
+            const area = chart.chartArea;
+            const overhead = area ? chart.height - (area.bottom - area.top) : 0;
+            expect(el.style.height).toBe(2 * 50 + overhead + 'px');
+        });
+
+        test('updateData uses custom pxPerCategory for dynamic sizing', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true, pxPerCategory: 50 },
+            });
+            const el = chart.canvas.parentNode;
+
+            updateData(chart, data, {
+                ...spec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true, pxPerCategory: 50 },
+            });
+
+            const area = chart.chartArea;
+            const overhead = area ? chart.height - (area.bottom - area.top) : 0;
+            expect(el.style.height).toBe(2 * 50 + overhead + 'px');
+        });
+
+        test('defaults to 30 when pxPerCategory is not specified', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true },
+            });
+            const el = chart.canvas.parentNode;
+
+            updateSpec(chart, { labels: { title: 'Updated' } });
+
+            const area = chart.chartArea;
+            const overhead = area ? chart.height - (area.bottom - area.top) : 0;
+            expect(el.style.height).toBe(2 * 30 + overhead + 'px');
+        });
+    });
+
     describe('dynamicSizing inline dimension cleanup', () => {
         test('updateSpec clears stale inline sizing when dynamicSizing is disabled', () => {
             const chart = bars(container, data, {

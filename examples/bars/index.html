@@ -95,9 +95,9 @@
 
     <body>
         <nav class="tab-nav">
-            <button class="active" data-tab="retention">Stacked</button>
-            <button data-tab="eligibility">Eligibility</button>
-            <button data-tab="ie-criteria">IE Criteria</button>
+            <button class="active" data-tab="retention">Grouped</button>
+            <!--button data-tab="eligibility">Eligibility</button-->
+            <!--button data-tab="ie-criteria">IE Criteria</button-->
             <button data-tab="kri">Callbacks</button>
             <button data-tab="gini">Continuous</button>
             <button data-tab="kri-site">Reference Lines</button>
@@ -172,7 +172,9 @@
                 <button
                     id="retention-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>
@@ -182,7 +184,7 @@
         </div>
 
         <!-- Eligibility tab -->
-        <div id="eligibility" class="tab-panel gsm-viz--example">
+        <!--div id="eligibility" class="tab-panel gsm-viz--example">
             <div id="eligibility-controls">
                 <fieldset>
                     <legend>Orientation</legend>
@@ -255,17 +257,19 @@
                 <button
                     id="eligibility-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>
             </div>
 
             <div id="eligibility-container"></div>
-        </div>
+        </div-->
 
         <!-- IE Criteria tab -->
-        <div id="ie-criteria" class="tab-panel gsm-viz--example">
+        <!--div id="ie-criteria" class="tab-panel gsm-viz--example">
             <div id="ie-criteria-controls">
                 <fieldset>
                     <legend>Orientation</legend>
@@ -346,14 +350,16 @@
                 <button
                     id="ie-criteria-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>
             </div>
 
             <div id="ie-criteria-container"></div>
-        </div>
+        </div-->
 
         <!-- KRI tab -->
         <div id="kri" class="tab-panel gsm-viz--example">
@@ -419,7 +425,9 @@
                 <button
                     id="kri-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>
@@ -494,7 +502,9 @@
                 <button
                     id="gini-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>
@@ -541,7 +551,9 @@
                 <button
                     id="kri-site-export-btn"
                     class="export-btn"
+                    type="button"
                     title="Export PNG"
+                    aria-label="Export PNG"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
                 </button>

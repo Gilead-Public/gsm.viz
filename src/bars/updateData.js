@@ -47,7 +47,7 @@ export default function updateData(chart, data, spec) {
 
     if (merged.theme.dynamicSizing) {
         const numCategories = labels.length;
-        const pxPerCategory = 30;
+        const pxPerCategory = merged.theme.pxPerCategory;
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;

@@ -224,4 +224,39 @@ describe('bars/positionToggle', () => {
         );
         fillTextSpy.mockRestore();
     });
+
+    test('afterDraw clears stale hover state when the control is disabled', () => {
+        const chart = makeChart({
+            spec: { position: 'stack', mapping: { fill: 'status' } },
+        });
+        const boxes = getIconBoxes(chart);
+        const dodge = boxes.find((b) => b.value === 'dodge');
+
+        plugin.afterDraw(chart);
+
+        // Hover an icon so hoveredValue is set.
+        plugin.afterEvent(chart, {
+            event: {
+                type: 'mousemove',
+                x: dodge.x + dodge.w / 2,
+                y: dodge.y + dodge.h / 2,
+            },
+        });
+
+        // Disable the control without moving the mouse (e.g. interactive
+        // toggled off or fill mapping removed via updateSpec).
+        chart.data._spec_.interactive = false;
+        plugin.afterDraw(chart);
+
+        // Re-enable and redraw; the stale tooltip must not reappear.
+        chart.data._spec_.interactive = true;
+        const fillTextSpy = jest.spyOn(chart.ctx, 'fillText');
+        plugin.afterDraw(chart);
+        expect(fillTextSpy).not.toHaveBeenCalledWith(
+            'Side-by-Side Bars',
+            expect.any(Number),
+            expect.any(Number)
+        );
+        fillTextSpy.mockRestore();
+    });
 });

@@ -184,7 +184,12 @@ export default function positionToggle() {
 
         afterDraw(chart) {
             const spec = enabledSpec(chart);
-            if (!spec) return;
+            if (!spec) {
+                // Clear any lingering hover so a stale tooltip can't reappear
+                // when the control is re-enabled (e.g. after updateSpec).
+                hoveredValue = null;
+                return;
+            }
 
             const boxes = getIconBoxes(chart);
             if (chart.ctx) {
