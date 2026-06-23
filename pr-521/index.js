@@ -22888,9 +22888,7 @@ var gsmViz = (() => {
     } else if (origN && !spec.nCategories) {
       const xLabel = scales2.x?.label || mapping?.x || "category";
       const clickNote = spec.interactive !== false ? ` Click to show top ${origN}.` : "";
-      captionsArray.push(
-        `Showing all values of ${xLabel}.${clickNote}`
-      );
+      captionsArray.push(`Showing all values of ${xLabel}.${clickNote}`);
     }
     return {
       title: {
@@ -23195,7 +23193,11 @@ var gsmViz = (() => {
         _spec_: merged
       },
       options,
-      plugins: [plugin, displayWhiteBackground(), nCategoriesToggle()]
+      plugins: [
+        plugin,
+        displayWhiteBackground(),
+        nCategoriesToggle()
+      ]
     });
     canvas.chart = chart;
     el.style.height = "";
@@ -23604,7 +23606,9 @@ var gsmViz = (() => {
       chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
         original.call(this, e, legendItem, legendRef);
         const clickedLabel = String(legendItem.text);
-        const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
+        const isNowVisible = chart.isDatasetVisible(
+          legendItem.datasetIndex
+        );
         charts.forEach((sibling) => {
           if (sibling === chart) return;
           const siblingIdx = sibling.data.datasets.findIndex(
