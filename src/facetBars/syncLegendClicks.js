@@ -37,7 +37,9 @@ export default function syncLegendClicks(charts) {
             // strings since legendItem.text is always a string while a dataset
             // label may be a number (e.g. numeric fill values).
             const clickedLabel = String(legendItem.text);
-            const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
+            const isNowVisible = chart.isDatasetVisible(
+                legendItem.datasetIndex
+            );
 
             // Propagate the resulting visibility state to every sibling chart.
             charts.forEach((sibling) => {

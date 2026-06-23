@@ -674,6 +674,8 @@ function destroyCurrentChart() {
 }
 
 function render() {
+    updateSpecDisplay();
+
     const xKey = getVal('mapping-x');
     if (!xKey) return;
 
@@ -789,6 +791,41 @@ function cleanSpec(obj) {
     return cleaned;
 }
 
+/**
+ * Build the `gsmViz.bars(...)`/`gsmViz.facetBars(...)` source string for the
+ * current control state. Shared by the Export Spec button and the live spec
+ * display panel so both always reflect the same code.
+ */
+function buildSpecText(xKey, yKey, fillKey, facetKey) {
+    const spec = cleanSpec(buildSpec(xKey, yKey, fillKey, facetKey));
+    const facetCall = facetKey ? 'facetBars' : 'bars';
+    return `gsmViz.${facetCall}(element, data, ${JSON.stringify(
+        spec,
+        null,
+        4
+    )});`;
+}
+
+/**
+ * Refresh the live spec display panel to match the current chart. Called on
+ * every render so the displayed code stays in sync with the rendered chart.
+ */
+function updateSpecDisplay() {
+    const el = document.getElementById('spec-display');
+    if (!el) return;
+
+    const xKey = getVal('mapping-x');
+    if (!xKey) {
+        el.textContent = '// Select an X (category) variable to build a spec.';
+        return;
+    }
+
+    const yKey = getVal('mapping-y') || undefined;
+    const fillKey = getVal('mapping-fill') || undefined;
+    const facetKey = getVal('mapping-facet') || undefined;
+    el.textContent = buildSpecText(xKey, yKey, fillKey, facetKey);
+}
+
 function handleExportSpec() {
     const xKey = getVal('mapping-x');
     if (!xKey) return;
@@ -796,13 +833,7 @@ function handleExportSpec() {
     const yKey = getVal('mapping-y') || undefined;
     const fillKey = getVal('mapping-fill') || undefined;
     const facetKey = getVal('mapping-facet') || undefined;
-    const spec = cleanSpec(buildSpec(xKey, yKey, fillKey, facetKey));
-    const facetCall = facetKey ? 'facetBars' : 'bars';
-    const text = `gsmViz.${facetCall}(element, data, ${JSON.stringify(
-        spec,
-        null,
-        4
-    )});`;
+    const text = buildSpecText(xKey, yKey, fillKey, facetKey);
 
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('export-spec-btn');

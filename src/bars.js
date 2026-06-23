@@ -95,7 +95,11 @@ export default function bars(element = 'body', data = [], spec = {}) {
             _spec_: merged,
         },
         options,
-        plugins: [ChartDataLabels, displayWhiteBackground(), nCategoriesToggle()],
+        plugins: [
+            ChartDataLabels,
+            displayWhiteBackground(),
+            nCategoriesToggle(),
+        ],
     });
 
     // Attach chart to canvas element.

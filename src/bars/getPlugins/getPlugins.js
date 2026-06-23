@@ -65,12 +65,8 @@ export default function getPlugins(spec) {
     } else if (origN && !spec.nCategories) {
         const xLabel = scales.x?.label || mapping?.x || 'category';
         const clickNote =
-            spec.interactive !== false
-                ? ` Click to show top ${origN}.`
-                : '';
-        captionsArray.push(
-            `Showing all values of ${xLabel}.${clickNote}`
-        );
+            spec.interactive !== false ? ` Click to show top ${origN}.` : '';
+        captionsArray.push(`Showing all values of ${xLabel}.${clickNote}`);
     }
 
     return {

@@ -116,7 +116,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `nCategories`                          | `undefined` (all categories)                                  |
 | `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
-| `scales.x.sortDir`                     | `undefined` (`total`→desc, `alphanumeric`→asc)               |
+| `scales.x.sortDir`                     | `undefined` (`total`→desc, `alphanumeric`→asc)                |
 | `scales.y.type`                        | `'linear'`                                                    |
 | `scales.fill.palette`                  | Tableau-10 categorical palette                                |
 | `annotations.labels.*.display`         | `false`                                                       |

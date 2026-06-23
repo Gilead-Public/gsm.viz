@@ -72,13 +72,17 @@ describe('bars/nCategoriesToggle', () => {
 
     test('non-click events are ignored', () => {
         const chart = makeChart({ spec: { nCategories: 5 } });
-        plugin.afterEvent(chart, { event: { type: 'mousemove', x: 100, y: 115 } });
+        plugin.afterEvent(chart, {
+            event: { type: 'mousemove', x: 100, y: 115 },
+        });
 
         expect(chart._updateSpec).not.toHaveBeenCalled();
     });
 
     test('interactive:false disables the toggle', () => {
-        const chart = makeChart({ spec: { nCategories: 5, interactive: false } });
+        const chart = makeChart({
+            spec: { nCategories: 5, interactive: false },
+        });
         clickAt(chart, 100, 115);
 
         expect(chart._updateSpec).not.toHaveBeenCalled();

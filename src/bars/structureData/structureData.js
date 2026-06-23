@@ -60,8 +60,7 @@ export default function structureData(spec) {
                 totals.set(cat, (totals.get(cat) || 0) + val);
             }
             labels = [...labels].sort((a, b) => {
-                const diff =
-                    (totals.get(b) || 0) - (totals.get(a) || 0); // always desc here
+                const diff = (totals.get(b) || 0) - (totals.get(a) || 0); // always desc here
                 return diff !== 0
                     ? diff
                     : String(a).localeCompare(String(b), undefined, {

@@ -1343,11 +1343,7 @@ describe('bars/structureData – dynamicCategoryAxis y-filter', () => {
 
     test('does NOT filter categories when dynamicCategoryAxis is true but no yKey is set (count mode)', () => {
         const spec = {
-            data: [
-                { site: 'A' },
-                { site: 'B' },
-                { site: 'C' },
-            ],
+            data: [{ site: 'A' }, { site: 'B' }, { site: 'C' }],
             mapping: { x: 'site' },
             orientation: 'vertical',
             scales: { x: {}, y: {} },
@@ -1541,7 +1537,10 @@ describe('bars/structureData – scales.x.sortDir', () => {
                 data,
                 mapping: { x: 'site', y: 'score' },
                 orientation: 'vertical',
-                scales: { x: { order: ['C', 'A', 'B'], sortDir: 'desc' }, y: {} },
+                scales: {
+                    x: { order: ['C', 'A', 'B'], sortDir: 'desc' },
+                    y: {},
+                },
             };
             const { labels } = structureData(spec);
             expect(labels).toEqual(['C', 'A', 'B']);

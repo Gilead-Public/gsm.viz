@@ -363,7 +363,10 @@ describe('bars/getScales – y min/max pass-through', () => {
     test('passes both min and max together', () => {
         const spec = {
             ...baseSpec,
-            scales: { ...baseSpec.scales, y: { type: 'linear', min: 5, max: 95 } },
+            scales: {
+                ...baseSpec.scales,
+                y: { type: 'linear', min: 5, max: 95 },
+            },
         };
         const result = getScales(spec);
         expect(result.y.min).toBe(5);

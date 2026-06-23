@@ -70,9 +70,7 @@ export default function nCategoriesToggle() {
                 const subtitleBottom = chart.height;
 
                 canvas.style.cursor =
-                    my >= subtitleTop && my <= subtitleBottom
-                        ? 'pointer'
-                        : '';
+                    my >= subtitleTop && my <= subtitleBottom ? 'pointer' : '';
             };
 
             if (!canvas._nCatToggleHandler) {
