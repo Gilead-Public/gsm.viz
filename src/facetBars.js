@@ -175,9 +175,23 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
                 );
                 for (const fillVal of globalFillDomain) {
                     if (!existing.has(fillVal)) {
+                        // Copy styling from a sibling facet that has this fill
+                        // level so the legend swatch renders with the correct
+                        // colour rather than a default/blank one.
+                        const styleSource = charts
+                            .flatMap((c) => c.data.datasets)
+                            .find(
+                                (ds) =>
+                                    String(ds.label) === fillVal &&
+                                    ds.backgroundColor !== undefined
+                            );
                         chart.data.datasets.push({
                             label: fillVal,
                             data: [],
+                            backgroundColor: styleSource?.backgroundColor,
+                            borderColor: styleSource?.borderColor,
+                            borderWidth: styleSource?.borderWidth,
+                            borderRadius: styleSource?.borderRadius,
                         });
                         needsUpdate = true;
                     }

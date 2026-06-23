@@ -57,13 +57,16 @@ export default function nCategoriesToggle() {
             if (!subtitle?.display) return;
 
             const canvas = chart.canvas;
-            const chartArea = chart.chartArea;
-            if (!chartArea) return;
+            if (!chart.chartArea) return;
 
             const handler = (e) => {
+                // Read chartArea live: Chart.js mutates chart.chartArea on
+                // resize/update, so a value captured at draw time would go stale.
+                const area = chart.chartArea;
+                if (!area) return;
                 const rect = canvas.getBoundingClientRect();
                 const my = e.clientY - rect.top;
-                const subtitleTop = chartArea.bottom;
+                const subtitleTop = area.bottom;
                 const subtitleBottom = chart.height;
 
                 canvas.style.cursor =

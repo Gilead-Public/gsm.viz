@@ -609,7 +609,10 @@ function cleanSpec(obj) {
 
     const cleaned = {};
     for (const [k, v] of Object.entries(obj)) {
-        if (v === undefined || v === false) continue;
+        // Only drop undefined. `false` is meaningful in exported specs (e.g.
+        // facet.legend.display: false overriding a default of true), so it must
+        // be preserved for the export to reproduce the current UI state.
+        if (v === undefined) continue;
         const cv = typeof v === 'object' && !Array.isArray(v) ? cleanSpec(v) : v;
         if (typeof cv === 'object' && cv !== null && !Array.isArray(cv) && Object.keys(cv).length === 0) continue;
         cleaned[k] = cv;

@@ -74,13 +74,15 @@ export default function updateSpec(chart, spec) {
 
     chart.update();
 
+    // Always clear any previously-applied inline sizing first so that
+    // disabling dynamicSizing restores the CSS-controlled dimensions.
+    const el = chart.canvas.parentNode;
+    el.style.height = '';
+    el.style.width = '';
+
     if (merged.theme.dynamicSizing) {
-        const el = chart.canvas.parentNode;
         const numCategories = labels.length;
         const pxPerCategory = 30;
-
-        el.style.height = '';
-        el.style.width = '';
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;

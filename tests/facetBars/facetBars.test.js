@@ -271,6 +271,31 @@ describe('facetBars integration', () => {
             expect(charts[0].options.plugins.legend.display).toBe(false);
             expect(charts[2].options.plugins.legend.display).toBe(false);
         });
+
+        test('injected legend datasets copy styling from a sibling facet', () => {
+            // APAC has only group 'X'; making it the legend chart forces an
+            // injected empty dataset for 'Y'. That dataset must copy styling
+            // from a sibling (US/EU) so the legend swatch renders correctly.
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', legend: { chart: 'APAC' } },
+            });
+
+            const apac = charts[2];
+            const injected = apac.data.datasets.find(
+                (ds) => String(ds.label) === 'Y'
+            );
+            expect(injected).toBeDefined();
+            expect(injected.data).toEqual([]);
+            expect(injected.backgroundColor).toBeDefined();
+
+            // Should match the styling of a sibling that actually has 'Y'.
+            const siblingY = charts[0].data.datasets.find(
+                (ds) => String(ds.label) === 'Y'
+            );
+            expect(injected.backgroundColor).toBe(siblingY.backgroundColor);
+            expect(injected.borderColor).toBe(siblingY.borderColor);
+        });
     });
 
     describe('linked hover', () => {

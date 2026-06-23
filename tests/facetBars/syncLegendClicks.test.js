@@ -247,6 +247,43 @@ describe('facetBars/syncLegendClicks', () => {
         expect(Array.isArray(charts[1].data.labels)).toBe(true);
     });
 
+    test('matches numeric dataset labels against the string legend text', () => {
+        // Fill values can be numbers (e.g. numeric fill column). Chart.js
+        // legendItem.text is always a string, so a strict === comparison
+        // against a numeric ds.label would fail and skip the sibling.
+        const chartA = makeChart([
+            [{ x: 'Cat1', y: 10 }],
+            [{ x: 'Cat1', y: 5 }],
+        ]);
+        chartA.data.datasets[0].label = 10;
+        chartA.data.datasets[1].label = 20;
+
+        const chartB = makeChart([
+            [{ x: 'Cat1', y: 8 }],
+            [{ x: 'Cat1', y: 3 }],
+        ]);
+        chartB.data.datasets[0].label = 10;
+        chartB.data.datasets[1].label = 20;
+
+        const charts = [chartA, chartB];
+
+        charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+            charts[0].setDatasetVisibility(0, false);
+        });
+
+        syncLegendClicks(charts);
+
+        // legendItem.text arrives as the stringified label '10'.
+        charts[0].options.plugins.legend.onClick(
+            {},
+            { datasetIndex: 0, text: '10' },
+            { chart: charts[0] }
+        );
+
+        // Sibling's numeric-labeled dataset (index 0) must be toggled.
+        expect(chartB.setDatasetVisibility).toHaveBeenCalledWith(0, false);
+    });
+
     test('propagates by label so mismatched dataset ordering in siblings is handled', () => {
         // chart[0]: datasets [A-fill, B-fill] → indices 0, 1
         // chart[1]: datasets [B-fill, A-fill] → indices 0, 1 (reversed order)

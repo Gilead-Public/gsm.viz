@@ -33,8 +33,10 @@ export default function syncLegendClicks(charts) {
 
             // Match by label so that siblings with different dataset ordering
             // (e.g. a fill level absent in one facet) still toggle the right
-            // dataset rather than one at the same numeric index.
-            const clickedLabel = legendItem.text;
+            // dataset rather than one at the same numeric index. Compare as
+            // strings since legendItem.text is always a string while a dataset
+            // label may be a number (e.g. numeric fill values).
+            const clickedLabel = String(legendItem.text);
             const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
 
             // Propagate the resulting visibility state to every sibling chart.
@@ -42,7 +44,7 @@ export default function syncLegendClicks(charts) {
                 if (sibling === chart) return;
 
                 const siblingIdx = sibling.data.datasets.findIndex(
-                    (ds) => ds.label === clickedLabel
+                    (ds) => String(ds.label) === clickedLabel
                 );
                 if (siblingIdx === -1) return;
 

@@ -11,7 +11,14 @@ import getPlugins from './getPlugins.js';
  * @param {Object} spec  - new user-supplied spec (raw, not merged)
  */
 export default function updateData(chart, data, spec) {
+    const existing = chart.data._spec_;
     const merged = mergeSpec(data, spec);
+    // mergeSpec rebuilds a fresh spec from the public fields and drops internal
+    // state, so carry over the original Top-N value preserved when the user
+    // toggled to "show all" via nCategoriesToggle.
+    if (existing?._originalNCategories) {
+        merged._originalNCategories = existing._originalNCategories;
+    }
     const { datasets, labels, nExcluded, nRowsExcluded } =
         structureData(merged);
     merged._nExcluded = nExcluded;
@@ -32,13 +39,15 @@ export default function updateData(chart, data, spec) {
 
     chart.update();
 
+    // Always clear any previously-applied inline sizing first so that
+    // disabling dynamicSizing restores the CSS-controlled dimensions.
+    const el = chart.canvas.parentNode;
+    el.style.height = '';
+    el.style.width = '';
+
     if (merged.theme.dynamicSizing) {
-        const el = chart.canvas.parentNode;
         const numCategories = labels.length;
         const pxPerCategory = 30;
-
-        el.style.height = '';
-        el.style.width = '';
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;
