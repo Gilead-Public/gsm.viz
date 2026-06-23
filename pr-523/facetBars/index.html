@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>facetBars — Faceted Bar Charts</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../examples.css" />
+        <style>
+            body {
+                font-family: sans-serif;
+                padding: 16px;
+            }
+            h1 {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            p.subtitle {
+                color: #666;
+                margin: 0 0 16px;
+                font-size: 14px;
+            }
+            #controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 16px;
+                align-items: flex-end;
+            }
+            #controls fieldset {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 6px 12px;
+            }
+            #controls legend {
+                font-size: 12px;
+                font-weight: bold;
+                color: #555;
+            }
+            #controls select {
+                font-size: 13px;
+            }
+            #hover-info {
+                font-size: 13px;
+                color: #333;
+                background: #f9f9f9;
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
+                padding: 6px 12px;
+                min-height: 32px;
+            }
+            /* Facet grid layout */
+            .gsm-facet-grid {
+                gap: 12px !important;
+            }
+            .gsm-facet-canvas {
+                height: 280px;
+            }
+            .gsm-facet-label {
+                font-size: 13px;
+                font-weight: bold;
+                text-align: center;
+                color: #444;
+                padding: 4px 0;
+            }
+            #chart-container {
+                max-width: 1100px;
+            }
+        </style>
+        <script src="../index.js"></script>
+    </head>
+    <body>
+        <h1>facetBars — Faceted Bar Charts</h1>
+        <p class="subtitle">
+            One bar chart per region, with linked hover highlighting and a
+            shared axis range.
+        </p>
+
+        <div id="controls">
+            <fieldset>
+                <legend>Orientation</legend>
+                <select id="orientation">
+                    <option value="vertical" selected>Vertical</option>
+                    <option value="horizontal">Horizontal</option>
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Position</legend>
+                <select id="position">
+                    <option value="stack" selected>Stack</option>
+                    <option value="dodge">Dodge</option>
+                    <option value="fill">Fill (100%)</option>
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Y-axis</legend>
+                <select id="free-y">
+                    <option value="constant" selected>Constant (shared)</option>
+                    <option value="free">Free (per-facet)</option>
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Legend</legend>
+                <select id="legend-chart">
+                    <option value="first" selected>First chart</option>
+                    <option value="last">Last chart</option>
+                    <option value="none">None</option>
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Columns</legend>
+                <select id="ncol">
+                    <option value="">Auto</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                </select>
+            </fieldset>
+        </div>
+
+        <div id="hover-info">Hover over a bar to see linked highlighting.</div>
+        <div id="chart-container"></div>
+
+        <script>
+            // ── Sample dataset ────────────────────────────────────────────────
+            // Simulated adverse-event (AE) flag counts by site and flag type,
+            // for three geographic regions.
+            const data = [
+                {
+                    region: 'North America',
+                    site: 'Site 01',
+                    flag: 'AE Rate',
+                    count: 12,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 01',
+                    flag: 'SAE Rate',
+                    count: 3,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 02',
+                    flag: 'AE Rate',
+                    count: 8,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 02',
+                    flag: 'SAE Rate',
+                    count: 1,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 03',
+                    flag: 'AE Rate',
+                    count: 15,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 03',
+                    flag: 'SAE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 04',
+                    flag: 'AE Rate',
+                    count: 6,
+                },
+                {
+                    region: 'North America',
+                    site: 'Site 04',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 05',
+                    flag: 'AE Rate',
+                    count: 10,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 05',
+                    flag: 'SAE Rate',
+                    count: 4,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 06',
+                    flag: 'AE Rate',
+                    count: 7,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 06',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 07',
+                    flag: 'AE Rate',
+                    count: 18,
+                },
+                {
+                    region: 'Europe',
+                    site: 'Site 07',
+                    flag: 'SAE Rate',
+                    count: 6,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 08',
+                    flag: 'AE Rate',
+                    count: 9,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 08',
+                    flag: 'SAE Rate',
+                    count: 2,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 09',
+                    flag: 'AE Rate',
+                    count: 14,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 09',
+                    flag: 'SAE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 10',
+                    flag: 'AE Rate',
+                    count: 5,
+                },
+                {
+                    region: 'Asia-Pacific',
+                    site: 'Site 10',
+                    flag: 'SAE Rate',
+                    count: 1,
+                },
+            ];
+
+            const container = document.getElementById('chart-container');
+            const hoverInfo = document.getElementById('hover-info');
+
+            let currentResult = null;
+
+            function render() {
+                const orientation =
+                    document.getElementById('orientation').value;
+                const position = document.getElementById('position').value;
+                const freeY =
+                    document.getElementById('free-y').value === 'free';
+                const legendChartVal =
+                    document.getElementById('legend-chart').value;
+                const nColRaw = document.getElementById('ncol').value;
+                const nCol = nColRaw ? parseInt(nColRaw, 10) : undefined;
+
+                const legendConfig =
+                    legendChartVal === 'none'
+                        ? { display: false }
+                        : { display: true, chart: legendChartVal };
+
+                currentResult = gsmViz.default.facetBars(container, data, {
+                    mapping: { x: 'site', y: 'count', fill: 'flag' },
+                    orientation,
+                    position,
+                    facet: {
+                        field: 'region',
+                        order: ['North America', 'Europe', 'Asia-Pacific'],
+                        nCol,
+                        scales: { y: { free: freeY } },
+                        legend: legendConfig,
+                    },
+                    scales: {
+                        fill: {
+                            colors: {
+                                'AE Rate': '#4e79a7',
+                                'SAE Rate': '#e15759',
+                            },
+                        },
+                    },
+                    labels: {
+                        title: undefined,
+                    },
+                    theme: {
+                        dynamicSizing: orientation === 'horizontal',
+                    },
+                    callbacks: {
+                        onHover: (point, facetValue, event) => {
+                            hoverInfo.textContent = `Hovered: ${
+                                point._fill || ''
+                            } — ${
+                                orientation === 'horizontal' ? point.y : point.x
+                            } = ${
+                                orientation === 'horizontal' ? point.x : point.y
+                            } (Region: ${facetValue})`;
+                        },
+                        onClick: (point, facetValue, event) => {
+                            hoverInfo.textContent = `Clicked: ${
+                                point._fill || ''
+                            } — ${
+                                orientation === 'horizontal' ? point.y : point.x
+                            } = ${
+                                orientation === 'horizontal' ? point.x : point.y
+                            } (Region: ${facetValue})`;
+                        },
+                    },
+                });
+            }
+
+            // Initial render
+            render();
+
+            // Re-render on control change
+            [
+                'orientation',
+                'position',
+                'free-y',
+                'legend-chart',
+                'ncol',
+            ].forEach((id) =>
+                document.getElementById(id).addEventListener('change', render)
+            );
+        </script>
+    </body>
+</html>
