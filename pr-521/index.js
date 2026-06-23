@@ -22949,12 +22949,13 @@ var gsmViz = (() => {
         const subtitle = chart.options.plugins.subtitle;
         if (!subtitle?.display) return;
         const canvas = chart.canvas;
-        const chartArea = chart.chartArea;
-        if (!chartArea) return;
+        if (!chart.chartArea) return;
         const handler = (e) => {
+          const area = chart.chartArea;
+          if (!area) return;
           const rect = canvas.getBoundingClientRect();
           const my = e.clientY - rect.top;
-          const subtitleTop = chartArea.bottom;
+          const subtitleTop = area.bottom;
           const subtitleBottom = chart.height;
           canvas.style.cursor = my >= subtitleTop && my <= subtitleBottom ? "pointer" : "";
         };
@@ -22968,7 +22969,11 @@ var gsmViz = (() => {
 
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
+    const existing = chart.data._spec_;
     const merged = mergeSpec(data, spec);
+    if (existing?._originalNCategories) {
+      merged._originalNCategories = existing._originalNCategories;
+    }
     const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
     merged._nExcluded = nExcluded;
     merged._nRowsExcluded = nRowsExcluded;
@@ -22984,12 +22989,12 @@ var gsmViz = (() => {
     };
     chart.options.plugins = getPlugins2(merged);
     chart.update();
+    const el = chart.canvas.parentNode;
+    el.style.height = "";
+    el.style.width = "";
     if (merged.theme.dynamicSizing) {
-      const el = chart.canvas.parentNode;
       const numCategories = labels.length;
       const pxPerCategory = 30;
-      el.style.height = "";
-      el.style.width = "";
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -23060,12 +23065,12 @@ var gsmViz = (() => {
     };
     chart.options.plugins = getPlugins2(merged);
     chart.update();
+    const el = chart.canvas.parentNode;
+    el.style.height = "";
+    el.style.width = "";
     if (merged.theme.dynamicSizing) {
-      const el = chart.canvas.parentNode;
       const numCategories = labels.length;
       const pxPerCategory = 30;
-      el.style.height = "";
-      el.style.width = "";
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -23598,12 +23603,12 @@ var gsmViz = (() => {
       if (!original) return;
       chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
         original.call(this, e, legendItem, legendRef);
-        const clickedLabel = legendItem.text;
+        const clickedLabel = String(legendItem.text);
         const isNowVisible = chart.isDatasetVisible(legendItem.datasetIndex);
         charts.forEach((sibling) => {
           if (sibling === chart) return;
           const siblingIdx = sibling.data.datasets.findIndex(
-            (ds) => ds.label === clickedLabel
+            (ds) => String(ds.label) === clickedLabel
           );
           if (siblingIdx === -1) return;
           const siblingDataset = sibling.data.datasets[siblingIdx];
@@ -23740,9 +23745,16 @@ var gsmViz = (() => {
           );
           for (const fillVal of globalFillDomain) {
             if (!existing.has(fillVal)) {
+              const styleSource = charts.flatMap((c) => c.data.datasets).find(
+                (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
+              );
               chart.data.datasets.push({
                 label: fillVal,
-                data: []
+                data: [],
+                backgroundColor: styleSource?.backgroundColor,
+                borderColor: styleSource?.borderColor,
+                borderWidth: styleSource?.borderWidth,
+                borderRadius: styleSource?.borderRadius
               });
               needsUpdate = true;
             }
