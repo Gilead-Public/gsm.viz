@@ -11,6 +11,8 @@
 const DATASETS = [
     { label: 'Retention', file: 'retention.csv' },
     { label: 'Metric Results', file: 'results.csv' },
+    { label: 'Eligibility', file: 'eligibility.csv' },
+    { label: 'Disposition', file: 'disposition.csv' },
     { label: 'Penguins (size)', file: 'penguins_size.csv' },
     { label: 'Penguins (full)', file: 'penguins_lter.csv' },
     { label: 'Titanic', file: 'titanic.csv' },

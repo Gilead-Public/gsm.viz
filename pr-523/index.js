@@ -21999,7 +21999,8 @@ var gsmViz = (() => {
       maintainAspectRatio: false,
       animation: false,
       dynamicSizing: false,
-      dynamicCategoryAxis: false
+      dynamicCategoryAxis: false,
+      pxPerCategory: 30
     }
   };
   var defaults_default = defaults3;
@@ -23124,7 +23125,10 @@ var gsmViz = (() => {
       },
       afterDraw(chart) {
         const spec = enabledSpec(chart);
-        if (!spec) return;
+        if (!spec) {
+          hoveredValue = null;
+          return;
+        }
         const boxes = getIconBoxes(chart);
         if (chart.ctx) {
           drawIcons(chart.ctx, boxes, spec.position);
@@ -23191,7 +23195,7 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -23251,6 +23255,9 @@ var gsmViz = (() => {
     merged._nExcluded = nExcluded;
     merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales2(merged);
+    const hiddenLabels = new Set(
+      chart.data.datasets.filter((_, i) => !chart.isDatasetVisible(i)).map((ds) => ds.label)
+    );
     chart.data.datasets = datasets;
     chart.data.labels = labels;
     chart.data._allLabels_ = [...labels];
@@ -23261,13 +23268,28 @@ var gsmViz = (() => {
       y: scalesConfig.y
     };
     chart.options.plugins = getPlugins2(merged);
+    datasets.forEach((ds, i) => {
+      if (hiddenLabels.has(ds.label)) {
+        chart.setDatasetVisibility(i, false);
+      }
+    });
+    if (merged.theme?.dynamicCategoryAxis && hiddenLabels.size > 0) {
+      const catKey = merged.orientation === "horizontal" ? "y" : "x";
+      const valKey = catKey === "x" ? "y" : "x";
+      initializeDynamicCategoryData(datasets);
+      const visibleCats = getVisibleCategories(chart, catKey);
+      chart.data.labels = getAllLabels(chart, visibleCats).filter(
+        (cat) => visibleCats.has(cat)
+      );
+      refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    }
     chart.update();
     const el = chart.canvas.parentNode;
     el.style.height = "";
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
-      const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const numCategories = chart.data.labels.length;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
