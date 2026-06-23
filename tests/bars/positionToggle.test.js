@@ -39,7 +39,11 @@ function makeChart({
 }
 
 describe('bars/positionToggle', () => {
-    const plugin = positionToggle();
+    let plugin;
+
+    beforeEach(() => {
+        plugin = positionToggle();
+    });
 
     function clickAt(chart, x, y) {
         plugin.afterEvent(chart, { event: { type: 'click', x, y } });
@@ -202,11 +206,12 @@ describe('bars/positionToggle', () => {
         const boxes = getIconBoxes(chart);
         const dodge = boxes.find((b) => b.value === 'dodge');
 
-        // Simulate hover state by calling the mousemove handler, then afterDraw.
+        // Register the native canvas handler by calling afterDraw first.
         plugin.afterDraw(chart);
-        chart._listeners.mousemove({
-            clientX: dodge.x + dodge.w / 2,
-            clientY: dodge.y + dodge.h / 2,
+
+        // Simulate hover via the Chart.js synthetic mousemove event so hoveredValue is set.
+        plugin.afterEvent(chart, {
+            event: { type: 'mousemove', x: dodge.x + dodge.w / 2, y: dodge.y + dodge.h / 2 },
         });
 
         // Spy on ctx to confirm tooltip text is rendered on next draw.

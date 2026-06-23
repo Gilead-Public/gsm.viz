@@ -155,7 +155,13 @@ export default function positionToggle() {
         afterEvent(chart, args) {
             if (args.event.type === 'mousemove') {
                 const spec = enabledSpec(chart);
-                if (!spec) return;
+                if (!spec) {
+                    if (hoveredValue !== null) {
+                        hoveredValue = null;
+                        chart.draw();
+                    }
+                    return;
+                }
                 const boxes = getIconBoxes(chart);
                 const hit = hitBox(boxes, args.event.x, args.event.y);
                 const prev = hoveredValue;
@@ -197,7 +203,13 @@ export default function positionToggle() {
 
             const handler = (e) => {
                 const area = chart.chartArea;
-                if (!area || !enabledSpec(chart)) return;
+                if (!area || !enabledSpec(chart)) {
+                    if (canvas._positionTogglePointer) {
+                        canvas.style.cursor = '';
+                        canvas._positionTogglePointer = false;
+                    }
+                    return;
+                }
                 const rect = canvas.getBoundingClientRect();
                 const mx = e.clientX - rect.left;
                 const my = e.clientY - rect.top;

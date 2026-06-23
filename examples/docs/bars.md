@@ -163,7 +163,7 @@ control is drawn above the chart area, right-aligned at the title level, with
 three buttons — stacked, grouped, and normalized bar glyphs — that toggle
 `position` between `'stack'`, `'dodge'`, and `'fill'`. The button matching the
 current `position` is highlighted. Hovering a button shows a tooltip label
-("Stacked Bars", "Side-by-Side Bars", or "Scaled Bars"). Clicking a button
+("Stacked Bars", "Side-by-Side Bars", or "Stacked, Scaled Bars"). Clicking a button
 re-renders the chart via `updateSpec`. The control is hidden when
 `interactive: false` or when no `fill` mapping is set, and `'identity'` is not
 offered through it.
