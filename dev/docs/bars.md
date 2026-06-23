@@ -36,6 +36,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         y: 'fieldName',     // optional value field; omit for row counts
         fill: 'fieldName',  // optional grouping / colour field
     },
+    interactive: true,             // true | false — enable/disable interactive elements (e.g. clickable Top N footnote)
     orientation: 'vertical',   // 'vertical' | 'horizontal'
     position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity'
     nCategories: undefined,    // optional positive integer — limit displayed categories to top N
@@ -45,6 +46,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
             label: undefined,  // defaults to mapping.x; null or '' hides label
             order: undefined,  // optional category order array
             sort: undefined,   // 'total' | 'alphanumeric' — selection mode when nCategories is set
+            sortDir: undefined, // 'asc' | 'desc' — overrides default sort direction (total→desc, alphanumeric→asc); ignored when order is set
         },
         y: {
             type: 'linear',
@@ -108,11 +110,13 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 | Key                                    | Default                                                       |
 | -------------------------------------- | ------------------------------------------------------------- |
+| `interactive`                          | `true`                                                        |
 | `orientation`                          | `'vertical'`                                                  |
 | `position`                             | `'stack'`                                                     |
 | `nCategories`                          | `undefined` (all categories)                                  |
 | `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
+| `scales.x.sortDir`                     | `undefined` (`total`→desc, `alphanumeric`→asc)                |
 | `scales.y.type`                        | `'linear'`                                                    |
 | `scales.fill.palette`                  | Tableau-10 categorical palette                                |
 | `annotations.labels.*.display`         | `false`                                                       |
