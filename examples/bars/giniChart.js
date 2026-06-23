@@ -80,7 +80,6 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
             year,
             data,
             orientation,
-            position,
             dynamicSizing,
             annotationsMode,
             nCategories
@@ -93,7 +92,6 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                     y: 'gini',
                 },
                 orientation,
-                position,
                 nCategories,
                 scales: {
                     x: {
@@ -128,7 +126,6 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
                 year,
                 data,
                 getValue('gini-orientation'),
-                getValue('gini-position'),
                 getDynamicSizing('gini-dynamic-sizing'),
                 getValue('gini-annotations'),
                 getNCategories('gini-n-categories')
@@ -148,7 +145,6 @@ fetch('data/WB_WDI_SI_POV_GINI_WIDEF.csv')
             [
                 'gini-year',
                 'gini-orientation',
-                'gini-position',
                 'gini-dynamic-sizing',
                 'gini-annotations',
                 'gini-n-categories',

@@ -138,7 +138,6 @@ Promise.all(dataPromises)
         function buildSpec(
             orientation,
             fillKey,
-            position,
             dynamicSizing,
             dynamicCategoryAxis,
             annotationsMode,
@@ -149,7 +148,6 @@ Promise.all(dataPromises)
                     x: 'MetricID',
                 },
                 orientation: orientation,
-                position: position,
                 nCategories,
                 scales: {
                     x: { label: 'Metric ID' },
@@ -188,7 +186,6 @@ Promise.all(dataPromises)
             buildSpec(
                 getValue('orientation'),
                 getValue('fill') || undefined,
-                getValue('position'),
                 getDynamicSizing('dynamic-sizing'),
                 getBoolean('dynamic-category-axis'),
                 getValue('kri-annotations'),
@@ -212,7 +209,6 @@ Promise.all(dataPromises)
                 buildSpec(
                     getValue('orientation'),
                     getValue('fill') || undefined,
-                    getValue('position'),
                     getDynamicSizing('dynamic-sizing'),
                     getBoolean('dynamic-category-axis'),
                     getValue('kri-annotations'),
@@ -225,7 +221,6 @@ Promise.all(dataPromises)
             [
                 'orientation',
                 'fill',
-                'position',
                 'dynamic-sizing',
                 'dynamic-category-axis',
                 'kri-annotations',
