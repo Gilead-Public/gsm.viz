@@ -69,6 +69,11 @@ export default function validateSpec(data, spec) {
         throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
     }
 
+    const xGrid = spec.scales?.x?.grid;
+    if (xGrid !== undefined && typeof xGrid !== 'boolean') {
+        throw new Error('spec.scales.x.grid must be a boolean');
+    }
+
     const colors = spec.scales?.fill?.colors;
     if (colors !== undefined) {
         if (

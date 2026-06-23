@@ -9,6 +9,7 @@ import getPlugins from './bars/getPlugins.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 import nCategoriesToggle from './bars/getPlugins/nCategoriesToggle.js';
+import positionToggle from './bars/getPlugins/positionToggle.js';
 
 // update methods
 import updateData from './bars/updateData.js';
@@ -99,6 +100,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
             ChartDataLabels,
             displayWhiteBackground(),
             nCategoriesToggle(),
+            positionToggle(),
         ],
     });
 

@@ -24,6 +24,7 @@ const defaults = {
         x: {
             type: 'category',
             label: undefined,
+            grid: false,
         },
         y: {
             type: 'linear',

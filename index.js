@@ -9311,10 +9311,10 @@ var gsmViz = (() => {
     backgroundColor: "backgroundColor",
     borderColor: "borderColor"
   };
-  function getBarBounds(bar, useFinalPosition) {
-    const { x, y, base, width, height } = bar.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
+  function getBarBounds(bar2, useFinalPosition) {
+    const { x, y, base, width, height } = bar2.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
     let left, right, top, bottom, half;
-    if (bar.horizontal) {
+    if (bar2.horizontal) {
       half = height / 2;
       left = Math.min(x, base);
       right = Math.max(x, base);
@@ -9332,9 +9332,9 @@ var gsmViz = (() => {
   function skipOrLimit(skip2, value, min3, max3) {
     return skip2 ? 0 : _limitValue(value, min3, max3);
   }
-  function parseBorderWidth(bar, maxW, maxH) {
-    const value = bar.options.borderWidth;
-    const skip2 = bar.borderSkipped;
+  function parseBorderWidth(bar2, maxW, maxH) {
+    const value = bar2.options.borderWidth;
+    const skip2 = bar2.borderSkipped;
     const o = toTRBL(value);
     return {
       t: skipOrLimit(skip2.top, o.top, 0, maxH),
@@ -9343,12 +9343,12 @@ var gsmViz = (() => {
       l: skipOrLimit(skip2.left, o.left, 0, maxW)
     };
   }
-  function parseBorderRadius(bar, maxW, maxH) {
-    const { enableBorderRadius } = bar.getProps(["enableBorderRadius"]);
-    const value = bar.options.borderRadius;
+  function parseBorderRadius(bar2, maxW, maxH) {
+    const { enableBorderRadius } = bar2.getProps(["enableBorderRadius"]);
+    const value = bar2.options.borderRadius;
     const o = toTRBLCorners(value);
     const maxR = Math.min(maxW, maxH);
-    const skip2 = bar.borderSkipped;
+    const skip2 = bar2.borderSkipped;
     const enableBorder = enableBorderRadius || isObject(value);
     return {
       topLeft: skipOrLimit(!enableBorder || skip2.top || skip2.left, o.topLeft, 0, maxR),
@@ -9357,12 +9357,12 @@ var gsmViz = (() => {
       bottomRight: skipOrLimit(!enableBorder || skip2.bottom || skip2.right, o.bottomRight, 0, maxR)
     };
   }
-  function boundingRects(bar) {
-    const bounds = getBarBounds(bar);
+  function boundingRects(bar2) {
+    const bounds = getBarBounds(bar2);
     const width = bounds.right - bounds.left;
     const height = bounds.bottom - bounds.top;
-    const border = parseBorderWidth(bar, width / 2, height / 2);
-    const radius3 = parseBorderRadius(bar, width / 2, height / 2);
+    const border = parseBorderWidth(bar2, width / 2, height / 2);
+    const radius3 = parseBorderRadius(bar2, width / 2, height / 2);
     return {
       outer: {
         x: bounds.left,
@@ -9385,11 +9385,11 @@ var gsmViz = (() => {
       }
     };
   }
-  function inRange(bar, x, y, useFinalPosition) {
+  function inRange(bar2, x, y, useFinalPosition) {
     const skipX = x === null;
     const skipY = y === null;
     const skipBoth = skipX && skipY;
-    const bounds = bar && !skipBoth && getBarBounds(bar, useFinalPosition);
+    const bounds = bar2 && !skipBoth && getBarBounds(bar2, useFinalPosition);
     return bounds && (skipX || _isBetween(x, bounds.left, bounds.right)) && (skipY || _isBetween(y, bounds.top, bounds.bottom));
   }
   function hasRadius(radius3) {
@@ -10531,12 +10531,12 @@ var gsmViz = (() => {
       return titleOpts.display ? titleFont.lineHeight + titlePadding.height : 0;
     }
     _getLegendItemAt(x, y) {
-      let i, hitBox, lh;
+      let i, hitBox2, lh;
       if (_isBetween(x, this.left, this.right) && _isBetween(y, this.top, this.bottom)) {
         lh = this.legendHitBoxes;
         for (i = 0; i < lh.length; ++i) {
-          hitBox = lh[i];
-          if (_isBetween(x, hitBox.left, hitBox.left + hitBox.width) && _isBetween(y, hitBox.top, hitBox.top + hitBox.height)) {
+          hitBox2 = lh[i];
+          if (_isBetween(x, hitBox2.left, hitBox2.left + hitBox2.width) && _isBetween(y, hitBox2.top, hitBox2.top + hitBox2.height)) {
             return this.legendItems[i];
           }
         }
@@ -21819,6 +21819,10 @@ var gsmViz = (() => {
     if (xSortDir !== void 0 && xSortDir !== "asc" && xSortDir !== "desc") {
       throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
     }
+    const xGrid = spec.scales?.x?.grid;
+    if (xGrid !== void 0 && typeof xGrid !== "boolean") {
+      throw new Error("spec.scales.x.grid must be a boolean");
+    }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
       if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
@@ -21934,7 +21938,8 @@ var gsmViz = (() => {
     scales: {
       x: {
         type: "category",
-        label: void 0
+        label: void 0,
+        grid: false
       },
       y: {
         type: "linear",
@@ -22331,6 +22336,7 @@ var gsmViz = (() => {
     const percentageTicks = { callback: (v) => `${v}%` };
     const categoryScale = {
       type: specScales.x.type,
+      grid: { display: !!specScales.x.grid },
       title: {
         display: !!xLabel,
         text: xLabel
@@ -22965,6 +22971,175 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/getPlugins/positionToggle.js
+  var POSITIONS = ["stack", "dodge", "fill"];
+  var TOOLTIP_LABELS = {
+    stack: "Stacked Bars",
+    dodge: "Side-by-Side Bars",
+    fill: "Stacked, Scaled Bars"
+  };
+  var BUTTON = 18;
+  var GAP = 4;
+  var INSET = 6;
+  function getIconBoxes(chart) {
+    const { chartArea, titleBlock, width } = chart;
+    const total = POSITIONS.length * BUTTON + (POSITIONS.length - 1) * GAP;
+    const startX = (width || chartArea.right) - INSET - total;
+    let y;
+    if (titleBlock && titleBlock.height > 0) {
+      y = Math.round((titleBlock.top + titleBlock.bottom) / 2 - BUTTON / 2);
+    } else {
+      y = chartArea.top - BUTTON - INSET;
+    }
+    return POSITIONS.map((value, i) => ({
+      value,
+      x: startX + i * (BUTTON + GAP),
+      y,
+      w: BUTTON,
+      h: BUTTON
+    }));
+  }
+  function enabledSpec(chart) {
+    const spec = chart.data?._spec_;
+    if (!spec || spec.interactive === false) return null;
+    if (!spec.mapping?.fill) return null;
+    if (!chart.chartArea) return null;
+    return spec;
+  }
+  function hitBox(boxes, x, y) {
+    return boxes.find(
+      (b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h
+    );
+  }
+  function bar(ctx, x, bottom, w, h, color3) {
+    ctx.fillStyle = color3;
+    ctx.fillRect(x, bottom - h, w, h);
+  }
+  function drawGlyph(ctx, box, color3) {
+    const p = 4;
+    const x0 = box.x + p;
+    const y0 = box.y + p;
+    const iw = box.w - 2 * p;
+    const ih = box.h - 2 * p;
+    const bottom = y0 + ih;
+    const light = color3 === "#4e79a7" ? "rgba(78,121,167,0.45)" : "rgba(158,158,158,0.45)";
+    if (box.value === "stack") {
+      const w = Math.round(iw * 0.55);
+      const x = x0 + (iw - w) / 2;
+      const seg = ih * 0.75 / 3;
+      bar(ctx, x, bottom, w, seg, color3);
+      bar(ctx, x, bottom - seg, w, seg, light);
+      bar(ctx, x, bottom - 2 * seg, w, seg, color3);
+    } else if (box.value === "dodge") {
+      const w = Math.round(iw * 0.22);
+      const gap = (iw - 3 * w) / 2;
+      const heights = [ih * 0.5, ih * 0.9, ih * 0.65];
+      [color3, light, color3].forEach((c, i) => {
+        bar(ctx, x0 + i * (w + gap), bottom, w, heights[i], c);
+      });
+    } else if (box.value === "fill") {
+      const w = Math.round(iw * 0.4);
+      const gap = iw - 2 * w;
+      const splits = [0.6, 0.4];
+      splits.forEach((split, i) => {
+        const x = x0 + i * (w + gap);
+        bar(ctx, x, bottom, w, ih * split, color3);
+        bar(ctx, x, bottom - ih * split, w, ih * (1 - split), light);
+      });
+    }
+  }
+  function drawIcons(ctx, boxes, active) {
+    ctx.save();
+    boxes.forEach((box) => {
+      const isActive = box.value === active;
+      ctx.fillStyle = isActive ? "rgba(78,121,167,0.15)" : "rgba(255,255,255,0.85)";
+      ctx.fillRect(box.x, box.y, box.w, box.h);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isActive ? "#4e79a7" : "#cccccc";
+      ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+      drawGlyph(ctx, box, isActive ? "#4e79a7" : "#9e9e9e");
+    });
+    ctx.restore();
+  }
+  function drawTooltip(ctx, box) {
+    const label = TOOLTIP_LABELS[box.value];
+    if (!label) return;
+    ctx.save();
+    ctx.font = "11px sans-serif";
+    const metrics = ctx.measureText(label);
+    const pw = 5;
+    const ph = 3;
+    const tw = metrics.width + pw * 2;
+    const th = 16 + ph * 2;
+    const tx = box.x + box.w - tw;
+    const ty = box.y + box.h + 4;
+    ctx.fillStyle = "rgba(50,50,50,0.9)";
+    ctx.fillRect(tx, ty, tw, th);
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, tx + tw / 2, ty + th / 2);
+    ctx.restore();
+  }
+  function positionToggle() {
+    let hoveredValue = null;
+    return {
+      id: "positionToggle",
+      afterEvent(chart, args) {
+        if (args.event.type === "mousemove") {
+          const spec2 = enabledSpec(chart);
+          if (!spec2) return;
+          const boxes = getIconBoxes(chart);
+          const hit2 = hitBox(boxes, args.event.x, args.event.y);
+          const prev = hoveredValue;
+          hoveredValue = hit2 ? hit2.value : null;
+          if (hoveredValue !== prev) chart.draw();
+          return;
+        }
+        if (args.event.type !== "click") return;
+        const spec = enabledSpec(chart);
+        if (!spec) return;
+        const { x, y } = args.event;
+        const hit = hitBox(getIconBoxes(chart), x, y);
+        if (!hit || hit.value === spec.position) return;
+        chart.helpers.updateSpec(chart, { position: hit.value });
+      },
+      afterDraw(chart) {
+        const spec = enabledSpec(chart);
+        if (!spec) return;
+        const boxes = getIconBoxes(chart);
+        if (chart.ctx) {
+          drawIcons(chart.ctx, boxes, spec.position);
+          if (hoveredValue) {
+            const hoveredBox = boxes.find(
+              (b) => b.value === hoveredValue
+            );
+            if (hoveredBox) drawTooltip(chart.ctx, hoveredBox);
+          }
+        }
+        const canvas = chart.canvas;
+        if (!canvas || canvas._positionToggleHandler) return;
+        const handler = (e) => {
+          const area = chart.chartArea;
+          if (!area || !enabledSpec(chart)) return;
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          const over = !!hitBox(getIconBoxes(chart), mx, my);
+          if (over) {
+            canvas.style.cursor = "pointer";
+            canvas._positionTogglePointer = true;
+          } else if (canvas._positionTogglePointer) {
+            canvas.style.cursor = "";
+            canvas._positionTogglePointer = false;
+          }
+        };
+        canvas._positionToggleHandler = handler;
+        canvas.addEventListener("mousemove", handler);
+      }
+    };
+  }
+
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
     const existing = chart.data._spec_;
@@ -23196,7 +23371,8 @@ var gsmViz = (() => {
       plugins: [
         plugin,
         displayWhiteBackground(),
-        nCategoriesToggle()
+        nCategoriesToggle(),
+        positionToggle()
       ]
     });
     canvas.chart = chart;

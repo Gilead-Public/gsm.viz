@@ -156,6 +156,18 @@ number of rows in each `x` category, optionally split by `fill`.
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
 
+#### Embedded position control
+
+When `mapping.fill` is specified and `interactive` is not `false`, an icon-styled
+control is drawn above the chart area, right-aligned at the title level, with
+three buttons — stacked, grouped, and normalized bar glyphs — that toggle
+`position` between `'stack'`, `'dodge'`, and `'fill'`. The button matching the
+current `position` is highlighted. Hovering a button shows a tooltip label
+("Stacked Bars", "Side-by-Side Bars", or "Scaled Bars"). Clicking a button
+re-renders the chart via `updateSpec`. The control is hidden when
+`interactive: false` or when no `fill` mapping is set, and `'identity'` is not
+offered through it.
+
 ### Label annotations
 
 `annotations.labels` controls value labels rendered by
