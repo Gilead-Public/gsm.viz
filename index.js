@@ -23088,7 +23088,13 @@ var gsmViz = (() => {
       afterEvent(chart, args) {
         if (args.event.type === "mousemove") {
           const spec2 = enabledSpec(chart);
-          if (!spec2) return;
+          if (!spec2) {
+            if (hoveredValue !== null) {
+              hoveredValue = null;
+              chart.draw();
+            }
+            return;
+          }
           const boxes = getIconBoxes(chart);
           const hit2 = hitBox(boxes, args.event.x, args.event.y);
           const prev = hoveredValue;
@@ -23121,7 +23127,13 @@ var gsmViz = (() => {
         if (!canvas || canvas._positionToggleHandler) return;
         const handler = (e) => {
           const area = chart.chartArea;
-          if (!area || !enabledSpec(chart)) return;
+          if (!area || !enabledSpec(chart)) {
+            if (canvas._positionTogglePointer) {
+              canvas.style.cursor = "";
+              canvas._positionTogglePointer = false;
+            }
+            return;
+          }
           const rect = canvas.getBoundingClientRect();
           const mx = e.clientX - rect.left;
           const my = e.clientY - rect.top;
