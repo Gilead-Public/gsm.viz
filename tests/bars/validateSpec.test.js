@@ -486,6 +486,41 @@ describe('bars/validateSpec', () => {
         });
     });
 
+    describe('spec.scales.x.sortDir validation', () => {
+        test('does not throw when scales.x.sortDir is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.sortDir is asc', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sortDir: 'asc' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.sortDir is desc', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sortDir: 'desc' } },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when scales.x.sortDir is an invalid value', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { sortDir: 'random' } },
+                })
+            ).toThrow("spec.scales.x.sortDir must be 'asc' or 'desc'");
+        });
+    });
+
     describe('annotations.labels formatter validation', () => {
         test('does not throw when segment formatter is a function', () => {
             expect(() =>

@@ -152,7 +152,7 @@ Promise.all(dataPromises)
                 position: position,
                 nCategories,
                 scales: {
-                    x: { label: 'Metric ID', sort: 'total' },
+                    x: { label: 'Metric ID' },
                     y: { label: 'Count' },
                 },
                 labels: {

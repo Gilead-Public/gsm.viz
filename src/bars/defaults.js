@@ -17,6 +17,7 @@ const DEFAULT_PALETTE = [
  * Mirrors ggplot2 defaults where applicable.
  */
 const defaults = {
+    interactive: true,
     orientation: 'vertical',
     position: 'stack',
     scales: {

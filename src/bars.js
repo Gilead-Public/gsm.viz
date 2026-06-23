@@ -8,6 +8,7 @@ import getScales from './bars/getScales.js';
 import getPlugins from './bars/getPlugins.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
+import nCategoriesToggle from './bars/getPlugins/nCategoriesToggle.js';
 
 // update methods
 import updateData from './bars/updateData.js';
@@ -61,10 +62,12 @@ export default function bars(element = 'body', data = [], spec = {}) {
     });
 
     // Transform data into Chart.js datasets.
-    const { datasets, labels, nExcluded } = structureData(merged);
+    const { datasets, labels, nExcluded, nRowsExcluded } =
+        structureData(merged);
 
-    // Make nExcluded available to getPlugins for auto-caption generation.
+    // Make exclusion counts available to getPlugins for auto-caption generation.
     merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
 
     // Build Chart.js configuration.
     const scalesConfig = getScales(merged);
@@ -92,7 +95,11 @@ export default function bars(element = 'body', data = [], spec = {}) {
             _spec_: merged,
         },
         options,
-        plugins: [ChartDataLabels, displayWhiteBackground()],
+        plugins: [
+            ChartDataLabels,
+            displayWhiteBackground(),
+            nCategoriesToggle(),
+        ],
     });
 
     // Attach chart to canvas element.

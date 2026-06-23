@@ -16,24 +16,45 @@
     const src = document.currentScript.getAttribute('src') || '../nav.js';
     const root = src.replace('nav.js', '');
 
-    const examples = [
-        { label: 'Bar Chart', href: root + 'barChart/' },
-        { label: 'Bars', href: root + 'bars/' },
-        { label: 'Scatter Plot', href: root + 'scatterPlot/' },
-        { label: 'Time Series', href: root + 'timeSeriesContinuous/' },
-        { label: 'Time Series (with CI)', href: root + 'timeSeriesWithCI/' },
-        { label: 'Sparkline', href: root + 'sparkline/' },
-        { label: 'Group Overview — Site', href: root + 'groupOverview/site/' },
-        { label: 'Group Overview — Country', href: root + 'groupOverview/country/' },
+    const exampleGroups = [
+        {
+            label: 'Generics',
+            items: [
+                { label: 'Bar Chart', href: root + 'bars/' },
+                { label: 'Bar Chart Builder', href: root + 'bars/builder.html' },
+            ],
+        },
+        {
+            label: 'Metrics',
+            items: [
+                { label: 'Bar Chart', href: root + 'barChart/' },
+                { label: 'Group Overview — Country', href: root + 'groupOverview/country/' },
+                { label: 'Group Overview — Site', href: root + 'groupOverview/site/' },
+                { label: 'Scatter Plot', href: root + 'scatterPlot/' },
+                { label: 'Sparkline', href: root + 'sparkline/' },
+                { label: 'Time Series', href: root + 'timeSeriesContinuous/' },
+                { label: 'Time Series (with CI)', href: root + 'timeSeriesWithCI/' },
+            ],
+        },
     ];
 
-    const apiDocs = [
-        { label: 'scatterPlot', href: root + '#/docs/scatterPlot' },
-        { label: 'barChart', href: root + '#/docs/barChart' },
-        { label: 'timeSeries', href: root + '#/docs/timeSeries' },
-        { label: 'sparkline', href: root + '#/docs/sparkline' },
-        { label: 'groupOverview', href: root + '#/docs/groupOverview' },
-        { label: 'bars', href: root + '#/docs/bars' },
+    const apiGroups = [
+        {
+            label: 'Generics',
+            items: [
+                { label: 'bars', href: root + '#/docs/bars' },
+            ],
+        },
+        {
+            label: 'Metrics',
+            items: [
+                { label: 'barChart', href: root + '#/docs/barChart' },
+                { label: 'groupOverview', href: root + '#/docs/groupOverview' },
+                { label: 'scatterPlot', href: root + '#/docs/scatterPlot' },
+                { label: 'sparkline', href: root + '#/docs/sparkline' },
+                { label: 'timeSeries', href: root + '#/docs/timeSeries' },
+            ],
+        },
     ];
 
     function buildLinks(items) {
@@ -48,6 +69,19 @@
                     '>' +
                     item.label +
                     '</a>'
+                );
+            })
+            .join('');
+    }
+
+    function buildGroupedSection(groups) {
+        return groups
+            .map(function (group) {
+                return (
+                    '<span class="gsm-nav__sublabel">' +
+                    group.label +
+                    '</span>' +
+                    buildLinks(group.items)
                 );
             })
             .join('');
@@ -111,6 +145,15 @@
             letter-spacing: 0.05em;
             color: #57606a;
         }
+        .gsm-nav__sublabel {
+            display: block;
+            padding: 6px 12px 2px 12px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #8c959f;
+        }
         .gsm-nav a {
             display: block;
             padding: 5px 12px 5px 20px;
@@ -164,11 +207,11 @@
         '</div>' +
         '<div class="gsm-nav__section">' +
         '  <span class="gsm-nav__label">Examples</span>' +
-        buildLinks(examples) +
+        buildGroupedSection(exampleGroups) +
         '</div>' +
         '<div class="gsm-nav__section">' +
         '  <span class="gsm-nav__label">API Reference</span>' +
-        buildLinks(apiDocs) +
+        buildGroupedSection(apiGroups) +
         '</div>';
 
     const toggle = document.createElement('button');

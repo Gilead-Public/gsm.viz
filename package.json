@@ -18,7 +18,7 @@
     "test:coverage": "jest --coverage",
     "test-pattern": "jest --transformIgnorePatterns \"node_modules/(?!@gsmViz)/\" --env=jsdom",
     "update-data": "node examples/data/helpers/csv-to-json.js",
-    "watch": "esbuild src/main.js --bundle --global-name=gsmViz --outfile=index.js --sourcemap --watch"
+    "watch": "node scripts/watch.js"
   },
   "repository": {
     "type": "git",

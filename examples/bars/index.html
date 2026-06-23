@@ -95,15 +95,15 @@
 
     <body>
         <nav class="tab-nav">
-            <button data-tab="retention">Retention</button>
-            <button data-tab="kri">KRI by Flag</button>
-            <button data-tab="gini">World Gini Index</button>
-            <button data-tab="kri-site">KRI by Site</button>
-            <button class="active" data-tab="kri-facet">KRI Facet</button>
+            <button class="active" data-tab="retention">Stacked</button>
+            <button data-tab="kri">Callbacks</button>
+            <button data-tab="gini">Continuous</button>
+            <button data-tab="kri-site">Reference Lines</button>
+            <button data-tab="kri-facet">Faceted</button>
         </nav>
 
         <!-- Retention tab -->
-        <div id="retention" class="tab-panel gsm-viz--example">
+        <div id="retention" class="tab-panel active gsm-viz--example">
             <div id="retention-controls">
                 <fieldset>
                     <legend>Orientation</legend>
@@ -396,7 +396,7 @@
         </div>
 
         <!-- KRI Facet tab -->
-        <div id="kri-facet" class="tab-panel active gsm-viz--example">
+        <div id="kri-facet" class="tab-panel gsm-viz--example">
             <div id="kri-facet-controls">
                 <fieldset>
                     <legend>Site</legend>
@@ -406,11 +406,10 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Y-axis</legend>
-                    <select id="kri-facet-y-axis">
-                        <option value="Score" selected>Score</option>
-                        <option value="Numerator">Numerator</option>
-                        <option value="Metric">Metric</option>
+                    <legend>X-axis Scale</legend>
+                    <select id="kri-facet-x-scale">
+                        <option value="constant">Constant</option>
+                        <option value="free" selected>Free</option>
                     </select>
                 </fieldset>
 
@@ -423,10 +422,11 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>X-axis Scale</legend>
-                    <select id="kri-facet-x-scale">
-                        <option value="constant" selected>Constant</option>
-                        <option value="free">Free</option>
+                    <legend>Y-axis</legend>
+                    <select id="kri-facet-y-axis">
+                        <option value="Score" selected>Score</option>
+                        <option value="Numerator">Numerator</option>
+                        <option value="Metric">Metric</option>
                     </select>
                 </fieldset>
 

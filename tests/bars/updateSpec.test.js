@@ -213,8 +213,28 @@ describe('bars/updateSpec', () => {
             });
             expect(chart.data._spec_._nExcluded).toBe(2);
             expect(chart.options.plugins.subtitle.text).toContain(
-                'Displaying top 3 values of Category by total. Remaining 2 values of Category are hidden.'
+                'Displaying top 3 values of Category by total. Remaining 2 values of Category are hidden (2 records). Click to show all.'
             );
+        });
+
+        test('updateData preserves _originalNCategories across a data update', () => {
+            const chart = bars(container, manyData, {
+                mapping: { x: 'category', y: 'value' },
+                nCategories: 3,
+                scales: { x: { label: 'Category', sort: 'total' } },
+            });
+            // Simulate the user toggling to "show all": nCategories cleared,
+            // original value stashed on the live spec.
+            chart.data._spec_._originalNCategories = 3;
+            chart.data._spec_.nCategories = undefined;
+
+            updateData(chart, manyData, {
+                mapping: { x: 'category', y: 'value' },
+                nCategories: undefined,
+                scales: { x: { label: 'Category', sort: 'total' } },
+            });
+
+            expect(chart.data._spec_._originalNCategories).toBe(3);
         });
 
         test('updateData sets _nExcluded on merged spec so caption renders', () => {
@@ -230,8 +250,44 @@ describe('bars/updateSpec', () => {
             });
             expect(chart.data._spec_._nExcluded).toBe(3);
             expect(chart.options.plugins.subtitle.text).toContain(
-                'Displaying top 2 values of Category by total. Remaining 3 values of Category are hidden.'
+                'Displaying top 2 values of Category by total. Remaining 3 values of Category are hidden (3 records). Click to show all.'
             );
+        });
+    });
+
+    describe('dynamicSizing inline dimension cleanup', () => {
+        test('updateSpec clears stale inline sizing when dynamicSizing is disabled', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                theme: { dynamicSizing: true },
+            });
+            // Simulate previously-applied dynamic sizing on the container.
+            const el = chart.canvas.parentNode;
+            el.style.width = '500px';
+            el.style.height = '400px';
+
+            updateSpec(chart, { theme: { dynamicSizing: false } });
+
+            expect(el.style.width).toBe('');
+            expect(el.style.height).toBe('');
+        });
+
+        test('updateData clears stale inline sizing when dynamicSizing is disabled', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                theme: { dynamicSizing: true },
+            });
+            const el = chart.canvas.parentNode;
+            el.style.width = '500px';
+            el.style.height = '400px';
+
+            updateData(chart, data, {
+                ...spec,
+                theme: { dynamicSizing: false },
+            });
+
+            expect(el.style.width).toBe('');
+            expect(el.style.height).toBe('');
         });
     });
 });

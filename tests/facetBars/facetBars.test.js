@@ -271,6 +271,31 @@ describe('facetBars integration', () => {
             expect(charts[0].options.plugins.legend.display).toBe(false);
             expect(charts[2].options.plugins.legend.display).toBe(false);
         });
+
+        test('injected legend datasets copy styling from a sibling facet', () => {
+            // APAC has only group 'X'; making it the legend chart forces an
+            // injected empty dataset for 'Y'. That dataset must copy styling
+            // from a sibling (US/EU) so the legend swatch renders correctly.
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', legend: { chart: 'APAC' } },
+            });
+
+            const apac = charts[2];
+            const injected = apac.data.datasets.find(
+                (ds) => String(ds.label) === 'Y'
+            );
+            expect(injected).toBeDefined();
+            expect(injected.data).toEqual([]);
+            expect(injected.backgroundColor).toBeDefined();
+
+            // Should match the styling of a sibling that actually has 'Y'.
+            const siblingY = charts[0].data.datasets.find(
+                (ds) => String(ds.label) === 'Y'
+            );
+            expect(injected.backgroundColor).toBe(siblingY.backgroundColor);
+            expect(injected.borderColor).toBe(siblingY.borderColor);
+        });
     });
 
     describe('linked hover', () => {
@@ -346,6 +371,49 @@ describe('facetBars integration', () => {
                 container.querySelectorAll('.gsm-facet-canvas');
             canvasContainers.forEach((el) => {
                 expect(el.style.height).toBe('');
+            });
+        });
+    });
+
+    describe('dynamicCategoryAxis with facets', () => {
+        test('each facet shows only its own categories when dynamicCategoryAxis is true', () => {
+            // data: US={A,B}, EU={A,C}, APAC={B}
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                theme: { dynamicCategoryAxis: true },
+            });
+            // Without the fix, all charts would share ['A','B','C'] (global domain).
+            // With the fix, each chart should only contain its own categories.
+            expect(charts[0].data.labels).toEqual(
+                expect.arrayContaining(['A', 'B'])
+            );
+            expect(charts[0].data.labels).toHaveLength(2); // US: A, B only
+
+            expect(charts[1].data.labels).toEqual(
+                expect.arrayContaining(['A', 'C'])
+            );
+            expect(charts[1].data.labels).toHaveLength(2); // EU: A, C only
+
+            expect(charts[2].data.labels).toEqual(['B']); // APAC: B only
+        });
+
+        test('category axis min/max are NOT pinned when dynamicCategoryAxis is true', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                theme: { dynamicCategoryAxis: true },
+            });
+            // With dynamicCategoryAxis, each facet manages its own axis — no global pinning.
+            charts.forEach((c) => {
+                expect(c.options.scales.x.min).toBeUndefined();
+                expect(c.options.scales.x.max).toBeUndefined();
+            });
+        });
+
+        test('constant x-axis (dynamicCategoryAxis false) still injects global domain', () => {
+            // Regression: the existing "constant" behaviour must not be broken.
+            const { charts } = facetBars(container, data, baseSpec);
+            charts.forEach((c) => {
+                expect(c.data.labels).toEqual(['A', 'B', 'C']);
             });
         });
     });
