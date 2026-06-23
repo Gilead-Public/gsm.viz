@@ -21,7 +21,7 @@
             label: 'Generics',
             items: [
                 { label: 'Bar Chart', href: root + 'bars/' },
-                { label: 'Bar Chart Builder', href: root + 'bars/explorer.html' },
+                { label: 'Bar Chart Builder', href: root + 'bars/builder.html' },
             ],
         },
         {

@@ -25,7 +25,7 @@
 
 -   Generics
     -   [Bar Chart](bars/ ':ignore')
-    -   [Bar Chart Builder](bars/explorer.html ':ignore')
+    -   [Bar Chart Builder](bars/builder.html ':ignore')
 -   Metrics
     -   [Bar Chart](barChart/ ':ignore')
     -   [Group Overview — Country](groupOverview/country ':ignore')

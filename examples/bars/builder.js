@@ -1,9 +1,9 @@
 /**
- * Data Explorer for the bars / facetBars API.
+ * Bar Chart Builder for the bars / facetBars API.
  *
  * Loads any pre-built dataset (or a user-supplied CSV), auto-detects column
  * types, and surfaces all bars/facetBars spec options as interactive controls
- * so analysts can explore data without writing code.
+ * so analysts can build charts without writing code.
  */
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -93,6 +93,7 @@ function onDatasetLoaded(data, label) {
     document.getElementById('settings-facet-height').disabled = !facetKey;
     document.getElementById('settings-facet-y-scale').disabled = !facetKey;
     document.getElementById('settings-facet-x-scale').disabled = !facetKey;
+    renderFillOrder();
     renderFilters();
     render();
 }
@@ -152,6 +153,136 @@ function renderMappingControls() {
 
     populateSelect('mapping-fill', categoricalCols, true);
     populateSelect('mapping-facet', categoricalCols, true);
+}
+
+// ── Fill order (drag-and-drop) ──────────────────────────────────────────────────
+
+/**
+ * Unique values of a column in data-encounter order — the same order the bars
+ * library uses by default for fill groups. Building the reorder list from the
+ * full (unfiltered) rawData means the resulting `scales.fill.order` allowlist
+ * always contains every possible value, so values re-included by a later filter
+ * change are never silently dropped.
+ *
+ * @param {string} col
+ * @returns {string[]}
+ */
+function getUniqueValues(col) {
+    const seen = new Set();
+    const values = [];
+    for (const row of rawData) {
+        const v = String(row[col]);
+        if (!seen.has(v)) {
+            seen.add(v);
+            values.push(v);
+        }
+    }
+    return values;
+}
+
+/**
+ * Wire native HTML5 drag-and-drop reordering onto a fill-order <ul>. Reordering
+ * the DOM is the source of truth; getFillOrder() reads it back at render time.
+ *
+ * @param {HTMLUListElement} list
+ */
+function attachFillOrderDnd(list) {
+    let dragItem = null;
+
+    list.addEventListener('dragstart', (e) => {
+        const item = e.target.closest('.fill-order-item');
+        if (!item) return;
+        dragItem = item;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        // Firefox requires data to be set for the drag to begin.
+        e.dataTransfer.setData('text/plain', item.dataset.value);
+    });
+
+    list.addEventListener('dragend', () => {
+        if (dragItem) dragItem.classList.remove('dragging');
+        list.querySelectorAll('.drag-over').forEach((el) =>
+            el.classList.remove('drag-over')
+        );
+        dragItem = null;
+    });
+
+    list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const target = e.target.closest('.fill-order-item');
+        if (!target || target === dragItem) return;
+        e.dataTransfer.dropEffect = 'move';
+        list.querySelectorAll('.drag-over').forEach((el) =>
+            el.classList.remove('drag-over')
+        );
+        target.classList.add('drag-over');
+    });
+
+    list.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const target = e.target.closest('.fill-order-item');
+        if (!target || !dragItem || target === dragItem) return;
+        target.classList.remove('drag-over');
+        // Insert before or after the target based on pointer position.
+        const rect = target.getBoundingClientRect();
+        const after = e.clientY > rect.top + rect.height / 2;
+        list.insertBefore(dragItem, after ? target.nextSibling : target);
+        render();
+    });
+}
+
+/**
+ * (Re)build the fill-order list to match the currently selected fill column.
+ * Shows a hint when no fill column is selected.
+ */
+function renderFillOrder() {
+    const container = document.getElementById('fill-order-container');
+    container.innerHTML = '';
+
+    const fillKey = getVal('mapping-fill');
+    if (!fillKey) {
+        const hint = document.createElement('div');
+        hint.className = 'fill-order-empty';
+        hint.textContent = 'Select a Fill variable to reorder its values.';
+        container.appendChild(hint);
+        return;
+    }
+
+    const list = document.createElement('ul');
+    list.className = 'fill-order-list';
+
+    for (const val of getUniqueValues(fillKey)) {
+        const item = document.createElement('li');
+        item.className = 'fill-order-item';
+        item.draggable = true;
+        item.dataset.value = val;
+
+        const handle = document.createElement('span');
+        handle.className = 'fill-order-handle';
+        handle.textContent = '⠿';
+        item.appendChild(handle);
+
+        const label = document.createElement('span');
+        label.className = 'fill-order-label';
+        label.textContent = val;
+        item.appendChild(label);
+
+        list.appendChild(item);
+    }
+
+    attachFillOrderDnd(list);
+    container.appendChild(list);
+}
+
+/**
+ * Read the current fill order from the DOM list (top-to-bottom).
+ * @returns {string[]}
+ */
+function getFillOrder() {
+    const items = document.querySelectorAll(
+        '#fill-order-container .fill-order-item'
+    );
+    return [...items].map((el) => el.dataset.value);
 }
 
 // ── Dynamic filters ───────────────────────────────────────────────────────────
@@ -298,8 +429,7 @@ function applyFilters(data) {
         // Skip filtering when sliders are at their full range — avoids
         // inadvertently dropping rows with missing/non-numeric values in
         // columns the user hasn't explicitly filtered.
-        const atFullRange =
-            lo <= Number(minEl.min) && hi >= Number(maxEl.max);
+        const atFullRange = lo <= Number(minEl.min) && hi >= Number(maxEl.max);
         if (atFullRange) continue;
         filtered = filtered.filter((d) => {
             const v = Number(d[col]);
@@ -372,6 +502,10 @@ function aggregateData(data, xKey, yKey, fillKey, aggFn) {
 
 function getVal(id) {
     return document.getElementById(id).value;
+}
+
+function getText(id) {
+    return document.getElementById(id).value.trim();
 }
 
 function getBool(id) {
@@ -458,6 +592,11 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
     const tooltipFormat = getVal('settings-tooltip-format') || undefined;
     const yMin = getFiniteNumber('settings-y-min');
     const yMax = getFiniteNumber('settings-y-max');
+    const title = getText('label-title');
+    const caption = getText('label-caption');
+    const xLabel = getText('label-x');
+    const yLabel = getText('label-y');
+    const legendLabel = getText('label-legend');
 
     const spec = {
         mapping: { x: xKey },
@@ -465,8 +604,16 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
         position,
         nCategories,
         scales: {
-            x: { ...(xSort ? { sort: xSort } : {}), ...(xSortDir ? { sortDir: xSortDir } : {}) },
-            y: { ...(yMin !== undefined ? { min: yMin } : {}), ...(yMax !== undefined ? { max: yMax } : {}) },
+            x: {
+                ...(xSort ? { sort: xSort } : {}),
+                ...(xSortDir ? { sortDir: xSortDir } : {}),
+                ...(xLabel ? { label: xLabel } : {}),
+            },
+            y: {
+                ...(yMin !== undefined ? { min: yMin } : {}),
+                ...(yMax !== undefined ? { max: yMax } : {}),
+                ...(yLabel ? { label: yLabel } : {}),
+            },
         },
         theme: { dynamicSizing, dynamicCategoryAxis },
         annotations: buildAnnotations(annotationsMode, barLabelMode),
@@ -474,7 +621,22 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
     };
 
     if (yKey) spec.mapping.y = yKey;
-    if (fillKey) spec.mapping.fill = fillKey;
+    if (fillKey) {
+        spec.mapping.fill = fillKey;
+        // Explicit fill order (matches the library default until reordered);
+        // also acts as an allowlist, so it must list every value.
+        const fillOrder = getFillOrder();
+        spec.scales.fill = {
+            ...(fillOrder.length ? { order: fillOrder } : {}),
+            ...(legendLabel ? { label: legendLabel } : {}),
+        };
+    }
+
+    const labels = {
+        ...(title ? { title } : {}),
+        ...(caption ? { captions: caption } : {}),
+    };
+    if (Object.keys(labels).length) spec.labels = labels;
 
     if (facetKey) {
         const legendMode = getVal('settings-legend-position');
@@ -526,7 +688,7 @@ function render() {
     if (!filtered.length) {
         destroyCurrentChart();
         container.innerHTML =
-            '<p class="explorer-error">No data matches the current filters.</p>';
+            '<p class="builder-error">No data matches the current filters.</p>';
         return;
     }
 
@@ -556,7 +718,7 @@ function render() {
         applyLegendSettings();
     } catch (e) {
         const errEl = document.createElement('p');
-        errEl.className = 'explorer-error';
+        errEl.className = 'builder-error';
         errEl.textContent = `Render error: ${e.message}`;
         container.innerHTML = '';
         container.appendChild(errEl);
@@ -595,10 +757,10 @@ function applyLegendSettings() {
 
 function handleExport() {
     if (currentChart) {
-        currentChart.helpers.exportImage(currentChart, 'explorer.png');
+        currentChart.helpers.exportImage(currentChart, 'bar-chart.png');
     } else if (currentFacetResult) {
         currentFacetResult.charts.forEach((chart, i) => {
-            chart.helpers.exportImage(chart, `explorer-facet-${i + 1}.png`);
+            chart.helpers.exportImage(chart, `bar-chart-facet-${i + 1}.png`);
         });
     }
 }
@@ -613,8 +775,15 @@ function cleanSpec(obj) {
         // facet.legend.display: false overriding a default of true), so it must
         // be preserved for the export to reproduce the current UI state.
         if (v === undefined) continue;
-        const cv = typeof v === 'object' && !Array.isArray(v) ? cleanSpec(v) : v;
-        if (typeof cv === 'object' && cv !== null && !Array.isArray(cv) && Object.keys(cv).length === 0) continue;
+        const cv =
+            typeof v === 'object' && !Array.isArray(v) ? cleanSpec(v) : v;
+        if (
+            typeof cv === 'object' &&
+            cv !== null &&
+            !Array.isArray(cv) &&
+            Object.keys(cv).length === 0
+        )
+            continue;
         cleaned[k] = cv;
     }
     return cleaned;
@@ -629,19 +798,25 @@ function handleExportSpec() {
     const facetKey = getVal('mapping-facet') || undefined;
     const spec = cleanSpec(buildSpec(xKey, yKey, fillKey, facetKey));
     const facetCall = facetKey ? 'facetBars' : 'bars';
-    const text = `gsmViz.${facetCall}(element, data, ${JSON.stringify(spec, null, 4)});`;
+    const text = `gsmViz.${facetCall}(element, data, ${JSON.stringify(
+        spec,
+        null,
+        4
+    )});`;
 
     navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('export-spec-btn');
         btn.textContent = 'Copied!';
-        setTimeout(() => { btn.textContent = 'Export Spec'; }, 1500);
+        setTimeout(() => {
+            btn.textContent = 'Export Spec';
+        }, 1500);
     });
 }
 
 // ── Status bar ────────────────────────────────────────────────────────────────
 
 function setStatus(text) {
-    document.getElementById('explorer-status').textContent = text;
+    document.getElementById('builder-status').textContent = text;
 }
 
 // ── Initialization ────────────────────────────────────────────────────────────
@@ -705,9 +880,22 @@ document.getElementById('csv-file-input').addEventListener('change', (e) => {
     'settings-facet-x-scale',
     'settings-y-agg',
     'mapping-x',
-    'mapping-fill',
 ].forEach((id) => {
     document.getElementById(id).addEventListener('change', render);
+});
+
+// Label text inputs re-render live as the user types.
+['label-title', 'label-caption', 'label-x', 'label-y', 'label-legend'].forEach(
+    (id) => {
+        document.getElementById(id).addEventListener('input', render);
+    }
+);
+
+// Fill mapping: rebuild the fill-order list (so getFillOrder reads the new
+// column's values) before re-rendering.
+document.getElementById('mapping-fill').addEventListener('change', () => {
+    renderFillOrder();
+    render();
 });
 
 // Y mapping: enable/disable aggregation control and re-render.
@@ -730,7 +918,9 @@ document.getElementById('mapping-facet').addEventListener('change', () => {
 });
 
 document.getElementById('export-btn').addEventListener('click', handleExport);
-document.getElementById('export-spec-btn').addEventListener('click', handleExportSpec);
+document
+    .getElementById('export-spec-btn')
+    .addEventListener('click', handleExportSpec);
 
 // Load default dataset on startup.
 fetchCsv('data/retention.csv')

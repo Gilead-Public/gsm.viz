@@ -9,7 +9,7 @@ and development examples [here](https://gilead-biostats.github.io/gsm.viz/dev/).
 
 **Generics**
 - [bar chart](https://gilead-biostats.github.io/gsm.viz/bars/)
-- [bar chart builder](https://gilead-biostats.github.io/gsm.viz/bars/explorer.html)
+- [bar chart builder](https://gilead-biostats.github.io/gsm.viz/bars/builder.html)
 
 **Metrics**
 - [bar chart](https://gilead-biostats.github.io/gsm.viz/barChart/)
