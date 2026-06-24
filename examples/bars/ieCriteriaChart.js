@@ -50,9 +50,7 @@ fetch('data/eligibility.csv')
             const fillCol = swapped ? xAxis : 'ietestcd_concat';
             const categoryLabel = swapped ? 'Criteria' : 'Site';
             const fillLabel = swapped ? 'Site' : 'Criteria';
-            const title = swapped
-                ? 'Criteria by Site'
-                : 'Site by Criteria';
+            const title = swapped ? 'Criteria by Site' : 'Site by Criteria';
 
             return {
                 mapping: {
@@ -64,9 +62,7 @@ fetch('data/eligibility.csv')
                 scales: {
                     x: {
                         label: categoryLabel,
-                        ...(sort === 'total'
-                            ? { sort: 'total' }
-                            : {}),
+                        ...(sort === 'total' ? { sort: 'total' } : {}),
                     },
                     y: { label: 'Criteria Count' },
                     fill: {
@@ -121,7 +117,7 @@ fetch('data/eligibility.csv')
                 data,
                 buildSpec(
                     getValue('ie-criteria-orientation'),
-                        getDynamicSizing('ie-criteria-dynamic-sizing'),
+                    getDynamicSizing('ie-criteria-dynamic-sizing'),
                     getBoolean('ie-criteria-dynamic-category-axis'),
                     getValue('ie-criteria-annotations'),
                     getNCategories('ie-criteria-n-categories'),

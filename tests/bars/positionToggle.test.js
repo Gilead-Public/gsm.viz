@@ -211,7 +211,11 @@ describe('bars/positionToggle', () => {
 
         // Simulate hover via the Chart.js synthetic mousemove event so hoveredValue is set.
         plugin.afterEvent(chart, {
-            event: { type: 'mousemove', x: dodge.x + dodge.w / 2, y: dodge.y + dodge.h / 2 },
+            event: {
+                type: 'mousemove',
+                x: dodge.x + dodge.w / 2,
+                y: dodge.y + dodge.h / 2,
+            },
         });
 
         // Spy on ctx to confirm tooltip text is rendered on next draw.

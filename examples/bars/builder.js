@@ -30,6 +30,7 @@ let rawData = [];
 let colTypes = { categoricalCols: [], numericCols: [] };
 let currentChart = null;
 let currentFacetResult = null;
+let specFormat = 'js'; // 'js' | 'yaml'
 
 // ── Column type detection ─────────────────────────────────────────────────────
 
@@ -797,10 +798,21 @@ function cleanSpec(obj) {
  * Build the `gsmViz.bars(...)`/`gsmViz.facetBars(...)` source string for the
  * current control state. Shared by the Export Spec button and the live spec
  * display panel so both always reflect the same code.
+ *
+ * When specFormat is 'yaml', returns a YAML representation of the spec object
+ * with a leading comment noting the function call. When 'js', returns the
+ * full JavaScript call as before.
  */
 function buildSpecText(xKey, yKey, fillKey, facetKey) {
     const spec = cleanSpec(buildSpec(xKey, yKey, fillKey, facetKey));
     const facetCall = facetKey ? 'facetBars' : 'bars';
+
+    if (specFormat === 'yaml') {
+        const comment = `# gsmViz.${facetCall}(element, data, spec)`;
+        const yaml = jsyaml.dump(spec, { indent: 4, lineWidth: -1 });
+        return `${comment}\n${yaml}`;
+    }
+
     return `gsmViz.${facetCall}(element, data, ${JSON.stringify(
         spec,
         null,
@@ -818,7 +830,11 @@ function updateSpecDisplay() {
 
     const xKey = getVal('mapping-x');
     if (!xKey) {
-        el.textContent = '// Select an X (category) variable to build a spec.';
+        const placeholder =
+            specFormat === 'yaml'
+                ? '# Select an X (category) variable to build a spec.'
+                : '// Select an X (category) variable to build a spec.';
+        el.textContent = placeholder;
         return;
     }
 
@@ -954,6 +970,22 @@ document.getElementById('export-btn').addEventListener('click', handleExport);
 document
     .getElementById('export-spec-btn')
     .addEventListener('click', handleExportSpec);
+
+// JS / YAML spec format toggle.
+['js', 'yaml'].forEach((fmt) => {
+    document
+        .getElementById(`spec-format-${fmt}`)
+        .addEventListener('click', () => {
+            specFormat = fmt;
+            document
+                .getElementById('spec-format-js')
+                .classList.toggle('active', fmt === 'js');
+            document
+                .getElementById('spec-format-yaml')
+                .classList.toggle('active', fmt === 'yaml');
+            updateSpecDisplay();
+        });
+});
 
 // Load default dataset on startup.
 fetchCsv('data/retention.csv')

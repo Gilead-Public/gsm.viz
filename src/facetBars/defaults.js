@@ -17,7 +17,7 @@ const defaults = {
         },
         legend: {
             display: true,
-            chart: 'first',
+            sync: true,
         },
     },
 };

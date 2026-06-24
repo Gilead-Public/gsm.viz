@@ -276,13 +276,9 @@ describe('bars/updateSpec', () => {
         updateSpec(chart, { position: 'dodge' });
 
         // The first dataset (group 'X') should still be hidden.
-        const xIndex = chart.data.datasets.findIndex(
-            (ds) => ds.label === 'X'
-        );
+        const xIndex = chart.data.datasets.findIndex((ds) => ds.label === 'X');
         expect(chart.isDatasetVisible(xIndex)).toBe(false);
-        const yIndex = chart.data.datasets.findIndex(
-            (ds) => ds.label === 'Y'
-        );
+        const yIndex = chart.data.datasets.findIndex((ds) => ds.label === 'Y');
         expect(chart.isDatasetVisible(yIndex)).toBe(true);
     });
 
@@ -301,11 +297,7 @@ describe('bars/updateSpec', () => {
         // Simulate hiding group 'X' via the legend click handler.
         const legendRef = { chart };
         const legendPlugin = chart.options.plugins.legend;
-        legendPlugin.onClick(
-            {},
-            { datasetIndex: 0 },
-            legendRef
-        );
+        legendPlugin.onClick({}, { datasetIndex: 0 }, legendRef);
 
         // After hiding 'X', only categories with 'Y' data remain.
         expect(chart.isDatasetVisible(0)).toBe(false);
@@ -316,9 +308,7 @@ describe('bars/updateSpec', () => {
 
         // 'X' should still be hidden and labels should still reflect only
         // categories with visible data.
-        const xIndex = chart.data.datasets.findIndex(
-            (ds) => ds.label === 'X'
-        );
+        const xIndex = chart.data.datasets.findIndex((ds) => ds.label === 'X');
         expect(chart.isDatasetVisible(xIndex)).toBe(false);
         expect(chart.data.labels).toEqual(['A', 'C']);
     });

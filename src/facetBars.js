@@ -111,8 +111,8 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
-    const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;
+    const showLegend = hasFill && legendDisplay;
 
     charts.forEach((chart, i) => {
         let needsUpdate = false;
@@ -152,49 +152,37 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
             needsUpdate = true;
         }
 
-        // Control which chart shows the Chart.js legend
-        if (hasFill) {
-            const facetVal = facetValues[i];
-            const showLegend =
-                legendDisplay &&
-                (legendChart === 'first'
-                    ? i === 0
-                    : legendChart === 'last'
-                    ? i === facetValues.length - 1
-                    : facetVal === String(legendChart));
-            if (chart.options.plugins.legend.display !== showLegend) {
-                chart.options.plugins.legend.display = showLegend;
-                needsUpdate = true;
-            }
+        // Show legend on every facet chart when a fill mapping is present and
+        // display is enabled. Each facet renders its own legend for clarity.
+        if (chart.options.plugins.legend.display !== showLegend) {
+            chart.options.plugins.legend.display = showLegend;
+            needsUpdate = true;
+        }
 
-            // Ensure the legend chart has datasets for all global fill values
-            // so the legend reflects the full domain, not just this facet's data.
-            if (showLegend && globalFillDomain) {
-                const existing = new Set(
-                    chart.data.datasets.map((ds) => String(ds.label))
-                );
-                for (const fillVal of globalFillDomain) {
-                    if (!existing.has(fillVal)) {
-                        // Copy styling from a sibling facet that has this fill
-                        // level so the legend swatch renders with the correct
-                        // colour rather than a default/blank one.
-                        const styleSource = charts
-                            .flatMap((c) => c.data.datasets)
-                            .find(
-                                (ds) =>
-                                    String(ds.label) === fillVal &&
-                                    ds.backgroundColor !== undefined
-                            );
-                        chart.data.datasets.push({
-                            label: fillVal,
-                            data: [],
-                            backgroundColor: styleSource?.backgroundColor,
-                            borderColor: styleSource?.borderColor,
-                            borderWidth: styleSource?.borderWidth,
-                            borderRadius: styleSource?.borderRadius,
-                        });
-                        needsUpdate = true;
-                    }
+        // Inject ghost datasets for any global fill values not present in this
+        // facet's data, so every facet's legend displays the full fill domain.
+        if (showLegend && globalFillDomain) {
+            const existing = new Set(
+                chart.data.datasets.map((ds) => String(ds.label))
+            );
+            for (const fillVal of globalFillDomain) {
+                if (!existing.has(fillVal)) {
+                    const styleSource = charts
+                        .flatMap((c) => c.data.datasets)
+                        .find(
+                            (ds) =>
+                                String(ds.label) === fillVal &&
+                                ds.backgroundColor !== undefined
+                        );
+                    chart.data.datasets.push({
+                        label: fillVal,
+                        data: [],
+                        backgroundColor: styleSource?.backgroundColor,
+                        borderColor: styleSource?.borderColor,
+                        borderWidth: styleSource?.borderWidth,
+                        borderRadius: styleSource?.borderRadius,
+                    });
+                    needsUpdate = true;
                 }
             }
         }
@@ -205,9 +193,23 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
     // Wire cross-chart hover highlight synchronisation
     syncCharts(charts);
 
-    // Wire cross-chart legend-click synchronisation for dynamic category axis.
-    if (merged.theme?.dynamicCategoryAxis) {
-        syncLegendClicks(charts);
+    // Wire cross-chart legend-click synchronisation whenever a fill is mapped.
+    // When facet.legend.sync is true (default), legend clicks propagate to all
+    // siblings. When false, each facet's legend operates independently.
+    if (hasFill) {
+        const syncOpts = { sync: merged.facet.legend.sync };
+        syncLegendClicks(charts, syncOpts);
+
+        // Wrap each chart's helpers.updateSpec so that the legend sync wrapper
+        // is re-applied after any spec update (e.g. position toggle). Without
+        // this, updateSpec replaces chart.options.plugins and loses the wrapper.
+        charts.forEach((chart) => {
+            const baseUpdateSpec = chart.helpers.updateSpec;
+            chart.helpers.updateSpec = function (chartInstance, spec) {
+                baseUpdateSpec(chartInstance, spec);
+                syncLegendClicks(charts, syncOpts);
+            };
+        });
     }
 
     return { charts, container: grid };
