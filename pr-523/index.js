@@ -23481,11 +23481,9 @@ var gsmViz = (() => {
     if (yFree !== void 0 && typeof yFree !== "boolean") {
       throw new Error("spec.facet.scales.y.free must be a boolean");
     }
-    const legendChart = spec.facet?.legend?.chart;
-    if (legendChart !== void 0 && typeof legendChart !== "string") {
-      throw new Error(
-        "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
-      );
+    const legendSync = spec.facet?.legend?.sync;
+    if (legendSync !== void 0 && typeof legendSync !== "boolean") {
+      throw new Error("spec.facet.legend.sync must be a boolean");
     }
     const legendDisplay = spec.facet?.legend?.display;
     if (legendDisplay !== void 0 && typeof legendDisplay !== "boolean") {
@@ -23522,7 +23520,7 @@ var gsmViz = (() => {
       },
       legend: {
         display: true,
-        chart: "first"
+        sync: true
       }
     }
   };
@@ -23821,12 +23819,20 @@ var gsmViz = (() => {
   }
 
   // src/facetBars/syncLegendClicks.js
-  function syncLegendClicks(charts) {
+  function syncLegendClicks(charts, { sync = true } = {}) {
     charts.forEach((chart) => {
-      const original = chart.options.plugins?.legend?.onClick;
-      if (!original) return;
-      chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
+      const currentOnClick = chart.options.plugins?.legend?.onClick;
+      const storedOriginal = chart._facetLegendOriginalOnClick;
+      let original;
+      if (storedOriginal && currentOnClick === chart._facetLegendSyncWrapper) {
+        original = storedOriginal;
+      } else {
+        original = currentOnClick ?? Chart.defaults.plugins.legend.onClick;
+        chart._facetLegendOriginalOnClick = original;
+      }
+      const wrapper = function(e, legendItem, legendRef) {
         original.call(this, e, legendItem, legendRef);
+        if (!sync) return;
         const clickedLabel = String(legendItem.text);
         const isNowVisible = chart.isDatasetVisible(
           legendItem.datasetIndex
@@ -23837,50 +23843,59 @@ var gsmViz = (() => {
             (ds) => String(ds.label) === clickedLabel
           );
           if (siblingIdx === -1) return;
-          const siblingDataset = sibling.data.datasets[siblingIdx];
-          initializeDynamicCategoryData(sibling.data.datasets);
-          if (!isNowVisible) {
-            siblingDataset.data = [];
-            siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
-            sibling.setDatasetVisibility(siblingIdx, false);
-          } else {
-            delete siblingDataset._backup_;
-            sibling.setDatasetVisibility(siblingIdx, true);
-          }
-          const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
-          const valKey = catKey === "x" ? "y" : "x";
-          const visibleCats = getVisibleCategories(sibling, catKey);
-          sibling.data.labels = getAllLabels(sibling, visibleCats).filter(
-            (cat) => visibleCats.has(cat)
-          );
-          refreshDynamicCategoryData(
-            sibling,
-            sibling.data.labels,
-            catKey,
-            valKey
-          );
-          sibling.update();
-          if (sibling.data._spec_?.theme?.dynamicSizing) {
-            const sibContainer = sibling.canvas?.parentElement;
-            if (sibContainer) {
-              const numCategories = sibling.data.labels.length;
-              const pxPerCategory = 30;
-              const horizontal = sibling.data._spec_?.orientation === "horizontal";
-              if (horizontal) {
-                const area = sibling.chartArea;
-                const chartAreaHeight = area ? area.bottom - area.top : 0;
-                const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
-                sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
-              } else {
-                const area = sibling.chartArea;
-                const chartAreaWidth = area ? area.right - area.left : 0;
-                const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
-                sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+          const useDynamic = sibling.data._spec_?.theme?.dynamicCategoryAxis;
+          if (useDynamic) {
+            const siblingDataset = sibling.data.datasets[siblingIdx];
+            initializeDynamicCategoryData(sibling.data.datasets);
+            if (!isNowVisible) {
+              siblingDataset.data = [];
+              siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
+              sibling.setDatasetVisibility(siblingIdx, false);
+            } else {
+              delete siblingDataset._backup_;
+              sibling.setDatasetVisibility(siblingIdx, true);
+            }
+            const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
+            const valKey = catKey === "x" ? "y" : "x";
+            const visibleCats = getVisibleCategories(sibling, catKey);
+            sibling.data.labels = getAllLabels(
+              sibling,
+              visibleCats
+            ).filter((cat) => visibleCats.has(cat));
+            refreshDynamicCategoryData(
+              sibling,
+              sibling.data.labels,
+              catKey,
+              valKey
+            );
+            sibling.update();
+            if (sibling.data._spec_?.theme?.dynamicSizing) {
+              const sibContainer = sibling.canvas?.parentElement;
+              if (sibContainer) {
+                const numCategories = sibling.data.labels.length;
+                const pxPerCategory = 30;
+                const horizontal = sibling.data._spec_?.orientation === "horizontal";
+                if (horizontal) {
+                  const area = sibling.chartArea;
+                  const chartAreaHeight = area ? area.bottom - area.top : 0;
+                  const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
+                  sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
+                } else {
+                  const area = sibling.chartArea;
+                  const chartAreaWidth = area ? area.right - area.left : 0;
+                  const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
+                  sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+                }
               }
             }
+          } else {
+            sibling.setDatasetVisibility(siblingIdx, isNowVisible);
+            sibling.update();
           }
         });
       };
+      chart.options.plugins.legend.onClick = wrapper;
+      chart._facetLegendSyncWrapper = wrapper;
     });
   }
 
@@ -23943,8 +23958,8 @@ var gsmViz = (() => {
     const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
-    const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;
+    const showLegend = hasFill && legendDisplay;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
       if (!xFree && !merged.theme?.dynamicCategoryAxis && globalCategories && globalCategories.length > 0) {
@@ -23958,40 +23973,44 @@ var gsmViz = (() => {
         chart.options.scales[valueAxisKey].max = globalScales.yMax;
         needsUpdate = true;
       }
-      if (hasFill) {
-        const facetVal = facetValues[i];
-        const showLegend = legendDisplay && (legendChart === "first" ? i === 0 : legendChart === "last" ? i === facetValues.length - 1 : facetVal === String(legendChart));
-        if (chart.options.plugins.legend.display !== showLegend) {
-          chart.options.plugins.legend.display = showLegend;
-          needsUpdate = true;
-        }
-        if (showLegend && globalFillDomain) {
-          const existing = new Set(
-            chart.data.datasets.map((ds) => String(ds.label))
-          );
-          for (const fillVal of globalFillDomain) {
-            if (!existing.has(fillVal)) {
-              const styleSource = charts.flatMap((c) => c.data.datasets).find(
-                (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
-              );
-              chart.data.datasets.push({
-                label: fillVal,
-                data: [],
-                backgroundColor: styleSource?.backgroundColor,
-                borderColor: styleSource?.borderColor,
-                borderWidth: styleSource?.borderWidth,
-                borderRadius: styleSource?.borderRadius
-              });
-              needsUpdate = true;
-            }
+      if (chart.options.plugins.legend.display !== showLegend) {
+        chart.options.plugins.legend.display = showLegend;
+        needsUpdate = true;
+      }
+      if (showLegend && globalFillDomain) {
+        const existing = new Set(
+          chart.data.datasets.map((ds) => String(ds.label))
+        );
+        for (const fillVal of globalFillDomain) {
+          if (!existing.has(fillVal)) {
+            const styleSource = charts.flatMap((c) => c.data.datasets).find(
+              (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
+            );
+            chart.data.datasets.push({
+              label: fillVal,
+              data: [],
+              backgroundColor: styleSource?.backgroundColor,
+              borderColor: styleSource?.borderColor,
+              borderWidth: styleSource?.borderWidth,
+              borderRadius: styleSource?.borderRadius
+            });
+            needsUpdate = true;
           }
         }
       }
       if (needsUpdate) chart.update("none");
     });
     syncCharts(charts);
-    if (merged.theme?.dynamicCategoryAxis) {
-      syncLegendClicks(charts);
+    if (hasFill) {
+      const syncOpts = { sync: merged.facet.legend.sync };
+      syncLegendClicks(charts, syncOpts);
+      charts.forEach((chart) => {
+        const baseUpdateSpec = chart.helpers.updateSpec;
+        chart.helpers.updateSpec = function(chartInstance, spec2) {
+          baseUpdateSpec(chartInstance, spec2);
+          syncLegendClicks(charts, syncOpts);
+        };
+      });
     }
     return { charts, container: grid };
   }
