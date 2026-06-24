@@ -8,7 +8,10 @@ import syncLegendClicks from '../../src/facetBars/syncLegendClicks.js';
  *  - isDatasetVisible / setDatasetVisibility mock
  *  - options.plugins.legend.onClick set to a jest.fn() when `hasOnClick` is true
  */
-function makeChart(datasets, { indexAxis = 'x', hasOnClick = true } = {}) {
+function makeChart(
+    datasets,
+    { indexAxis = 'x', hasOnClick = true, dynamicCategoryAxis = true } = {}
+) {
     // Visibility flags per dataset index
     const visible = datasets.map(() => true);
 
@@ -41,6 +44,9 @@ function makeChart(datasets, { indexAxis = 'x', hasOnClick = true } = {}) {
                 orientation: indexAxis === 'y' ? 'horizontal' : 'vertical',
                 position: 'stack',
                 mapping: { fill: 'fill' },
+                theme: dynamicCategoryAxis
+                    ? { dynamicCategoryAxis: true }
+                    : undefined,
             },
         },
         options: {
@@ -73,7 +79,10 @@ describe('facetBars/syncLegendClicks', () => {
         });
     });
 
-    test('does not wrap charts that have no legend.onClick', () => {
+    test('wraps charts that have no custom legend.onClick using Chart.defaults fallback', () => {
+        // After the fix, syncLegendClicks wraps ALL charts — not only those with
+        // a pre-existing custom onClick. Charts without one use Chart.defaults as
+        // the fallback so Chart.js built-in toggle still fires on the clicked chart.
         const charts = [
             makeChart([[{ x: 'A', y: 10 }]], { hasOnClick: false }),
             makeChart([[{ x: 'A', y: 5 }]], { hasOnClick: false }),
@@ -82,7 +91,7 @@ describe('facetBars/syncLegendClicks', () => {
         syncLegendClicks(charts);
 
         charts.forEach((c) => {
-            expect(c.options.plugins.legend.onClick).toBeUndefined();
+            expect(typeof c.options.plugins.legend.onClick).toBe('function');
         });
     });
 
@@ -320,5 +329,206 @@ describe('facetBars/syncLegendClicks', () => {
         // called with index 1, not index 0 (which would be 'B-fill' — wrong).
         expect(chartB.setDatasetVisibility).toHaveBeenCalledWith(1, false);
         expect(chartB.setDatasetVisibility).not.toHaveBeenCalledWith(0, false);
+    });
+
+    describe('plain facet path (no dynamicCategoryAxis)', () => {
+        // These tests cover the new plain-chart branch added to fix the regression
+        // where legend clicks only toggled the first facet.
+
+        function makePlainChart(datasets, { hasOnClick = true } = {}) {
+            return makeChart(datasets, {
+                dynamicCategoryAxis: false,
+                hasOnClick,
+            });
+        }
+
+        test('propagates hide to all siblings via setDatasetVisibility', () => {
+            const charts = [
+                makePlainChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makePlainChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+                makePlainChart([[{ x: 'A', y: 2 }], [{ x: 'A', y: 1 }]]),
+            ];
+
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(0, false);
+            });
+
+            syncLegendClicks(charts);
+
+            charts[0].options.plugins.legend.onClick(
+                {},
+                { datasetIndex: 0, text: 'ds0' },
+                { chart: charts[0] }
+            );
+
+            expect(charts[1].setDatasetVisibility).toHaveBeenCalledWith(
+                0,
+                false
+            );
+            expect(charts[2].setDatasetVisibility).toHaveBeenCalledWith(
+                0,
+                false
+            );
+        });
+
+        test('propagates show to all siblings via setDatasetVisibility', () => {
+            const charts = [
+                makePlainChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makePlainChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+            ];
+
+            charts[0].isDatasetVisible.mockImplementation((idx) => idx !== 1);
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(1, true);
+                charts[0].isDatasetVisible.mockImplementation(() => true);
+            });
+
+            syncLegendClicks(charts);
+
+            charts[0].options.plugins.legend.onClick(
+                {},
+                { datasetIndex: 1, text: 'ds1' },
+                { chart: charts[0] }
+            );
+
+            expect(charts[1].setDatasetVisibility).toHaveBeenCalledWith(
+                1,
+                true
+            );
+        });
+
+        test('calls update() on each sibling after plain propagation', () => {
+            const charts = [
+                makePlainChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makePlainChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+                makePlainChart([[{ x: 'A', y: 2 }], [{ x: 'A', y: 1 }]]),
+            ];
+
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(0, false);
+            });
+
+            syncLegendClicks(charts);
+
+            charts[0].options.plugins.legend.onClick(
+                {},
+                { datasetIndex: 0, text: 'ds0' },
+                { chart: charts[0] }
+            );
+
+            expect(charts[1].update).toHaveBeenCalled();
+            expect(charts[2].update).toHaveBeenCalled();
+            expect(charts[0].update).not.toHaveBeenCalled();
+        });
+
+        test('skips sibling when no matching label exists (plain path)', () => {
+            const charts = [
+                makePlainChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makePlainChart([[{ x: 'A', y: 8 }]]), // only ds0, no ds1
+            ];
+
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(1, false);
+            });
+
+            syncLegendClicks(charts);
+
+            expect(() => {
+                charts[0].options.plugins.legend.onClick(
+                    {},
+                    { datasetIndex: 1, text: 'ds1' },
+                    { chart: charts[0] }
+                );
+            }).not.toThrow();
+            expect(charts[1].setDatasetVisibility).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('sync: false (independent per-facet legends)', () => {
+        test('still wraps legend.onClick on every chart', () => {
+            const charts = [
+                makeChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makeChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+            ];
+            const originals = charts.map(
+                (c) => c.options.plugins.legend.onClick
+            );
+
+            syncLegendClicks(charts, { sync: false });
+
+            charts.forEach((c, i) => {
+                expect(typeof c.options.plugins.legend.onClick).toBe(
+                    'function'
+                );
+                expect(c.options.plugins.legend.onClick).not.toBe(originals[i]);
+            });
+        });
+
+        test('calls original onClick handler for the clicked chart', () => {
+            const charts = [
+                makeChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makeChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+            ];
+            const orig0 = charts[0].options.plugins.legend.onClick;
+
+            syncLegendClicks(charts, { sync: false });
+
+            const e = {};
+            const legendItem = { datasetIndex: 0, text: 'ds0' };
+            const legendRef = { chart: charts[0] };
+            charts[0].options.plugins.legend.onClick(e, legendItem, legendRef);
+
+            expect(orig0).toHaveBeenCalledWith(e, legendItem, legendRef);
+        });
+
+        test('does NOT propagate hide to sibling charts', () => {
+            const charts = [
+                makeChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makeChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+                makeChart([[{ x: 'A', y: 2 }], [{ x: 'A', y: 1 }]]),
+            ];
+
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(0, false);
+            });
+
+            syncLegendClicks(charts, { sync: false });
+
+            charts[0].options.plugins.legend.onClick(
+                {},
+                { datasetIndex: 0, text: 'ds0' },
+                { chart: charts[0] }
+            );
+
+            // Siblings should NOT have been touched
+            expect(charts[1].setDatasetVisibility).not.toHaveBeenCalled();
+            expect(charts[2].setDatasetVisibility).not.toHaveBeenCalled();
+            expect(charts[1].update).not.toHaveBeenCalled();
+            expect(charts[2].update).not.toHaveBeenCalled();
+        });
+
+        test('does NOT propagate show to sibling charts', () => {
+            const charts = [
+                makeChart([[{ x: 'A', y: 10 }], [{ x: 'A', y: 5 }]]),
+                makeChart([[{ x: 'A', y: 8 }], [{ x: 'A', y: 3 }]]),
+            ];
+
+            charts[0].isDatasetVisible.mockImplementation((idx) => idx !== 1);
+            charts[0].options.plugins.legend.onClick.mockImplementation(() => {
+                charts[0].setDatasetVisibility(1, true);
+                charts[0].isDatasetVisible.mockImplementation(() => true);
+            });
+
+            syncLegendClicks(charts, { sync: false });
+
+            charts[0].options.plugins.legend.onClick(
+                {},
+                { datasetIndex: 1, text: 'ds1' },
+                { chart: charts[0] }
+            );
+
+            expect(charts[1].setDatasetVisibility).not.toHaveBeenCalled();
+            expect(charts[1].update).not.toHaveBeenCalled();
+        });
     });
 });

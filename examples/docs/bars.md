@@ -100,8 +100,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     theme: {
         maintainAspectRatio: false,
         animation: false,
-        dynamicSizing: false,        // set container height (horizontal) or width (vertical) at 30 px per category plus chart overhead
+        dynamicSizing: false,        // set container height (horizontal) or width (vertical) at pxPerCategory px per category plus chart overhead
         dynamicCategoryAxis: false,  // legend toggles remove categories that are only present in hidden fill groups
+        pxPerCategory: 30,           // pixels allocated per category when dynamicSizing is true
     },
 }
 ```
@@ -129,6 +130,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `theme.animation`                      | `false`                                                       |
 | `theme.dynamicSizing`                  | `false`                                                       |
 | `theme.dynamicCategoryAxis`            | `false`                                                       |
+| `theme.pxPerCategory`                  | `30`                                                          |
 | `tooltip.format`                       | `undefined`                                                   |
 | `tooltip.formatter`                    | `undefined`                                                   |
 | `callbacks.onClick`                    | `null`                                                        |
@@ -155,6 +157,18 @@ number of rows in each `x` category, optionally split by `fill`.
 
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
+
+#### Embedded position control
+
+When `mapping.fill` is specified and `interactive` is not `false`, an icon-styled
+control is drawn above the chart area, right-aligned at the title level, with
+three buttons — stacked, grouped, and normalized bar glyphs — that toggle
+`position` between `'stack'`, `'dodge'`, and `'fill'`. The button matching the
+current `position` is highlighted. Hovering a button shows a tooltip label
+("Stacked Bars", "Side-by-Side Bars", or "Stacked, Scaled Bars"). Clicking a button
+re-renders the chart via `updateSpec`. The control is hidden when
+`interactive: false` or when no `fill` mapping is set, and `'identity'` is not
+offered through it.
 
 ### Label annotations
 

@@ -28,6 +28,7 @@ export default function getScales(spec) {
 
     const categoryScale = {
         type: specScales.x.type,
+        grid: { display: !!specScales.x.grid },
         title: {
             display: !!xLabel,
             text: xLabel,

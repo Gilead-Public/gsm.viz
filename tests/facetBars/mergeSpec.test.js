@@ -24,7 +24,7 @@ describe('facetBars/mergeSpec', () => {
         expect(result.facet.scales.y.free).toBe(false);
         expect(result.facet.scales.x.free).toBe(false);
         expect(result.facet.legend.display).toBe(true);
-        expect(result.facet.legend.chart).toBe('first');
+        expect(result.facet.legend.sync).toBe(true);
         expect(result.facet.label.position).toBe('top');
     });
 
@@ -57,12 +57,12 @@ describe('facetBars/mergeSpec', () => {
         expect(result.facet.scales.y.free).toBe(true);
     });
 
-    test('user facet.legend.chart overrides default', () => {
+    test('user facet.legend.sync overrides default', () => {
         const result = mergeSpec(minimalData, {
             ...minimalSpec,
-            facet: { field: 'region', legend: { chart: 'last' } },
+            facet: { field: 'region', legend: { sync: false } },
         });
-        expect(result.facet.legend.chart).toBe('last');
+        expect(result.facet.legend.sync).toBe(false);
     });
 
     test('applies bars defaults for orientation', () => {

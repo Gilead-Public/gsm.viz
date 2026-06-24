@@ -9311,10 +9311,10 @@ var gsmViz = (() => {
     backgroundColor: "backgroundColor",
     borderColor: "borderColor"
   };
-  function getBarBounds(bar, useFinalPosition) {
-    const { x, y, base, width, height } = bar.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
+  function getBarBounds(bar2, useFinalPosition) {
+    const { x, y, base, width, height } = bar2.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
     let left, right, top, bottom, half;
-    if (bar.horizontal) {
+    if (bar2.horizontal) {
       half = height / 2;
       left = Math.min(x, base);
       right = Math.max(x, base);
@@ -9332,9 +9332,9 @@ var gsmViz = (() => {
   function skipOrLimit(skip2, value, min3, max3) {
     return skip2 ? 0 : _limitValue(value, min3, max3);
   }
-  function parseBorderWidth(bar, maxW, maxH) {
-    const value = bar.options.borderWidth;
-    const skip2 = bar.borderSkipped;
+  function parseBorderWidth(bar2, maxW, maxH) {
+    const value = bar2.options.borderWidth;
+    const skip2 = bar2.borderSkipped;
     const o = toTRBL(value);
     return {
       t: skipOrLimit(skip2.top, o.top, 0, maxH),
@@ -9343,12 +9343,12 @@ var gsmViz = (() => {
       l: skipOrLimit(skip2.left, o.left, 0, maxW)
     };
   }
-  function parseBorderRadius(bar, maxW, maxH) {
-    const { enableBorderRadius } = bar.getProps(["enableBorderRadius"]);
-    const value = bar.options.borderRadius;
+  function parseBorderRadius(bar2, maxW, maxH) {
+    const { enableBorderRadius } = bar2.getProps(["enableBorderRadius"]);
+    const value = bar2.options.borderRadius;
     const o = toTRBLCorners(value);
     const maxR = Math.min(maxW, maxH);
-    const skip2 = bar.borderSkipped;
+    const skip2 = bar2.borderSkipped;
     const enableBorder = enableBorderRadius || isObject(value);
     return {
       topLeft: skipOrLimit(!enableBorder || skip2.top || skip2.left, o.topLeft, 0, maxR),
@@ -9357,12 +9357,12 @@ var gsmViz = (() => {
       bottomRight: skipOrLimit(!enableBorder || skip2.bottom || skip2.right, o.bottomRight, 0, maxR)
     };
   }
-  function boundingRects(bar) {
-    const bounds = getBarBounds(bar);
+  function boundingRects(bar2) {
+    const bounds = getBarBounds(bar2);
     const width = bounds.right - bounds.left;
     const height = bounds.bottom - bounds.top;
-    const border = parseBorderWidth(bar, width / 2, height / 2);
-    const radius3 = parseBorderRadius(bar, width / 2, height / 2);
+    const border = parseBorderWidth(bar2, width / 2, height / 2);
+    const radius3 = parseBorderRadius(bar2, width / 2, height / 2);
     return {
       outer: {
         x: bounds.left,
@@ -9385,11 +9385,11 @@ var gsmViz = (() => {
       }
     };
   }
-  function inRange(bar, x, y, useFinalPosition) {
+  function inRange(bar2, x, y, useFinalPosition) {
     const skipX = x === null;
     const skipY = y === null;
     const skipBoth = skipX && skipY;
-    const bounds = bar && !skipBoth && getBarBounds(bar, useFinalPosition);
+    const bounds = bar2 && !skipBoth && getBarBounds(bar2, useFinalPosition);
     return bounds && (skipX || _isBetween(x, bounds.left, bounds.right)) && (skipY || _isBetween(y, bounds.top, bounds.bottom));
   }
   function hasRadius(radius3) {
@@ -10531,12 +10531,12 @@ var gsmViz = (() => {
       return titleOpts.display ? titleFont.lineHeight + titlePadding.height : 0;
     }
     _getLegendItemAt(x, y) {
-      let i, hitBox, lh;
+      let i, hitBox2, lh;
       if (_isBetween(x, this.left, this.right) && _isBetween(y, this.top, this.bottom)) {
         lh = this.legendHitBoxes;
         for (i = 0; i < lh.length; ++i) {
-          hitBox = lh[i];
-          if (_isBetween(x, hitBox.left, hitBox.left + hitBox.width) && _isBetween(y, hitBox.top, hitBox.top + hitBox.height)) {
+          hitBox2 = lh[i];
+          if (_isBetween(x, hitBox2.left, hitBox2.left + hitBox2.width) && _isBetween(y, hitBox2.top, hitBox2.top + hitBox2.height)) {
             return this.legendItems[i];
           }
         }
@@ -21819,6 +21819,10 @@ var gsmViz = (() => {
     if (xSortDir !== void 0 && xSortDir !== "asc" && xSortDir !== "desc") {
       throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
     }
+    const xGrid = spec.scales?.x?.grid;
+    if (xGrid !== void 0 && typeof xGrid !== "boolean") {
+      throw new Error("spec.scales.x.grid must be a boolean");
+    }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
       if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
@@ -21925,7 +21929,19 @@ var gsmViz = (() => {
     "#b07aa1",
     "#ff9da7",
     "#9c755f",
-    "#bab0ac"
+    "#bab0ac",
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f"
   ];
   var defaults3 = {
     interactive: true,
@@ -21934,7 +21950,8 @@ var gsmViz = (() => {
     scales: {
       x: {
         type: "category",
-        label: void 0
+        label: void 0,
+        grid: false
       },
       y: {
         type: "linear",
@@ -21982,7 +21999,8 @@ var gsmViz = (() => {
       maintainAspectRatio: false,
       animation: false,
       dynamicSizing: false,
-      dynamicCategoryAxis: false
+      dynamicCategoryAxis: false,
+      pxPerCategory: 30
     }
   };
   var defaults_default = defaults3;
@@ -22331,6 +22349,7 @@ var gsmViz = (() => {
     const percentageTicks = { callback: (v) => `${v}%` };
     const categoryScale = {
       type: specScales.x.type,
+      grid: { display: !!specScales.x.grid },
       title: {
         display: !!xLabel,
         text: xLabel
@@ -22965,6 +22984,201 @@ var gsmViz = (() => {
     };
   }
 
+  // src/bars/getPlugins/positionToggle.js
+  var POSITIONS = ["stack", "dodge", "fill"];
+  var TOOLTIP_LABELS = {
+    stack: "Stacked Bars",
+    dodge: "Side-by-Side Bars",
+    fill: "Stacked, Scaled Bars"
+  };
+  var BUTTON = 18;
+  var GAP = 4;
+  var INSET = 6;
+  function getIconBoxes(chart) {
+    const { chartArea, titleBlock, width } = chart;
+    const total = POSITIONS.length * BUTTON + (POSITIONS.length - 1) * GAP;
+    const startX = (width || chartArea.right) - INSET - total;
+    let y;
+    if (titleBlock && titleBlock.height > 0) {
+      y = Math.round((titleBlock.top + titleBlock.bottom) / 2 - BUTTON / 2);
+    } else {
+      y = chartArea.top - BUTTON - INSET;
+    }
+    return POSITIONS.map((value, i) => ({
+      value,
+      x: startX + i * (BUTTON + GAP),
+      y,
+      w: BUTTON,
+      h: BUTTON
+    }));
+  }
+  function enabledSpec(chart) {
+    const spec = chart.data?._spec_;
+    if (!spec || spec.interactive === false) return null;
+    if (!spec.mapping?.fill) return null;
+    if (!chart.chartArea) return null;
+    return spec;
+  }
+  function hitBox(boxes, x, y) {
+    return boxes.find(
+      (b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h
+    );
+  }
+  function bar(ctx, x, bottom, w, h, color3) {
+    ctx.fillStyle = color3;
+    ctx.fillRect(x, bottom - h, w, h);
+  }
+  function drawGlyph(ctx, box, color3) {
+    const p = 4;
+    const x0 = box.x + p;
+    const y0 = box.y + p;
+    const iw = box.w - 2 * p;
+    const ih = box.h - 2 * p;
+    const bottom = y0 + ih;
+    const light = color3 === "#4e79a7" ? "rgba(78,121,167,0.45)" : "rgba(158,158,158,0.45)";
+    if (box.value === "stack") {
+      const w = Math.round(iw * 0.55);
+      const x = x0 + (iw - w) / 2;
+      const seg = ih * 0.75 / 3;
+      bar(ctx, x, bottom, w, seg, color3);
+      bar(ctx, x, bottom - seg, w, seg, light);
+      bar(ctx, x, bottom - 2 * seg, w, seg, color3);
+    } else if (box.value === "dodge") {
+      const w = Math.round(iw * 0.22);
+      const gap = (iw - 3 * w) / 2;
+      const heights = [ih * 0.5, ih * 0.9, ih * 0.65];
+      [color3, light, color3].forEach((c, i) => {
+        bar(ctx, x0 + i * (w + gap), bottom, w, heights[i], c);
+      });
+    } else if (box.value === "fill") {
+      const w = Math.round(iw * 0.4);
+      const gap = iw - 2 * w;
+      const splits = [0.6, 0.4];
+      splits.forEach((split, i) => {
+        const x = x0 + i * (w + gap);
+        bar(ctx, x, bottom, w, ih * split, color3);
+        bar(ctx, x, bottom - ih * split, w, ih * (1 - split), light);
+      });
+    }
+  }
+  function drawIcons(ctx, boxes, active) {
+    ctx.save();
+    boxes.forEach((box) => {
+      const isActive = box.value === active;
+      ctx.fillStyle = isActive ? "rgba(78,121,167,0.15)" : "rgba(255,255,255,0.85)";
+      ctx.fillRect(box.x, box.y, box.w, box.h);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isActive ? "#4e79a7" : "#cccccc";
+      ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+      drawGlyph(ctx, box, isActive ? "#4e79a7" : "#9e9e9e");
+    });
+    ctx.restore();
+  }
+  function drawTooltip(ctx, box) {
+    const label = TOOLTIP_LABELS[box.value];
+    if (!label) return;
+    ctx.save();
+    ctx.font = "11px sans-serif";
+    const metrics = ctx.measureText(label);
+    const pw = 5;
+    const ph = 3;
+    const tw = metrics.width + pw * 2;
+    const th = 16 + ph * 2;
+    const tx = box.x + box.w - tw;
+    const ty = box.y + box.h + 4;
+    ctx.fillStyle = "rgba(50,50,50,0.9)";
+    ctx.fillRect(tx, ty, tw, th);
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, tx + tw / 2, ty + th / 2);
+    ctx.restore();
+  }
+  function positionToggle() {
+    let hoveredValue = null;
+    return {
+      id: "positionToggle",
+      afterEvent(chart, args) {
+        if (args.event.type === "mousemove") {
+          const spec2 = enabledSpec(chart);
+          if (!spec2) {
+            if (hoveredValue !== null) {
+              hoveredValue = null;
+              chart.draw();
+            }
+            return;
+          }
+          const boxes = getIconBoxes(chart);
+          const hit2 = hitBox(boxes, args.event.x, args.event.y);
+          const prev = hoveredValue;
+          hoveredValue = hit2 ? hit2.value : null;
+          if (hoveredValue !== prev) chart.draw();
+          return;
+        }
+        if (args.event.type !== "click") return;
+        const spec = enabledSpec(chart);
+        if (!spec) return;
+        const { x, y } = args.event;
+        const hit = hitBox(getIconBoxes(chart), x, y);
+        if (!hit || hit.value === spec.position) return;
+        chart.helpers.updateSpec(chart, { position: hit.value });
+      },
+      afterDraw(chart) {
+        const spec = enabledSpec(chart);
+        if (!spec) {
+          hoveredValue = null;
+          return;
+        }
+        const boxes = getIconBoxes(chart);
+        if (chart.ctx) {
+          drawIcons(chart.ctx, boxes, spec.position);
+          if (hoveredValue) {
+            const hoveredBox = boxes.find(
+              (b) => b.value === hoveredValue
+            );
+            if (hoveredBox) drawTooltip(chart.ctx, hoveredBox);
+          }
+        }
+        const canvas = chart.canvas;
+        if (!canvas || canvas._positionToggleHandler) return;
+        const handler = (e) => {
+          const area = chart.chartArea;
+          if (!area || !enabledSpec(chart)) {
+            if (canvas._positionTogglePointer) {
+              canvas.style.cursor = "";
+              canvas._positionTogglePointer = false;
+            }
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          const over = !!hitBox(getIconBoxes(chart), mx, my);
+          if (over) {
+            canvas.style.cursor = "pointer";
+            canvas._positionTogglePointer = true;
+          } else if (canvas._positionTogglePointer) {
+            canvas.style.cursor = "";
+            canvas._positionTogglePointer = false;
+          }
+        };
+        canvas._positionToggleHandler = handler;
+        canvas.addEventListener("mousemove", handler);
+      },
+      beforeDestroy(chart) {
+        const canvas = chart.canvas;
+        if (canvas && canvas._positionToggleHandler) {
+          canvas.removeEventListener(
+            "mousemove",
+            canvas._positionToggleHandler
+          );
+          delete canvas._positionToggleHandler;
+          delete canvas._positionTogglePointer;
+        }
+      }
+    };
+  }
+
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
     const existing = chart.data._spec_;
@@ -22992,7 +23206,7 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -23052,6 +23266,9 @@ var gsmViz = (() => {
     merged._nExcluded = nExcluded;
     merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales2(merged);
+    const hiddenLabels = new Set(
+      chart.data.datasets.filter((_, i) => !chart.isDatasetVisible(i)).map((ds) => ds.label)
+    );
     chart.data.datasets = datasets;
     chart.data.labels = labels;
     chart.data._allLabels_ = [...labels];
@@ -23062,13 +23279,28 @@ var gsmViz = (() => {
       y: scalesConfig.y
     };
     chart.options.plugins = getPlugins2(merged);
+    datasets.forEach((ds, i) => {
+      if (hiddenLabels.has(ds.label)) {
+        chart.setDatasetVisibility(i, false);
+      }
+    });
+    if (merged.theme?.dynamicCategoryAxis && hiddenLabels.size > 0) {
+      const catKey = merged.orientation === "horizontal" ? "y" : "x";
+      const valKey = catKey === "x" ? "y" : "x";
+      initializeDynamicCategoryData(datasets);
+      const visibleCats = getVisibleCategories(chart, catKey);
+      chart.data.labels = getAllLabels(chart, visibleCats).filter(
+        (cat) => visibleCats.has(cat)
+      );
+      refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    }
     chart.update();
     const el = chart.canvas.parentNode;
     el.style.height = "";
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
-      const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const numCategories = chart.data.labels.length;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -23196,7 +23428,8 @@ var gsmViz = (() => {
       plugins: [
         plugin,
         displayWhiteBackground(),
-        nCategoriesToggle()
+        nCategoriesToggle(),
+        positionToggle()
       ]
     });
     canvas.chart = chart;
@@ -23259,10 +23492,14 @@ var gsmViz = (() => {
     if (yFree !== void 0 && typeof yFree !== "boolean") {
       throw new Error("spec.facet.scales.y.free must be a boolean");
     }
+    const legendSync = spec.facet?.legend?.sync;
+    if (legendSync !== void 0 && typeof legendSync !== "boolean") {
+      throw new Error("spec.facet.legend.sync must be a boolean");
+    }
     const legendChart = spec.facet?.legend?.chart;
-    if (legendChart !== void 0 && typeof legendChart !== "string") {
-      throw new Error(
-        "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
+    if (legendChart !== void 0) {
+      console.warn(
+        "facetBars: spec.facet.legend.chart is deprecated and has no effect. Legends now display on every facet. Use spec.facet.legend.sync to control whether legend clicks propagate across facets."
       );
     }
     const legendDisplay = spec.facet?.legend?.display;
@@ -23300,7 +23537,7 @@ var gsmViz = (() => {
       },
       legend: {
         display: true,
-        chart: "first"
+        sync: true
       }
     }
   };
@@ -23599,12 +23836,20 @@ var gsmViz = (() => {
   }
 
   // src/facetBars/syncLegendClicks.js
-  function syncLegendClicks(charts) {
+  function syncLegendClicks(charts, { sync = true } = {}) {
     charts.forEach((chart) => {
-      const original = chart.options.plugins?.legend?.onClick;
-      if (!original) return;
-      chart.options.plugins.legend.onClick = function(e, legendItem, legendRef) {
+      const currentOnClick = chart.options.plugins?.legend?.onClick;
+      const storedOriginal = chart._facetLegendOriginalOnClick;
+      let original;
+      if (storedOriginal && currentOnClick === chart._facetLegendSyncWrapper) {
+        original = storedOriginal;
+      } else {
+        original = currentOnClick ?? Chart.defaults.plugins.legend.onClick;
+        chart._facetLegendOriginalOnClick = original;
+      }
+      const wrapper = function(e, legendItem, legendRef) {
         original.call(this, e, legendItem, legendRef);
+        if (!sync) return;
         const clickedLabel = String(legendItem.text);
         const isNowVisible = chart.isDatasetVisible(
           legendItem.datasetIndex
@@ -23615,50 +23860,59 @@ var gsmViz = (() => {
             (ds) => String(ds.label) === clickedLabel
           );
           if (siblingIdx === -1) return;
-          const siblingDataset = sibling.data.datasets[siblingIdx];
-          initializeDynamicCategoryData(sibling.data.datasets);
-          if (!isNowVisible) {
-            siblingDataset.data = [];
-            siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
-            sibling.setDatasetVisibility(siblingIdx, false);
-          } else {
-            delete siblingDataset._backup_;
-            sibling.setDatasetVisibility(siblingIdx, true);
-          }
-          const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
-          const valKey = catKey === "x" ? "y" : "x";
-          const visibleCats = getVisibleCategories(sibling, catKey);
-          sibling.data.labels = getAllLabels(sibling, visibleCats).filter(
-            (cat) => visibleCats.has(cat)
-          );
-          refreshDynamicCategoryData(
-            sibling,
-            sibling.data.labels,
-            catKey,
-            valKey
-          );
-          sibling.update();
-          if (sibling.data._spec_?.theme?.dynamicSizing) {
-            const sibContainer = sibling.canvas?.parentElement;
-            if (sibContainer) {
-              const numCategories = sibling.data.labels.length;
-              const pxPerCategory = 30;
-              const horizontal = sibling.data._spec_?.orientation === "horizontal";
-              if (horizontal) {
-                const area = sibling.chartArea;
-                const chartAreaHeight = area ? area.bottom - area.top : 0;
-                const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
-                sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
-              } else {
-                const area = sibling.chartArea;
-                const chartAreaWidth = area ? area.right - area.left : 0;
-                const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
-                sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+          const useDynamic = sibling.data._spec_?.theme?.dynamicCategoryAxis;
+          if (useDynamic) {
+            const siblingDataset = sibling.data.datasets[siblingIdx];
+            initializeDynamicCategoryData(sibling.data.datasets);
+            if (!isNowVisible) {
+              siblingDataset.data = [];
+              siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
+              sibling.setDatasetVisibility(siblingIdx, false);
+            } else {
+              delete siblingDataset._backup_;
+              sibling.setDatasetVisibility(siblingIdx, true);
+            }
+            const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
+            const valKey = catKey === "x" ? "y" : "x";
+            const visibleCats = getVisibleCategories(sibling, catKey);
+            sibling.data.labels = getAllLabels(
+              sibling,
+              visibleCats
+            ).filter((cat) => visibleCats.has(cat));
+            refreshDynamicCategoryData(
+              sibling,
+              sibling.data.labels,
+              catKey,
+              valKey
+            );
+            sibling.update();
+            if (sibling.data._spec_?.theme?.dynamicSizing) {
+              const sibContainer = sibling.canvas?.parentElement;
+              if (sibContainer) {
+                const numCategories = sibling.data.labels.length;
+                const pxPerCategory = sibling.data._spec_?.theme?.pxPerCategory || 30;
+                const horizontal = sibling.data._spec_?.orientation === "horizontal";
+                if (horizontal) {
+                  const area = sibling.chartArea;
+                  const chartAreaHeight = area ? area.bottom - area.top : 0;
+                  const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
+                  sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
+                } else {
+                  const area = sibling.chartArea;
+                  const chartAreaWidth = area ? area.right - area.left : 0;
+                  const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
+                  sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+                }
               }
             }
+          } else {
+            sibling.setDatasetVisibility(siblingIdx, isNowVisible);
+            sibling.update();
           }
         });
       };
+      chart.options.plugins.legend.onClick = wrapper;
+      chart._facetLegendSyncWrapper = wrapper;
     });
   }
 
@@ -23721,8 +23975,8 @@ var gsmViz = (() => {
     const xFree = merged.facet.scales.x.free;
     const yFree = merged.facet.scales.y.free;
     const legendDisplay = merged.facet.legend.display;
-    const legendChart = merged.facet.legend.chart;
     const hasFill = !!merged.mapping.fill;
+    const showLegend = hasFill && legendDisplay;
     charts.forEach((chart, i) => {
       let needsUpdate = false;
       if (!xFree && !merged.theme?.dynamicCategoryAxis && globalCategories && globalCategories.length > 0) {
@@ -23736,40 +23990,44 @@ var gsmViz = (() => {
         chart.options.scales[valueAxisKey].max = globalScales.yMax;
         needsUpdate = true;
       }
-      if (hasFill) {
-        const facetVal = facetValues[i];
-        const showLegend = legendDisplay && (legendChart === "first" ? i === 0 : legendChart === "last" ? i === facetValues.length - 1 : facetVal === String(legendChart));
-        if (chart.options.plugins.legend.display !== showLegend) {
-          chart.options.plugins.legend.display = showLegend;
-          needsUpdate = true;
-        }
-        if (showLegend && globalFillDomain) {
-          const existing = new Set(
-            chart.data.datasets.map((ds) => String(ds.label))
-          );
-          for (const fillVal of globalFillDomain) {
-            if (!existing.has(fillVal)) {
-              const styleSource = charts.flatMap((c) => c.data.datasets).find(
-                (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
-              );
-              chart.data.datasets.push({
-                label: fillVal,
-                data: [],
-                backgroundColor: styleSource?.backgroundColor,
-                borderColor: styleSource?.borderColor,
-                borderWidth: styleSource?.borderWidth,
-                borderRadius: styleSource?.borderRadius
-              });
-              needsUpdate = true;
-            }
+      if (chart.options.plugins.legend.display !== showLegend) {
+        chart.options.plugins.legend.display = showLegend;
+        needsUpdate = true;
+      }
+      if (showLegend && globalFillDomain) {
+        const existing = new Set(
+          chart.data.datasets.map((ds) => String(ds.label))
+        );
+        for (const fillVal of globalFillDomain) {
+          if (!existing.has(fillVal)) {
+            const styleSource = charts.flatMap((c) => c.data.datasets).find(
+              (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
+            );
+            chart.data.datasets.push({
+              label: fillVal,
+              data: [],
+              backgroundColor: styleSource?.backgroundColor,
+              borderColor: styleSource?.borderColor,
+              borderWidth: styleSource?.borderWidth,
+              borderRadius: styleSource?.borderRadius
+            });
+            needsUpdate = true;
           }
         }
       }
       if (needsUpdate) chart.update("none");
     });
     syncCharts(charts);
-    if (merged.theme?.dynamicCategoryAxis) {
-      syncLegendClicks(charts);
+    if (hasFill) {
+      const syncOpts = { sync: merged.facet.legend.sync };
+      syncLegendClicks(charts, syncOpts);
+      charts.forEach((chart) => {
+        const baseUpdateSpec = chart.helpers.updateSpec;
+        chart.helpers.updateSpec = function(chartInstance, spec2) {
+          baseUpdateSpec(chartInstance, spec2);
+          syncLegendClicks(charts, syncOpts);
+        };
+      });
     }
     return { charts, container: grid };
   }

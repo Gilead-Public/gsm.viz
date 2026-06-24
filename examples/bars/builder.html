@@ -295,12 +295,13 @@
             }
 
             /* ── Chart container ── */
-            /* Default height used when dynamicSizing is off.
+            /* Default min-height used when dynamicSizing is off; grows to fit
+               taller facet grids instead of overflowing onto the Spec panel.
                bars.js overrides el.style.height (horizontal) or
                el.style.width (vertical) when dynamicSizing is on,
                so this must NOT be controlled by flex-grow. */
             #chart-container {
-                height: 500px;
+                min-height: 500px;
                 width: 100%;
             }
 
@@ -327,13 +328,51 @@
                 margin-top: 16px;
             }
 
+            .spec-panel-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 6px;
+            }
+
             .spec-panel-title {
                 font-size: 11px;
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 color: #57606a;
-                margin: 0 0 6px;
+                margin: 0;
+            }
+
+            .spec-format-toggle {
+                display: flex;
+                border: 1px solid #d0d7de;
+                border-radius: 6px;
+                overflow: hidden;
+            }
+
+            .spec-format-toggle button {
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: 600;
+                background: #f6f8fa;
+                border: none;
+                cursor: pointer;
+                color: #57606a;
+                line-height: 1.5;
+            }
+
+            .spec-format-toggle button + button {
+                border-left: 1px solid #d0d7de;
+            }
+
+            .spec-format-toggle button.active {
+                background: #0969da;
+                color: #ffffff;
+            }
+
+            .spec-format-toggle button:not(.active):hover {
+                background: #e8edf1;
             }
 
             .spec-code {
@@ -354,6 +393,7 @@
         </style>
 
         <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
         <script src="../index.js"></script>
     </head>
 
@@ -438,70 +478,8 @@
                     </div>
                 </details>
 
-                <!-- Labels -->
-                <details class="sidebar-section" open>
-                    <summary class="sidebar-section-title">Labels</summary>
-                    <div class="section-body">
-                        <div class="sidebar-row">
-                            <label for="label-title">Title</label>
-                            <input
-                                type="text"
-                                id="label-title"
-                                placeholder="(none)"
-                            />
-                        </div>
-
-                        <div class="sidebar-row">
-                            <label for="label-caption"
-                                >Caption / Footnote</label
-                            >
-                            <input
-                                type="text"
-                                id="label-caption"
-                                placeholder="(none)"
-                            />
-                        </div>
-
-                        <div class="sidebar-row">
-                            <label for="label-x">X-Axis Label</label>
-                            <input
-                                type="text"
-                                id="label-x"
-                                placeholder="(default)"
-                            />
-                        </div>
-
-                        <div class="sidebar-row">
-                            <label for="label-y">Y-Axis Label</label>
-                            <input
-                                type="text"
-                                id="label-y"
-                                placeholder="(default)"
-                            />
-                        </div>
-
-                        <div class="sidebar-row">
-                            <label for="label-legend">Legend Title</label>
-                            <input
-                                type="text"
-                                id="label-legend"
-                                placeholder="(default)"
-                                title="Only applies when a Fill variable is selected"
-                            />
-                        </div>
-                    </div>
-                </details>
-
-                <!-- Fill Order -->
-                <details class="sidebar-section" id="fill-order-section" open>
-                    <summary class="sidebar-section-title">Fill Order</summary>
-                    <div class="section-body">
-                        <div id="fill-order-container"></div>
-                    </div>
-                </details>
-
                 <!-- Appearance -->
-                <details class="sidebar-section" open>
+                <details class="sidebar-section">
                     <summary class="sidebar-section-title">Appearance</summary>
                     <div class="section-body">
                         <div class="sidebar-row">
@@ -736,6 +714,68 @@
                     </div>
                 </details>
 
+                <!-- Labels -->
+                <details class="sidebar-section">
+                    <summary class="sidebar-section-title">Labels</summary>
+                    <div class="section-body">
+                        <div class="sidebar-row">
+                            <label for="label-title">Title</label>
+                            <input
+                                type="text"
+                                id="label-title"
+                                placeholder="(none)"
+                            />
+                        </div>
+
+                        <div class="sidebar-row">
+                            <label for="label-caption"
+                                >Caption / Footnote</label
+                            >
+                            <input
+                                type="text"
+                                id="label-caption"
+                                placeholder="(none)"
+                            />
+                        </div>
+
+                        <div class="sidebar-row">
+                            <label for="label-x">X-Axis Label</label>
+                            <input
+                                type="text"
+                                id="label-x"
+                                placeholder="(default)"
+                            />
+                        </div>
+
+                        <div class="sidebar-row">
+                            <label for="label-y">Y-Axis Label</label>
+                            <input
+                                type="text"
+                                id="label-y"
+                                placeholder="(default)"
+                            />
+                        </div>
+
+                        <div class="sidebar-row">
+                            <label for="label-legend">Legend Title</label>
+                            <input
+                                type="text"
+                                id="label-legend"
+                                placeholder="(default)"
+                                title="Only applies when a Fill variable is selected"
+                            />
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Fill Order -->
+                <details class="sidebar-section" id="fill-order-section" open>
+                    <summary class="sidebar-section-title">Fill Order</summary>
+                    <div class="section-body">
+                        <div id="fill-order-container"></div>
+                    </div>
+                </details>
+
                 <!-- Export -->
                 <div class="export-row">
                     <button class="btn-export" id="export-btn">
@@ -762,7 +802,24 @@
 
                 <!-- Live spec display (matches the Export Spec output) -->
                 <section class="spec-panel">
-                    <h2 class="spec-panel-title">Spec</h2>
+                    <div class="spec-panel-header">
+                        <h2 class="spec-panel-title">Spec</h2>
+                        <div class="spec-format-toggle">
+                            <button
+                                id="spec-format-js"
+                                class="active"
+                                title="Show JavaScript call"
+                            >
+                                JS
+                            </button>
+                            <button
+                                id="spec-format-yaml"
+                                title="Show YAML spec"
+                            >
+                                YAML
+                            </button>
+                        </div>
+                    </div>
                     <pre class="spec-code"><code id="spec-display"></code></pre>
                 </section>
             </main>

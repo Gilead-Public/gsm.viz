@@ -290,6 +290,62 @@ describe('bars/getScales', () => {
         });
     });
 
+    describe('categoryAxis grid lines', () => {
+        test('disables grid on category axis (x) by default for vertical orientation', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.grid?.display).toBe(false);
+        });
+
+        test('disables grid on category axis (y) by default for horizontal orientation', () => {
+            const spec = {
+                orientation: 'horizontal',
+                scales: { x: { type: 'category' }, y: { type: 'linear' } },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.grid?.display).toBe(false);
+        });
+
+        test('enables grid on category axis (x) when scales.x.grid is true for vertical', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', grid: true },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.grid?.display).toBe(true);
+        });
+
+        test('enables grid on category axis (y) when scales.x.grid is true for horizontal', () => {
+            const spec = {
+                orientation: 'horizontal',
+                scales: {
+                    x: { type: 'category', grid: true },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.grid?.display).toBe(true);
+        });
+
+        test('does not affect the value axis grid', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', grid: true },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.grid).toBeUndefined();
+        });
+    });
+
     describe('dynamicSizing / autoSkip', () => {
         test('sets autoSkip false on category (x) axis for vertical when dynamicSizing is true', () => {
             const spec = {

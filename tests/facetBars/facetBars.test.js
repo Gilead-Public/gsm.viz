@@ -235,23 +235,14 @@ describe('facetBars integration', () => {
     });
 
     describe('legend control', () => {
-        test('legend shown on first chart by default', () => {
+        test('legend shown on every chart by default when fill is mapped', () => {
             const { charts } = facetBars(container, data, baseSpec);
-            expect(charts[0].options.plugins.legend.display).toBe(true);
-            expect(charts[1].options.plugins.legend.display).toBe(false);
-            expect(charts[2].options.plugins.legend.display).toBe(false);
-        });
-
-        test('legend shown on last chart when facet.legend.chart is "last"', () => {
-            const { charts } = facetBars(container, data, {
-                ...baseSpec,
-                facet: { field: 'region', legend: { chart: 'last' } },
+            charts.forEach((c) => {
+                expect(c.options.plugins.legend.display).toBe(true);
             });
-            expect(charts[0].options.plugins.legend.display).toBe(false);
-            expect(charts[2].options.plugins.legend.display).toBe(true);
         });
 
-        test('no legend when facet.legend.display is false', () => {
+        test('no legend on any chart when facet.legend.display is false', () => {
             const { charts } = facetBars(container, data, {
                 ...baseSpec,
                 facet: { field: 'region', legend: { display: false } },
@@ -261,25 +252,19 @@ describe('facetBars integration', () => {
             });
         });
 
-        test('legend on specific facet value when chart is a string', () => {
+        test('no legend when fill mapping is absent', () => {
             const { charts } = facetBars(container, data, {
-                ...baseSpec,
-                facet: { field: 'region', legend: { chart: 'EU' } },
+                mapping: { x: 'site', y: 'value' },
+                facet: { field: 'region' },
             });
-            // EU is the second facet (US=0, EU=1, APAC=2)
-            expect(charts[1].options.plugins.legend.display).toBe(true);
-            expect(charts[0].options.plugins.legend.display).toBe(false);
-            expect(charts[2].options.plugins.legend.display).toBe(false);
+            charts.forEach((c) => {
+                expect(c.options.plugins.legend.display).toBe(false);
+            });
         });
 
-        test('injected legend datasets copy styling from a sibling facet', () => {
-            // APAC has only group 'X'; making it the legend chart forces an
-            // injected empty dataset for 'Y'. That dataset must copy styling
-            // from a sibling (US/EU) so the legend swatch renders correctly.
-            const { charts } = facetBars(container, data, {
-                ...baseSpec,
-                facet: { field: 'region', legend: { chart: 'APAC' } },
-            });
+        test('every facet legend shows the full global fill domain (ghost datasets)', () => {
+            // APAC only has group 'X' in data, but its legend must also show 'Y'
+            const { charts } = facetBars(container, data, baseSpec);
 
             const apac = charts[2];
             const injected = apac.data.datasets.find(
@@ -295,6 +280,16 @@ describe('facetBars integration', () => {
             );
             expect(injected.backgroundColor).toBe(siblingY.backgroundColor);
             expect(injected.borderColor).toBe(siblingY.borderColor);
+        });
+
+        test('ghost datasets are injected into all facets, not just one', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+            // Every chart should have datasets for both 'X' and 'Y'
+            charts.forEach((c) => {
+                const labels = c.data.datasets.map((ds) => String(ds.label));
+                expect(labels).toContain('X');
+                expect(labels).toContain('Y');
+            });
         });
     });
 
@@ -414,6 +409,447 @@ describe('facetBars integration', () => {
             const { charts } = facetBars(container, data, baseSpec);
             charts.forEach((c) => {
                 expect(c.data.labels).toEqual(['A', 'B', 'C']);
+            });
+        });
+    });
+
+    describe('legend-click sync (regression)', () => {
+        test('each chart has a wrapped legend.onClick when fill is mapped', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+            charts.forEach((c) => {
+                expect(typeof c.options.plugins.legend.onClick).toBe(
+                    'function'
+                );
+            });
+        });
+
+        test('toggling a fill group hides it in all sibling charts (sync: true)', () => {
+            const { charts } = facetBars(container, data, baseSpec);
+
+            // Find the dataset index for 'X' in the first chart.
+            const clickedChart = charts[0];
+            const xIdx = clickedChart.data.datasets.findIndex(
+                (ds) => String(ds.label) === 'X'
+            );
+            expect(xIdx).toBeGreaterThanOrEqual(0);
+
+            // Simulate a legend click that hides 'X'.
+            const e = {};
+            const legendItem = { datasetIndex: xIdx, text: 'X' };
+            const legendRef = { chart: clickedChart };
+            clickedChart.options.plugins.legend.onClick(
+                e,
+                legendItem,
+                legendRef
+            );
+
+            // After the click, all sibling charts must have 'X' hidden too.
+            const siblings = charts.filter((c) => c !== clickedChart);
+            siblings.forEach((sibling) => {
+                const sibIdx = sibling.data.datasets.findIndex(
+                    (ds) => String(ds.label) === 'X'
+                );
+                if (sibIdx !== -1) {
+                    expect(sibling.isDatasetVisible(sibIdx)).toBe(false);
+                }
+            });
+        });
+
+        test('toggling a fill group does NOT propagate when sync: false', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                facet: { field: 'region', legend: { sync: false } },
+            });
+
+            const clickedChart = charts[0];
+            const xIdx = clickedChart.data.datasets.findIndex(
+                (ds) => String(ds.label) === 'X'
+            );
+
+            const e = {};
+            const legendItem = { datasetIndex: xIdx, text: 'X' };
+            const legendRef = { chart: clickedChart };
+            clickedChart.options.plugins.legend.onClick(
+                e,
+                legendItem,
+                legendRef
+            );
+
+            // Siblings should NOT have 'X' hidden — sync is disabled.
+            const siblings = charts.filter((c) => c !== clickedChart);
+            siblings.forEach((sibling) => {
+                const sibIdx = sibling.data.datasets.findIndex(
+                    (ds) => String(ds.label) === 'X'
+                );
+                if (sibIdx !== -1) {
+                    expect(sibling.isDatasetVisible(sibIdx)).toBe(true);
+                }
+            });
+        });
+    });
+
+    describe('interaction audit: dynamicCategoryAxis × position × fill', () => {
+        // Systematically test combinations of these three settings to verify
+        // that facetBars behaves correctly and consistently.
+
+        const fillData = data; // has both fill groups 'X' and 'Y'
+        const noFillData = [
+            { region: 'US', site: 'A', value: 10 },
+            { region: 'US', site: 'B', value: 20 },
+            { region: 'EU', site: 'A', value: 8 },
+            { region: 'EU', site: 'C', value: 15 },
+            { region: 'APAC', site: 'B', value: 12 },
+        ];
+
+        describe('dynamicCategoryAxis: false (default)', () => {
+            describe('with fill mapping', () => {
+                test('position: stack — constant axes, all facets have same labels and value max', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'stack',
+                        facet: { field: 'region' },
+                    });
+                    const expectedLabels = ['A', 'B', 'C'];
+                    charts.forEach((c) => {
+                        expect(c.data.labels).toEqual(expectedLabels);
+                        expect(c.options.scales.x.min).toBe(0);
+                        expect(c.options.scales.x.max).toBe(2);
+                        expect(c.options.scales.y.max).toBeDefined();
+                    });
+                    // All charts share the same value axis max
+                    const maxes = charts.map((c) => c.options.scales.y.max);
+                    expect(new Set(maxes).size).toBe(1);
+                });
+
+                test('position: dodge — constant axes, all facets have same labels', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'dodge',
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.data.labels).toEqual(['A', 'B', 'C']);
+                        expect(c.options.scales.x.min).toBe(0);
+                        expect(c.options.scales.x.max).toBe(2);
+                    });
+                });
+
+                test('position: fill — value axis pinned to [0, 100]', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'fill',
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.scales.y.min).toBe(0);
+                        expect(c.options.scales.y.max).toBe(100);
+                    });
+                });
+            });
+
+            describe('without fill mapping', () => {
+                test('position: stack — no legend, constant axes', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'stack',
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                        expect(c.data.labels).toEqual(['A', 'B', 'C']);
+                    });
+                });
+
+                test('position: dodge — no legend, constant axes', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'dodge',
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                        expect(c.data.labels).toEqual(['A', 'B', 'C']);
+                    });
+                });
+
+                test('position: fill — no legend, value axis pinned to [0, 100]', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'fill',
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                        expect(c.options.scales.y.min).toBe(0);
+                        expect(c.options.scales.y.max).toBe(100);
+                    });
+                });
+            });
+        });
+
+        describe('dynamicCategoryAxis: true', () => {
+            describe('with fill mapping', () => {
+                test('position: stack — per-facet categories, no global axis pinning', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'stack',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    // US has A, B; EU has A, C; APAC has B
+                    expect(charts[0].data.labels).toHaveLength(2);
+                    expect(charts[1].data.labels).toHaveLength(2);
+                    expect(charts[2].data.labels).toHaveLength(1);
+                    // No global axis pinning
+                    charts.forEach((c) => {
+                        expect(c.options.scales.x.min).toBeUndefined();
+                        expect(c.options.scales.x.max).toBeUndefined();
+                    });
+                });
+
+                test('position: dodge — per-facet categories, legend on every facet', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'dodge',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(true);
+                        expect(c.options.scales.x.min).toBeUndefined();
+                        expect(c.options.scales.x.max).toBeUndefined();
+                    });
+                });
+
+                test('position: fill — per-facet categories, value axis [0, 100]', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'fill',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.scales.x.min).toBeUndefined();
+                        expect(c.options.scales.x.max).toBeUndefined();
+                        expect(c.options.scales.y.min).toBe(0);
+                        expect(c.options.scales.y.max).toBe(100);
+                    });
+                });
+
+                test('dynamicCategoryAxis + fill: ghost datasets present on all facets', () => {
+                    const { charts } = facetBars(container, fillData, {
+                        mapping: { x: 'site', y: 'value', fill: 'group' },
+                        position: 'stack',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    // APAC only has group X, but should have ghost dataset for Y
+                    const apac = charts[2];
+                    const labels = apac.data.datasets.map((ds) =>
+                        String(ds.label)
+                    );
+                    expect(labels).toContain('X');
+                    expect(labels).toContain('Y');
+                });
+            });
+
+            describe('without fill mapping', () => {
+                test('position: stack — per-facet categories, no legend', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'stack',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                        expect(c.options.scales.x.min).toBeUndefined();
+                        expect(c.options.scales.x.max).toBeUndefined();
+                    });
+                });
+
+                test('position: dodge — per-facet categories, no legend', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'dodge',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                    });
+                });
+
+                test('position: fill — per-facet categories, no legend, value axis [0, 100]', () => {
+                    const { charts } = facetBars(container, noFillData, {
+                        mapping: { x: 'site', y: 'value' },
+                        position: 'fill',
+                        theme: { dynamicCategoryAxis: true },
+                        facet: { field: 'region' },
+                    });
+                    charts.forEach((c) => {
+                        expect(c.options.plugins.legend.display).toBe(false);
+                        expect(c.options.scales.y.min).toBe(0);
+                        expect(c.options.scales.y.max).toBe(100);
+                    });
+                });
+            });
+        });
+
+        describe('legend sync with dynamicCategoryAxis', () => {
+            test('sync: true propagates hide across facets with dynamic categories', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'stack',
+                    theme: { dynamicCategoryAxis: true },
+                    facet: { field: 'region' },
+                });
+
+                const clickedChart = charts[0];
+                const xIdx = clickedChart.data.datasets.findIndex(
+                    (ds) => String(ds.label) === 'X'
+                );
+                clickedChart.options.plugins.legend.onClick(
+                    {},
+                    { datasetIndex: xIdx, text: 'X' },
+                    { chart: clickedChart }
+                );
+
+                const siblings = charts.filter((c) => c !== clickedChart);
+                siblings.forEach((sibling) => {
+                    const sibIdx = sibling.data.datasets.findIndex(
+                        (ds) => String(ds.label) === 'X'
+                    );
+                    if (sibIdx !== -1) {
+                        expect(sibling.isDatasetVisible(sibIdx)).toBe(false);
+                    }
+                });
+            });
+
+            test('sync: false does NOT propagate with dynamic categories', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'stack',
+                    theme: { dynamicCategoryAxis: true },
+                    facet: { field: 'region', legend: { sync: false } },
+                });
+
+                const clickedChart = charts[0];
+                const xIdx = clickedChart.data.datasets.findIndex(
+                    (ds) => String(ds.label) === 'X'
+                );
+                clickedChart.options.plugins.legend.onClick(
+                    {},
+                    { datasetIndex: xIdx, text: 'X' },
+                    { chart: clickedChart }
+                );
+
+                const siblings = charts.filter((c) => c !== clickedChart);
+                siblings.forEach((sibling) => {
+                    const sibIdx = sibling.data.datasets.findIndex(
+                        (ds) => String(ds.label) === 'X'
+                    );
+                    if (sibIdx !== -1) {
+                        expect(sibling.isDatasetVisible(sibIdx)).toBe(true);
+                    }
+                });
+            });
+        });
+
+        describe('value axis consistency across positions', () => {
+            test('switching from stack to dodge: all facets share same value max', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'dodge',
+                    facet: { field: 'region' },
+                });
+                const maxes = charts.map((c) => c.options.scales.y.max);
+                expect(new Set(maxes).size).toBe(1);
+            });
+
+            test('position: fill always uses [0, 100] regardless of data values', () => {
+                const bigData = [
+                    { region: 'US', site: 'A', value: 1000, group: 'X' },
+                    { region: 'US', site: 'A', value: 500, group: 'Y' },
+                    { region: 'EU', site: 'B', value: 2000, group: 'X' },
+                ];
+                const { charts } = facetBars(container, bigData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'fill',
+                    facet: { field: 'region' },
+                });
+                charts.forEach((c) => {
+                    expect(c.options.scales.y.min).toBe(0);
+                    expect(c.options.scales.y.max).toBe(100);
+                });
+            });
+        });
+
+        describe('position toggle (per-facet)', () => {
+            test('updateSpec on one chart does not affect sibling chart positions', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'stack',
+                    facet: { field: 'region' },
+                });
+
+                // Toggle position on the first chart only
+                charts[0].helpers.updateSpec(charts[0], { position: 'dodge' });
+
+                // First chart should now be dodge
+                expect(charts[0].data._spec_.position).toBe('dodge');
+
+                // Sibling charts remain stack
+                expect(charts[1].data._spec_.position).toBe('stack');
+                expect(charts[2].data._spec_.position).toBe('stack');
+            });
+
+            test('legend sync still works after a position toggle on one facet', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'stack',
+                    facet: { field: 'region' },
+                });
+
+                // Toggle position on the first chart
+                charts[0].helpers.updateSpec(charts[0], { position: 'dodge' });
+
+                // Legend click on charts[0] should still propagate to siblings
+                const xIdx = charts[0].data.datasets.findIndex(
+                    (ds) => String(ds.label) === 'X'
+                );
+                charts[0].options.plugins.legend.onClick(
+                    {},
+                    { datasetIndex: xIdx, text: 'X' },
+                    { chart: charts[0] }
+                );
+
+                // Siblings should have 'X' hidden
+                const siblings = charts.filter((c) => c !== charts[0]);
+                siblings.forEach((sibling) => {
+                    const sibIdx = sibling.data.datasets.findIndex(
+                        (ds) => String(ds.label) === 'X'
+                    );
+                    if (sibIdx !== -1) {
+                        expect(sibling.isDatasetVisible(sibIdx)).toBe(false);
+                    }
+                });
+            });
+
+            test('cross-chart hover still works after a position toggle', () => {
+                const { charts } = facetBars(container, fillData, {
+                    mapping: { x: 'site', y: 'value', fill: 'group' },
+                    position: 'stack',
+                    facet: { field: 'region' },
+                });
+
+                // Toggle position on one chart
+                charts[0].helpers.updateSpec(charts[0], { position: 'dodge' });
+
+                // onHover should still be defined on all charts
+                charts.forEach((c) => {
+                    expect(typeof c.options.onHover).toBe('function');
+                });
             });
         });
     });

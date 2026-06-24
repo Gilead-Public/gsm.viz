@@ -863,4 +863,48 @@ describe('bars/validateSpec', () => {
             );
         });
     });
+
+    describe('scales.x.grid validation', () => {
+        test('does not throw when scales.x.grid is true', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { grid: true } },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.grid is false', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { grid: false } },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.grid is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('throws when scales.x.grid is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { grid: 'yes' } },
+                })
+            ).toThrow('spec.scales.x.grid must be a boolean');
+        });
+
+        test('throws when scales.x.grid is a number', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { grid: 1 } },
+                })
+            ).toThrow('spec.scales.x.grid must be a boolean');
+        });
+    });
 });

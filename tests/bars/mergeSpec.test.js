@@ -305,4 +305,27 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.segment.display).toBe(true);
         });
     });
+
+    describe('scales.x.grid', () => {
+        test('defaults scales.x.grid to false', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.scales.x.grid).toBe(false);
+        });
+
+        test('preserves scales.x.grid: true when specified', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                scales: { x: { grid: true } },
+            });
+            expect(merged.scales.x.grid).toBe(true);
+        });
+
+        test('preserves scales.x.grid: false when explicitly specified', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                scales: { x: { grid: false } },
+            });
+            expect(merged.scales.x.grid).toBe(false);
+        });
+    });
 });

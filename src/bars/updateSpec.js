@@ -2,6 +2,10 @@ import mergeSpec from './mergeSpec.js';
 import structureData from './structureData.js';
 import getScales from './getScales.js';
 import getPlugins from './getPlugins.js';
+import initializeDynamicCategoryData from './getPlugins/initializeDynamicCategoryData.js';
+import getVisibleCategories from './getPlugins/getVisibleCategories.js';
+import getAllLabels from './getPlugins/getAllLabels.js';
+import refreshDynamicCategoryData from './getPlugins/refreshDynamicCategoryData.js';
 
 /**
  * Re-run the spec pipeline on an existing chart with a partial spec update.
@@ -60,6 +64,12 @@ export default function updateSpec(chart, spec) {
     merged._nRowsExcluded = nRowsExcluded;
     const scalesConfig = getScales(merged);
 
+    const hiddenLabels = new Set(
+        chart.data.datasets
+            .filter((_, i) => !chart.isDatasetVisible(i))
+            .map((ds) => ds.label)
+    );
+
     chart.data.datasets = datasets;
     chart.data.labels = labels;
     chart.data._allLabels_ = [...labels];
@@ -72,6 +82,23 @@ export default function updateSpec(chart, spec) {
     };
     chart.options.plugins = getPlugins(merged);
 
+    datasets.forEach((ds, i) => {
+        if (hiddenLabels.has(ds.label)) {
+            chart.setDatasetVisibility(i, false);
+        }
+    });
+
+    if (merged.theme?.dynamicCategoryAxis && hiddenLabels.size > 0) {
+        const catKey = merged.orientation === 'horizontal' ? 'y' : 'x';
+        const valKey = catKey === 'x' ? 'y' : 'x';
+        initializeDynamicCategoryData(datasets);
+        const visibleCats = getVisibleCategories(chart, catKey);
+        chart.data.labels = getAllLabels(chart, visibleCats).filter((cat) =>
+            visibleCats.has(cat)
+        );
+        refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    }
+
     chart.update();
 
     // Always clear any previously-applied inline sizing first so that
@@ -81,8 +108,8 @@ export default function updateSpec(chart, spec) {
     el.style.width = '';
 
     if (merged.theme.dynamicSizing) {
-        const numCategories = labels.length;
-        const pxPerCategory = 30;
+        const numCategories = chart.data.labels.length;
+        const pxPerCategory = merged.theme.pxPerCategory;
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;

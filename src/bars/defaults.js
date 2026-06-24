@@ -1,4 +1,5 @@
-// Tableau-10 categorical palette — perceptually distinct, accessible.
+// Categorical palette — Tableau-10 (first 10) followed by ColorBrewer Set3
+// (next 12), for fill mappings with many categories. Perceptually distinct.
 const DEFAULT_PALETTE = [
     '#4e79a7',
     '#f28e2b',
@@ -10,6 +11,18 @@ const DEFAULT_PALETTE = [
     '#ff9da7',
     '#9c755f',
     '#bab0ac',
+    '#8dd3c7',
+    '#ffffb3',
+    '#bebada',
+    '#fb8072',
+    '#80b1d3',
+    '#fdb462',
+    '#b3de69',
+    '#fccde5',
+    '#d9d9d9',
+    '#bc80bd',
+    '#ccebc5',
+    '#ffed6f',
 ];
 
 /**
@@ -24,6 +37,7 @@ const defaults = {
         x: {
             type: 'category',
             label: undefined,
+            grid: false,
         },
         y: {
             type: 'linear',
@@ -72,6 +86,7 @@ const defaults = {
         animation: false,
         dynamicSizing: false,
         dynamicCategoryAxis: false,
+        pxPerCategory: 30,
     },
 };
 

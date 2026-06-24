@@ -139,24 +139,36 @@ describe('facetBars/validateSpec', () => {
             ).toThrow('spec.facet.scales.x.free must be a boolean');
         });
 
-        test('throws when spec.facet.legend.chart is an invalid string', () => {
+        test('throws when spec.facet.legend.sync is not a boolean', () => {
             expect(() =>
                 validateSpec(minimalData, {
                     mapping: { x: 'site' },
-                    facet: { field: 'r', legend: { chart: 123 } },
+                    facet: { field: 'r', legend: { sync: 'yes' } },
                 })
-            ).toThrow(
-                "spec.facet.legend.chart must be 'first', 'last', or a string facet value"
-            );
+            ).toThrow('spec.facet.legend.sync must be a boolean');
         });
 
-        test('accepts spec.facet.legend.chart as a non-reserved string (facet value)', () => {
+        test('accepts spec.facet.legend.sync as a boolean', () => {
             expect(() =>
                 validateSpec(minimalData, {
                     mapping: { x: 'site' },
-                    facet: { field: 'r', legend: { chart: 'US' } },
+                    facet: { field: 'r', legend: { sync: false } },
                 })
             ).not.toThrow();
+        });
+
+        test('warns when deprecated spec.facet.legend.chart is provided', () => {
+            const warnSpy = jest
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+            validateSpec(minimalData, {
+                mapping: { x: 'site' },
+                facet: { field: 'r', legend: { chart: 'first' } },
+            });
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('spec.facet.legend.chart is deprecated')
+            );
+            warnSpy.mockRestore();
         });
 
         test('throws when spec.facet.legend.display is not a boolean', () => {

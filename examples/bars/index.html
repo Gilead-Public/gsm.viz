@@ -95,7 +95,7 @@
 
     <body>
         <nav class="tab-nav">
-            <button class="active" data-tab="retention">Stacked</button>
+            <button class="active" data-tab="retention">Grouped</button>
             <button data-tab="kri">Callbacks</button>
             <button data-tab="gini">Continuous</button>
             <button data-tab="kri-site">Reference Lines</button>
@@ -110,16 +110,6 @@
                     <select id="retention-orientation">
                         <option value="vertical">Vertical</option>
                         <option value="horizontal" selected>Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Position</legend>
-                    <select id="retention-position">
-                        <option value="stack" selected>Stack</option>
-                        <option value="dodge">Dodge</option>
-                        <option value="fill">Fill</option>
-                        <!--option value="identity">Identity</option-->
                     </select>
                 </fieldset>
 
@@ -155,6 +145,17 @@
                 </fieldset>
 
                 <fieldset>
+                    <legend>Top N Categories</legend>
+                    <input
+                        type="number"
+                        id="retention-n-categories"
+                        min="1"
+                        step="1"
+                        placeholder="All"
+                    />
+                </fieldset>
+
+                <fieldset>
                     <legend>Bar Label</legend>
                     <select id="retention-bar-label">
                         <option value="none">None</option>
@@ -166,22 +167,24 @@
                     </select>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Top N Categories</legend>
-                    <input
-                        type="number"
-                        id="retention-n-categories"
-                        min="1"
-                        step="1"
-                        placeholder="All"
-                        style="width: 80px"
-                    />
-                </fieldset>
-
-                <fieldset>
-                    <legend>Export</legend>
-                    <button id="retention-export-btn">Export PNG</button>
-                </fieldset>
+                <button
+                    id="retention-export-btn"
+                    class="export-btn"
+                    type="button"
+                    title="Export PNG"
+                    aria-label="Export PNG"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                    >
+                        <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+                        <path d="M14 14H2v-2h12v2z" />
+                    </svg>
+                </button>
             </div>
 
             <div id="retention-container"></div>
@@ -199,16 +202,6 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Position</legend>
-                    <select id="position">
-                        <option value="stack" selected>Stack</option>
-                        <option value="dodge">Dodge</option>
-                        <option value="fill">Fill</option>
-                        <!--option value="identity">Identity</option-->
-                    </select>
-                </fieldset>
-
-                <fieldset>
                     <legend>Dynamic Sizing</legend>
                     <select id="dynamic-sizing">
                         <option value="no" selected>No</option>
@@ -221,14 +214,6 @@
                     <select id="dynamic-category-axis">
                         <option value="no" selected>No</option>
                         <option value="yes">Yes</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Fill</legend>
-                    <select id="fill">
-                        <option value="">None</option>
-                        <option value="Flag" selected>Flag</option>
                     </select>
                 </fieldset>
 
@@ -255,14 +240,35 @@
                         min="1"
                         step="1"
                         placeholder="All"
-                        style="width: 80px"
                     />
                 </fieldset>
 
                 <fieldset>
-                    <legend>Export</legend>
-                    <button id="kri-export-btn">Export PNG</button>
+                    <legend>Fill</legend>
+                    <select id="fill">
+                        <option value="">None</option>
+                        <option value="Flag" selected>Flag</option>
+                    </select>
                 </fieldset>
+
+                <button
+                    id="kri-export-btn"
+                    class="export-btn"
+                    type="button"
+                    title="Export PNG"
+                    aria-label="Export PNG"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                    >
+                        <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+                        <path d="M14 14H2v-2h12v2z" />
+                    </svg>
+                </button>
             </div>
 
             <div id="kri-container">
@@ -293,26 +299,11 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Position</legend>
-                    <select id="gini-position">
-                        <option value="stack" selected>Stack</option>
-                        <option value="dodge">Dodge</option>
-                        <option value="fill">Fill</option>
-                        <!--option value="identity">Identity</option-->
-                    </select>
-                </fieldset>
-
-                <fieldset>
                     <legend>Dynamic Sizing</legend>
                     <select id="gini-dynamic-sizing">
                         <option value="no" selected>No</option>
                         <option value="yes">Yes</option>
                     </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Year</legend>
-                    <select id="gini-year"></select>
                 </fieldset>
 
                 <fieldset>
@@ -338,14 +329,32 @@
                         min="1"
                         step="1"
                         placeholder="All"
-                        style="width: 80px"
                     />
                 </fieldset>
 
                 <fieldset>
-                    <legend>Export</legend>
-                    <button id="gini-export-btn">Export PNG</button>
+                    <legend>Year</legend>
+                    <select id="gini-year"></select>
                 </fieldset>
+
+                <button
+                    id="gini-export-btn"
+                    class="export-btn"
+                    type="button"
+                    title="Export PNG"
+                    aria-label="Export PNG"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                    >
+                        <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+                        <path d="M14 14H2v-2h12v2z" />
+                    </svg>
+                </button>
             </div>
 
             <div id="gini-container"></div>
@@ -354,6 +363,14 @@
         <!-- KRI by Site tab -->
         <div id="kri-site" class="tab-panel gsm-viz--example">
             <div id="kri-site-controls">
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="kri-site-orientation">
+                        <option value="vertical" selected>Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
                 <fieldset>
                     <legend>Metric</legend>
                     <select id="kri-site-metric"></select>
@@ -378,18 +395,24 @@
                     />
                 </fieldset>
 
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="kri-site-orientation">
-                        <option value="vertical" selected>Vertical</option>
-                        <option value="horizontal">Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Export</legend>
-                    <button id="kri-site-export-btn">Export PNG</button>
-                </fieldset>
+                <button
+                    id="kri-site-export-btn"
+                    class="export-btn"
+                    type="button"
+                    title="Export PNG"
+                    aria-label="Export PNG"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                    >
+                        <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+                        <path d="M14 14H2v-2h12v2z" />
+                    </svg>
+                </button>
             </div>
 
             <div id="kri-site-container"></div>
@@ -398,6 +421,14 @@
         <!-- KRI Facet tab -->
         <div id="kri-facet" class="tab-panel gsm-viz--example">
             <div id="kri-facet-controls">
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="kri-facet-orientation">
+                        <option value="vertical" selected>Vertical</option>
+                        <option value="horizontal">Horizontal</option>
+                    </select>
+                </fieldset>
+
                 <fieldset>
                     <legend>Site</legend>
                     <select id="kri-facet-site">
@@ -438,14 +469,6 @@
                         name="Threshold"
                         checked
                     />
-                </fieldset>
-
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="kri-facet-orientation">
-                        <option value="vertical" selected>Vertical</option>
-                        <option value="horizontal">Horizontal</option>
-                    </select>
                 </fieldset>
 
                 <fieldset>
