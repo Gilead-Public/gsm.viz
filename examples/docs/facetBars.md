@@ -97,7 +97,7 @@ every sub-chart) plus a required `facet` block:
 | `facet.scales.x.free`  | `false` (constant, shared category domain)  |
 | `facet.scales.y.free`  | `false` (constant, shared axis)             |
 | `facet.legend.display` | `true`                                      |
-| `facet.legend.chart`   | `'first'`                                   |
+| `facet.legend.sync`    | `true`                                      |
 
 ---
 
@@ -157,19 +157,21 @@ facet: {
 
 ## Legend
 
-When `mapping.fill` is set, a Chart.js legend is shown on exactly one
-sub-chart (controlled by `facet.legend.chart`). All other sub-charts have their
-legend suppressed to reduce clutter.
+When `mapping.fill` is set, a Chart.js legend is shown on every facet chart.
+Each legend displays the full global fill domain (all fill values across all
+facets) for consistency — even if a particular facet's data does not include
+every fill level.
+
+Legend clicks are synchronised across facets by default: toggling a fill group
+in one chart hides/shows it in all sibling charts. Set `facet.legend.sync` to
+`false` for independent per-facet legend control.
 
 ```js
-// Default: legend on first chart
-facet: { field: 'region', legend: { chart: 'first' } }
+// Default: synced legends on every chart
+facet: { field: 'region' }
 
-// Legend on the last chart
-facet: { field: 'region', legend: { chart: 'last' } }
-
-// Legend on a specific facet value
-facet: { field: 'region', legend: { chart: 'EU' } }
+// Independent per-facet legends (no cross-chart propagation)
+facet: { field: 'region', legend: { sync: false } }
 
 // No legend on any chart
 facet: { field: 'region', legend: { display: false } }

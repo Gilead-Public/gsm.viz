@@ -232,5 +232,17 @@ export default function positionToggle() {
             canvas._positionToggleHandler = handler;
             canvas.addEventListener('mousemove', handler);
         },
+
+        beforeDestroy(chart) {
+            const canvas = chart.canvas;
+            if (canvas && canvas._positionToggleHandler) {
+                canvas.removeEventListener(
+                    'mousemove',
+                    canvas._positionToggleHandler
+                );
+                delete canvas._positionToggleHandler;
+                delete canvas._positionTogglePointer;
+            }
+        },
     };
 }

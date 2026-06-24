@@ -157,6 +157,20 @@ describe('facetBars/validateSpec', () => {
             ).not.toThrow();
         });
 
+        test('warns when deprecated spec.facet.legend.chart is provided', () => {
+            const warnSpy = jest
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+            validateSpec(minimalData, {
+                mapping: { x: 'site' },
+                facet: { field: 'r', legend: { chart: 'first' } },
+            });
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('spec.facet.legend.chart is deprecated')
+            );
+            warnSpy.mockRestore();
+        });
+
         test('throws when spec.facet.legend.display is not a boolean', () => {
             expect(() =>
                 validateSpec(minimalData, {

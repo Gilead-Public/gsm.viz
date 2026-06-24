@@ -23164,6 +23164,17 @@ var gsmViz = (() => {
         };
         canvas._positionToggleHandler = handler;
         canvas.addEventListener("mousemove", handler);
+      },
+      beforeDestroy(chart) {
+        const canvas = chart.canvas;
+        if (canvas && canvas._positionToggleHandler) {
+          canvas.removeEventListener(
+            "mousemove",
+            canvas._positionToggleHandler
+          );
+          delete canvas._positionToggleHandler;
+          delete canvas._positionTogglePointer;
+        }
       }
     };
   }
@@ -23484,6 +23495,12 @@ var gsmViz = (() => {
     const legendSync = spec.facet?.legend?.sync;
     if (legendSync !== void 0 && typeof legendSync !== "boolean") {
       throw new Error("spec.facet.legend.sync must be a boolean");
+    }
+    const legendChart = spec.facet?.legend?.chart;
+    if (legendChart !== void 0) {
+      console.warn(
+        "facetBars: spec.facet.legend.chart is deprecated and has no effect. Legends now display on every facet. Use spec.facet.legend.sync to control whether legend clicks propagate across facets."
+      );
     }
     const legendDisplay = spec.facet?.legend?.display;
     if (legendDisplay !== void 0 && typeof legendDisplay !== "boolean") {
@@ -23873,7 +23890,7 @@ var gsmViz = (() => {
               const sibContainer = sibling.canvas?.parentElement;
               if (sibContainer) {
                 const numCategories = sibling.data.labels.length;
-                const pxPerCategory = 30;
+                const pxPerCategory = sibling.data._spec_?.theme?.pxPerCategory || 30;
                 const horizontal = sibling.data._spec_?.orientation === "horizontal";
                 if (horizontal) {
                   const area = sibling.chartArea;

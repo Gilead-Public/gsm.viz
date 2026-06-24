@@ -71,6 +71,15 @@ export default function validateSpec(data, spec) {
         throw new Error('spec.facet.legend.sync must be a boolean');
     }
 
+    const legendChart = spec.facet?.legend?.chart;
+    if (legendChart !== undefined) {
+        console.warn(
+            'facetBars: spec.facet.legend.chart is deprecated and has no effect. ' +
+                'Legends now display on every facet. Use spec.facet.legend.sync ' +
+                'to control whether legend clicks propagate across facets.'
+        );
+    }
+
     const legendDisplay = spec.facet?.legend?.display;
     if (legendDisplay !== undefined && typeof legendDisplay !== 'boolean') {
         throw new Error('spec.facet.legend.display must be a boolean');

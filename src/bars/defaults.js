@@ -1,5 +1,5 @@
-// Categorical palette — Tableau-10 followed by ColorBrewer Set3, extended for
-// fill mappings with many categories. Perceptually distinct, accessible.
+// Categorical palette — Tableau-10 (first 10) followed by ColorBrewer Set3
+// (next 12), for fill mappings with many categories. Perceptually distinct.
 const DEFAULT_PALETTE = [
     '#4e79a7',
     '#f28e2b',

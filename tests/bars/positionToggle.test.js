@@ -263,4 +263,27 @@ describe('bars/positionToggle', () => {
         );
         fillTextSpy.mockRestore();
     });
+
+    test('beforeDestroy removes the canvas mousemove listener', () => {
+        const chart = makeChart({
+            spec: { position: 'stack', mapping: { fill: 'status' } },
+        });
+
+        // Install the handler by calling afterDraw.
+        plugin.afterDraw(chart);
+        expect(chart.canvas._positionToggleHandler).toBeDefined();
+
+        // Add removeEventListener mock to canvas
+        const removeSpy = jest.fn();
+        chart.canvas.removeEventListener = removeSpy;
+
+        plugin.beforeDestroy(chart);
+
+        expect(removeSpy).toHaveBeenCalledWith(
+            'mousemove',
+            expect.any(Function)
+        );
+        expect(chart.canvas._positionToggleHandler).toBeUndefined();
+        expect(chart.canvas._positionTogglePointer).toBeUndefined();
+    });
 });

@@ -124,7 +124,8 @@ export default function syncLegendClicks(charts, { sync = true } = {}) {
                         const sibContainer = sibling.canvas?.parentElement;
                         if (sibContainer) {
                             const numCategories = sibling.data.labels.length;
-                            const pxPerCategory = 30;
+                            const pxPerCategory =
+                                sibling.data._spec_?.theme?.pxPerCategory || 30;
                             const horizontal =
                                 sibling.data._spec_?.orientation ===
                                 'horizontal';
