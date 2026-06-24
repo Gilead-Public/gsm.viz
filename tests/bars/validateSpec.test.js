@@ -907,4 +907,103 @@ describe('bars/validateSpec', () => {
             ).toThrow('spec.scales.x.grid must be a boolean');
         });
     });
+
+    describe('zoom', () => {
+        test('passes when zoom is not specified', () => {
+            expect(() => validateSpec(data, spec)).not.toThrow();
+        });
+
+        test('passes when zoom is a valid object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, mode: 'x' },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when zoom is not an object', () => {
+            expect(() =>
+                validateSpec(data, { ...spec, zoom: 'yes' })
+            ).toThrow('spec.zoom must be a plain object');
+        });
+
+        test('throws when zoom is an array', () => {
+            expect(() =>
+                validateSpec(data, { ...spec, zoom: [true] })
+            ).toThrow('spec.zoom must be a plain object');
+        });
+
+        test('throws when zoom.mode is invalid', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, mode: 'z' },
+                })
+            ).toThrow("spec.zoom.mode must be 'x', 'y', or 'xy'");
+        });
+
+        test('passes when zoom.mode is "x"', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, mode: 'x' },
+                })
+            ).not.toThrow();
+        });
+
+        test('passes when zoom.mode is "y"', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, mode: 'y' },
+                })
+            ).not.toThrow();
+        });
+
+        test('passes when zoom.mode is "xy"', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, mode: 'xy' },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when zoom.enabled is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: 'true' },
+                })
+            ).toThrow('spec.zoom.enabled must be a boolean');
+        });
+
+        test('throws when zoom.pan is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, pan: 'yes' },
+                })
+            ).toThrow('spec.zoom.pan must be a boolean');
+        });
+
+        test('throws when zoom.wheel is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, wheel: 1 },
+                })
+            ).toThrow('spec.zoom.wheel must be a boolean');
+        });
+
+        test('throws when zoom.pinch is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    zoom: { enabled: true, pinch: null },
+                })
+            ).toThrow('spec.zoom.pinch must be a boolean');
+        });
+    });
 });

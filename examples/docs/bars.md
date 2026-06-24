@@ -104,6 +104,13 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         dynamicCategoryAxis: false,  // legend toggles remove categories that are only present in hidden fill groups
         pxPerCategory: 30,           // pixels allocated per category when dynamicSizing is true
     },
+    zoom: {
+        enabled: false,       // true | false — enable/disable zoom & pan
+        mode: 'x',           // 'x' | 'y' | 'xy' — axes that can be zoomed/panned
+        pan: true,            // enable drag-to-pan
+        wheel: true,          // enable mouse-wheel zoom
+        pinch: true,          // enable touch pinch-to-zoom
+    },
 }
 ```
 
@@ -137,6 +144,11 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `callbacks.onHover`                    | `null`                                                        |
 | `labels.captions`                      | `undefined`                                                   |
 | `labels.captionsOptions`               | `undefined`                                                   |
+| `zoom.enabled`                         | `false`                                                       |
+| `zoom.mode`                            | `'x'`                                                         |
+| `zoom.pan`                             | `true`                                                        |
+| `zoom.wheel`                           | `true`                                                        |
+| `zoom.pinch`                           | `true`                                                        |
 
 ### Mapping modes
 
@@ -653,6 +665,56 @@ where `{label}` is `scales.x.label` (or `mapping.x` when the label is unset).
 The auto-caption is appended after any captions supplied via `labels.captions`.
 
 No auto-caption is generated for `'alphanumeric'` sort.
+
+---
+
+## Zoom & Pan
+
+Set `spec.zoom.enabled` to `true` to allow users to zoom and pan the chart.
+This is especially useful for bar charts with many categorical values, enabling
+users to zoom in for detail.
+
+```js
+gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'value' },
+    zoom: {
+        enabled: true,
+        mode: 'x',       // zoom/pan along the x-axis only
+    },
+});
+```
+
+### Options
+
+| Key       | Type      | Default | Description                                    |
+| --------- | --------- | ------- | ---------------------------------------------- |
+| `enabled` | `boolean` | `false` | Enable the zoom & pan feature                  |
+| `mode`    | `string`  | `'x'`  | Axis direction: `'x'`, `'y'`, or `'xy'`       |
+| `pan`     | `boolean` | `true`  | Allow click-and-drag panning                   |
+| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming                      |
+| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom                      |
+
+### Resetting zoom
+
+When zoom is enabled, the chart instance exposes a `resetZoom()` method
+(provided by `chartjs-plugin-zoom`):
+
+```js
+const chart = gsmViz.default.bars(element, data, {
+    mapping: { x: 'site', y: 'value' },
+    zoom: { enabled: true },
+});
+
+// Programmatically reset zoom level:
+chart.resetZoom();
+```
+
+### Notes
+
+- Zoom is disabled by default — existing charts are unaffected.
+- The zoom plugin is globally registered and available to all Chart.js instances
+  in the bundle, but only activated when `spec.zoom.enabled` is `true`.
+- For horizontal bar charts, set `mode: 'y'` to zoom along the category axis.
 
 ---
 

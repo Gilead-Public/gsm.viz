@@ -1,6 +1,7 @@
 // dependencies
 import { CategoryScale, Chart, LinearScale } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import {
     BoxAndWiskers,
     BoxPlotController,
@@ -24,7 +25,8 @@ Chart.register(
     CategoryScale,
     LinearScale,
     Violin,
-    ViolinController
+    ViolinController,
+    zoomPlugin
 );
 
 // TODO: implement class-based modules

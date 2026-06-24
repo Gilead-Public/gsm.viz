@@ -88,6 +88,13 @@ const defaults = {
         dynamicCategoryAxis: false,
         pxPerCategory: 30,
     },
+    zoom: {
+        enabled: false,
+        mode: 'x',
+        pan: true,
+        wheel: true,
+        pinch: true,
+    },
 };
 
 export default defaults;
