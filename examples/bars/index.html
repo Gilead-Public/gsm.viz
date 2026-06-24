@@ -96,8 +96,6 @@
     <body>
         <nav class="tab-nav">
             <button class="active" data-tab="retention">Grouped</button>
-            <!--button data-tab="eligibility">Eligibility</button-->
-            <!--button data-tab="ie-criteria">IE Criteria</button-->
             <button data-tab="kri">Callbacks</button>
             <button data-tab="gini">Continuous</button>
             <button data-tab="kri-site">Reference Lines</button>
@@ -191,184 +189,6 @@
 
             <div id="retention-container"></div>
         </div>
-
-        <!-- Eligibility tab -->
-        <!--div id="eligibility" class="tab-panel gsm-viz--example">
-            <div id="eligibility-controls">
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="eligibility-orientation">
-                        <option value="vertical">Vertical</option>
-                        <option value="horizontal" selected>Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Sizing</legend>
-                    <select id="eligibility-dynamic-sizing">
-                        <option value="no">No</option>
-                        <option value="yes" selected>Yes</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Category Axis</legend>
-                    <select id="eligibility-dynamic-category-axis">
-                        <option value="no">No</option>
-                        <option value="yes" selected>Yes</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Annotations</legend>
-                    <select id="eligibility-annotations">
-                        <option value="none">None</option>
-                        <option value="total-outside" selected>
-                            Total (outside)
-                        </option>
-                        <option value="total-inside">Total (inside)</option>
-                        <option value="segment-outside">
-                            Segment (outside)
-                        </option>
-                        <option value="segment-inside">Segment (inside)</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Top N Categories</legend>
-                    <input
-                        type="number"
-                        id="eligibility-n-categories"
-                        min="1"
-                        step="1"
-                        placeholder="All"
-                    />
-                </fieldset>
-
-                <fieldset>
-                    <legend>Sort</legend>
-                    <select id="eligibility-sort">
-                        <option value="total" selected>
-                            Total (descending)
-                        </option>
-                        <option value="alphanumeric">Alphanumeric</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>X-axis</legend>
-                    <select id="eligibility-x-axis">
-                        <option value="invid" selected>invid</option>
-                        <option value="country">country</option>
-                    </select>
-                </fieldset>
-
-                <button
-                    id="eligibility-export-btn"
-                    class="export-btn"
-                    type="button"
-                    title="Export PNG"
-                    aria-label="Export PNG"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
-                </button>
-            </div>
-
-            <div id="eligibility-container"></div>
-        </div-->
-
-        <!-- IE Criteria tab -->
-        <!--div id="ie-criteria" class="tab-panel gsm-viz--example">
-            <div id="ie-criteria-controls">
-                <fieldset>
-                    <legend>Orientation</legend>
-                    <select id="ie-criteria-orientation">
-                        <option value="vertical">Vertical</option>
-                        <option value="horizontal" selected>Horizontal</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Sizing</legend>
-                    <select id="ie-criteria-dynamic-sizing">
-                        <option value="no">No</option>
-                        <option value="yes" selected>Yes</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dynamic Category Axis</legend>
-                    <select id="ie-criteria-dynamic-category-axis">
-                        <option value="no">No</option>
-                        <option value="yes" selected>Yes</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Annotations</legend>
-                    <select id="ie-criteria-annotations">
-                        <option value="none">None</option>
-                        <option value="total-outside" selected>
-                            Total (outside)
-                        </option>
-                        <option value="total-inside">Total (inside)</option>
-                        <option value="segment-outside">
-                            Segment (outside)
-                        </option>
-                        <option value="segment-inside">Segment (inside)</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Top N Categories</legend>
-                    <input
-                        type="number"
-                        id="ie-criteria-n-categories"
-                        min="1"
-                        step="1"
-                        placeholder="All"
-                    />
-                </fieldset>
-
-                <fieldset>
-                    <legend>Sort</legend>
-                    <select id="ie-criteria-sort">
-                        <option value="total" selected>
-                            Total (descending)
-                        </option>
-                        <option value="alphanumeric">Alphanumeric</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>X-axis</legend>
-                    <select id="ie-criteria-x-axis">
-                        <option value="invid" selected>invid</option>
-                        <option value="country">country</option>
-                    </select>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Swap Axes</legend>
-                    <select id="ie-criteria-swap">
-                        <option value="no" selected>No</option>
-                        <option value="yes">Yes</option>
-                    </select>
-                </fieldset>
-
-                <button
-                    id="ie-criteria-export-btn"
-                    class="export-btn"
-                    type="button"
-                    title="Export PNG"
-                    aria-label="Export PNG"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12z"/><path d="M14 14H2v-2h12v2z"/></svg>
-                </button>
-            </div>
-
-            <div id="ie-criteria-container"></div>
-        </div-->
 
         <!-- KRI tab -->
         <div id="kri" class="tab-panel gsm-viz--example">
@@ -693,8 +513,6 @@
 
         <script src="controls.js"></script>
         <script src="retentionChart.js"></script>
-        <script src="eligibilityChart.js"></script>
-        <script src="ieCriteriaChart.js"></script>
         <script src="kriChart.js"></script>
         <script src="giniChart.js"></script>
         <script src="kriSiteChart.js"></script>
