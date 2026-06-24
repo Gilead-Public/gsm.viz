@@ -100,8 +100,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     theme: {
         maintainAspectRatio: false,
         animation: false,
-        dynamicSizing: false,        // set container height (horizontal) or width (vertical) at 30 px per category plus chart overhead
+        dynamicSizing: false,        // set container height (horizontal) or width (vertical) at pxPerCategory px per category plus chart overhead
         dynamicCategoryAxis: false,  // legend toggles remove categories that are only present in hidden fill groups
+        pxPerCategory: 30,           // pixels allocated per category when dynamicSizing is true
     },
 }
 ```
@@ -129,6 +130,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `theme.animation`                      | `false`                                                       |
 | `theme.dynamicSizing`                  | `false`                                                       |
 | `theme.dynamicCategoryAxis`            | `false`                                                       |
+| `theme.pxPerCategory`                  | `30`                                                          |
 | `tooltip.format`                       | `undefined`                                                   |
 | `tooltip.formatter`                    | `undefined`                                                   |
 | `callbacks.onClick`                    | `null`                                                        |
