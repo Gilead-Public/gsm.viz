@@ -72,7 +72,6 @@ fetch('data/retention.csv')
 
         function buildSpec(
             orientation,
-            position,
             dynamicSizing,
             dynamicCategoryAxis,
             annotationsMode,
@@ -85,7 +84,6 @@ fetch('data/retention.csv')
                     fill: 'Reason',
                 },
                 orientation,
-                position,
                 nCategories,
                 scales: {
                     x: { label: 'Site ID', sort: 'total' },
@@ -124,7 +122,6 @@ fetch('data/retention.csv')
             data,
             buildSpec(
                 getValue('retention-orientation'),
-                getValue('retention-position'),
                 getDynamicSizing('retention-dynamic-sizing'),
                 getBoolean('retention-dynamic-category-axis'),
                 getValue('retention-annotations'),
@@ -146,7 +143,6 @@ fetch('data/retention.csv')
                 data,
                 buildSpec(
                     getValue('retention-orientation'),
-                    getValue('retention-position'),
                     getDynamicSizing('retention-dynamic-sizing'),
                     getBoolean('retention-dynamic-category-axis'),
                     getValue('retention-annotations'),
@@ -159,7 +155,6 @@ fetch('data/retention.csv')
         onAnyChange(
             [
                 'retention-orientation',
-                'retention-position',
                 'retention-dynamic-sizing',
                 'retention-dynamic-category-axis',
                 'retention-annotations',
