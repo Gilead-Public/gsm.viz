@@ -229,6 +229,7 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 
 -   Write a failing test before implementation (TDD)
 -   Run `npm test` before commits
+-   Run `npm run bundle` before commits to keep `index.js` in sync with source (a pre-commit hook enforces this automatically via Husky)
 -   Follow existing module patterns in `src/`
 -   Update the relevant module documentation in `examples/docs/` whenever adding new functionality or public behavior
 -   Use Prettier formatting (single quotes, tab width 4)
