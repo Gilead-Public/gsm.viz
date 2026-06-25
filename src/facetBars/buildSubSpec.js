@@ -24,6 +24,7 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
         annotations,
         tooltip,
         theme,
+        legend,
         callbacks,
     } = mergedSpec;
 
@@ -48,6 +49,7 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
         annotations,
         tooltip,
         theme,
+        legend,
         callbacks: {
             onClick: callbacks.onClick
                 ? (point, event) => callbacks.onClick(point, facetValue, event)

@@ -111,6 +111,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         wheel: true,          // enable mouse-wheel zoom
         pinch: true,          // enable touch pinch-to-zoom
     },
+    legend: {
+        dense: false,         // true | false — show only colour swatches; hover for full label
+    },
 }
 ```
 
@@ -149,6 +152,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `zoom.pan`                             | `true`                                                        |
 | `zoom.wheel`                           | `true`                                                        |
 | `zoom.pinch`                           | `true`                                                        |
+| `legend.dense`                         | `false`                                                       |
 
 ### Mapping modes
 
@@ -565,6 +569,23 @@ Axis labels default to `mapping.x` and `mapping.y`. The legend title defaults to
 `mapping.fill`. Set `scales.x.label`, `scales.y.label`, or
 `scales.fill.label` to `null` or `''` to hide the corresponding label.
 
+### Dense legend
+
+When a chart has many fill groups, the legend can become large and consume
+significant vertical space. Set `legend.dense` to `true` to show only colour
+swatches (no text labels). Hovering a swatch reveals a tooltip with the full
+label.
+
+```js
+bars(data, {
+    mapping: { x: 'site', y: 'count', fill: 'arm' },
+    legend: { dense: true },
+});
+```
+
+Dense mode works with all legend features including `dynamicCategoryAxis`
+click-to-toggle.
+
 ---
 
 ## Captions
@@ -679,20 +700,20 @@ gsmViz.default.bars(element, data, {
     mapping: { x: 'site', y: 'value' },
     zoom: {
         enabled: true,
-        mode: 'x',       // zoom/pan along the x-axis only
+        mode: 'x', // zoom/pan along the x-axis only
     },
 });
 ```
 
 ### Options
 
-| Key       | Type      | Default | Description                                    |
-| --------- | --------- | ------- | ---------------------------------------------- |
-| `enabled` | `boolean` | `false` | Enable the zoom & pan feature                  |
-| `mode`    | `string`  | `'x'`  | Axis direction: `'x'`, `'y'`, or `'xy'`       |
-| `pan`     | `boolean` | `true`  | Allow click-and-drag panning                   |
-| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming                      |
-| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom                      |
+| Key       | Type      | Default | Description                             |
+| --------- | --------- | ------- | --------------------------------------- |
+| `enabled` | `boolean` | `false` | Enable the zoom & pan feature           |
+| `mode`    | `string`  | `'x'`   | Axis direction: `'x'`, `'y'`, or `'xy'` |
+| `pan`     | `boolean` | `true`  | Allow click-and-drag panning            |
+| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming               |
+| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom               |
 
 ### Resetting zoom
 
@@ -711,10 +732,10 @@ chart.resetZoom();
 
 ### Notes
 
-- Zoom is disabled by default — existing charts are unaffected.
-- The zoom plugin is globally registered and available to all Chart.js instances
-  in the bundle, but only activated when `spec.zoom.enabled` is `true`.
-- For horizontal bar charts, set `mode: 'y'` to zoom along the category axis.
+-   Zoom is disabled by default — existing charts are unaffected.
+-   The zoom plugin is globally registered and available to all Chart.js instances
+    in the bundle, but only activated when `spec.zoom.enabled` is `true`.
+-   For horizontal bar charts, set `mode: 'y'` to zoom along the category axis.
 
 ---
 

@@ -14,6 +14,7 @@ const makeMergedSpec = (overrides = {}) => ({
     annotations: { referenceLines: [], labels: { segment: {}, total: {} } },
     tooltip: { format: undefined, formatter: undefined },
     theme: { maintainAspectRatio: false, animation: false },
+    legend: { dense: false },
     callbacks: { onClick: null, onHover: null },
     facet: {
         field: 'region',
@@ -55,6 +56,12 @@ describe('facetBars/buildSubSpec', () => {
         const merged = makeMergedSpec();
         const result = buildSubSpec('US', merged);
         expect(result.theme).toEqual(merged.theme);
+    });
+
+    test('passes legend through unchanged', () => {
+        const merged = makeMergedSpec({ legend: { dense: true } });
+        const result = buildSubSpec('US', merged);
+        expect(result.legend).toEqual({ dense: true });
     });
 
     describe('callback wrapping', () => {

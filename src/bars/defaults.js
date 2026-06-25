@@ -95,6 +95,9 @@ const defaults = {
         wheel: true,
         pinch: true,
     },
+    legend: {
+        dense: false,
+    },
 };
 
 export default defaults;

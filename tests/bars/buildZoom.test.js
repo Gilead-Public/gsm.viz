@@ -11,7 +11,13 @@ describe('bars/getPlugins/buildZoom', () => {
 
     test('returns undefined when zoom.enabled is false', () => {
         expect(
-            buildZoom({ enabled: false, mode: 'x', pan: true, wheel: true, pinch: true })
+            buildZoom({
+                enabled: false,
+                mode: 'x',
+                pan: true,
+                wheel: true,
+                pinch: true,
+            })
         ).toBeUndefined();
     });
 
