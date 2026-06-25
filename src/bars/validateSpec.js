@@ -272,4 +272,21 @@ export default function validateSpec(data, spec) {
             throw new Error('spec.zoom.pinch must be a boolean');
         }
     }
+
+    const legend = spec.legend;
+    if (legend !== undefined) {
+        if (
+            legend === null ||
+            typeof legend !== 'object' ||
+            Array.isArray(legend) ||
+            (Object.getPrototypeOf(legend) !== Object.prototype &&
+                Object.getPrototypeOf(legend) !== null)
+        ) {
+            throw new Error('spec.legend must be a plain object');
+        }
+
+        if (legend.dense !== undefined && typeof legend.dense !== 'boolean') {
+            throw new Error('spec.legend.dense must be a boolean');
+        }
+    }
 }

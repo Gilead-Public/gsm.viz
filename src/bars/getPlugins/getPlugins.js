@@ -1,6 +1,7 @@
 import buildTooltip from './buildTooltip.js';
 import buildZoom from './buildZoom.js';
 import dataLabels from './dataLabels.js';
+import denseLegend from './denseLegend.js';
 import dynamicCategoryLegendOnClick from './dynamicCategoryLegendOnClick.js';
 import referenceLines from './referenceLines.js';
 
@@ -33,6 +34,13 @@ export default function getPlugins(spec) {
 
     if (theme?.dynamicCategoryAxis) {
         legend.onClick = dynamicCategoryLegendOnClick;
+    }
+
+    if (spec.legend?.dense) {
+        const dense = denseLegend();
+        legend.labels = dense.labels;
+        legend.onHover = dense.onHover;
+        legend.onLeave = dense.onLeave;
     }
 
     const captionsRaw = labels.captions;

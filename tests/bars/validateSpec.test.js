@@ -398,6 +398,59 @@ describe('bars/validateSpec', () => {
         });
     });
 
+    describe('spec.legend validation', () => {
+        test('does not throw when legend is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when legend.dense is true', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    legend: { dense: true },
+                })
+            ).not.toThrow();
+        });
+
+        test('does not throw when legend.dense is false', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    legend: { dense: false },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when legend.dense is not a boolean', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    legend: { dense: 'yes' },
+                })
+            ).toThrow('spec.legend.dense must be a boolean');
+        });
+
+        test('throws when legend is not a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    legend: 'compact',
+                })
+            ).toThrow('spec.legend must be a plain object');
+        });
+
+        test('throws when legend is an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    legend: [],
+                })
+            ).toThrow('spec.legend must be a plain object');
+        });
+    });
+
     describe('spec.nCategories validation', () => {
         test('does not throw when nCategories is absent', () => {
             expect(() =>

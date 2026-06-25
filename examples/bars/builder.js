@@ -587,6 +587,7 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
     const position = getVal('settings-position');
     const dynamicSizing = getBool('settings-dynamic-sizing');
     const dynamicCategoryAxis = getBool('settings-dynamic-category-axis');
+    const denseLegend = getBool('settings-legend-dense');
     const zoomMode = getVal('settings-zoom');
     const annotationsMode = getVal('settings-annotations');
     const barLabelMode = getVal('settings-bar-label');
@@ -620,6 +621,7 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
             },
         },
         theme: { dynamicSizing, dynamicCategoryAxis },
+        legend: { dense: denseLegend },
         ...(zoomMode !== 'disabled'
             ? { zoom: { enabled: true, mode: zoomMode } }
             : {}),
@@ -928,6 +930,7 @@ document.getElementById('csv-file-input').addEventListener('change', (e) => {
     'settings-y-min',
     'settings-y-max',
     'settings-legend-position',
+    'settings-legend-dense',
     'settings-facet-ncol',
     'settings-facet-height',
     'settings-facet-y-scale',

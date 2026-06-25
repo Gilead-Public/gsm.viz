@@ -124,8 +124,63 @@ describe('bars/getPlugins', () => {
             const plugins = getPlugins(spec);
             expect(typeof plugins.legend.onClick).toBe('function');
         });
+    });
 
-        describe('onClick behavior', () => {
+    describe('dense legend', () => {
+        const baseSpec = {
+            mapping: { fill: 'group' },
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+        };
+
+        test('no generateLabels when legend.dense is absent', () => {
+            const plugins = getPlugins(baseSpec);
+            expect(plugins.legend.labels).toBeUndefined();
+        });
+
+        test('no generateLabels when legend.dense is false', () => {
+            const spec = { ...baseSpec, legend: { dense: false } };
+            const plugins = getPlugins(spec);
+            expect(plugins.legend.labels).toBeUndefined();
+        });
+
+        test('adds generateLabels when legend.dense is true', () => {
+            const spec = { ...baseSpec, legend: { dense: true } };
+            const plugins = getPlugins(spec);
+            expect(typeof plugins.legend.labels.generateLabels).toBe(
+                'function'
+            );
+        });
+
+        test('adds onHover when legend.dense is true', () => {
+            const spec = { ...baseSpec, legend: { dense: true } };
+            const plugins = getPlugins(spec);
+            expect(typeof plugins.legend.onHover).toBe('function');
+        });
+
+        test('adds onLeave when legend.dense is true', () => {
+            const spec = { ...baseSpec, legend: { dense: true } };
+            const plugins = getPlugins(spec);
+            expect(typeof plugins.legend.onLeave).toBe('function');
+        });
+
+        test('no onHover/onLeave when legend.dense is false', () => {
+            const spec = { ...baseSpec, legend: { dense: false } };
+            const plugins = getPlugins(spec);
+            expect(plugins.legend.onHover).toBeUndefined();
+            expect(plugins.legend.onLeave).toBeUndefined();
+        });
+    });
+
+    describe('dynamicCategoryAxis onClick behavior', () => {
+            const baseSpec = {
+                mapping: { fill: 'group' },
+                scales: { fill: {} },
+                labels: {},
+                tooltip: {},
+            };
+
             // Mock chart that mirrors the Chart.js 3 visibility API used by the
             // dynamicCategoryAxis handler: setDatasetVisibility / isDatasetVisible
             // use an internal _meta map; hide/show are kept for completeness.
@@ -583,7 +638,6 @@ describe('bars/getPlugins', () => {
                     0, 30, 60,
                 ]);
             });
-        });
     });
 
     describe('datalabel annotations', () => {

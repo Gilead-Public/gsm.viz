@@ -3892,9 +3892,9 @@ var gsmViz = (() => {
     }
     return valueInPixels;
   }
-  var getComputedStyle = (element) => window.getComputedStyle(element, null);
+  var getComputedStyle2 = (element) => window.getComputedStyle(element, null);
   function getStyle(el, property) {
-    return getComputedStyle(el).getPropertyValue(property);
+    return getComputedStyle2(el).getPropertyValue(property);
   }
   var positions = ["top", "right", "bottom", "left"];
   function getPositionedStyle(styles, style, suffix) {
@@ -3931,7 +3931,7 @@ var gsmViz = (() => {
       return evt;
     }
     const { canvas, currentDevicePixelRatio } = chart;
-    const style = getComputedStyle(canvas);
+    const style = getComputedStyle2(canvas);
     const borderBox = style.boxSizing === "border-box";
     const paddings = getPositionedStyle(style, "padding");
     const borders = getPositionedStyle(style, "border", "width");
@@ -3957,7 +3957,7 @@ var gsmViz = (() => {
         height = canvas.clientHeight;
       } else {
         const rect = container.getBoundingClientRect();
-        const containerStyle = getComputedStyle(container);
+        const containerStyle = getComputedStyle2(container);
         const containerBorder = getPositionedStyle(containerStyle, "border", "width");
         const containerPadding = getPositionedStyle(containerStyle, "padding");
         width = rect.width - containerPadding.width - containerBorder.width;
@@ -3975,7 +3975,7 @@ var gsmViz = (() => {
   }
   var round1 = (v) => Math.round(v * 10) / 10;
   function getMaximumSize(canvas, bbWidth, bbHeight, aspectRatio) {
-    const style = getComputedStyle(canvas);
+    const style = getComputedStyle2(canvas);
     const margins = getPositionedStyle(style, "margin");
     const maxWidth = parseMaxStyle(style.maxWidth, canvas, "clientWidth") || INFINITY;
     const maxHeight = parseMaxStyle(style.maxHeight, canvas, "clientHeight") || INFINITY;
@@ -24700,6 +24700,15 @@ var gsmViz = (() => {
         throw new Error("spec.zoom.pinch must be a boolean");
       }
     }
+    const legend5 = spec.legend;
+    if (legend5 !== void 0) {
+      if (legend5 === null || typeof legend5 !== "object" || Array.isArray(legend5) || Object.getPrototypeOf(legend5) !== Object.prototype && Object.getPrototypeOf(legend5) !== null) {
+        throw new Error("spec.legend must be a plain object");
+      }
+      if (legend5.dense !== void 0 && typeof legend5.dense !== "boolean") {
+        throw new Error("spec.legend.dense must be a boolean");
+      }
+    }
   }
 
   // src/bars/defaults.js
@@ -24792,6 +24801,9 @@ var gsmViz = (() => {
       pan: true,
       wheel: true,
       pinch: true
+    },
+    legend: {
+      dense: false
     }
   };
   var defaults_default = defaults3;
@@ -24838,6 +24850,7 @@ var gsmViz = (() => {
       theme: { ...defaults_default.theme, ...spec.theme },
       tooltip: { ...defaults_default.tooltip, ...spec.tooltip },
       zoom: { ...defaults_default.zoom, ...spec.zoom },
+      legend: { ...defaults_default.legend, ...spec.legend },
       callbacks: {
         onClick: spec.callbacks?.onClick ?? defaults_default.callbacks.onClick,
         onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover
@@ -25549,6 +25562,82 @@ var gsmViz = (() => {
     return config;
   }
 
+  // src/bars/getPlugins/denseLegend.js
+  function denseLegend() {
+    return {
+      labels: {
+        /**
+         * Generate legend items with empty text but preserve the full
+         * label in a custom _fullLabel property for tooltip display.
+         */
+        generateLabels(chart) {
+          return chart.data.datasets.map((dataset, i) => ({
+            text: "",
+            _fullLabel: dataset.label,
+            datasetIndex: i,
+            fillStyle: dataset.backgroundColor,
+            strokeStyle: dataset.borderColor,
+            lineWidth: 1,
+            hidden: !chart.isDatasetVisible(i)
+          }));
+        }
+      },
+      /**
+       * Show a positioned tooltip with the full label on legend item hover.
+       */
+      onHover(event, legendItem, legend5) {
+        const chart = legend5.chart;
+        const container = chart.canvas.parentElement;
+        if (!container) return;
+        const pos = getComputedStyle(container).position;
+        if (pos === "static") {
+          container.style.position = "relative";
+        }
+        let tooltip5 = container.querySelector(
+          "[data-dense-legend-tooltip]"
+        );
+        if (!tooltip5) {
+          tooltip5 = document.createElement("div");
+          tooltip5.setAttribute("data-dense-legend-tooltip", "");
+          tooltip5.style.position = "absolute";
+          tooltip5.style.pointerEvents = "none";
+          tooltip5.style.padding = "4px 8px";
+          tooltip5.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+          tooltip5.style.color = "#fff";
+          tooltip5.style.borderRadius = "4px";
+          tooltip5.style.fontSize = "12px";
+          tooltip5.style.whiteSpace = "nowrap";
+          tooltip5.style.zIndex = "1000";
+          container.appendChild(tooltip5);
+        }
+        tooltip5.textContent = legendItem._fullLabel || "";
+        tooltip5.style.display = "";
+        const canvasRect = chart.canvas.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const offsetX = canvasRect.left - containerRect.left;
+        const offsetY = canvasRect.top - containerRect.top;
+        const x = (event.x ?? event.native?.offsetX ?? 0) + offsetX;
+        const y = (event.y ?? event.native?.offsetY ?? 0) + offsetY;
+        tooltip5.style.left = `${x}px`;
+        tooltip5.style.top = `${y + 16}px`;
+      },
+      /**
+       * Hide the tooltip when the cursor leaves a legend item.
+       */
+      onLeave(event, legendItem, legend5) {
+        const chart = legend5.chart;
+        const container = chart.canvas.parentElement;
+        if (!container) return;
+        const tooltip5 = container.querySelector(
+          "[data-dense-legend-tooltip]"
+        );
+        if (tooltip5) {
+          tooltip5.style.display = "none";
+        }
+      }
+    };
+  }
+
   // src/bars/getPlugins/getAllLabels.js
   function getAllLabels(chart, visibleCats) {
     return chart.data._allLabels_ || [...visibleCats];
@@ -25704,6 +25793,12 @@ var gsmViz = (() => {
     };
     if (theme?.dynamicCategoryAxis) {
       legend5.onClick = dynamicCategoryLegendOnClick;
+    }
+    if (spec.legend?.dense) {
+      const dense = denseLegend();
+      legend5.labels = dense.labels;
+      legend5.onHover = dense.onHover;
+      legend5.onLeave = dense.onLeave;
     }
     const captionsRaw = labels.captions;
     const captionsArray = Array.isArray(captionsRaw) ? [...captionsRaw] : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];

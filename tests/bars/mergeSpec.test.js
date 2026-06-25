@@ -329,6 +329,29 @@ describe('bars/mergeSpec', () => {
         });
     });
 
+    describe('legend', () => {
+        test('defaults legend.dense to false when not specified', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.legend).toEqual({ dense: false });
+        });
+
+        test('preserves legend.dense when set to true', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                legend: { dense: true },
+            });
+            expect(merged.legend.dense).toBe(true);
+        });
+
+        test('preserves legend.dense when explicitly set to false', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                legend: { dense: false },
+            });
+            expect(merged.legend.dense).toBe(false);
+        });
+    });
+
     describe('zoom', () => {
         test('defaults zoom to disabled with mode "x"', () => {
             const merged = mergeSpec(data, minimalSpec);
