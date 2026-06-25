@@ -111,6 +111,9 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         wheel: true,          // enable mouse-wheel zoom
         pinch: true,          // enable touch pinch-to-zoom
     },
+    legend: {
+        dense: false,         // true | false — show only colour swatches; hover for full label
+    },
 }
 ```
 
@@ -149,6 +152,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `zoom.pan`                             | `true`                                                        |
 | `zoom.wheel`                           | `true`                                                        |
 | `zoom.pinch`                           | `true`                                                        |
+| `legend.dense`                         | `false`                                                       |
 
 ### Mapping modes
 
@@ -564,6 +568,23 @@ fill values are absent from the data.
 Axis labels default to `mapping.x` and `mapping.y`. The legend title defaults to
 `mapping.fill`. Set `scales.x.label`, `scales.y.label`, or
 `scales.fill.label` to `null` or `''` to hide the corresponding label.
+
+### Dense legend
+
+When a chart has many fill groups, the legend can become large and consume
+significant vertical space. Set `legend.dense` to `true` to show only colour
+swatches (no text labels). Hovering a swatch reveals a tooltip with the full
+label.
+
+```js
+bars(data, {
+    mapping: { x: 'site', y: 'count', fill: 'arm' },
+    legend: { dense: true },
+});
+```
+
+Dense mode works with all legend features including `dynamicCategoryAxis`
+click-to-toggle.
 
 ---
 
