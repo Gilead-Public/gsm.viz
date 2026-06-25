@@ -3,74 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>Chart.js Bar Chart with Zoom</title>
-    <!-- 1. Include Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 2. Include the Zoom Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <!-- Uses the gsm.viz bundle which includes chartjs-plugin-zoom -->
+    <script src="../../index.js"></script>
 </head>
 <body>
 
-    <div style="width: 800px; margin: auto;">
-        <canvas id="myBarChart"></canvas>
+    <div style="width: 800px; height: 400px; margin: auto;">
+        <div id="zoom-chart"></div>
         <button onclick="resetZoom()">Reset Zoom</button>
     </div>
 
     <script>
-        const ctx = document.getElementById('myBarChart').getContext('2d');
-        
-        const chartData = {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-                label: 'Monthly Sales',
-                data: [12, 19, 3, 5, 2, 3, 15, 8, 11, 6, 9, 14],
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        };
+        const data = [
+            { month: 'Jan', sales: 12 },
+            { month: 'Feb', sales: 19 },
+            { month: 'Mar', sales: 3 },
+            { month: 'Apr', sales: 5 },
+            { month: 'May', sales: 2 },
+            { month: 'Jun', sales: 3 },
+            { month: 'Jul', sales: 15 },
+            { month: 'Aug', sales: 8 },
+            { month: 'Sep', sales: 11 },
+            { month: 'Oct', sales: 6 },
+            { month: 'Nov', sales: 9 },
+            { month: 'Dec', sales: 14 },
+        ];
 
-        const config = {
-            type: 'bar',
-            data: chartData,
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        // For bar charts, it is often best to keep min/max limits 
-                        // matching the length of your labels array.
-                        min: 0,
-                        max: 5 // Initially show only the first 6 bars to demonstrate zoom/pan
-                    },
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    zoom: {
-                        pan: {
-                            enabled: true,
-                            mode: 'x', // Allow panning along the X axis
-                        },
-                        zoom: {
-                            wheel: {
-                                enabled: true, // Enable zooming via mouse wheel
-                            },
-                            pinch: {
-                                enabled: true // Enable zooming via touch pinch gestures
-                            },
-                            mode: 'x', // Allow zooming along the X axis
-                        }
-                    }
-                }
-            }
-        };
+        const chart = gsmViz.default.bars('#zoom-chart', data, {
+            mapping: { x: 'month', y: 'sales' },
+            zoom: {
+                enabled: true,
+                mode: 'x',
+            },
+            labels: { title: 'Monthly Sales — Zoom & Pan Demo' },
+        });
 
-        // Create the chart instance
-        const myChart = new Chart(ctx, config);
-
-        // Function to reset the zoom programmatically
         function resetZoom() {
-            myChart.resetZoom();
+            chart.resetZoom();
         }
     </script>
 </body>
