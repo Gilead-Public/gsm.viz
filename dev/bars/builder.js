@@ -587,6 +587,7 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
     const position = getVal('settings-position');
     const dynamicSizing = getBool('settings-dynamic-sizing');
     const dynamicCategoryAxis = getBool('settings-dynamic-category-axis');
+    const zoomMode = getVal('settings-zoom');
     const annotationsMode = getVal('settings-annotations');
     const barLabelMode = getVal('settings-bar-label');
     const nCategories = getNCategories();
@@ -619,6 +620,9 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
             },
         },
         theme: { dynamicSizing, dynamicCategoryAxis },
+        ...(zoomMode !== 'disabled'
+            ? { zoom: { enabled: true, mode: zoomMode } }
+            : {}),
         annotations: buildAnnotations(annotationsMode, barLabelMode),
         ...(tooltipFormat ? { tooltip: { format: tooltipFormat } } : {}),
     };
@@ -914,6 +918,7 @@ document.getElementById('csv-file-input').addEventListener('change', (e) => {
     'settings-position',
     'settings-dynamic-sizing',
     'settings-dynamic-category-axis',
+    'settings-zoom',
     'settings-annotations',
     'settings-bar-label',
     'settings-n-categories',
