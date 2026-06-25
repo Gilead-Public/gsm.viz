@@ -50,6 +50,7 @@ export default function mergeSpec(data, spec) {
         },
         theme: { ...defaults.theme, ...spec.theme },
         tooltip: { ...defaults.tooltip, ...spec.tooltip },
+        zoom: { ...defaults.zoom, ...spec.zoom },
         callbacks: {
             onClick: spec.callbacks?.onClick ?? defaults.callbacks.onClick,
             onHover: spec.callbacks?.onHover ?? defaults.callbacks.onHover,

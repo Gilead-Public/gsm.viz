@@ -1,4 +1,5 @@
 import buildTooltip from './buildTooltip.js';
+import buildZoom from './buildZoom.js';
 import dataLabels from './dataLabels.js';
 import dynamicCategoryLegendOnClick from './dynamicCategoryLegendOnClick.js';
 import referenceLines from './referenceLines.js';
@@ -69,7 +70,7 @@ export default function getPlugins(spec) {
         captionsArray.push(`Showing all values of ${xLabel}.${clickNote}`);
     }
 
-    return {
+    const config = {
         title: {
             display: !!labels.title,
             text: labels.title || '',
@@ -89,4 +90,11 @@ export default function getPlugins(spec) {
         legend,
         datalabels: dataLabels(spec),
     };
+
+    const zoomConfig = buildZoom(spec.zoom);
+    if (zoomConfig) {
+        config.zoom = zoomConfig;
+    }
+
+    return config;
 }

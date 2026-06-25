@@ -234,4 +234,42 @@ export default function validateSpec(data, spec) {
             }
         });
     }
+
+    const zoom = spec.zoom;
+    if (zoom !== undefined) {
+        if (
+            zoom === null ||
+            typeof zoom !== 'object' ||
+            Array.isArray(zoom) ||
+            (Object.getPrototypeOf(zoom) !== Object.prototype &&
+                Object.getPrototypeOf(zoom) !== null)
+        ) {
+            throw new Error('spec.zoom must be a plain object');
+        }
+
+        if (zoom.enabled !== undefined && typeof zoom.enabled !== 'boolean') {
+            throw new Error('spec.zoom.enabled must be a boolean');
+        }
+
+        if (
+            zoom.mode !== undefined &&
+            zoom.mode !== 'x' &&
+            zoom.mode !== 'y' &&
+            zoom.mode !== 'xy'
+        ) {
+            throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
+        }
+
+        if (zoom.pan !== undefined && typeof zoom.pan !== 'boolean') {
+            throw new Error('spec.zoom.pan must be a boolean');
+        }
+
+        if (zoom.wheel !== undefined && typeof zoom.wheel !== 'boolean') {
+            throw new Error('spec.zoom.wheel must be a boolean');
+        }
+
+        if (zoom.pinch !== undefined && typeof zoom.pinch !== 'boolean') {
+            throw new Error('spec.zoom.pinch must be a boolean');
+        }
+    }
 }

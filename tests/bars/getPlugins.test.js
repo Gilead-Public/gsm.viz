@@ -1934,4 +1934,79 @@ describe('bars/getPlugins', () => {
             expect(plugins.annotation.clip).toBe(false);
         });
     });
+
+    describe('zoom', () => {
+        const baseSpec = {
+            mapping: { x: 'cat', y: 'val' },
+            scales: { fill: {} },
+            labels: {},
+            tooltip: {},
+            theme: {},
+            position: 'stack',
+            annotations: { referenceLines: [], labels: { segment: {}, total: {} } },
+        };
+
+        test('omits zoom config when zoom is disabled', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: false, mode: 'x', pan: true, wheel: true, pinch: true },
+            });
+            expect(plugins.zoom).toBeUndefined();
+        });
+
+        test('includes zoom config when zoom is enabled', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'x', pan: true, wheel: true, pinch: true },
+            });
+            expect(plugins.zoom).toBeDefined();
+            expect(plugins.zoom.zoom.mode).toBe('x');
+            expect(plugins.zoom.zoom.wheel.enabled).toBe(true);
+            expect(plugins.zoom.zoom.pinch.enabled).toBe(true);
+            expect(plugins.zoom.pan.enabled).toBe(true);
+            expect(plugins.zoom.pan.mode).toBe('x');
+        });
+
+        test('respects mode "y"', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'y', pan: true, wheel: true, pinch: true },
+            });
+            expect(plugins.zoom.zoom.mode).toBe('y');
+            expect(plugins.zoom.pan.mode).toBe('y');
+        });
+
+        test('respects mode "xy"', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'xy', pan: true, wheel: true, pinch: true },
+            });
+            expect(plugins.zoom.zoom.mode).toBe('xy');
+            expect(plugins.zoom.pan.mode).toBe('xy');
+        });
+
+        test('disables pan when pan is false', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'x', pan: false, wheel: true, pinch: true },
+            });
+            expect(plugins.zoom.pan.enabled).toBe(false);
+        });
+
+        test('disables wheel zoom when wheel is false', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'x', pan: true, wheel: false, pinch: true },
+            });
+            expect(plugins.zoom.zoom.wheel.enabled).toBe(false);
+        });
+
+        test('disables pinch zoom when pinch is false', () => {
+            const plugins = getPlugins({
+                ...baseSpec,
+                zoom: { enabled: true, mode: 'x', pan: true, wheel: true, pinch: false },
+            });
+            expect(plugins.zoom.zoom.pinch.enabled).toBe(false);
+        });
+    });
 });

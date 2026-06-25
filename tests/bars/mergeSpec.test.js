@@ -328,4 +328,67 @@ describe('bars/mergeSpec', () => {
             expect(merged.scales.x.grid).toBe(false);
         });
     });
+
+    describe('zoom', () => {
+        test('defaults zoom to disabled with mode "x"', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.zoom).toEqual({
+                enabled: false,
+                mode: 'x',
+                pan: true,
+                wheel: true,
+                pinch: true,
+            });
+        });
+
+        test('preserves zoom.enabled when set to true', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true },
+            });
+            expect(merged.zoom.enabled).toBe(true);
+            expect(merged.zoom.mode).toBe('x');
+            expect(merged.zoom.pan).toBe(true);
+        });
+
+        test('preserves user-supplied zoom.mode', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true, mode: 'y' },
+            });
+            expect(merged.zoom.mode).toBe('y');
+        });
+
+        test('preserves user-supplied zoom.mode "xy"', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true, mode: 'xy' },
+            });
+            expect(merged.zoom.mode).toBe('xy');
+        });
+
+        test('allows disabling pan', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true, pan: false },
+            });
+            expect(merged.zoom.pan).toBe(false);
+        });
+
+        test('allows disabling wheel zoom', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true, wheel: false },
+            });
+            expect(merged.zoom.wheel).toBe(false);
+        });
+
+        test('allows disabling pinch zoom', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                zoom: { enabled: true, pinch: false },
+            });
+            expect(merged.zoom.pinch).toBe(false);
+        });
+    });
 });
