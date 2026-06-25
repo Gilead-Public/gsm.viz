@@ -26637,6 +26637,7 @@ var gsmViz = (() => {
       annotations: annotations5,
       tooltip: tooltip5,
       theme,
+      legend: legend5,
       callbacks
     } = mergedSpec;
     const xOrder = typeof scales2?.x?.order === "function" ? scales2.x.order(facetValue, facetData) : scales2?.x?.order;
@@ -26651,6 +26652,7 @@ var gsmViz = (() => {
       annotations: annotations5,
       tooltip: tooltip5,
       theme,
+      legend: legend5,
       callbacks: {
         onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
         onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null
