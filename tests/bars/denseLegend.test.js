@@ -12,8 +12,7 @@ describe('bars/getPlugins/denseLegend', () => {
                         hidden: false,
                     })),
                 },
-                isDatasetVisible: (idx) =>
-                    !makeChart._hidden.has(idx),
+                isDatasetVisible: (idx) => !makeChart._hidden.has(idx),
             };
         }
         makeChart._hidden = new Set();
@@ -176,9 +175,7 @@ describe('bars/getPlugins/denseLegend', () => {
             const chart = { canvas };
             const event = { x: 100, y: 50 };
 
-            expect(() =>
-                config.onLeave(event, {}, { chart })
-            ).not.toThrow();
+            expect(() => config.onLeave(event, {}, { chart })).not.toThrow();
         });
     });
 });

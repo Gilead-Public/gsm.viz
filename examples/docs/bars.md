@@ -700,20 +700,20 @@ gsmViz.default.bars(element, data, {
     mapping: { x: 'site', y: 'value' },
     zoom: {
         enabled: true,
-        mode: 'x',       // zoom/pan along the x-axis only
+        mode: 'x', // zoom/pan along the x-axis only
     },
 });
 ```
 
 ### Options
 
-| Key       | Type      | Default | Description                                    |
-| --------- | --------- | ------- | ---------------------------------------------- |
-| `enabled` | `boolean` | `false` | Enable the zoom & pan feature                  |
-| `mode`    | `string`  | `'x'`  | Axis direction: `'x'`, `'y'`, or `'xy'`       |
-| `pan`     | `boolean` | `true`  | Allow click-and-drag panning                   |
-| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming                      |
-| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom                      |
+| Key       | Type      | Default | Description                             |
+| --------- | --------- | ------- | --------------------------------------- |
+| `enabled` | `boolean` | `false` | Enable the zoom & pan feature           |
+| `mode`    | `string`  | `'x'`   | Axis direction: `'x'`, `'y'`, or `'xy'` |
+| `pan`     | `boolean` | `true`  | Allow click-and-drag panning            |
+| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming               |
+| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom               |
 
 ### Resetting zoom
 
@@ -732,10 +732,10 @@ chart.resetZoom();
 
 ### Notes
 
-- Zoom is disabled by default — existing charts are unaffected.
-- The zoom plugin is globally registered and available to all Chart.js instances
-  in the bundle, but only activated when `spec.zoom.enabled` is `true`.
-- For horizontal bar charts, set `mode: 'y'` to zoom along the category axis.
+-   Zoom is disabled by default — existing charts are unaffected.
+-   The zoom plugin is globally registered and available to all Chart.js instances
+    in the bundle, but only activated when `spec.zoom.enabled` is `true`.
+-   For horizontal bar charts, set `mode: 'y'` to zoom along the category axis.
 
 ---
 

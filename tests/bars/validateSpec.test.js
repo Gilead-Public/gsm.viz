@@ -976,15 +976,15 @@ describe('bars/validateSpec', () => {
         });
 
         test('throws when zoom is not an object', () => {
-            expect(() =>
-                validateSpec(data, { ...spec, zoom: 'yes' })
-            ).toThrow('spec.zoom must be a plain object');
+            expect(() => validateSpec(data, { ...spec, zoom: 'yes' })).toThrow(
+                'spec.zoom must be a plain object'
+            );
         });
 
         test('throws when zoom is an array', () => {
-            expect(() =>
-                validateSpec(data, { ...spec, zoom: [true] })
-            ).toThrow('spec.zoom must be a plain object');
+            expect(() => validateSpec(data, { ...spec, zoom: [true] })).toThrow(
+                'spec.zoom must be a plain object'
+            );
         });
 
         test('throws when zoom.mode is invalid', () => {
