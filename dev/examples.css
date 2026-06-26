@@ -5,7 +5,8 @@
 .gsm-viz--example #ie-criteria-controls,
 .gsm-viz--example #gini-controls,
 .gsm-viz--example #kri-site-controls,
-.gsm-viz--example #kri-facet-controls {
+.gsm-viz--example #kri-facet-controls,
+.gsm-viz--example #ae-controls {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -61,7 +62,8 @@
 .gsm-viz--example #eligibility-container,
 .gsm-viz--example #ie-criteria-container,
 .gsm-viz--example #gini-container,
-.gsm-viz--example #kri-site-container {
+.gsm-viz--example #kri-site-container,
+.gsm-viz--example #ae-container {
     margin: auto;
     width: 100%;
     height: 40vw;

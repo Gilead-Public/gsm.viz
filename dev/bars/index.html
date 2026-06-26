@@ -96,10 +96,11 @@
     <body>
         <nav class="tab-nav">
             <button class="active" data-tab="retention">Grouped</button>
-            <button data-tab="kri">Callbacks</button>
             <button data-tab="gini">Continuous</button>
-            <button data-tab="kri-site">Reference Lines</button>
             <button data-tab="kri-facet">Faceted</button>
+            <button data-tab="ae-prevalence">Layered</button>
+            <button data-tab="kri-site">Reference Lines</button>
+            <button data-tab="kri">Callbacks</button>
         </nav>
 
         <!-- Retention tab -->
@@ -495,6 +496,108 @@
             <div id="kri-facet-container"></div>
         </div>
 
+        <!-- AE Prevalence (Layered) tab -->
+        <div id="ae-prevalence" class="tab-panel gsm-viz--example">
+            <div id="ae-controls">
+                <fieldset>
+                    <legend>Variable</legend>
+                    <select id="ae-variable">
+                        <option value="AEDECOD" selected>
+                            Dictionary-Derived Term
+                        </option>
+                        <option value="AEBODSYS">
+                            Body System or Organ Class
+                        </option>
+                        <option value="AESEV">Severity/Intensity</option>
+                        <option value="AESER">Serious Event</option>
+                        <option value="AEREL">Causality</option>
+                        <option value="AEOUT">Outcome of Adverse Event</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Site</legend>
+                    <select id="ae-site">
+                        <option value="" selected>All</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Subject</legend>
+                    <select id="ae-subject">
+                        <option value="" selected>All</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Levels</legend>
+                    <label
+                        ><input type="checkbox" id="ae-level-study" checked />
+                        Study</label
+                    >
+                    <label
+                        ><input type="checkbox" id="ae-level-site" checked />
+                        Site</label
+                    >
+                    <label
+                        ><input type="checkbox" id="ae-level-subject" checked />
+                        Subject</label
+                    >
+                </fieldset>
+
+                <fieldset>
+                    <legend>Orientation</legend>
+                    <select id="ae-orientation">
+                        <option value="vertical">Vertical</option>
+                        <option value="horizontal" selected>Horizontal</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Sort</legend>
+                    <select id="ae-sort">
+                        <option value="total" selected>
+                            Total (descending)
+                        </option>
+                        <option value="alphanumeric">Alphanumeric</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Top N Categories</legend>
+                    <input
+                        type="number"
+                        id="ae-n-categories"
+                        min="1"
+                        step="1"
+                        placeholder="All"
+                        value="10"
+                    />
+                </fieldset>
+
+                <button
+                    id="ae-export-btn"
+                    class="export-btn"
+                    type="button"
+                    title="Export PNG"
+                    aria-label="Export PNG"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                    >
+                        <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+                        <path d="M14 14H2v-2h12v2z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="ae-container"></div>
+        </div>
+
         <script>
             // Tab switching
             const tabButtons = document.querySelectorAll('.tab-nav button');
@@ -517,6 +620,7 @@
         <script src="giniChart.js"></script>
         <script src="kriSiteChart.js"></script>
         <script src="kriFacetChart.js"></script>
+        <script src="aePrevalenceChart.js"></script>
         <script src="../nav.js"></script>
     </body>
 </html>
