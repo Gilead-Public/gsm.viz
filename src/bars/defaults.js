@@ -38,6 +38,7 @@ const defaults = {
             type: 'category',
             label: undefined,
             grid: false,
+            ticks: {},
         },
         y: {
             type: 'linear',

@@ -473,4 +473,68 @@ describe('bars/getPlugins/buildTooltip', () => {
             expect(result.callbacks.label).toBe(customLabel);
         });
     });
+
+    describe('tooltip title injection for truncation', () => {
+        test('injects callbacks.title when ticks.maxLength is set', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            expect(typeof result.callbacks?.title).toBe('function');
+        });
+
+        test('title callback returns item.label (full category label)', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            const items = [{ label: 'Full Category Label' }];
+            expect(result.callbacks.title(items)).toBe('Full Category Label');
+        });
+
+        test('title callback returns empty string for empty items array', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            expect(result.callbacks.title([])).toBe('');
+        });
+
+        test('does not inject title when maxLength is not set', () => {
+            const result = buildTooltip({}, 'stack', 'count', {});
+            expect(result.callbacks?.title).toBeUndefined();
+        });
+
+        test('does not inject title when ticks is undefined', () => {
+            const result = buildTooltip({}, 'stack', 'count', undefined);
+            expect(result.callbacks?.title).toBeUndefined();
+        });
+
+        test('does not override user-supplied callbacks.title', () => {
+            const customTitle = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { callbacks: { title: customTitle } },
+                'stack',
+                'count',
+                { maxLength: 10 }
+            );
+            expect(result.callbacks.title).toBe(customTitle);
+        });
+
+        test('title callback coexists with format label callback', () => {
+            const result = buildTooltip(
+                { format: 'count' },
+                'stack',
+                'count',
+                { maxLength: 10 }
+            );
+            expect(typeof result.callbacks.title).toBe('function');
+            expect(typeof result.callbacks.label).toBe('function');
+        });
+
+        test('title callback coexists with fill label callback', () => {
+            const result = buildTooltip({}, 'fill', 'percent', {
+                maxLength: 5,
+            });
+            expect(typeof result.callbacks.title).toBe('function');
+            expect(typeof result.callbacks.label).toBe('function');
+        });
+    });
 });

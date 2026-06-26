@@ -86,6 +86,44 @@ export default function validateSpec(data, spec) {
         throw new Error('spec.scales.x.grid must be a boolean');
     }
 
+    const xTicks = spec.scales?.x?.ticks;
+    if (xTicks !== undefined) {
+        if (
+            xTicks === null ||
+            typeof xTicks !== 'object' ||
+            Array.isArray(xTicks) ||
+            (Object.getPrototypeOf(xTicks) !== Object.prototype &&
+                Object.getPrototypeOf(xTicks) !== null)
+        ) {
+            throw new Error('spec.scales.x.ticks must be a plain object');
+        }
+
+        if (xTicks.maxLength !== undefined) {
+            if (
+                typeof xTicks.maxLength !== 'number' ||
+                !Number.isInteger(xTicks.maxLength) ||
+                xTicks.maxLength < 1
+            ) {
+                throw new Error(
+                    'spec.scales.x.ticks.maxLength must be a positive integer'
+                );
+            }
+        }
+
+        if (xTicks.rotation !== undefined) {
+            if (
+                typeof xTicks.rotation !== 'number' ||
+                !Number.isFinite(xTicks.rotation) ||
+                xTicks.rotation < 0 ||
+                xTicks.rotation > 90
+            ) {
+                throw new Error(
+                    'spec.scales.x.ticks.rotation must be a number between 0 and 90'
+                );
+            }
+        }
+    }
+
     const colors = spec.scales?.fill?.colors;
     if (colors !== undefined) {
         if (

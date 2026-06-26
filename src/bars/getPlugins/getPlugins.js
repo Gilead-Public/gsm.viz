@@ -98,7 +98,7 @@ export default function getPlugins(spec) {
             annotations: referenceLines(spec),
             clip: false,
         },
-        tooltip: buildTooltip(tooltip, position, spec.stat),
+        tooltip: buildTooltip(tooltip, position, spec.stat, scales.x?.ticks),
         legend,
         datalabels: dataLabels(spec),
     };

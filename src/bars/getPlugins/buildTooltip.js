@@ -16,17 +16,33 @@ import {
  *                                   or `stat: 'percent'` and none of the above
  *   5. Chart.js default
  *
+ * When `ticks.maxLength` is set and no custom `callbacks.title` is provided,
+ * a title callback is injected to display the full (untruncated) category label.
+ *
  * `format` and `formatter` are gsm.viz-specific options and are stripped from
  * the object forwarded to Chart.js.
  *
  * @param {Object} tooltip - user-specified tooltip plugin options
  * @param {string} position - bar positioning mode
  * @param {string} stat - stat mode ('count' | 'identity' | 'percent')
+ * @param {Object} [ticks] - spec.scales.x.ticks (used to detect truncation)
  * @returns {Object} tooltip plugin options
  */
-export default function buildTooltip(tooltip, position, stat) {
+export default function buildTooltip(tooltip, position, stat, ticks) {
     const { format, formatter, ...rest } = tooltip || {};
     const base = { enabled: true, ...rest };
+
+    // Inject tooltip title that shows the full category label when truncation
+    // is active and the user hasn't provided a custom title callback.
+    if (ticks?.maxLength && !base.callbacks?.title) {
+        base.callbacks = {
+            ...base.callbacks,
+            title: (items) => {
+                if (!items.length) return '';
+                return items[0].label;
+            },
+        };
+    }
 
     // 1. Caller-supplied callbacks.label always wins.
     if (base.callbacks?.label) return base;

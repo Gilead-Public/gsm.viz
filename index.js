@@ -24591,6 +24591,26 @@ var gsmViz = (() => {
     if (xGrid !== void 0 && typeof xGrid !== "boolean") {
       throw new Error("spec.scales.x.grid must be a boolean");
     }
+    const xTicks = spec.scales?.x?.ticks;
+    if (xTicks !== void 0) {
+      if (xTicks === null || typeof xTicks !== "object" || Array.isArray(xTicks) || Object.getPrototypeOf(xTicks) !== Object.prototype && Object.getPrototypeOf(xTicks) !== null) {
+        throw new Error("spec.scales.x.ticks must be a plain object");
+      }
+      if (xTicks.maxLength !== void 0) {
+        if (typeof xTicks.maxLength !== "number" || !Number.isInteger(xTicks.maxLength) || xTicks.maxLength < 1) {
+          throw new Error(
+            "spec.scales.x.ticks.maxLength must be a positive integer"
+          );
+        }
+      }
+      if (xTicks.rotation !== void 0) {
+        if (typeof xTicks.rotation !== "number" || !Number.isFinite(xTicks.rotation) || xTicks.rotation < 0 || xTicks.rotation > 90) {
+          throw new Error(
+            "spec.scales.x.ticks.rotation must be a number between 0 and 90"
+          );
+        }
+      }
+    }
     const colors2 = spec.scales?.fill?.colors;
     if (colors2 !== void 0) {
       if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
@@ -24773,7 +24793,8 @@ var gsmViz = (() => {
       x: {
         type: "category",
         label: void 0,
-        grid: false
+        grid: false,
+        ticks: {}
       },
       y: {
         type: "linear",
@@ -24856,7 +24877,14 @@ var gsmViz = (() => {
       stat: spec.position === "fill" && spec.stat === void 0 ? "percent" : spec.stat ?? defaults_default.stat,
       nCategories: spec.nCategories,
       scales: {
-        x: { ...defaults_default.scales.x, ...spec.scales?.x },
+        x: {
+          ...defaults_default.scales.x,
+          ...spec.scales?.x,
+          ticks: {
+            ...defaults_default.scales.x.ticks,
+            ...spec.scales?.x?.ticks
+          }
+        },
         y: { ...defaults_default.scales.y, ...spec.scales?.y },
         fill: { ...defaults_default.scales.fill, ...spec.scales?.fill }
       },
@@ -25204,6 +25232,15 @@ var gsmViz = (() => {
     return { datasets, labels, nExcluded, nRowsExcluded };
   }
 
+  // src/bars/truncateLabel.js
+  function truncateLabel(label, maxLength) {
+    if (label == null) return "";
+    const str = String(label);
+    if (!Number.isFinite(maxLength) || maxLength < 1 || str.length <= maxLength)
+      return str;
+    return str.slice(0, maxLength - 1) + "\u2026";
+  }
+
   // src/bars/getScales.js
   function getScales2(spec) {
     const { orientation, position, scales: specScales, mapping } = spec;
@@ -25213,6 +25250,22 @@ var gsmViz = (() => {
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const percentageTicks = { callback: (v) => `${v}%` };
+    const specTicks = specScales.x.ticks || {};
+    const categoryTicks = {};
+    if (spec.theme?.dynamicSizing) {
+      categoryTicks.autoSkip = false;
+    }
+    if (specTicks.maxLength) {
+      const maxLen = specTicks.maxLength;
+      categoryTicks.callback = function(value) {
+        const label = this.getLabelForValue(value);
+        return truncateLabel(label, maxLen);
+      };
+    }
+    if (specTicks.rotation !== void 0) {
+      categoryTicks.maxRotation = specTicks.rotation;
+      categoryTicks.minRotation = specTicks.rotation;
+    }
     const categoryScale = {
       type: specScales.x.type,
       grid: { display: !!specScales.x.grid },
@@ -25220,7 +25273,7 @@ var gsmViz = (() => {
         display: !!xLabel,
         text: xLabel
       },
-      ...spec.theme?.dynamicSizing ? { ticks: { autoSkip: false } } : {},
+      ...Object.keys(categoryTicks).length > 0 ? { ticks: categoryTicks } : {},
       ...stacked ? { stacked: true } : {}
     };
     const valueScale = {
@@ -25316,9 +25369,18 @@ var gsmViz = (() => {
   }
 
   // src/bars/getPlugins/buildTooltip.js
-  function buildTooltip(tooltip5, position, stat) {
+  function buildTooltip(tooltip5, position, stat, ticks) {
     const { format: format2, formatter: formatter2, ...rest } = tooltip5 || {};
     const base = { enabled: true, ...rest };
+    if (ticks?.maxLength && !base.callbacks?.title) {
+      base.callbacks = {
+        ...base.callbacks,
+        title: (items) => {
+          if (!items.length) return "";
+          return items[0].label;
+        }
+      };
+    }
     if (base.callbacks?.label) return base;
     if (typeof formatter2 === "function") {
       return {
@@ -25903,7 +25965,7 @@ var gsmViz = (() => {
         annotations: referenceLines(spec),
         clip: false
       },
-      tooltip: buildTooltip(tooltip5, position, spec.stat),
+      tooltip: buildTooltip(tooltip5, position, spec.stat, scales2.x?.ticks),
       legend: legend5,
       datalabels: dataLabels2(spec)
     };
@@ -26228,7 +26290,14 @@ var gsmViz = (() => {
       ...spec,
       mapping: { ...existing.mapping, ...spec.mapping },
       scales: {
-        x: { ...existing.scales?.x, ...spec.scales?.x },
+        x: {
+          ...existing.scales?.x,
+          ...spec.scales?.x,
+          ticks: {
+            ...existing.scales?.x?.ticks,
+            ...spec.scales?.x?.ticks
+          }
+        },
         y: { ...existing.scales?.y, ...spec.scales?.y },
         fill: { ...existing.scales?.fill, ...spec.scales?.fill }
       },
