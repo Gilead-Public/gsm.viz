@@ -96,6 +96,23 @@ fetch('data/retention.csv')
                 labels: {
                     title: 'Retention Status by Site',
                 },
+                selection: { enabled: true },
+                callbacks: {
+                    onSelect: (selection) => {
+                        const select = document.getElementById(
+                            'retention-select-category'
+                        );
+                        if (!select) return;
+                        if (
+                            selection.type === 'category' &&
+                            selection.values.length === 1
+                        ) {
+                            select.value = selection.values[0];
+                        } else {
+                            select.value = '';
+                        }
+                    },
+                },
                 theme: {
                     dynamicSizing,
                     dynamicCategoryAxis,
@@ -130,7 +147,7 @@ fetch('data/retention.csv')
             )
         );
 
-        // Populate category and segment dropdowns
+        // Populate category dropdown
         const categories = [...new Set(data.map((d) => d.invid))];
         const categorySelect = document.getElementById(
             'retention-select-category'
@@ -142,44 +159,11 @@ fetch('data/retention.csv')
             categorySelect.appendChild(opt);
         });
 
-        const segmentSelect = document.getElementById(
-            'retention-select-segment'
-        );
-        const segments = [];
-        categories.forEach((cat) => {
-            reasonOrder.forEach((reason) => {
-                const hasData = data.some(
-                    (d) => d.invid === cat && d.Reason === reason
-                );
-                if (hasData) {
-                    segments.push({ category: cat, fill: reason });
-                }
-            });
-        });
-        segments.forEach((seg) => {
-            const opt = document.createElement('option');
-            opt.value = JSON.stringify(seg);
-            opt.textContent = `${seg.category} / ${seg.fill}`;
-            segmentSelect.appendChild(opt);
-        });
-
-        // Wire category selection
+        // Wire category selection — dropdown drives chart selection
         categorySelect.addEventListener('change', () => {
             const val = categorySelect.value;
-            segmentSelect.value = '';
             if (val) {
                 instance.helpers.selectCategory(instance, val);
-            } else {
-                instance.helpers.clearSelection(instance);
-            }
-        });
-
-        // Wire segment selection
-        segmentSelect.addEventListener('change', () => {
-            const val = segmentSelect.value;
-            categorySelect.value = '';
-            if (val) {
-                instance.helpers.selectSegment(instance, JSON.parse(val));
             } else {
                 instance.helpers.clearSelection(instance);
             }
