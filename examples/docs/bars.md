@@ -97,6 +97,12 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     callbacks: {
         onClick: null,   // (point, event) => void — called when a bar element is clicked
         onHover: null,   // (point, event) => void — called when a bar element is hovered
+        onSelect: null,  // (selection, event?) => void — called when selection changes
+    },
+    selection: {
+        enabled: false,       // true | false — enable click-to-select behaviour
+        opacity: 0.2,         // opacity of non-selected bars (0–1)
+        multiple: false,      // true | false — allow multi-select via click
     },
     theme: {
         maintainAspectRatio: false,
@@ -147,6 +153,10 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `tooltip.formatter`                    | `undefined`                                                   |
 | `callbacks.onClick`                    | `null`                                                        |
 | `callbacks.onHover`                    | `null`                                                        |
+| `callbacks.onSelect`                   | `null`                                                        |
+| `selection.enabled`                    | `false`                                                       |
+| `selection.opacity`                    | `0.2`                                                         |
+| `selection.multiple`                   | `false`                                                       |
 | `labels.captions`                      | `undefined`                                                   |
 | `labels.captionsOptions`               | `undefined`                                                   |
 | `zoom.enabled`                         | `false`                                                       |
@@ -819,14 +829,84 @@ When either `callbacks.onClick` or `callbacks.onHover` is registered, the cursor
 
 After instantiation the chart exposes `chart.helpers`:
 
-| Method                          | Description                                     |
-| ------------------------------- | ----------------------------------------------- |
-| `updateData(chart, data, spec)` | Replace the underlying data array and re-render |
-| `updateSpec(chart, spec)`       | Apply a partial spec update and re-render       |
-| `exportImage(chart, filename?)` | Download the chart as a PNG file                |
+| Method                          | Description                                      |
+| ------------------------------- | ------------------------------------------------ |
+| `updateData(chart, data, spec)` | Replace the underlying data array and re-render  |
+| `updateSpec(chart, spec)`       | Apply a partial spec update and re-render        |
+| `exportImage(chart, filename?)` | Download the chart as a PNG file                 |
+| `selectCategory(chart, values)` | Highlight all bars in the given category(ies)    |
+| `selectSegment(chart, values)`  | Highlight specific fill×category segments        |
+| `clearSelection(chart)`         | Clear selection and restore original bar colours |
+| `getSelection(chart)`           | Get current selection state                      |
 
-All three helpers follow the same calling convention: the chart instance is
+All helpers follow the same calling convention: the chart instance is
 always the first argument.
+
+### Selection
+
+The selection API lets external code (e.g. Shiny/R wrappers) programmatically
+highlight bars and receive notification when the user selects bars via click.
+
+#### Programmatic selection
+
+```js
+// Select one or more categories (highlights all bars in those x-axis values)
+chart.helpers.selectCategory(chart, 'Site A');
+chart.helpers.selectCategory(chart, ['Site A', 'Site B']);
+
+// Select specific fill×category segments
+chart.helpers.selectSegment(chart, { category: 'Site A', fill: 'Complete' });
+chart.helpers.selectSegment(chart, [
+    { category: 'Site A', fill: 'Complete' },
+    { category: 'Site B', fill: 'Withdrawn' },
+]);
+
+// Clear selection (restores original bar colours)
+chart.helpers.clearSelection(chart);
+
+// Get current selection state
+const sel = chart.helpers.getSelection(chart);
+// Returns: { type: 'category'|'segment'|null, values: [...] }
+```
+
+#### Click-to-select
+
+Enable `selection.enabled: true` to allow users to click bars to select them:
+
+```js
+const chart = gsmViz.default.bars(el, data, {
+    mapping: { x: 'site', y: 'value', fill: 'status' },
+    selection: {
+        enabled: true,      // clicks auto-select
+        opacity: 0.2,       // dim non-selected bars to 20% opacity
+        multiple: false,    // single-select (click replaces); true for multi-toggle
+    },
+    callbacks: {
+        onSelect: (selection) => {
+            console.log(selection);
+            // { type: 'category', values: ['Site A'] }
+        },
+    },
+});
+```
+
+- Clicking a bar selects its category; non-selected bars are dimmed
+- Clicking an already-selected bar deselects it
+- Clicking empty space clears the selection
+- `callbacks.onClick` still fires alongside selection
+- `callbacks.onSelect` fires on every selection change (click or programmatic)
+
+#### Visual behaviour
+
+| State         | Selected bars | Non-selected bars       |
+| ------------- | ------------- | ----------------------- |
+| No selection  | Full opacity  | Full opacity            |
+| Selection set | Full opacity  | Dimmed to `selection.opacity` |
+
+#### facetBars integration
+
+When using `facetBars`, selection automatically syncs across all faceted
+charts. Selecting a category in one facet highlights it in all facets.
 
 ### `exportImage(chart, filename?)`
 
