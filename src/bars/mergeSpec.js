@@ -62,6 +62,8 @@ export default function mergeSpec(data, spec) {
         callbacks: {
             onClick: spec.callbacks?.onClick ?? defaults.callbacks.onClick,
             onHover: spec.callbacks?.onHover ?? defaults.callbacks.onHover,
+            onSelect: spec.callbacks?.onSelect ?? null,
         },
+        selection: { ...defaults.selection, ...spec.selection },
     };
 }

@@ -96,6 +96,23 @@ fetch('data/retention.csv')
                 labels: {
                     title: 'Retention Status by Site',
                 },
+                selection: { enabled: true },
+                callbacks: {
+                    onSelect: (selection) => {
+                        const select = document.getElementById(
+                            'retention-select-category'
+                        );
+                        if (!select) return;
+                        if (
+                            selection.type === 'category' &&
+                            selection.values.length === 1
+                        ) {
+                            select.value = selection.values[0];
+                        } else {
+                            select.value = '';
+                        }
+                    },
+                },
                 theme: {
                     dynamicSizing,
                     dynamicCategoryAxis,
@@ -129,6 +146,28 @@ fetch('data/retention.csv')
                 getValue('retention-bar-label')
             )
         );
+
+        // Populate category dropdown
+        const categories = [...new Set(data.map((d) => d.invid))];
+        const categorySelect = document.getElementById(
+            'retention-select-category'
+        );
+        categories.forEach((cat) => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+
+        // Wire category selection — dropdown drives chart selection
+        categorySelect.addEventListener('change', () => {
+            const val = categorySelect.value;
+            if (val) {
+                instance.helpers.selectCategory(instance, val);
+            } else {
+                instance.helpers.clearSelection(instance);
+            }
+        });
 
         document
             .getElementById('retention-export-btn')

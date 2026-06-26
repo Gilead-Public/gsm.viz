@@ -98,6 +98,11 @@ const defaults = {
     legend: {
         dense: false,
     },
+    selection: {
+        enabled: false,
+        opacity: 0.2,
+        multiple: false,
+    },
     stat: 'count',
 };
 

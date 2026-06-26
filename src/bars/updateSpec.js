@@ -18,6 +18,11 @@ import refreshDynamicCategoryData from './getPlugins/refreshDynamicCategoryData.
 export default function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
 
+    // Clear selection state: updateSpec rebuilds datasets with fresh colors,
+    // so any stored originalColors would be stale. Consumers can re-select
+    // after the update if needed.
+    delete chart.data._selectionState_;
+
     // Merge incoming partial spec over the existing stored spec.
     const combined = {
         ...existing,
