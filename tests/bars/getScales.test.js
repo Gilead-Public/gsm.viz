@@ -414,6 +414,159 @@ describe('bars/getScales', () => {
             expect(scales.x.ticks?.autoSkip).toBeUndefined();
         });
     });
+
+    describe('tick truncation (maxLength)', () => {
+        test('provides a ticks.callback when maxLength is set', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { maxLength: 8 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(typeof scales.x.ticks?.callback).toBe('function');
+        });
+
+        test('ticks.callback truncates long labels', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { maxLength: 5 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            const ctx = { getLabelForValue: () => 'LongLabel' };
+            const result = scales.x.ticks.callback.call(ctx, 0);
+            expect(result).toBe('Long\u2026');
+        });
+
+        test('ticks.callback leaves short labels unchanged', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { maxLength: 10 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            const ctx = { getLabelForValue: () => 'Short' };
+            const result = scales.x.ticks.callback.call(ctx, 0);
+            expect(result).toBe('Short');
+        });
+
+        test('truncation callback works on category (y) axis for horizontal orientation', () => {
+            const spec = {
+                orientation: 'horizontal',
+                scales: {
+                    x: { type: 'category', ticks: { maxLength: 4 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            const ctx = { getLabelForValue: () => 'VeryLongLabel' };
+            const result = scales.y.ticks.callback.call(ctx, 0);
+            expect(result).toBe('Ver\u2026');
+        });
+
+        test('does not add ticks.callback when maxLength is not set', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: {} },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks).toBeUndefined();
+        });
+
+        test('combines autoSkip and callback when dynamicSizing + maxLength', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { maxLength: 6 } },
+                    y: { type: 'linear' },
+                },
+                theme: { dynamicSizing: true },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks.autoSkip).toBe(false);
+            expect(typeof scales.x.ticks.callback).toBe('function');
+        });
+    });
+
+    describe('tick rotation', () => {
+        test('sets maxRotation and minRotation when rotation is specified', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { rotation: 45 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks.maxRotation).toBe(45);
+            expect(scales.x.ticks.minRotation).toBe(45);
+        });
+
+        test('sets rotation to 0 (horizontal labels)', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: { rotation: 0 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks.maxRotation).toBe(0);
+            expect(scales.x.ticks.minRotation).toBe(0);
+        });
+
+        test('rotation applies to category (y) axis for horizontal orientation', () => {
+            const spec = {
+                orientation: 'horizontal',
+                scales: {
+                    x: { type: 'category', ticks: { rotation: 30 } },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.ticks.maxRotation).toBe(30);
+            expect(scales.y.ticks.minRotation).toBe(30);
+        });
+
+        test('does not set rotation when not specified', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: { type: 'category', ticks: {} },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks?.maxRotation).toBeUndefined();
+            expect(scales.x.ticks?.minRotation).toBeUndefined();
+        });
+
+        test('combines rotation and truncation', () => {
+            const spec = {
+                orientation: 'vertical',
+                scales: {
+                    x: {
+                        type: 'category',
+                        ticks: { maxLength: 10, rotation: 45 },
+                    },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.ticks.maxRotation).toBe(45);
+            expect(scales.x.ticks.minRotation).toBe(45);
+            expect(typeof scales.x.ticks.callback).toBe('function');
+        });
+    });
 });
 
 describe('bars/getScales – y min/max pass-through', () => {

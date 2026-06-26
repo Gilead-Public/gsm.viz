@@ -1107,4 +1107,194 @@ describe('bars/validateSpec', () => {
             }
         });
     });
+
+    describe('scales.x.ticks validation', () => {
+        test('does not throw when scales.x.ticks is absent', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw when scales.x.ticks is an empty object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { ticks: {} } },
+                })
+            ).not.toThrow();
+        });
+
+        test('throws when scales.x.ticks is not a plain object', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { ticks: 'bad' } },
+                })
+            ).toThrow('spec.scales.x.ticks must be a plain object');
+        });
+
+        test('throws when scales.x.ticks is null', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { ticks: null } },
+                })
+            ).toThrow('spec.scales.x.ticks must be a plain object');
+        });
+
+        test('throws when scales.x.ticks is an array', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    scales: { x: { ticks: [] } },
+                })
+            ).toThrow('spec.scales.x.ticks must be a plain object');
+        });
+
+        describe('maxLength', () => {
+            test('does not throw when maxLength is a positive integer', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: 15 } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('does not throw when maxLength is undefined', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: undefined } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('throws when maxLength is zero', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: 0 } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.maxLength must be a positive integer'
+                );
+            });
+
+            test('throws when maxLength is negative', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: -5 } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.maxLength must be a positive integer'
+                );
+            });
+
+            test('throws when maxLength is a float', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: 10.5 } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.maxLength must be a positive integer'
+                );
+            });
+
+            test('throws when maxLength is a string', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { maxLength: '15' } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.maxLength must be a positive integer'
+                );
+            });
+        });
+
+        describe('rotation', () => {
+            test('does not throw when rotation is 0', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: 0 } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('does not throw when rotation is 45', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: 45 } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('does not throw when rotation is 90', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: 90 } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('does not throw when rotation is undefined', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: undefined } } },
+                    })
+                ).not.toThrow();
+            });
+
+            test('throws when rotation is negative', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: -10 } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.rotation must be a number between 0 and 90'
+                );
+            });
+
+            test('throws when rotation exceeds 90', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: 91 } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.rotation must be a number between 0 and 90'
+                );
+            });
+
+            test('throws when rotation is a string', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: '45' } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.rotation must be a number between 0 and 90'
+                );
+            });
+
+            test('throws when rotation is NaN', () => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        scales: { x: { ticks: { rotation: NaN } } },
+                    })
+                ).toThrow(
+                    'spec.scales.x.ticks.rotation must be a number between 0 and 90'
+                );
+            });
+        });
+    });
 });

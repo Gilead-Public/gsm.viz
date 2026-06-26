@@ -1,3 +1,5 @@
+import truncateLabel from './truncateLabel.js';
+
 /**
  * Build Chart.js scales configuration from the merged spec.
  *
@@ -26,6 +28,27 @@ export default function getScales(spec) {
 
     const percentageTicks = { callback: (v) => `${v}%` };
 
+    // Build category axis ticks config from spec.scales.x.ticks
+    const specTicks = specScales.x.ticks || {};
+    const categoryTicks = {};
+
+    if (spec.theme?.dynamicSizing) {
+        categoryTicks.autoSkip = false;
+    }
+
+    if (specTicks.maxLength) {
+        const maxLen = specTicks.maxLength;
+        categoryTicks.callback = function (value) {
+            const label = this.getLabelForValue(value);
+            return truncateLabel(label, maxLen);
+        };
+    }
+
+    if (specTicks.rotation !== undefined) {
+        categoryTicks.maxRotation = specTicks.rotation;
+        categoryTicks.minRotation = specTicks.rotation;
+    }
+
     const categoryScale = {
         type: specScales.x.type,
         grid: { display: !!specScales.x.grid },
@@ -33,7 +56,9 @@ export default function getScales(spec) {
             display: !!xLabel,
             text: xLabel,
         },
-        ...(spec.theme?.dynamicSizing ? { ticks: { autoSkip: false } } : {}),
+        ...(Object.keys(categoryTicks).length > 0
+            ? { ticks: categoryTicks }
+            : {}),
         ...(stacked ? { stacked: true } : {}),
     };
 

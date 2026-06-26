@@ -24,7 +24,14 @@ export default function updateSpec(chart, spec) {
         ...spec,
         mapping: { ...existing.mapping, ...spec.mapping },
         scales: {
-            x: { ...existing.scales?.x, ...spec.scales?.x },
+            x: {
+                ...existing.scales?.x,
+                ...spec.scales?.x,
+                ticks: {
+                    ...existing.scales?.x?.ticks,
+                    ...spec.scales?.x?.ticks,
+                },
+            },
             y: { ...existing.scales?.y, ...spec.scales?.y },
             fill: { ...existing.scales?.fill, ...spec.scales?.fill },
         },

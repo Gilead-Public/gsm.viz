@@ -28,7 +28,14 @@ export default function mergeSpec(data, spec) {
                 : spec.stat ?? defaults.stat,
         nCategories: spec.nCategories,
         scales: {
-            x: { ...defaults.scales.x, ...spec.scales?.x },
+            x: {
+                ...defaults.scales.x,
+                ...spec.scales?.x,
+                ticks: {
+                    ...defaults.scales.x.ticks,
+                    ...spec.scales?.x?.ticks,
+                },
+            },
             y: { ...defaults.scales.y, ...spec.scales?.y },
             fill: { ...defaults.scales.fill, ...spec.scales?.fill },
         },
