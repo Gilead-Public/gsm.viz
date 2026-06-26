@@ -30,6 +30,10 @@ export default function getPlugins(spec) {
             display: !!fillLabel,
             text: fillLabel || '',
         },
+        // applyLayerWidths reverses the dataset array for correct draw order
+        // (widest in back), so reverse the legend to restore the original
+        // fill order (first fill group listed first).
+        ...(position === 'layer' ? { reverse: true } : {}),
     };
 
     if (theme?.dynamicCategoryAxis) {

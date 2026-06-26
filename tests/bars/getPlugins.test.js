@@ -44,6 +44,30 @@ describe('bars/getPlugins', () => {
             const plugins = getPlugins(spec);
             expect(plugins.legend.display).toBe(false);
         });
+
+        test('reverses legend for layer position', () => {
+            const spec = {
+                position: 'layer',
+                mapping: { fill: 'level' },
+                scales: { fill: {} },
+                labels: {},
+            };
+            const plugins = getPlugins(spec);
+            expect(plugins.legend.reverse).toBe(true);
+        });
+
+        test('does not reverse legend for non-layer positions', () => {
+            for (const position of ['stack', 'dodge', 'fill']) {
+                const spec = {
+                    position,
+                    mapping: { fill: 'group' },
+                    scales: { fill: {} },
+                    labels: {},
+                };
+                const plugins = getPlugins(spec);
+                expect(plugins.legend.reverse).toBeUndefined();
+            }
+        });
     });
 
     describe('legend title (fill label)', () => {

@@ -77,13 +77,16 @@ export default function structureData(spec) {
     let nExcluded = 0;
     let nRowsExcluded = 0;
     if (spec.nCategories) {
+        // When explicit order is provided, categories are already in the
+        // desired order — just take the first N without re-sorting.
+        const limitSort = scales.x?.order ? 'alphanumeric' : xSort;
         const result = limitCategories(
             labels,
             activeData,
             xKey,
             yKey,
             spec.nCategories,
-            xSort
+            limitSort
         );
         labels = result.limitedCategories;
         nExcluded = result.nExcluded;

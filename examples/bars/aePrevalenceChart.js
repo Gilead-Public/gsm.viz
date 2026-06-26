@@ -175,7 +175,8 @@ fetch("data/ae.json")
       const label = colLabels[variable] || variable;
 
       // When sort is 'total', use the pre-computed order from the highest
-      // visible level. When 'alphanumeric', let Chart.js sort naturally.
+      // visible level. The library's structureData skips re-sorting when
+      // explicit order is provided.
       const xScale = { label };
       if (sort === "total" && categoryOrder) {
         xScale.order = categoryOrder;
@@ -257,6 +258,14 @@ fetch("data/ae.json")
     }
 
     render();
+
+    // Re-render when the tab becomes visible so Chart.js can compute real
+    // dimensions (initial render happens in a hidden tab with 0×0 area).
+    document
+      .querySelector('[data-tab="ae-prevalence"]')
+      .addEventListener("click", () => {
+        requestAnimationFrame(render);
+      });
 
     // --- Event listeners ---
     document.getElementById("ae-export-btn").addEventListener("click", () => {
