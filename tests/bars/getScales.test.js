@@ -209,6 +209,34 @@ describe('bars/getScales', () => {
             expect(scales.y.stacked).toBeUndefined();
         });
 
+        test('does not set stacked when position is layer', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'layer',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.stacked).toBeUndefined();
+            expect(scales.y.stacked).toBeUndefined();
+        });
+
+        test('layer does not set stacked in horizontal orientation', () => {
+            const spec = {
+                orientation: 'horizontal',
+                position: 'layer',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.stacked).toBeUndefined();
+            expect(scales.y.stacked).toBeUndefined();
+        });
+
         test('stacking works with horizontal orientation', () => {
             const spec = {
                 orientation: 'horizontal',
@@ -461,5 +489,69 @@ describe('bars/getScales – y min/max pass-through', () => {
         // In horizontal mode, the value axis is x
         expect(result.x.min).toBe(0);
         expect(result.x.max).toBe(50);
+    });
+
+    describe("stat='percent'", () => {
+        test('sets max: 100 and percentage ticks on value axis for dodge + percent', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.max).toBe(100);
+            expect(scales.y.ticks.callback(50)).toBe('50%');
+            expect(scales.x.stacked).toBeUndefined();
+            expect(scales.y.stacked).toBeUndefined();
+        });
+
+        test('sets max: 100 on value axis (x) for horizontal dodge + percent', () => {
+            const spec = {
+                orientation: 'horizontal',
+                position: 'dodge',
+                stat: 'percent',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.max).toBe(100);
+            expect(scales.x.ticks.callback(25)).toBe('25%');
+        });
+
+        test('sets max: 100 for stack + percent (former fill)', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'stack',
+                stat: 'percent',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.max).toBe(100);
+            expect(scales.x.stacked).toBe(true);
+            expect(scales.y.stacked).toBe(true);
+        });
+
+        test('does not set max: 100 when stat is count', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'count',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.max).toBeUndefined();
+        });
     });
 });

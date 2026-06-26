@@ -43,6 +43,7 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
         mapping,
         orientation,
         position,
+        stat: mergedSpec.stat,
         nCategories,
         scales: resolvedScales,
         labels,

@@ -1061,6 +1061,105 @@ describe('bars/structureData', () => {
             });
         });
     });
+
+    describe("stat='percent' with position='dodge'", () => {
+        test('normalizes y values to percentage with dodge position', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                    { cat: 'B', grp: 'X', val: 40 },
+                    { cat: 'B', grp: 'Y', val: 60 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const yDs = result.datasets.find((ds) => ds.label === 'Y');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(25);
+            expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(75);
+        });
+
+        test('stores _rawY when stat is percent and position is dodge', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.x === 'A')._rawY).toBe(25);
+        });
+
+        test('normalizes count mode with stat percent and dodge', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'Y' },
+                ],
+                mapping: { x: 'cat', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const yDs = result.datasets.find((ds) => ds.label === 'Y');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                (2 / 3) * 100
+            );
+            expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                (1 / 3) * 100
+            );
+        });
+
+        test('does not normalize when stat is count (default)', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'count',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBe(25);
+            expect(xDs.data.find((d) => d.x === 'A')._rawY).toBeUndefined();
+        });
+
+        test('works with horizontal orientation', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 30 },
+                    { cat: 'A', grp: 'Y', val: 70 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'horizontal',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.y === 'A').x).toBeCloseTo(30);
+        });
+    });
 });
 
 describe('bars/structureData — scales.fill.colors named map', () => {
@@ -1544,6 +1643,93 @@ describe('bars/structureData – scales.x.sortDir', () => {
             };
             const { labels } = structureData(spec);
             expect(labels).toEqual(['C', 'A', 'B']);
+        });
+    });
+
+    describe("position='layer' (layered bars with tapered widths)", () => {
+        const spec = {
+            data: [
+                { cat: 'A', grp: 'X', val: 25 },
+                { cat: 'A', grp: 'Y', val: 75 },
+                { cat: 'A', grp: 'Z', val: 50 },
+                { cat: 'B', grp: 'X', val: 40 },
+                { cat: 'B', grp: 'Y', val: 60 },
+                { cat: 'B', grp: 'Z', val: 30 },
+            ],
+            mapping: { x: 'cat', y: 'val', fill: 'grp' },
+            orientation: 'vertical',
+            position: 'layer',
+            scales: {
+                x: {},
+                y: {},
+                fill: { palette: ['#aaa', '#bbb', '#ccc'] },
+            },
+        };
+
+        test('first fill group (X) gets widest bar and is at highest index (drawn in back)', () => {
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const zDs = result.datasets.find((ds) => ds.label === 'Z');
+            expect(xDs.barPercentage).toBeCloseTo(0.9);
+            expect(zDs.barPercentage).toBeCloseTo(0.3);
+            // X should be at the end (drawn first/behind by Chart.js)
+            expect(result.datasets[result.datasets.length - 1].label).toBe(
+                'X'
+            );
+            expect(result.datasets[0].label).toBe('Z');
+        });
+
+        test('assigns ascending barPercentage (narrowest in front, widest in back)', () => {
+            const result = structureData(spec);
+            const widths = result.datasets.map((ds) => ds.barPercentage);
+            for (let i = 1; i < widths.length; i++) {
+                expect(widths[i]).toBeGreaterThan(widths[i - 1]);
+            }
+        });
+
+        test('sets categoryPercentage to 1.0 on all datasets', () => {
+            const result = structureData(spec);
+            result.datasets.forEach((ds) => {
+                expect(ds.categoryPercentage).toBe(1.0);
+            });
+        });
+
+        test('preserves y values (no normalization)', () => {
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const ptA = xDs.data.find((d) => d.x === 'A');
+            expect(ptA.y).toBe(25);
+        });
+
+        test('ensures borderWidth is at least 1', () => {
+            const result = structureData(spec);
+            result.datasets.forEach((ds) => {
+                expect(ds.borderWidth).toBeGreaterThanOrEqual(1);
+            });
+        });
+
+        test('works with horizontal orientation', () => {
+            const horizSpec = { ...spec, orientation: 'horizontal' };
+            const result = structureData(horizSpec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const zDs = result.datasets.find((ds) => ds.label === 'Z');
+            expect(xDs.barPercentage).toBeCloseTo(0.9);
+            expect(zDs.barPercentage).toBeCloseTo(0.3);
+        });
+
+        test('single fill group gets barPercentage of 0.9', () => {
+            const singleSpec = {
+                data: [
+                    { cat: 'A', val: 10 },
+                    { cat: 'B', val: 20 },
+                ],
+                mapping: { x: 'cat', y: 'val' },
+                orientation: 'vertical',
+                position: 'layer',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(singleSpec);
+            expect(result.datasets[0].barPercentage).toBeCloseTo(0.9);
         });
     });
 });

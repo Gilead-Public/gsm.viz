@@ -94,7 +94,7 @@ describe('bars/positionToggle', () => {
         });
     });
 
-    test('clicking the fill icon updates the position to fill', () => {
+    test('clicking the fill icon updates to stack + stat percent', () => {
         const chart = makeChart({
             spec: { position: 'stack', mapping: { fill: 'status' } },
         });
@@ -103,7 +103,26 @@ describe('bars/positionToggle', () => {
         clickAt(chart, fill.x + fill.w / 2, fill.y + fill.h / 2);
 
         expect(chart._updateSpec).toHaveBeenCalledWith(chart, {
-            position: 'fill',
+            position: 'stack',
+            stat: 'percent',
+        });
+    });
+
+    test('toggling from fill-equivalent to dodge preserves stat:percent', () => {
+        const chart = makeChart({
+            spec: {
+                position: 'stack',
+                stat: 'percent',
+                mapping: { fill: 'status' },
+            },
+        });
+        const boxes = getIconBoxes(chart);
+        const dodge = boxes.find((b) => b.value === 'dodge');
+        clickAt(chart, dodge.x + dodge.w / 2, dodge.y + dodge.h / 2);
+
+        // stat should NOT be forcefully reset to 'count' — dodge+percent is valid
+        expect(chart._updateSpec).toHaveBeenCalledWith(chart, {
+            position: 'dodge',
         });
     });
 
@@ -155,6 +174,19 @@ describe('bars/positionToggle', () => {
     test('no fill mapping disables the control', () => {
         const chart = makeChart({
             spec: { position: 'stack', mapping: { x: 'site' } },
+        });
+        const boxes = getIconBoxes(chart);
+        const dodge = boxes.find((b) => b.value === 'dodge');
+        clickAt(chart, dodge.x + dodge.w / 2, dodge.y + dodge.h / 2);
+        expect(chart._updateSpec).not.toHaveBeenCalled();
+    });
+
+    test('layer position disables the control', () => {
+        const chart = makeChart({
+            spec: {
+                position: 'layer',
+                mapping: { x: 'site', fill: 'status' },
+            },
         });
         const boxes = getIconBoxes(chart);
         const dodge = boxes.find((b) => b.value === 'dodge');

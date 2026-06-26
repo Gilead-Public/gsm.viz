@@ -35,10 +35,22 @@ export default function validateSpec(data, spec) {
         spec.position !== 'stack' &&
         spec.position !== 'dodge' &&
         spec.position !== 'identity' &&
-        spec.position !== 'fill'
+        spec.position !== 'fill' &&
+        spec.position !== 'layer'
     ) {
         throw new Error(
-            "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
+            "spec.position must be 'stack', 'dodge', 'identity', 'fill', or 'layer'"
+        );
+    }
+
+    if (
+        spec.stat !== undefined &&
+        spec.stat !== 'count' &&
+        spec.stat !== 'identity' &&
+        spec.stat !== 'percent'
+    ) {
+        throw new Error(
+            "spec.stat must be 'count', 'identity', or 'percent'"
         );
     }
 

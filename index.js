@@ -24563,9 +24563,14 @@ var gsmViz = (() => {
     if (!spec.mapping.x) {
       throw new Error("spec.mapping.x is required");
     }
-    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill") {
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill" && spec.position !== "layer") {
       throw new Error(
-        "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
+        "spec.position must be 'stack', 'dodge', 'identity', 'fill', or 'layer'"
+      );
+    }
+    if (spec.stat !== void 0 && spec.stat !== "count" && spec.stat !== "identity" && spec.stat !== "percent") {
+      throw new Error(
+        "spec.stat must be 'count', 'identity', or 'percent'"
       );
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
@@ -24804,7 +24809,8 @@ var gsmViz = (() => {
     },
     legend: {
       dense: false
-    }
+    },
+    stat: "count"
   };
   var defaults_default = defaults3;
 
@@ -24817,7 +24823,8 @@ var gsmViz = (() => {
       mapping: { ...spec.mapping },
       interactive: spec.interactive ?? defaults_default.interactive,
       orientation: spec.orientation ?? defaults_default.orientation,
-      position: spec.position ?? defaults_default.position,
+      position: spec.position === "fill" ? "stack" : spec.position ?? defaults_default.position,
+      stat: spec.position === "fill" && spec.stat === void 0 ? "percent" : spec.stat ?? defaults_default.stat,
       nCategories: spec.nCategories,
       scales: {
         x: { ...defaults_default.scales.x, ...spec.scales?.x },
@@ -24899,6 +24906,25 @@ var gsmViz = (() => {
         )
       }
     ];
+  }
+
+  // src/bars/structureData/applyLayerWidths.js
+  function applyLayerWidths(datasets) {
+    const n = datasets.length;
+    if (n === 0) return;
+    datasets.reverse();
+    const maxWidth = 0.9;
+    const minWidth = 0.3;
+    const step = n > 1 ? (maxWidth - minWidth) / (n - 1) : 0;
+    for (let i = 0; i < n; i++) {
+      const ds = datasets[i];
+      ds.barPercentage = n === 1 ? maxWidth : minWidth + i * step;
+      ds.categoryPercentage = 1;
+      ds.grouped = false;
+      if (!ds.borderWidth || ds.borderWidth < 1) {
+        ds.borderWidth = 1;
+      }
+    }
   }
 
   // src/bars/structureData/darkenHex.js
@@ -25048,13 +25074,14 @@ var gsmViz = (() => {
     let nExcluded = 0;
     let nRowsExcluded = 0;
     if (spec.nCategories) {
+      const limitSort = scales2.x?.order ? "alphanumeric" : xSort;
       const result = limitCategories(
         labels,
         activeData,
         xKey,
         yKey,
         spec.nCategories,
-        xSort
+        limitSort
       );
       labels = result.limitedCategories;
       nExcluded = result.nExcluded;
@@ -25137,8 +25164,11 @@ var gsmViz = (() => {
     if (orientation === "horizontal") {
       swapPointAxes(datasets);
     }
-    if (spec.position === "fill") {
+    if (spec.stat === "percent" || spec.position === "fill") {
       normalizeFill(datasets, orientation === "horizontal");
+    }
+    if (spec.position === "layer") {
+      applyLayerWidths(datasets);
     }
     return { datasets, labels, nExcluded, nRowsExcluded };
   }
@@ -25148,7 +25178,7 @@ var gsmViz = (() => {
     const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === "horizontal";
     const stacked = position === "stack" || position === "fill";
-    const fill2 = position === "fill";
+    const percent = spec.stat === "percent" || position === "fill";
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const percentageTicks = { callback: (v) => `${v}%` };
@@ -25171,7 +25201,7 @@ var gsmViz = (() => {
       ...specScales.y.min !== void 0 ? { min: specScales.y.min } : { beginAtZero: true },
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
-      ...fill2 ? { max: 100, ticks: percentageTicks } : {}
+      ...percent ? { max: 100, ticks: percentageTicks } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -25255,7 +25285,7 @@ var gsmViz = (() => {
   }
 
   // src/bars/getPlugins/buildTooltip.js
-  function buildTooltip(tooltip5, position) {
+  function buildTooltip(tooltip5, position, stat) {
     const { format: format2, formatter: formatter2, ...rest } = tooltip5 || {};
     const base = { enabled: true, ...rest };
     if (base.callbacks?.label) return base;
@@ -25277,7 +25307,7 @@ var gsmViz = (() => {
         }
       };
     }
-    if (position !== "fill") return base;
+    if (position !== "fill" && stat !== "percent") return base;
     return {
       ...base,
       callbacks: {
@@ -25390,15 +25420,19 @@ var gsmViz = (() => {
   function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
   }
+  function isPercentStat(context, spec) {
+    const s = getSpec(context, spec);
+    return s?.stat === "percent" || s?.position === "fill";
+  }
   function getPercentValue(point, context, spec) {
     const rendered = getRenderedValue(point, context);
-    if (getSpec(context, spec)?.position === "fill") return rendered;
+    if (isPercentStat(context, spec)) return rendered;
     const total = getRawTotal2(context);
     return total === 0 ? 0 : getRawValue2(point, context) / total * 100;
   }
   function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? "auto";
-    const valueType = configuredValue === "auto" ? getSpec(context, spec)?.position === "fill" ? "percent" : "raw" : configuredValue;
+    const valueType = configuredValue === "auto" ? isPercentStat(context, spec) ? "percent" : "raw" : configuredValue;
     if (mode === "total") {
       return { value: getVisibleRawTotal(context), valueType: "raw" };
     }
@@ -25789,7 +25823,11 @@ var gsmViz = (() => {
       title: {
         display: !!fillLabel,
         text: fillLabel || ""
-      }
+      },
+      // applyLayerWidths reverses the dataset array for correct draw order
+      // (widest in back), so reverse the legend to restore the original
+      // fill order (first fill group listed first).
+      ...position === "layer" ? { reverse: true } : {}
     };
     if (theme?.dynamicCategoryAxis) {
       legend5.onClick = dynamicCategoryLegendOnClick;
@@ -25834,7 +25872,7 @@ var gsmViz = (() => {
         annotations: referenceLines(spec),
         clip: false
       },
-      tooltip: buildTooltip(tooltip5, position),
+      tooltip: buildTooltip(tooltip5, position, spec.stat),
       legend: legend5,
       datalabels: dataLabels2(spec)
     };
@@ -25930,6 +25968,7 @@ var gsmViz = (() => {
     const spec = chart.data?._spec_;
     if (!spec || spec.interactive === false) return null;
     if (!spec.mapping?.fill) return null;
+    if (spec.position === "layer") return null;
     if (!chart.chartArea) return null;
     return spec;
   }
@@ -26034,8 +26073,17 @@ var gsmViz = (() => {
         if (!spec) return;
         const { x, y } = args.event;
         const hit = hitBox(getIconBoxes(chart), x, y);
-        if (!hit || hit.value === spec.position) return;
-        chart.helpers.updateSpec(chart, { position: hit.value });
+        if (!hit) return;
+        const effectivePosition = spec.stat === "percent" && spec.position === "stack" ? "fill" : spec.position;
+        if (hit.value === effectivePosition) return;
+        const update = { position: hit.value };
+        if (hit.value === "fill") {
+          update.position = "stack";
+          update.stat = "percent";
+        } else if (spec.stat === "percent" && spec.position === "stack" && hit.value === "stack") {
+          update.stat = "count";
+        }
+        chart.helpers.updateSpec(chart, update);
       },
       afterDraw(chart) {
         const spec = enabledSpec(chart);
@@ -26045,7 +26093,11 @@ var gsmViz = (() => {
         }
         const boxes = getIconBoxes(chart);
         if (chart.ctx) {
-          drawIcons(chart.ctx, boxes, spec.position);
+          drawIcons(
+            chart.ctx,
+            boxes,
+            spec.stat === "percent" && spec.position === "stack" ? "fill" : spec.position
+          );
           if (hoveredValue) {
             const hoveredBox = boxes.find(
               (b) => b.value === hoveredValue
@@ -26515,7 +26567,7 @@ var gsmViz = (() => {
   function computeGlobalScales(facetDataMap, spec) {
     const { position, orientation, mapping, scales: scales2, facet } = spec;
     const horizontal = orientation === "horizontal";
-    if (position === "fill") {
+    if (position === "fill" || spec.stat === "percent") {
       return { yMin: 0, yMax: 100 };
     }
     const yFree = facet?.scales?.y?.free ?? false;
@@ -26531,6 +26583,7 @@ var gsmViz = (() => {
         mapping,
         orientation,
         position,
+        stat: spec.stat,
         scales: resolvedScales,
         nCategories: spec.nCategories
       };
@@ -26646,6 +26699,7 @@ var gsmViz = (() => {
       mapping,
       orientation,
       position,
+      stat: mergedSpec.stat,
       nCategories,
       scales: resolvedScales,
       labels,

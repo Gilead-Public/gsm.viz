@@ -98,6 +98,7 @@ const defaults = {
     legend: {
         dense: false,
     },
+    stat: 'count',
 };
 
 export default defaults;

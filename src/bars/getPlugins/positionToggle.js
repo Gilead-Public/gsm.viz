@@ -51,6 +51,7 @@ function enabledSpec(chart) {
     const spec = chart.data?._spec_;
     if (!spec || spec.interactive === false) return null;
     if (!spec.mapping?.fill) return null;
+    if (spec.position === 'layer') return null;
     if (!chart.chartArea) return null;
     return spec;
 }
@@ -177,9 +178,30 @@ export default function positionToggle() {
 
             const { x, y } = args.event;
             const hit = hitBox(getIconBoxes(chart), x, y);
-            if (!hit || hit.value === spec.position) return;
+            if (!hit) return;
 
-            chart.helpers.updateSpec(chart, { position: hit.value });
+            // Determine the effective display position for no-op detection.
+            const effectivePosition =
+                spec.stat === 'percent' && spec.position === 'stack'
+                    ? 'fill'
+                    : spec.position;
+            if (hit.value === effectivePosition) return;
+
+            const update = { position: hit.value };
+            if (hit.value === 'fill') {
+                update.position = 'stack';
+                update.stat = 'percent';
+            } else if (
+                spec.stat === 'percent' &&
+                spec.position === 'stack' &&
+                hit.value === 'stack'
+            ) {
+                // Leaving the fill-equivalent state via explicit stack;
+                // reset stat only when the target is also stack (i.e. user
+                // toggled away from "fill" back to plain "stack").
+                update.stat = 'count';
+            }
+            chart.helpers.updateSpec(chart, update);
         },
 
         afterDraw(chart) {
@@ -193,7 +215,13 @@ export default function positionToggle() {
 
             const boxes = getIconBoxes(chart);
             if (chart.ctx) {
-                drawIcons(chart.ctx, boxes, spec.position);
+                drawIcons(
+                    chart.ctx,
+                    boxes,
+                    spec.stat === 'percent' && spec.position === 'stack'
+                        ? 'fill'
+                        : spec.position
+                );
 
                 if (hoveredValue) {
                     const hoveredBox = boxes.find(

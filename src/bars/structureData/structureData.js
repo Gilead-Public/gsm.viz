@@ -1,4 +1,5 @@
 import aggregateCounts from './aggregateCounts.js';
+import applyLayerWidths from './applyLayerWidths.js';
 import darkenHex from './darkenHex.js';
 import limitCategories from './limitCategories.js';
 import normalizeFill from './normalizeFill.js';
@@ -76,13 +77,16 @@ export default function structureData(spec) {
     let nExcluded = 0;
     let nRowsExcluded = 0;
     if (spec.nCategories) {
+        // When explicit order is provided, categories are already in the
+        // desired order — just take the first N without re-sorting.
+        const limitSort = scales.x?.order ? 'alphanumeric' : xSort;
         const result = limitCategories(
             labels,
             activeData,
             xKey,
             yKey,
             spec.nCategories,
-            xSort
+            limitSort
         );
         labels = result.limitedCategories;
         nExcluded = result.nExcluded;
@@ -189,8 +193,12 @@ export default function structureData(spec) {
         swapPointAxes(datasets);
     }
 
-    if (spec.position === 'fill') {
+    if (spec.stat === 'percent' || spec.position === 'fill') {
         normalizeFill(datasets, orientation === 'horizontal');
+    }
+
+    if (spec.position === 'layer') {
+        applyLayerWidths(datasets);
     }
 
     return { datasets, labels, nExcluded, nRowsExcluded };

@@ -12,7 +12,8 @@ import {
  *   2. `tooltip.formatter`        — custom callback with enriched details
  *   3. `tooltip.format`           — built-in shorthand ('count' | 'percent' |
  *                                   'count+percent' | 'percent+count')
- *   4. `position: 'fill'` default — percentage callback when none of the above
+ *   4. percent default            — percentage callback when `position: 'fill'`
+ *                                   or `stat: 'percent'` and none of the above
  *   5. Chart.js default
  *
  * `format` and `formatter` are gsm.viz-specific options and are stripped from
@@ -20,9 +21,10 @@ import {
  *
  * @param {Object} tooltip - user-specified tooltip plugin options
  * @param {string} position - bar positioning mode
+ * @param {string} stat - stat mode ('count' | 'identity' | 'percent')
  * @returns {Object} tooltip plugin options
  */
-export default function buildTooltip(tooltip, position) {
+export default function buildTooltip(tooltip, position, stat) {
     const { format, formatter, ...rest } = tooltip || {};
     const base = { enabled: true, ...rest };
 
@@ -52,7 +54,7 @@ export default function buildTooltip(tooltip, position) {
     }
 
     // 4. fill-position default.
-    if (position !== 'fill') return base;
+    if (position !== 'fill' && stat !== 'percent') return base;
 
     return {
         ...base,

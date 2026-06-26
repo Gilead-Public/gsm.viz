@@ -18,7 +18,14 @@ export default function mergeSpec(data, spec) {
         mapping: { ...spec.mapping },
         interactive: spec.interactive ?? defaults.interactive,
         orientation: spec.orientation ?? defaults.orientation,
-        position: spec.position ?? defaults.position,
+        position:
+            spec.position === 'fill'
+                ? 'stack'
+                : spec.position ?? defaults.position,
+        stat:
+            spec.position === 'fill' && spec.stat === undefined
+                ? 'percent'
+                : spec.stat ?? defaults.stat,
         nCategories: spec.nCategories,
         scales: {
             x: { ...defaults.scales.x, ...spec.scales?.x },

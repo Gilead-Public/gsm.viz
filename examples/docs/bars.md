@@ -38,7 +38,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     },
     interactive: true,             // true | false — enable/disable interactive elements (e.g. clickable Top N footnote)
     orientation: 'vertical',   // 'vertical' | 'horizontal'
-    position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity'
+    position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity' | 'layer'
+    stat: 'count',             // 'count' | 'identity' | 'percent' — value computation mode
     nCategories: undefined,    // optional positive integer — limit displayed categories to top N
     scales: {
         x: {
@@ -124,6 +125,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `interactive`                          | `true`                                                        |
 | `orientation`                          | `'vertical'`                                                  |
 | `position`                             | `'stack'`                                                     |
+| `stat`                                 | `'count'`                                                     |
 | `nCategories`                          | `undefined` (all categories)                                  |
 | `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
@@ -168,8 +170,41 @@ number of rows in each `x` category, optionally split by `fill`.
 | ------------ | ----------------------------------------------------------- |
 | `'stack'`    | Stack fill groups within each category; this is the default |
 | `'dodge'`    | Render fill groups side by side                             |
-| `'fill'`     | Normalize each category to percentages that sum to 100      |
+| `'fill'`     | Shorthand for `position: 'stack'` + `stat: 'percent'`       |
 | `'identity'` | Render datasets without stacked scale configuration         |
+| `'layer'`    | Overlay fill groups at the same position with tapered widths — widest in back, narrowest in front |
+
+### Stat
+
+`stat` controls how bar values are computed, independently of layout (`position`).
+
+| Value        | Behaviour                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| `'count'`    | Default. When `mapping.y` is omitted, counts rows. When `mapping.y` is set, uses raw values. |
+| `'identity'` | Equivalent to `'count'` — uses raw/count values as-is (explicit naming).                 |
+| `'percent'`  | Normalize each category's values to percentages summing to 100 across fill groups.       |
+
+`stat` is orthogonal to `position`. For example:
+
+```js
+// Side-by-side bars showing percentages:
+{ position: 'dodge', stat: 'percent' }
+
+// Stacked bars showing percentages (equivalent to position: 'fill'):
+{ position: 'stack', stat: 'percent' }
+```
+
+`position: 'fill'` remains valid and is resolved internally to
+`{ position: 'stack', stat: 'percent' }`. The embedded position toggle
+continues to offer `'fill'` as a button.
+
+For `position: 'layer'`, each fill group is drawn at the same categorical
+position with progressively narrower bar widths so all groups are visible.
+The first fill group (per `scales.fill.order` or data order) is the widest
+(drawn in back); the last group is the narrowest (drawn in front). Widths
+taper linearly from 90% to 30% of the category slot. Each layer receives a
+border for visual distinction. This mode is not included in the embedded
+position-toggle control.
 
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
@@ -183,8 +218,8 @@ three buttons — stacked, grouped, and normalized bar glyphs — that toggle
 current `position` is highlighted. Hovering a button shows a tooltip label
 ("Stacked Bars", "Side-by-Side Bars", or "Stacked, Scaled Bars"). Clicking a button
 re-renders the chart via `updateSpec`. The control is hidden when
-`interactive: false` or when no `fill` mapping is set, and `'identity'` is not
-offered through it.
+`interactive: false` or when no `fill` mapping is set, and `'identity'` and
+`'layer'` are not offered through it.
 
 ### Label annotations
 

@@ -414,4 +414,48 @@ describe('bars/mergeSpec', () => {
             expect(merged.zoom.pinch).toBe(false);
         });
     });
+
+    describe('stat', () => {
+        test('defaults stat to count', () => {
+            const merged = mergeSpec(data, minimalSpec);
+            expect(merged.stat).toBe('count');
+        });
+
+        test('preserves user-supplied stat', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                stat: 'percent',
+            });
+            expect(merged.stat).toBe('percent');
+        });
+
+        test('resolves position fill as position stack + stat percent', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                position: 'fill',
+            });
+            expect(merged.position).toBe('stack');
+            expect(merged.stat).toBe('percent');
+        });
+
+        test('position fill with explicit stat identity preserves stat identity', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                position: 'fill',
+                stat: 'identity',
+            });
+            expect(merged.position).toBe('stack');
+            expect(merged.stat).toBe('identity');
+        });
+
+        test('stat percent with position dodge is preserved', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                position: 'dodge',
+                stat: 'percent',
+            });
+            expect(merged.position).toBe('dodge');
+            expect(merged.stat).toBe('percent');
+        });
+    });
 });
