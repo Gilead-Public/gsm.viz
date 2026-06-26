@@ -83,9 +83,14 @@ fetch("data/ae.json")
 
       const rows = [];
 
-      // Study level — all subjects
+      // Compute each level's prevalence. The first computed level is the
+      // "highest" and determines the category sort order.
+      let highestLevelPrev = null;
+
+      // Study level — all records
       if (studyEnabled) {
         const studyPrev = computePrevalence(data, variable);
+        if (!highestLevelPrev) highestLevelPrev = studyPrev;
         studyPrev.forEach((p) => {
           rows.push({
             [variable]: p.category,
@@ -97,13 +102,14 @@ fetch("data/ae.json")
         });
       }
 
-      // Site level — subjects at the selected site
+      // Site level — records at the selected site
       if (siteEnabled && site) {
         const siteSubjects = new Set(
           allSubjects.filter((s) => subjectToSite.get(s) === site)
         );
         const siteData = data.filter((d) => siteSubjects.has(d.USUBJID));
         const sitePrev = computePrevalence(siteData, variable);
+        if (!highestLevelPrev) highestLevelPrev = sitePrev;
         sitePrev.forEach((p) => {
           rows.push({
             [variable]: p.category,
@@ -115,12 +121,13 @@ fetch("data/ae.json")
         });
       }
 
-      // Subject level — proportion of this subject's AE records
+      // Subject level — records for the selected subject
       if (subjectEnabled && subject) {
         const subjectPrev = computePrevalence(
           data.filter((d) => d.USUBJID === subject),
           variable
         );
+        if (!highestLevelPrev) highestLevelPrev = subjectPrev;
         subjectPrev.forEach((p) => {
           rows.push({
             [variable]: p.category,
@@ -132,7 +139,16 @@ fetch("data/ae.json")
         });
       }
 
-      return rows;
+      // Sort order: categories ordered by descending prevalence at the
+      // highest visible level.
+      let categoryOrder = null;
+      if (highestLevelPrev) {
+        categoryOrder = [...highestLevelPrev]
+          .sort((a, b) => b.prevalence - a.prevalence)
+          .map((p) => p.category);
+      }
+
+      return { rows, categoryOrder };
     }
 
     // --- Build fill order and colors ---
@@ -151,12 +167,19 @@ fetch("data/ae.json")
     }
 
     // --- Build chart spec ---
-    function buildSpec(variable, site, subject) {
+    function buildSpec(variable, site, subject, categoryOrder) {
       const orientation = getValue("ae-orientation");
       const sort = getValue("ae-sort");
       const nCategories = getNCategories("ae-n-categories");
       const fillColors = buildFillConfig(site, subject);
       const label = colLabels[variable] || variable;
+
+      // When sort is 'total', use the pre-computed order from the highest
+      // visible level. When 'alphanumeric', let Chart.js sort naturally.
+      const xScale = { label };
+      if (sort === "total" && categoryOrder) {
+        xScale.order = categoryOrder;
+      }
 
       return {
         mapping: {
@@ -168,7 +191,7 @@ fetch("data/ae.json")
         orientation,
         nCategories: nCategories || undefined,
         scales: {
-          x: { label, sort },
+          x: xScale,
           y: { label: "Prevalence (%)", max: 100 },
           fill: {
             label: "Level",
@@ -204,7 +227,11 @@ fetch("data/ae.json")
       const site = getValue("ae-site");
       const subject = getValue("ae-subject");
 
-      const prevData = buildPrevalenceData(variable, site, subject);
+      const { rows: prevData, categoryOrder } = buildPrevalenceData(
+        variable,
+        site,
+        subject
+      );
 
       if (prevData.length === 0) {
         if (instance) {
@@ -215,13 +242,17 @@ fetch("data/ae.json")
         return;
       }
 
+      // Clear previous content and inline sizing so dynamicSizing can
+      // compute fresh dimensions without a stale fixed height/width.
       container.textContent = "";
+      container.style.height = "";
+      container.style.width = "";
 
       if (instance) instance.destroy();
       instance = gsmViz.default.bars(
         container,
         prevData,
-        buildSpec(variable, site, subject)
+        buildSpec(variable, site, subject, categoryOrder)
       );
     }
 
