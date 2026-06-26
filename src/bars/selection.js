@@ -145,6 +145,34 @@ function removeSelection(chart) {
 }
 
 /**
+ * Chart.js plugin that ensures legend swatches always display the original
+ * (undimmed) dataset colors when a selection is active.
+ *
+ * Registered as a chart-level plugin during bars() instantiation. Works by
+ * patching legend items in the beforeDraw hook — avoids mutating Chart.js's
+ * proxied options object which would cause stack overflow.
+ */
+export function selectionLegendPlugin() {
+    return {
+        id: 'selectionLegend',
+        beforeDraw(chart) {
+            const state = chart.data?._selectionState_;
+            if (!state?.originalColors || !chart.legend?.legendItems) return;
+
+            chart.legend.legendItems.forEach((item) => {
+                const dsIndex = item.datasetIndex;
+                if (dsIndex == null || !state.originalColors[dsIndex]) return;
+                const orig = state.originalColors[dsIndex];
+                const bg = orig.backgroundColor;
+                item.fillStyle = Array.isArray(bg) ? bg[0] : bg;
+                const border = orig.borderColor;
+                item.strokeStyle = Array.isArray(border) ? border[0] : border;
+            });
+        },
+    };
+}
+
+/**
  * Fire the onSelect callback if configured.
  */
 function fireOnSelect(chart, selection, event) {

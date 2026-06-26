@@ -22,6 +22,7 @@ import {
     selectSegment,
     clearSelection,
     getSelection,
+    selectionLegendPlugin,
 } from './bars/selection.js';
 
 // event callbacks
@@ -109,6 +110,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
             displayWhiteBackground(),
             nCategoriesToggle(),
             positionToggle(),
+            selectionLegendPlugin(),
         ],
     });
 

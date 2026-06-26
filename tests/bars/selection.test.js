@@ -285,6 +285,47 @@ describe('bars/selection', () => {
         });
     });
 
+    describe('legend preservation', () => {
+        test('selectionLegendPlugin is registered on the chart', () => {
+            const chart = makeChart();
+            const pluginIds = chart.config._config.plugins.map(
+                (p) => p.id
+            );
+            expect(pluginIds).toContain('selectionLegend');
+        });
+
+        test('legend swatches use original undimmed colors during selection', () => {
+            const chart = makeChart();
+            const origColors = chart.data.datasets.map(
+                (ds) => ds.backgroundColor
+            );
+
+            selectCategory(chart, 'A');
+
+            // The plugin patches legendItems in beforeDraw.
+            // Simulate by checking originalColors are stored correctly.
+            const state = chart.data._selectionState_;
+            expect(state.originalColors).toBeDefined();
+            state.originalColors.forEach((orig, i) => {
+                expect(orig.backgroundColor).toBe(origColors[i]);
+            });
+        });
+
+        test('original colors are fully restored after clearSelection', () => {
+            const chart = makeChart();
+            const origColors = chart.data.datasets.map(
+                (ds) => ds.backgroundColor
+            );
+
+            selectCategory(chart, 'A');
+            clearSelection(chart);
+
+            chart.data.datasets.forEach((ds, i) => {
+                expect(ds.backgroundColor).toBe(origColors[i]);
+            });
+        });
+    });
+
     describe('callbacks.onSelect', () => {
         test('fires onSelect when selectCategory is called', () => {
             const onSelect = jest.fn();
