@@ -38,7 +38,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     },
     interactive: true,             // true | false — enable/disable interactive elements (e.g. clickable Top N footnote)
     orientation: 'vertical',   // 'vertical' | 'horizontal'
-    position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity'
+    position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity' | 'layer'
     nCategories: undefined,    // optional positive integer — limit displayed categories to top N
     scales: {
         x: {
@@ -170,6 +170,15 @@ number of rows in each `x` category, optionally split by `fill`.
 | `'dodge'`    | Render fill groups side by side                             |
 | `'fill'`     | Normalize each category to percentages that sum to 100      |
 | `'identity'` | Render datasets without stacked scale configuration         |
+| `'layer'`    | Overlay fill groups at the same position with tapered widths — widest in back, narrowest in front |
+
+For `position: 'layer'`, each fill group is drawn at the same categorical
+position with progressively narrower bar widths so all groups are visible.
+The first fill group (per `scales.fill.order` or data order) is the widest
+(drawn in back); the last group is the narrowest (drawn in front). Widths
+taper linearly from 90% to 30% of the category slot. Each layer receives a
+border for visual distinction. This mode is not included in the embedded
+position-toggle control.
 
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
@@ -183,8 +192,8 @@ three buttons — stacked, grouped, and normalized bar glyphs — that toggle
 current `position` is highlighted. Hovering a button shows a tooltip label
 ("Stacked Bars", "Side-by-Side Bars", or "Stacked, Scaled Bars"). Clicking a button
 re-renders the chart via `updateSpec`. The control is hidden when
-`interactive: false` or when no `fill` mapping is set, and `'identity'` is not
-offered through it.
+`interactive: false` or when no `fill` mapping is set, and `'identity'` and
+`'layer'` are not offered through it.
 
 ### Label annotations
 

@@ -209,6 +209,34 @@ describe('bars/getScales', () => {
             expect(scales.y.stacked).toBeUndefined();
         });
 
+        test('does not set stacked when position is layer', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'layer',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.stacked).toBeUndefined();
+            expect(scales.y.stacked).toBeUndefined();
+        });
+
+        test('layer does not set stacked in horizontal orientation', () => {
+            const spec = {
+                orientation: 'horizontal',
+                position: 'layer',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear' },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.x.stacked).toBeUndefined();
+            expect(scales.y.stacked).toBeUndefined();
+        });
+
         test('stacking works with horizontal orientation', () => {
             const spec = {
                 orientation: 'horizontal',

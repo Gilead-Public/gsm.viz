@@ -79,6 +79,11 @@ describe('bars/getPlugins/buildTooltip', () => {
             const result = buildTooltip({}, 'stack');
             expect(result.callbacks?.label).toBeUndefined();
         });
+
+        test('no label callback injected for layer position without format/formatter', () => {
+            const result = buildTooltip({}, 'layer');
+            expect(result.callbacks?.label).toBeUndefined();
+        });
     });
 
     describe('tooltip.format', () => {

@@ -1546,4 +1546,79 @@ describe('bars/structureData – scales.x.sortDir', () => {
             expect(labels).toEqual(['C', 'A', 'B']);
         });
     });
+
+    describe("position='layer' (layered bars with tapered widths)", () => {
+        const spec = {
+            data: [
+                { cat: 'A', grp: 'X', val: 25 },
+                { cat: 'A', grp: 'Y', val: 75 },
+                { cat: 'A', grp: 'Z', val: 50 },
+                { cat: 'B', grp: 'X', val: 40 },
+                { cat: 'B', grp: 'Y', val: 60 },
+                { cat: 'B', grp: 'Z', val: 30 },
+            ],
+            mapping: { x: 'cat', y: 'val', fill: 'grp' },
+            orientation: 'vertical',
+            position: 'layer',
+            scales: {
+                x: {},
+                y: {},
+                fill: { palette: ['#aaa', '#bbb', '#ccc'] },
+            },
+        };
+
+        test('assigns decreasing barPercentage to each dataset', () => {
+            const result = structureData(spec);
+            const widths = result.datasets.map((ds) => ds.barPercentage);
+            expect(widths[0]).toBeCloseTo(0.9);
+            expect(widths[2]).toBeCloseTo(0.3);
+            for (let i = 1; i < widths.length; i++) {
+                expect(widths[i]).toBeLessThan(widths[i - 1]);
+            }
+        });
+
+        test('sets categoryPercentage to 1.0 on all datasets', () => {
+            const result = structureData(spec);
+            result.datasets.forEach((ds) => {
+                expect(ds.categoryPercentage).toBe(1.0);
+            });
+        });
+
+        test('preserves y values (no normalization)', () => {
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const ptA = xDs.data.find((d) => d.x === 'A');
+            expect(ptA.y).toBe(25);
+        });
+
+        test('ensures borderWidth is at least 1', () => {
+            const result = structureData(spec);
+            result.datasets.forEach((ds) => {
+                expect(ds.borderWidth).toBeGreaterThanOrEqual(1);
+            });
+        });
+
+        test('works with horizontal orientation', () => {
+            const horizSpec = { ...spec, orientation: 'horizontal' };
+            const result = structureData(horizSpec);
+            const widths = result.datasets.map((ds) => ds.barPercentage);
+            expect(widths[0]).toBeCloseTo(0.9);
+            expect(widths[2]).toBeCloseTo(0.3);
+        });
+
+        test('single fill group gets barPercentage of 0.9', () => {
+            const singleSpec = {
+                data: [
+                    { cat: 'A', val: 10 },
+                    { cat: 'B', val: 20 },
+                ],
+                mapping: { x: 'cat', y: 'val' },
+                orientation: 'vertical',
+                position: 'layer',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(singleSpec);
+            expect(result.datasets[0].barPercentage).toBeCloseTo(0.9);
+        });
+    });
 });

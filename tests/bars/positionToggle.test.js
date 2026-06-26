@@ -162,6 +162,19 @@ describe('bars/positionToggle', () => {
         expect(chart._updateSpec).not.toHaveBeenCalled();
     });
 
+    test('layer position disables the control', () => {
+        const chart = makeChart({
+            spec: {
+                position: 'layer',
+                mapping: { x: 'site', fill: 'status' },
+            },
+        });
+        const boxes = getIconBoxes(chart);
+        const dodge = boxes.find((b) => b.value === 'dodge');
+        clickAt(chart, dodge.x + dodge.w / 2, dodge.y + dodge.h / 2);
+        expect(chart._updateSpec).not.toHaveBeenCalled();
+    });
+
     test('afterDraw attaches a cursor handler that points over icons', () => {
         const chart = makeChart({
             spec: { position: 'stack', mapping: { fill: 'status' } },

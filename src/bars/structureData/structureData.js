@@ -1,4 +1,5 @@
 import aggregateCounts from './aggregateCounts.js';
+import applyLayerWidths from './applyLayerWidths.js';
 import darkenHex from './darkenHex.js';
 import limitCategories from './limitCategories.js';
 import normalizeFill from './normalizeFill.js';
@@ -191,6 +192,10 @@ export default function structureData(spec) {
 
     if (spec.position === 'fill') {
         normalizeFill(datasets, orientation === 'horizontal');
+    }
+
+    if (spec.position === 'layer') {
+        applyLayerWidths(datasets);
     }
 
     return { datasets, labels, nExcluded, nRowsExcluded };

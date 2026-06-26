@@ -51,6 +51,7 @@ function enabledSpec(chart) {
     const spec = chart.data?._spec_;
     if (!spec || spec.interactive === false) return null;
     if (!spec.mapping?.fill) return null;
+    if (spec.position === 'layer') return null;
     if (!chart.chartArea) return null;
     return spec;
 }

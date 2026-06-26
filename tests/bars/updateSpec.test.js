@@ -435,4 +435,44 @@ describe('bars/updateSpec', () => {
             expect(el.style.height).toBe('');
         });
     });
+
+    describe('layer position', () => {
+        const fillData = [
+            { category: 'A', group: 'X', value: 10 },
+            { category: 'A', group: 'Y', value: 20 },
+            { category: 'B', group: 'X', value: 30 },
+            { category: 'B', group: 'Y', value: 40 },
+        ];
+        const fillSpec = {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+        };
+
+        test('switching to layer applies barPercentage to datasets', () => {
+            const chart = bars(container, fillData, fillSpec);
+            updateSpec(chart, { position: 'layer' });
+            chart.data.datasets.forEach((ds) => {
+                expect(ds.barPercentage).toBeDefined();
+                expect(ds.categoryPercentage).toBe(1.0);
+            });
+            // First dataset should be widest
+            expect(chart.data.datasets[0].barPercentage).toBeGreaterThan(
+                chart.data.datasets[1].barPercentage
+            );
+        });
+
+        test('switching from layer to stack removes barPercentage', () => {
+            const chart = bars(container, fillData, {
+                ...fillSpec,
+                position: 'layer',
+            });
+            expect(chart.data.datasets[0].barPercentage).toBeDefined();
+            expect(chart.data.datasets[0].grouped).toBe(false);
+            updateSpec(chart, { position: 'stack' });
+            chart.data.datasets.forEach((ds) => {
+                expect(ds.barPercentage).toBeUndefined();
+                expect(ds.categoryPercentage).toBeUndefined();
+                expect(ds.grouped).toBeUndefined();
+            });
+        });
+    });
 });

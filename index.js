@@ -24563,9 +24563,9 @@ var gsmViz = (() => {
     if (!spec.mapping.x) {
       throw new Error("spec.mapping.x is required");
     }
-    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill") {
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill" && spec.position !== "layer") {
       throw new Error(
-        "spec.position must be 'stack', 'dodge', 'identity', or 'fill'"
+        "spec.position must be 'stack', 'dodge', 'identity', 'fill', or 'layer'"
       );
     }
     if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
@@ -24901,6 +24901,24 @@ var gsmViz = (() => {
     ];
   }
 
+  // src/bars/structureData/applyLayerWidths.js
+  function applyLayerWidths(datasets) {
+    const n = datasets.length;
+    if (n === 0) return;
+    const maxWidth = 0.9;
+    const minWidth = 0.3;
+    const step = n > 1 ? (maxWidth - minWidth) / (n - 1) : 0;
+    for (let i = 0; i < n; i++) {
+      const ds = datasets[i];
+      ds.barPercentage = maxWidth - i * step;
+      ds.categoryPercentage = 1;
+      ds.grouped = false;
+      if (!ds.borderWidth || ds.borderWidth < 1) {
+        ds.borderWidth = 1;
+      }
+    }
+  }
+
   // src/bars/structureData/darkenHex.js
   var HEX6_RE = /^#[0-9a-fA-F]{6}$/;
   function darkenHex(hex3) {
@@ -25139,6 +25157,9 @@ var gsmViz = (() => {
     }
     if (spec.position === "fill") {
       normalizeFill(datasets, orientation === "horizontal");
+    }
+    if (spec.position === "layer") {
+      applyLayerWidths(datasets);
     }
     return { datasets, labels, nExcluded, nRowsExcluded };
   }
@@ -25930,6 +25951,7 @@ var gsmViz = (() => {
     const spec = chart.data?._spec_;
     if (!spec || spec.interactive === false) return null;
     if (!spec.mapping?.fill) return null;
+    if (spec.position === "layer") return null;
     if (!chart.chartArea) return null;
     return spec;
   }
