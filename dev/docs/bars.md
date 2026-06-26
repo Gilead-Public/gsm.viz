@@ -136,6 +136,8 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
 | `scales.x.sortDir`                     | `undefined` (`total`→desc, `alphanumeric`→asc)                |
+| `scales.x.ticks.maxLength`             | `undefined` (no truncation)                                   |
+| `scales.x.ticks.rotation`              | `undefined` (Chart.js auto-rotation)                          |
 | `scales.y.type`                        | `'linear'`                                                    |
 | `scales.fill.palette`                  | Tableau-10 categorical palette                                |
 | `annotations.labels.*.display`         | `false`                                                       |
@@ -613,6 +615,34 @@ fill values are absent from the data.
 Axis labels default to `mapping.x` and `mapping.y`. The legend title defaults to
 `mapping.fill`. Set `scales.x.label`, `scales.y.label`, or
 `scales.fill.label` to `null` or `''` to hide the corresponding label.
+
+### Tick label truncation and rotation
+
+When category labels are long, you can truncate them or rotate them for better
+readability. Both options are set under `scales.x.ticks`:
+
+```js
+bars(container, data, {
+    mapping: { x: 'site', y: 'value' },
+    scales: {
+        x: {
+            ticks: {
+                maxLength: 15, // truncate labels longer than 15 characters
+                rotation: 45, // rotate labels 45 degrees
+            },
+        },
+    },
+});
+```
+
+| Option                     | Type             | Description                                                                                                                                  |
+| -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scales.x.ticks.maxLength` | positive integer | Truncates category labels exceeding this character count, appending `…`. The full label is shown in the tooltip on hover.                    |
+| `scales.x.ticks.rotation`  | number (0–90)    | Fixes the tick label rotation angle in degrees. `0` = horizontal, `90` = vertical. When omitted, Chart.js applies its default auto-rotation. |
+
+Both options can be combined and work in both vertical and horizontal
+orientations. When `orientation: 'horizontal'`, the ticks configuration applies
+to the y-axis (which becomes the category axis).
 
 ### Dense legend
 
