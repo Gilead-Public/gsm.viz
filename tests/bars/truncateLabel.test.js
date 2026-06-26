@@ -41,6 +41,14 @@ describe('bars/truncateLabel', () => {
         expect(truncateLabel('LongLabelText', null)).toBe('LongLabelText');
     });
 
+    test('does not truncate when maxLength is negative', () => {
+        expect(truncateLabel('LongLabelText', -5)).toBe('LongLabelText');
+    });
+
+    test('does not truncate when maxLength is NaN', () => {
+        expect(truncateLabel('LongLabelText', NaN)).toBe('LongLabelText');
+    });
+
     test('does not truncate when maxLength is 0', () => {
         expect(truncateLabel('LongLabelText', 0)).toBe('LongLabelText');
     });

@@ -3,12 +3,13 @@
  * when the label is shortened.
  *
  * @param {*} label - the tick label (coerced to string)
- * @param {number|undefined|null} maxLength - maximum character length; falsy = no truncation
+ * @param {number|undefined|null} maxLength - positive integer; omit or pass undefined/null to skip truncation
  * @returns {string} the (possibly truncated) label
  */
 export default function truncateLabel(label, maxLength) {
     if (label == null) return '';
     const str = String(label);
-    if (!maxLength || str.length <= maxLength) return str;
+    if (!Number.isFinite(maxLength) || maxLength < 1 || str.length <= maxLength)
+        return str;
     return str.slice(0, maxLength - 1) + '\u2026';
 }

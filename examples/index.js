@@ -25205,7 +25205,8 @@ var gsmViz = (() => {
   function truncateLabel(label, maxLength) {
     if (label == null) return "";
     const str = String(label);
-    if (!maxLength || str.length <= maxLength) return str;
+    if (!Number.isFinite(maxLength) || maxLength < 1 || str.length <= maxLength)
+      return str;
     return str.slice(0, maxLength - 1) + "\u2026";
   }
 
