@@ -26222,9 +26222,7 @@ var gsmViz = (() => {
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
-    if (spec.mapping?.x && spec.mapping.x !== existing.mapping?.x) {
-      delete chart.data._selectionState_;
-    }
+    delete chart.data._selectionState_;
     const combined = {
       ...existing,
       ...spec,
@@ -26348,22 +26346,45 @@ var gsmViz = (() => {
   }
 
   // src/bars/selection.js
+  var NAMED_COLORS = {
+    transparent: [0, 0, 0],
+    black: [0, 0, 0],
+    white: [255, 255, 255],
+    red: [255, 0, 0],
+    green: [0, 128, 0],
+    blue: [0, 0, 255],
+    yellow: [255, 255, 0],
+    orange: [255, 165, 0],
+    purple: [128, 0, 128],
+    gray: [128, 128, 128],
+    grey: [128, 128, 128]
+  };
   function toRgba(color3, alpha2) {
-    if (!color3) return `rgba(128, 128, 128, ${alpha2})`;
+    if (!color3 || color3 === "transparent")
+      return `rgba(128, 128, 128, ${alpha2})`;
     const rgbaMatch = color3.match(
       /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/
     );
     if (rgbaMatch) {
       return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha2})`;
     }
-    let hex3 = color3.replace("#", "");
-    if (hex3.length === 3) {
-      hex3 = hex3[0] + hex3[0] + hex3[1] + hex3[1] + hex3[2] + hex3[2];
+    if (color3.startsWith("#")) {
+      let hex3 = color3.slice(1);
+      if (hex3.length === 3) {
+        hex3 = hex3[0] + hex3[0] + hex3[1] + hex3[1] + hex3[2] + hex3[2];
+      }
+      const r = parseInt(hex3.slice(0, 2), 16);
+      const g = parseInt(hex3.slice(2, 4), 16);
+      const b = parseInt(hex3.slice(4, 6), 16);
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+        return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+      }
     }
-    const r = parseInt(hex3.slice(0, 2), 16);
-    const g = parseInt(hex3.slice(2, 4), 16);
-    const b = parseInt(hex3.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+    const named2 = NAMED_COLORS[color3.toLowerCase()];
+    if (named2) {
+      return `rgba(${named2[0]}, ${named2[1]}, ${named2[2]}, ${alpha2})`;
+    }
+    return color3;
   }
   function getCategoryValue(point, orientation) {
     return orientation === "horizontal" ? point.y : point.x;
@@ -26457,7 +26478,7 @@ var gsmViz = (() => {
       onSelect(selection2, event);
     }
   }
-  function selectCategory(chart, values, event) {
+  function selectCategory(chart, values, event, options) {
     const valArray = Array.isArray(values) ? values : [values];
     storeOriginalColors(chart);
     chart.data._selectionState_ = chart.data._selectionState_ || {};
@@ -26466,10 +26487,12 @@ var gsmViz = (() => {
       values: valArray
     };
     applySelection(chart);
-    const selection2 = getSelection(chart);
-    fireOnSelect(chart, selection2, event);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
   }
-  function selectSegment(chart, values, event) {
+  function selectSegment(chart, values, event, options) {
     const valArray = Array.isArray(values) ? values : [values];
     storeOriginalColors(chart);
     chart.data._selectionState_ = chart.data._selectionState_ || {};
@@ -26478,15 +26501,19 @@ var gsmViz = (() => {
       values: valArray
     };
     applySelection(chart);
-    const selection2 = getSelection(chart);
-    fireOnSelect(chart, selection2, event);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
   }
-  function clearSelection(chart, event) {
+  function clearSelection(chart, event, options) {
     const state = chart.data._selectionState_;
     if (!state || !state.selection || state.selection.type === null) return;
     state.selection = { type: null, values: [] };
     removeSelection(chart);
-    fireOnSelect(chart, { type: null, values: [] }, event);
+    if (!options?._silent) {
+      fireOnSelect(chart, { type: null, values: [] }, event);
+    }
   }
   function getSelection(chart) {
     const state = chart.data._selectionState_;
@@ -27117,21 +27144,21 @@ var gsmViz = (() => {
         baseSelectCategory(chartInstance, values, event);
         charts.forEach((sibling) => {
           if (sibling === chartInstance) return;
-          selectCategory(sibling, values);
+          selectCategory(sibling, values, void 0, { _silent: true });
         });
       };
       chart.helpers.selectSegment = function(chartInstance, values, event) {
         baseSelectSegment(chartInstance, values, event);
         charts.forEach((sibling) => {
           if (sibling === chartInstance) return;
-          selectSegment(sibling, values);
+          selectSegment(sibling, values, void 0, { _silent: true });
         });
       };
       chart.helpers.clearSelection = function(chartInstance, event) {
         baseClearSelection(chartInstance, event);
         charts.forEach((sibling) => {
           if (sibling === chartInstance) return;
-          clearSelection(sibling);
+          clearSelection(sibling, void 0, { _silent: true });
         });
       };
     });
