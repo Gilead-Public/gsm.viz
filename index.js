@@ -26080,7 +26080,7 @@ var gsmViz = (() => {
         if (hit.value === "fill") {
           update.position = "stack";
           update.stat = "percent";
-        } else if (spec.stat === "percent" && spec.position === "stack") {
+        } else if (spec.stat === "percent" && spec.position === "stack" && hit.value === "stack") {
           update.stat = "count";
         }
         chart.helpers.updateSpec(chart, update);

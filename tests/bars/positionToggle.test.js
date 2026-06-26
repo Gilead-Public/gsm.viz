@@ -108,6 +108,24 @@ describe('bars/positionToggle', () => {
         });
     });
 
+    test('toggling from fill-equivalent to dodge preserves stat:percent', () => {
+        const chart = makeChart({
+            spec: {
+                position: 'stack',
+                stat: 'percent',
+                mapping: { fill: 'status' },
+            },
+        });
+        const boxes = getIconBoxes(chart);
+        const dodge = boxes.find((b) => b.value === 'dodge');
+        clickAt(chart, dodge.x + dodge.w / 2, dodge.y + dodge.h / 2);
+
+        // stat should NOT be forcefully reset to 'count' — dodge+percent is valid
+        expect(chart._updateSpec).toHaveBeenCalledWith(chart, {
+            position: 'dodge',
+        });
+    });
+
     test('clicking the already-active icon is a no-op', () => {
         const chart = makeChart({
             spec: { position: 'stack', mapping: { fill: 'status' } },

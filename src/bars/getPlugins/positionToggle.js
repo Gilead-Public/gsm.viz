@@ -191,8 +191,14 @@ export default function positionToggle() {
             if (hit.value === 'fill') {
                 update.position = 'stack';
                 update.stat = 'percent';
-            } else if (spec.stat === 'percent' && spec.position === 'stack') {
-                // Leaving the fill-equivalent state; reset stat.
+            } else if (
+                spec.stat === 'percent' &&
+                spec.position === 'stack' &&
+                hit.value === 'stack'
+            ) {
+                // Leaving the fill-equivalent state via explicit stack;
+                // reset stat only when the target is also stack (i.e. user
+                // toggled away from "fill" back to plain "stack").
                 update.stat = 'count';
             }
             chart.helpers.updateSpec(chart, update);
