@@ -94,7 +94,7 @@ describe('bars/positionToggle', () => {
         });
     });
 
-    test('clicking the fill icon updates the position to fill', () => {
+    test('clicking the fill icon updates to stack + stat percent', () => {
         const chart = makeChart({
             spec: { position: 'stack', mapping: { fill: 'status' } },
         });
@@ -103,7 +103,8 @@ describe('bars/positionToggle', () => {
         clickAt(chart, fill.x + fill.w / 2, fill.y + fill.h / 2);
 
         expect(chart._updateSpec).toHaveBeenCalledWith(chart, {
-            position: 'fill',
+            position: 'stack',
+            stat: 'percent',
         });
     });
 

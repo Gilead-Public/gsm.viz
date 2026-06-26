@@ -1065,4 +1065,46 @@ describe('bars/validateSpec', () => {
             ).toThrow('spec.zoom.pinch must be a boolean');
         });
     });
+
+    describe('spec.stat validation', () => {
+        test('does not throw when stat is not provided', () => {
+            expect(() =>
+                validateSpec(data, { mapping: { x: 'a', y: 'b' } })
+            ).not.toThrow();
+        });
+
+        test('does not throw with valid stat values', () => {
+            for (const stat of ['count', 'identity', 'percent']) {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        stat,
+                    })
+                ).not.toThrow();
+            }
+        });
+
+        test('throws when stat is invalid', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: { x: 'a', y: 'b' },
+                    stat: 'average',
+                })
+            ).toThrow(
+                "spec.stat must be 'count', 'identity', or 'percent'"
+            );
+        });
+
+        test('does not throw when stat is combined with any position', () => {
+            for (const position of ['stack', 'dodge', 'identity', 'layer']) {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'a', y: 'b' },
+                        stat: 'percent',
+                        position,
+                    })
+                ).not.toThrow();
+            }
+        });
+    });
 });

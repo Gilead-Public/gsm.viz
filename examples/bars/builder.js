@@ -585,6 +585,7 @@ function buildBarLabelOverride(mode) {
 function buildSpec(xKey, yKey, fillKey, facetKey) {
     const orientation = getVal('settings-orientation');
     const position = getVal('settings-position');
+    const stat = getVal('settings-stat');
     const dynamicSizing = getBool('settings-dynamic-sizing');
     const dynamicCategoryAxis = getBool('settings-dynamic-category-axis');
     const denseLegend = getBool('settings-legend-dense');
@@ -607,6 +608,7 @@ function buildSpec(xKey, yKey, fillKey, facetKey) {
         mapping: { x: xKey },
         orientation,
         position,
+        ...(stat !== 'count' ? { stat } : {}),
         nCategories,
         scales: {
             x: {
@@ -918,6 +920,7 @@ document.getElementById('csv-file-input').addEventListener('change', (e) => {
 [
     'settings-orientation',
     'settings-position',
+    'settings-stat',
     'settings-dynamic-sizing',
     'settings-dynamic-category-axis',
     'settings-zoom',

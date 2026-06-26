@@ -17,7 +17,7 @@ export default function getScales(spec) {
     const { orientation, position, scales: specScales, mapping } = spec;
     const horizontal = orientation === 'horizontal';
     const stacked = position === 'stack' || position === 'fill';
-    const fill = position === 'fill';
+    const percent = spec.stat === 'percent' || position === 'fill';
 
     const xLabel =
         specScales.x.label !== undefined ? specScales.x.label : mapping?.x;
@@ -48,7 +48,7 @@ export default function getScales(spec) {
             : { beginAtZero: true }),
         ...(specScales.y.max !== undefined ? { max: specScales.y.max } : {}),
         ...(stacked ? { stacked: true } : {}),
-        ...(fill ? { max: 100, ticks: percentageTicks } : {}),
+        ...(percent ? { max: 100, ticks: percentageTicks } : {}),
     };
 
     return {

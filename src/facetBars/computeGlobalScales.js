@@ -21,8 +21,8 @@ export default function computeGlobalScales(facetDataMap, spec) {
     const { position, orientation, mapping, scales, facet } = spec;
     const horizontal = orientation === 'horizontal';
 
-    // fill position always uses [0, 100]; no computation needed
-    if (position === 'fill') {
+    // fill / stat-percent always uses [0, 100]; no computation needed
+    if (position === 'fill' || spec.stat === 'percent') {
         return { yMin: 0, yMax: 100 };
     }
 
@@ -51,6 +51,7 @@ export default function computeGlobalScales(facetDataMap, spec) {
             mapping,
             orientation,
             position,
+            stat: spec.stat,
             scales: resolvedScales,
             nCategories: spec.nCategories,
         };

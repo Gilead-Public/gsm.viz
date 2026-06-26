@@ -44,6 +44,17 @@ export default function validateSpec(data, spec) {
     }
 
     if (
+        spec.stat !== undefined &&
+        spec.stat !== 'count' &&
+        spec.stat !== 'identity' &&
+        spec.stat !== 'percent'
+    ) {
+        throw new Error(
+            "spec.stat must be 'count', 'identity', or 'percent'"
+        );
+    }
+
+    if (
         spec.orientation !== undefined &&
         spec.orientation !== 'vertical' &&
         spec.orientation !== 'horizontal'

@@ -1061,6 +1061,105 @@ describe('bars/structureData', () => {
             });
         });
     });
+
+    describe("stat='percent' with position='dodge'", () => {
+        test('normalizes y values to percentage with dodge position', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                    { cat: 'B', grp: 'X', val: 40 },
+                    { cat: 'B', grp: 'Y', val: 60 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const yDs = result.datasets.find((ds) => ds.label === 'Y');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(25);
+            expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(75);
+        });
+
+        test('stores _rawY when stat is percent and position is dodge', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.x === 'A')._rawY).toBe(25);
+        });
+
+        test('normalizes count mode with stat percent and dodge', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'X' },
+                    { cat: 'A', grp: 'Y' },
+                ],
+                mapping: { x: 'cat', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const yDs = result.datasets.find((ds) => ds.label === 'Y');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                (2 / 3) * 100
+            );
+            expect(yDs.data.find((d) => d.x === 'A').y).toBeCloseTo(
+                (1 / 3) * 100
+            );
+        });
+
+        test('does not normalize when stat is count (default)', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 25 },
+                    { cat: 'A', grp: 'Y', val: 75 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'count',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.x === 'A').y).toBe(25);
+            expect(xDs.data.find((d) => d.x === 'A')._rawY).toBeUndefined();
+        });
+
+        test('works with horizontal orientation', () => {
+            const spec = {
+                data: [
+                    { cat: 'A', grp: 'X', val: 30 },
+                    { cat: 'A', grp: 'Y', val: 70 },
+                ],
+                mapping: { x: 'cat', y: 'val', fill: 'grp' },
+                orientation: 'horizontal',
+                position: 'dodge',
+                stat: 'percent',
+                scales: { x: {}, y: {} },
+            };
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            expect(xDs.data.find((d) => d.y === 'A').x).toBeCloseTo(30);
+        });
+    });
 });
 
 describe('bars/structureData — scales.fill.colors named map', () => {

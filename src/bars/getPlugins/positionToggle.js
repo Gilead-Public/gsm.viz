@@ -178,9 +178,24 @@ export default function positionToggle() {
 
             const { x, y } = args.event;
             const hit = hitBox(getIconBoxes(chart), x, y);
-            if (!hit || hit.value === spec.position) return;
+            if (!hit) return;
 
-            chart.helpers.updateSpec(chart, { position: hit.value });
+            // Determine the effective display position for no-op detection.
+            const effectivePosition =
+                spec.stat === 'percent' && spec.position === 'stack'
+                    ? 'fill'
+                    : spec.position;
+            if (hit.value === effectivePosition) return;
+
+            const update = { position: hit.value };
+            if (hit.value === 'fill') {
+                update.position = 'stack';
+                update.stat = 'percent';
+            } else if (spec.stat === 'percent' && spec.position === 'stack') {
+                // Leaving the fill-equivalent state; reset stat.
+                update.stat = 'count';
+            }
+            chart.helpers.updateSpec(chart, update);
         },
 
         afterDraw(chart) {
@@ -194,7 +209,13 @@ export default function positionToggle() {
 
             const boxes = getIconBoxes(chart);
             if (chart.ctx) {
-                drawIcons(chart.ctx, boxes, spec.position);
+                drawIcons(
+                    chart.ctx,
+                    boxes,
+                    spec.stat === 'percent' && spec.position === 'stack'
+                        ? 'fill'
+                        : spec.position
+                );
 
                 if (hoveredValue) {
                     const hoveredBox = boxes.find(

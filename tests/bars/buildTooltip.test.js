@@ -443,4 +443,34 @@ describe('bars/getPlugins/buildTooltip', () => {
             );
         });
     });
+
+    describe('stat-based fill label injection', () => {
+        test('injects fillLabelCallback when stat is percent (not just position fill)', () => {
+            const result = buildTooltip({}, 'dodge', 'percent');
+            expect(typeof result.callbacks?.label).toBe('function');
+            const ctx = makeContext();
+            const label = result.callbacks.label(ctx);
+            expect(label).toMatch(/%/);
+        });
+
+        test('no fill label injected when stat is count', () => {
+            const result = buildTooltip({}, 'dodge', 'count');
+            expect(result.callbacks?.label).toBeUndefined();
+        });
+
+        test('stat percent with position stack injects fill label', () => {
+            const result = buildTooltip({}, 'stack', 'percent');
+            expect(typeof result.callbacks?.label).toBe('function');
+        });
+
+        test('callbacks.label still takes precedence over stat percent', () => {
+            const customLabel = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { callbacks: { label: customLabel } },
+                'dodge',
+                'percent'
+            );
+            expect(result.callbacks.label).toBe(customLabel);
+        });
+    });
 });

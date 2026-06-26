@@ -22,7 +22,7 @@ import {
  * @param {string} position - bar positioning mode
  * @returns {Object} tooltip plugin options
  */
-export default function buildTooltip(tooltip, position) {
+export default function buildTooltip(tooltip, position, stat) {
     const { format, formatter, ...rest } = tooltip || {};
     const base = { enabled: true, ...rest };
 
@@ -52,7 +52,7 @@ export default function buildTooltip(tooltip, position) {
     }
 
     // 4. fill-position default.
-    if (position !== 'fill') return base;
+    if (position !== 'fill' && stat !== 'percent') return base;
 
     return {
         ...base,

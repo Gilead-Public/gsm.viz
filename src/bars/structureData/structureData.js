@@ -193,7 +193,7 @@ export default function structureData(spec) {
         swapPointAxes(datasets);
     }
 
-    if (spec.position === 'fill') {
+    if (spec.stat === 'percent' || spec.position === 'fill') {
         normalizeFill(datasets, orientation === 'horizontal');
     }
 

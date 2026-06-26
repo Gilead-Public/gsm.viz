@@ -39,6 +39,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
     interactive: true,             // true | false — enable/disable interactive elements (e.g. clickable Top N footnote)
     orientation: 'vertical',   // 'vertical' | 'horizontal'
     position: 'stack',         // 'stack' | 'dodge' | 'fill' | 'identity' | 'layer'
+    stat: 'count',             // 'count' | 'identity' | 'percent' — value computation mode
     nCategories: undefined,    // optional positive integer — limit displayed categories to top N
     scales: {
         x: {
@@ -124,6 +125,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `interactive`                          | `true`                                                        |
 | `orientation`                          | `'vertical'`                                                  |
 | `position`                             | `'stack'`                                                     |
+| `stat`                                 | `'count'`                                                     |
 | `nCategories`                          | `undefined` (all categories)                                  |
 | `scales.x.type`                        | `'category'`                                                  |
 | `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
@@ -168,9 +170,33 @@ number of rows in each `x` category, optionally split by `fill`.
 | ------------ | ----------------------------------------------------------- |
 | `'stack'`    | Stack fill groups within each category; this is the default |
 | `'dodge'`    | Render fill groups side by side                             |
-| `'fill'`     | Normalize each category to percentages that sum to 100      |
+| `'fill'`     | Shorthand for `position: 'stack'` + `stat: 'percent'`       |
 | `'identity'` | Render datasets without stacked scale configuration         |
 | `'layer'`    | Overlay fill groups at the same position with tapered widths — widest in back, narrowest in front |
+
+### Stat
+
+`stat` controls how bar values are computed, independently of layout (`position`).
+
+| Value        | Behaviour                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| `'count'`    | Default. When `mapping.y` is omitted, counts rows. When `mapping.y` is set, uses raw values. |
+| `'identity'` | Equivalent to `'count'` — uses raw/count values as-is (explicit naming).                 |
+| `'percent'`  | Normalize each category's values to percentages summing to 100 across fill groups.       |
+
+`stat` is orthogonal to `position`. For example:
+
+```js
+// Side-by-side bars showing percentages:
+{ position: 'dodge', stat: 'percent' }
+
+// Stacked bars showing percentages (equivalent to position: 'fill'):
+{ position: 'stack', stat: 'percent' }
+```
+
+`position: 'fill'` remains valid and is resolved internally to
+`{ position: 'stack', stat: 'percent' }`. The embedded position toggle
+continues to offer `'fill'` as a button.
 
 For `position: 'layer'`, each fill group is drawn at the same categorical
 position with progressively narrower bar widths so all groups are visible.

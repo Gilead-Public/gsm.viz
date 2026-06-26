@@ -84,9 +84,14 @@ function getSpec(context, spec) {
     return context.chart.data?._spec_ || spec;
 }
 
+function isPercentStat(context, spec) {
+    const s = getSpec(context, spec);
+    return s?.stat === 'percent' || s?.position === 'fill';
+}
+
 function getPercentValue(point, context, spec) {
     const rendered = getRenderedValue(point, context);
-    if (getSpec(context, spec)?.position === 'fill') return rendered;
+    if (isPercentStat(context, spec)) return rendered;
 
     const total = getRawTotal(context);
     return total === 0 ? 0 : (getRawValue(point, context) / total) * 100;
@@ -96,7 +101,7 @@ function resolveLabelValue(point, context, options, mode, spec) {
     const configuredValue = options.value ?? 'auto';
     const valueType =
         configuredValue === 'auto'
-            ? getSpec(context, spec)?.position === 'fill'
+            ? isPercentStat(context, spec)
                 ? 'percent'
                 : 'raw'
             : configuredValue;
