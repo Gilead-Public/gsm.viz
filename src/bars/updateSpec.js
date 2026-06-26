@@ -18,6 +18,12 @@ import refreshDynamicCategoryData from './getPlugins/refreshDynamicCategoryData.
 export default function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
 
+    // Clear selection if the category axis mapping changes (selection values
+    // would no longer correspond to the new categories).
+    if (spec.mapping?.x && spec.mapping.x !== existing.mapping?.x) {
+        delete chart.data._selectionState_;
+    }
+
     // Merge incoming partial spec over the existing stored spec.
     const combined = {
         ...existing,

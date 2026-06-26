@@ -6,11 +6,16 @@ import getPlugins from './getPlugins.js';
 /**
  * Re-run the full data pipeline on an existing chart with new data and spec.
  *
+ * Clears any active selection since the underlying data has changed.
+ *
  * @param {Object} chart - Chart.js instance
  * @param {Array}  data  - new data array
  * @param {Object} spec  - new user-supplied spec (raw, not merged)
  */
 export default function updateData(chart, data, spec) {
+    // Clear selection state — data change invalidates any prior selection.
+    delete chart.data._selectionState_;
+
     const existing = chart.data._spec_;
     const merged = mergeSpec(data, spec);
     // mergeSpec rebuilds a fresh spec from the public fields and drops internal

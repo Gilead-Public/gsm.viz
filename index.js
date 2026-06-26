@@ -26178,6 +26178,7 @@ var gsmViz = (() => {
 
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
+    delete chart.data._selectionState_;
     const existing = chart.data._spec_;
     const merged = mergeSpec(data, spec);
     if (existing?._originalNCategories) {
@@ -26221,6 +26222,9 @@ var gsmViz = (() => {
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
+    if (spec.mapping?.x && spec.mapping.x !== existing.mapping?.x) {
+      delete chart.data._selectionState_;
+    }
     const combined = {
       ...existing,
       ...spec,

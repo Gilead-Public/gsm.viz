@@ -475,4 +475,44 @@ describe('bars/updateSpec', () => {
             });
         });
     });
+
+    describe('selection state through updates', () => {
+        const fillData = [
+            { category: 'A', value: 10, group: 'X' },
+            { category: 'B', value: 20, group: 'X' },
+            { category: 'C', value: 15, group: 'Y' },
+        ];
+        const fillSpec = {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+        };
+
+        test('updateData clears selection state', () => {
+            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
+            const chart = bars(container, fillData, fillSpec);
+            selectCategory(chart, 'A');
+            expect(getSelection(chart).type).toBe('category');
+
+            updateData(chart, fillData, fillSpec);
+            expect(getSelection(chart).type).toBeNull();
+        });
+
+        test('updateSpec preserves selection when mapping.x does not change', () => {
+            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
+            const chart = bars(container, fillData, fillSpec);
+            selectCategory(chart, 'A');
+
+            updateSpec(chart, { labels: { title: 'New Title' } });
+            expect(getSelection(chart).type).toBe('category');
+            expect(getSelection(chart).values).toEqual(['A']);
+        });
+
+        test('updateSpec clears selection when mapping.x changes', () => {
+            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
+            const chart = bars(container, fillData, fillSpec);
+            selectCategory(chart, 'A');
+
+            updateSpec(chart, { mapping: { x: 'group' } });
+            expect(getSelection(chart).type).toBeNull();
+        });
+    });
 });
