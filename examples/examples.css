@@ -62,8 +62,7 @@
 .gsm-viz--example #eligibility-container,
 .gsm-viz--example #ie-criteria-container,
 .gsm-viz--example #gini-container,
-.gsm-viz--example #kri-site-container,
-.gsm-viz--example #ae-container {
+.gsm-viz--example #kri-site-container {
   margin: auto;
   width: 100%;
   height: 40vw;

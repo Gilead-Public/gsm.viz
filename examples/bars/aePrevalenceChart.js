@@ -54,24 +54,23 @@ fetch("data/ae.json")
 
     // --- Prevalence calculation ---
     function computePrevalence(population, variable) {
-      const subjectsInPop = [...new Set(population.map((d) => d.USUBJID))];
-      const totalSubjects = subjectsInPop.length;
-      if (totalSubjects === 0) return [];
-
-      // For each category value, count unique subjects
-      const catSubjects = new Map();
+      // Count records per category value.
+      const catCounts = new Map();
+      let totalRecords = 0;
       for (const d of population) {
         const cat = d[variable];
         if (cat == null || cat === "") continue;
-        if (!catSubjects.has(cat)) catSubjects.set(cat, new Set());
-        catSubjects.get(cat).add(d.USUBJID);
+        catCounts.set(cat, (catCounts.get(cat) || 0) + 1);
+        totalRecords++;
       }
 
-      return [...catSubjects.entries()].map(([cat, subjects]) => ({
+      if (totalRecords === 0) return [];
+
+      return [...catCounts.entries()].map(([cat, count]) => ({
         category: cat,
-        prevalence: (subjects.size / totalSubjects) * 100,
-        count: subjects.size,
-        total: totalSubjects,
+        prevalence: (count / totalRecords) * 100,
+        count,
+        total: totalRecords,
       }));
     }
 
@@ -116,27 +115,19 @@ fetch("data/ae.json")
         });
       }
 
-      // Subject level — binary (100% or 0%)
+      // Subject level — proportion of this subject's AE records
       if (subjectEnabled && subject) {
-        const subjectData = data.filter((d) => d.USUBJID === subject);
-        const subjectCats = new Set(
-          subjectData
-            .map((d) => d[variable])
-            .filter((v) => v != null && v !== "")
+        const subjectPrev = computePrevalence(
+          data.filter((d) => d.USUBJID === subject),
+          variable
         );
-
-        // Get all categories present in the data for this variable
-        const allCats = new Set(rows.map((r) => r[variable]).filter(Boolean));
-        // Also add subject's own categories
-        subjectCats.forEach((c) => allCats.add(c));
-
-        allCats.forEach((cat) => {
+        subjectPrev.forEach((p) => {
           rows.push({
-            [variable]: cat,
-            prevalence: subjectCats.has(cat) ? 100 : 0,
+            [variable]: p.category,
+            prevalence: p.prevalence,
             level: subject,
-            count: subjectCats.has(cat) ? 1 : 0,
-            total: 1,
+            count: p.count,
+            total: p.total,
           });
         });
       }

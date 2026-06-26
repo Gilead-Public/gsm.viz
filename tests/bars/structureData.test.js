@@ -1567,13 +1567,24 @@ describe('bars/structureData – scales.x.sortDir', () => {
             },
         };
 
-        test('assigns decreasing barPercentage to each dataset', () => {
+        test('first fill group (X) gets widest bar and is at highest index (drawn in back)', () => {
+            const result = structureData(spec);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const zDs = result.datasets.find((ds) => ds.label === 'Z');
+            expect(xDs.barPercentage).toBeCloseTo(0.9);
+            expect(zDs.barPercentage).toBeCloseTo(0.3);
+            // X should be at the end (drawn first/behind by Chart.js)
+            expect(result.datasets[result.datasets.length - 1].label).toBe(
+                'X'
+            );
+            expect(result.datasets[0].label).toBe('Z');
+        });
+
+        test('assigns ascending barPercentage (narrowest in front, widest in back)', () => {
             const result = structureData(spec);
             const widths = result.datasets.map((ds) => ds.barPercentage);
-            expect(widths[0]).toBeCloseTo(0.9);
-            expect(widths[2]).toBeCloseTo(0.3);
             for (let i = 1; i < widths.length; i++) {
-                expect(widths[i]).toBeLessThan(widths[i - 1]);
+                expect(widths[i]).toBeGreaterThan(widths[i - 1]);
             }
         });
 
@@ -1601,9 +1612,10 @@ describe('bars/structureData – scales.x.sortDir', () => {
         test('works with horizontal orientation', () => {
             const horizSpec = { ...spec, orientation: 'horizontal' };
             const result = structureData(horizSpec);
-            const widths = result.datasets.map((ds) => ds.barPercentage);
-            expect(widths[0]).toBeCloseTo(0.9);
-            expect(widths[2]).toBeCloseTo(0.3);
+            const xDs = result.datasets.find((ds) => ds.label === 'X');
+            const zDs = result.datasets.find((ds) => ds.label === 'Z');
+            expect(xDs.barPercentage).toBeCloseTo(0.9);
+            expect(zDs.barPercentage).toBeCloseTo(0.3);
         });
 
         test('single fill group gets barPercentage of 0.9', () => {

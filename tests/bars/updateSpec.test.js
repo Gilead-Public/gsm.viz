@@ -454,10 +454,10 @@ describe('bars/updateSpec', () => {
                 expect(ds.barPercentage).toBeDefined();
                 expect(ds.categoryPercentage).toBe(1.0);
             });
-            // First dataset should be widest
-            expect(chart.data.datasets[0].barPercentage).toBeGreaterThan(
-                chart.data.datasets[1].barPercentage
-            );
+            // Last dataset should be widest (drawn in back by Chart.js)
+            const last = chart.data.datasets[chart.data.datasets.length - 1];
+            const first = chart.data.datasets[0];
+            expect(last.barPercentage).toBeGreaterThan(first.barPercentage);
         });
 
         test('switching from layer to stack removes barPercentage', () => {

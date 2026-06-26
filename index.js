@@ -24905,12 +24905,13 @@ var gsmViz = (() => {
   function applyLayerWidths(datasets) {
     const n = datasets.length;
     if (n === 0) return;
+    datasets.reverse();
     const maxWidth = 0.9;
     const minWidth = 0.3;
     const step = n > 1 ? (maxWidth - minWidth) / (n - 1) : 0;
     for (let i = 0; i < n; i++) {
       const ds = datasets[i];
-      ds.barPercentage = maxWidth - i * step;
+      ds.barPercentage = n === 1 ? maxWidth : minWidth + i * step;
       ds.categoryPercentage = 1;
       ds.grouped = false;
       if (!ds.borderWidth || ds.borderWidth < 1) {

@@ -1,16 +1,20 @@
 import applyLayerWidths from '../../src/bars/structureData/applyLayerWidths.js';
 
 describe('bars/structureData/applyLayerWidths', () => {
-    test('sets barPercentage with linear taper for multiple datasets', () => {
+    test('reverses datasets and assigns ascending barPercentage', () => {
         const datasets = [
             { label: 'A', data: [], backgroundColor: '#aaa' },
             { label: 'B', data: [], backgroundColor: '#bbb' },
             { label: 'C', data: [], backgroundColor: '#ccc' },
         ];
         applyLayerWidths(datasets);
-        expect(datasets[0].barPercentage).toBeCloseTo(0.9);
+        // After reverse: [C, B, A]. Widths ascend: C=0.3, B=0.6, A=0.9
+        expect(datasets[0].label).toBe('C');
+        expect(datasets[0].barPercentage).toBeCloseTo(0.3);
+        expect(datasets[1].label).toBe('B');
         expect(datasets[1].barPercentage).toBeCloseTo(0.6);
-        expect(datasets[2].barPercentage).toBeCloseTo(0.3);
+        expect(datasets[2].label).toBe('A');
+        expect(datasets[2].barPercentage).toBeCloseTo(0.9);
     });
 
     test('sets barPercentage to 0.9 for a single dataset', () => {
@@ -27,10 +31,11 @@ describe('bars/structureData/applyLayerWidths', () => {
             { label: 'D', data: [] },
         ];
         applyLayerWidths(datasets);
-        expect(datasets[0].barPercentage).toBeCloseTo(0.9);
-        expect(datasets[1].barPercentage).toBeCloseTo(0.7);
-        expect(datasets[2].barPercentage).toBeCloseTo(0.5);
-        expect(datasets[3].barPercentage).toBeCloseTo(0.3);
+        // After reverse: [D, C, B, A]. Widths: D=0.3, C=0.5, B=0.7, A=0.9
+        expect(datasets[0].barPercentage).toBeCloseTo(0.3);
+        expect(datasets[1].barPercentage).toBeCloseTo(0.5);
+        expect(datasets[2].barPercentage).toBeCloseTo(0.7);
+        expect(datasets[3].barPercentage).toBeCloseTo(0.9);
     });
 
     test('sets categoryPercentage to 1.0 for all datasets', () => {
@@ -67,22 +72,27 @@ describe('bars/structureData/applyLayerWidths', () => {
         });
     });
 
-    test('does not mutate datasets beyond expected properties', () => {
-        const datasets = [
-            { label: 'A', data: [1, 2], backgroundColor: '#aaa' },
-            { label: 'B', data: [3, 4], backgroundColor: '#bbb' },
-        ];
-        applyLayerWidths(datasets);
-        expect(datasets[0].label).toBe('A');
-        expect(datasets[0].data).toEqual([1, 2]);
-        expect(datasets[1].label).toBe('B');
-        expect(datasets[1].data).toEqual([3, 4]);
-    });
-
     test('handles empty datasets array', () => {
         const datasets = [];
         expect(() => applyLayerWidths(datasets)).not.toThrow();
         expect(datasets).toEqual([]);
+    });
+
+    test('first fill group ends up at highest index with widest bar', () => {
+        const datasets = [
+            { label: 'Study', data: [] },
+            { label: 'Site', data: [] },
+            { label: 'Subject', data: [] },
+        ];
+        applyLayerWidths(datasets);
+        // Study (originally first) should be at the end (drawn first/behind)
+        // with the widest bar.
+        const study = datasets.find((ds) => ds.label === 'Study');
+        const subject = datasets.find((ds) => ds.label === 'Subject');
+        expect(study.barPercentage).toBeCloseTo(0.9);
+        expect(subject.barPercentage).toBeCloseTo(0.3);
+        expect(datasets[datasets.length - 1].label).toBe('Study');
+        expect(datasets[0].label).toBe('Subject');
     });
 
     test('tapers linearly for 2 datasets', () => {
@@ -91,7 +101,10 @@ describe('bars/structureData/applyLayerWidths', () => {
             { label: 'B', data: [] },
         ];
         applyLayerWidths(datasets);
-        expect(datasets[0].barPercentage).toBeCloseTo(0.9);
-        expect(datasets[1].barPercentage).toBeCloseTo(0.3);
+        // After reverse: [B, A]. B=0.3 (front), A=0.9 (back)
+        expect(datasets[0].label).toBe('B');
+        expect(datasets[0].barPercentage).toBeCloseTo(0.3);
+        expect(datasets[1].label).toBe('A');
+        expect(datasets[1].barPercentage).toBeCloseTo(0.9);
     });
 });
