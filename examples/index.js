@@ -24612,6 +24612,30 @@ var gsmViz = (() => {
           "spec.callbacks.onHover must be a function or null"
         );
       }
+      if (callbacks.onSelect !== void 0 && callbacks.onSelect !== null && typeof callbacks.onSelect !== "function") {
+        throw new Error(
+          "spec.callbacks.onSelect must be a function or null"
+        );
+      }
+    }
+    const selection2 = spec.selection;
+    if (selection2 !== void 0) {
+      if (selection2 === null || typeof selection2 !== "object" || Array.isArray(selection2)) {
+        throw new Error("spec.selection must be a plain object");
+      }
+      if (selection2.enabled !== void 0 && typeof selection2.enabled !== "boolean") {
+        throw new Error("spec.selection.enabled must be a boolean");
+      }
+      if (selection2.opacity !== void 0) {
+        if (typeof selection2.opacity !== "number" || selection2.opacity < 0 || selection2.opacity > 1) {
+          throw new Error(
+            "spec.selection.opacity must be a number between 0 and 1"
+          );
+        }
+      }
+      if (selection2.multiple !== void 0 && typeof selection2.multiple !== "boolean") {
+        throw new Error("spec.selection.multiple must be a boolean");
+      }
     }
     const captions = spec.labels?.captions;
     if (captions !== void 0 && captions !== null) {
@@ -24810,6 +24834,11 @@ var gsmViz = (() => {
     legend: {
       dense: false
     },
+    selection: {
+      enabled: false,
+      opacity: 0.2,
+      multiple: false
+    },
     stat: "count"
   };
   var defaults_default = defaults3;
@@ -24860,8 +24889,10 @@ var gsmViz = (() => {
       legend: { ...defaults_default.legend, ...spec.legend },
       callbacks: {
         onClick: spec.callbacks?.onClick ?? defaults_default.callbacks.onClick,
-        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover
-      }
+        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover,
+        onSelect: spec.callbacks?.onSelect ?? null
+      },
+      selection: { ...defaults_default.selection, ...spec.selection }
     };
   }
 
@@ -26080,7 +26111,7 @@ var gsmViz = (() => {
         if (hit.value === "fill") {
           update.position = "stack";
           update.stat = "percent";
-        } else if (spec.stat === "percent" && spec.position === "stack") {
+        } else if (spec.stat === "percent" && spec.position === "stack" && hit.value === "stack") {
           update.stat = "count";
         }
         chart.helpers.updateSpec(chart, update);
@@ -26312,13 +26343,176 @@ var gsmViz = (() => {
     document.body.removeChild(a);
   }
 
+  // src/bars/selection.js
+  function toRgba(color3, alpha2) {
+    if (!color3) return `rgba(128, 128, 128, ${alpha2})`;
+    const rgbaMatch = color3.match(
+      /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/
+    );
+    if (rgbaMatch) {
+      return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha2})`;
+    }
+    let hex3 = color3.replace("#", "");
+    if (hex3.length === 3) {
+      hex3 = hex3[0] + hex3[0] + hex3[1] + hex3[1] + hex3[2] + hex3[2];
+    }
+    const r = parseInt(hex3.slice(0, 2), 16);
+    const g = parseInt(hex3.slice(2, 4), 16);
+    const b = parseInt(hex3.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+  }
+  function getCategoryValue(point, orientation) {
+    return orientation === "horizontal" ? point.y : point.x;
+  }
+  function isPointSelected(point, selectionState, orientation) {
+    if (!selectionState || selectionState.type === null) return true;
+    const category = getCategoryValue(point, orientation);
+    if (selectionState.type === "category") {
+      return selectionState.values.includes(category);
+    }
+    if (selectionState.type === "segment") {
+      const fill2 = point._fill;
+      return selectionState.values.some(
+        (seg) => seg.category === category && (seg.fill === void 0 || seg.fill === fill2)
+      );
+    }
+    return true;
+  }
+  function storeOriginalColors(chart) {
+    if (chart.data._selectionState_?.originalColors) return;
+    const originalColors = chart.data.datasets.map((ds) => ({
+      backgroundColor: ds.backgroundColor,
+      borderColor: ds.borderColor
+    }));
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.originalColors = originalColors;
+  }
+  function applySelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || state.selection.type === null) return;
+    const spec = chart.data._spec_;
+    const opacity = spec.selection?.opacity ?? 0.2;
+    const orientation = spec.orientation;
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      const origBg = state.originalColors[dsIndex].backgroundColor;
+      const origBorder = state.originalColors[dsIndex].borderColor;
+      const bgColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBg = Array.isArray(origBg) ? origBg[ptIndex] : origBg;
+        return selected ? pointBg : toRgba(pointBg, opacity);
+      });
+      const borderColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBorder = Array.isArray(origBorder) ? origBorder[ptIndex] : origBorder;
+        return selected ? pointBorder : toRgba(pointBorder, opacity);
+      });
+      ds.backgroundColor = bgColors;
+      ds.borderColor = borderColors;
+    });
+    chart.update();
+  }
+  function removeSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state?.originalColors) return;
+    chart.data.datasets.forEach((ds, i) => {
+      ds.backgroundColor = state.originalColors[i].backgroundColor;
+      ds.borderColor = state.originalColors[i].borderColor;
+    });
+    delete state.originalColors;
+    chart.update();
+  }
+  function fireOnSelect(chart, selection2, event) {
+    const onSelect = chart.data._spec_?.callbacks?.onSelect;
+    if (typeof onSelect === "function") {
+      onSelect(selection2, event);
+    }
+  }
+  function selectCategory(chart, values, event) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "category",
+      values: valArray
+    };
+    applySelection(chart);
+    const selection2 = getSelection(chart);
+    fireOnSelect(chart, selection2, event);
+  }
+  function selectSegment(chart, values, event) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "segment",
+      values: valArray
+    };
+    applySelection(chart);
+    const selection2 = getSelection(chart);
+    fireOnSelect(chart, selection2, event);
+  }
+  function clearSelection(chart, event) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection || state.selection.type === null) return;
+    state.selection = { type: null, values: [] };
+    removeSelection(chart);
+    fireOnSelect(chart, { type: null, values: [] }, event);
+  }
+  function getSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection) return { type: null, values: [] };
+    return { ...state.selection, values: [...state.selection.values] };
+  }
+
   // src/bars/onClick.js
   function onClick2(event, activeElements, chart) {
     const spec = chart.data._spec_;
-    if (!activeElements.length || !spec.callbacks?.onClick) return;
+    if (!activeElements.length) {
+      if (spec.selection?.enabled) {
+        const current = getSelection(chart);
+        if (current.type !== null) {
+          clearSelection(chart, event);
+        }
+      }
+      return;
+    }
     const { datasetIndex, index: index3 } = activeElements[0];
     const point = chart.data.datasets[datasetIndex].data[index3];
-    spec.callbacks.onClick(point, event);
+    if (spec.callbacks?.onClick) {
+      spec.callbacks.onClick(point, event);
+    }
+    if (spec.selection?.enabled) {
+      const orientation = spec.orientation;
+      const category = orientation === "horizontal" ? point.y : point.x;
+      const current = getSelection(chart);
+      const multiple = spec.selection.multiple;
+      if (current.type === "category" && current.values.includes(category)) {
+        if (multiple) {
+          const remaining = current.values.filter(
+            (v) => v !== category
+          );
+          if (remaining.length === 0) {
+            clearSelection(chart, event);
+          } else {
+            selectCategory(chart, remaining, event);
+          }
+        } else {
+          clearSelection(chart, event);
+        }
+      } else if (multiple && current.type === "category") {
+        selectCategory(chart, [...current.values, category], event);
+      } else {
+        selectCategory(chart, category, event);
+      }
+    }
   }
 
   // src/bars/onHover.js
@@ -26421,7 +26615,11 @@ var gsmViz = (() => {
     chart.helpers = {
       updateData: updateData2,
       updateSpec,
-      exportImage
+      exportImage,
+      selectCategory,
+      selectSegment,
+      clearSelection,
+      getSelection
     };
     return chart;
   }
