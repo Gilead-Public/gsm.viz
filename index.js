@@ -27088,6 +27088,57 @@ var gsmViz = (() => {
     });
   }
 
+  // src/facetBars/syncSelection.js
+  function syncSelection(charts) {
+    charts.forEach((chart) => {
+      const baseSelectCategory = chart.helpers.selectCategory;
+      const baseSelectSegment = chart.helpers.selectSegment;
+      const baseClearSelection = chart.helpers.clearSelection;
+      chart.helpers.selectCategory = function(chartInstance, values, event) {
+        baseSelectCategory(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectCategory(sibling, values);
+        });
+      };
+      chart.helpers.selectSegment = function(chartInstance, values, event) {
+        baseSelectSegment(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectSegment(sibling, values);
+        });
+      };
+      chart.helpers.clearSelection = function(chartInstance, event) {
+        baseClearSelection(chartInstance, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          clearSelection(sibling);
+        });
+      };
+    });
+    charts.forEach((chart) => {
+      const originalOnClick = chart.options.onClick;
+      chart.options.onClick = (event, activeElements, chartInstance) => {
+        if (originalOnClick) {
+          originalOnClick(event, activeElements, chartInstance);
+        }
+        const state = chartInstance.data._selectionState_;
+        if (!state?.selection) return;
+        const sel = state.selection;
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          if (sel.type === null) {
+            clearSelection(sibling);
+          } else if (sel.type === "category") {
+            selectCategory(sibling, sel.values);
+          } else if (sel.type === "segment") {
+            selectSegment(sibling, sel.values);
+          }
+        });
+      };
+    });
+  }
+
   // src/facetBars.js
   function facetBars(element = "body", data = [], spec = {}) {
     validateSpec2(data, spec);
@@ -27190,6 +27241,7 @@ var gsmViz = (() => {
       if (needsUpdate) chart.update("none");
     });
     syncCharts(charts);
+    syncSelection(charts);
     if (hasFill) {
       const syncOpts = { sync: merged.facet.legend.sync };
       syncLegendClicks(charts, syncOpts);
