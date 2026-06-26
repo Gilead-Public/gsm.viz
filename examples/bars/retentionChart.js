@@ -130,6 +130,61 @@ fetch('data/retention.csv')
             )
         );
 
+        // Populate category and segment dropdowns
+        const categories = [...new Set(data.map((d) => d.invid))];
+        const categorySelect = document.getElementById(
+            'retention-select-category'
+        );
+        categories.forEach((cat) => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+
+        const segmentSelect = document.getElementById(
+            'retention-select-segment'
+        );
+        const segments = [];
+        categories.forEach((cat) => {
+            reasonOrder.forEach((reason) => {
+                const hasData = data.some(
+                    (d) => d.invid === cat && d.Reason === reason
+                );
+                if (hasData) {
+                    segments.push({ category: cat, fill: reason });
+                }
+            });
+        });
+        segments.forEach((seg) => {
+            const opt = document.createElement('option');
+            opt.value = JSON.stringify(seg);
+            opt.textContent = `${seg.category} / ${seg.fill}`;
+            segmentSelect.appendChild(opt);
+        });
+
+        // Wire category selection
+        categorySelect.addEventListener('change', () => {
+            const val = categorySelect.value;
+            segmentSelect.value = '';
+            if (val) {
+                instance.helpers.selectCategory(instance, val);
+            } else {
+                instance.helpers.clearSelection(instance);
+            }
+        });
+
+        // Wire segment selection
+        segmentSelect.addEventListener('change', () => {
+            const val = segmentSelect.value;
+            categorySelect.value = '';
+            if (val) {
+                instance.helpers.selectSegment(instance, JSON.parse(val));
+            } else {
+                instance.helpers.clearSelection(instance);
+            }
+        });
+
         document
             .getElementById('retention-export-btn')
             .addEventListener('click', () =>
