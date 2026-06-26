@@ -9,6 +9,7 @@ import buildSubSpec from './facetBars/buildSubSpec.js';
 import renderGrid from './facetBars/renderGrid.js';
 import syncCharts from './facetBars/syncCharts.js';
 import syncLegendClicks from './facetBars/syncLegendClicks.js';
+import syncSelection from './facetBars/syncSelection.js';
 
 /**
  * Render a faceted set of bar charts — one chart per unique value of a
@@ -192,6 +193,9 @@ export default function facetBars(element = 'body', data = [], spec = {}) {
 
     // Wire cross-chart hover highlight synchronisation
     syncCharts(charts);
+
+    // Wire cross-chart selection synchronisation
+    syncSelection(charts);
 
     // Wire cross-chart legend-click synchronisation whenever a fill is mapped.
     // When facet.legend.sync is true (default), legend clicks propagate to all

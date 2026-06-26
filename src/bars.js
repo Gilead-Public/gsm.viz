@@ -16,6 +16,15 @@ import updateData from './bars/updateData.js';
 import updateSpec from './bars/updateSpec.js';
 import exportImage from './bars/exportImage.js';
 
+// selection
+import {
+    selectCategory,
+    selectSegment,
+    clearSelection,
+    getSelection,
+    selectionLegendPlugin,
+} from './bars/selection.js';
+
 // event callbacks
 import onClick from './bars/onClick.js';
 import onHover from './bars/onHover.js';
@@ -101,6 +110,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
             displayWhiteBackground(),
             nCategoriesToggle(),
             positionToggle(),
+            selectionLegendPlugin(),
         ],
     });
 
@@ -144,6 +154,10 @@ export default function bars(element = 'body', data = [], spec = {}) {
         updateData,
         updateSpec,
         exportImage,
+        selectCategory,
+        selectSegment,
+        clearSelection,
+        getSelection,
     };
 
     return chart;

@@ -24632,6 +24632,30 @@ var gsmViz = (() => {
           "spec.callbacks.onHover must be a function or null"
         );
       }
+      if (callbacks.onSelect !== void 0 && callbacks.onSelect !== null && typeof callbacks.onSelect !== "function") {
+        throw new Error(
+          "spec.callbacks.onSelect must be a function or null"
+        );
+      }
+    }
+    const selection2 = spec.selection;
+    if (selection2 !== void 0) {
+      if (selection2 === null || typeof selection2 !== "object" || Array.isArray(selection2)) {
+        throw new Error("spec.selection must be a plain object");
+      }
+      if (selection2.enabled !== void 0 && typeof selection2.enabled !== "boolean") {
+        throw new Error("spec.selection.enabled must be a boolean");
+      }
+      if (selection2.opacity !== void 0) {
+        if (typeof selection2.opacity !== "number" || selection2.opacity < 0 || selection2.opacity > 1) {
+          throw new Error(
+            "spec.selection.opacity must be a number between 0 and 1"
+          );
+        }
+      }
+      if (selection2.multiple !== void 0 && typeof selection2.multiple !== "boolean") {
+        throw new Error("spec.selection.multiple must be a boolean");
+      }
     }
     const captions = spec.labels?.captions;
     if (captions !== void 0 && captions !== null) {
@@ -24831,6 +24855,11 @@ var gsmViz = (() => {
     legend: {
       dense: false
     },
+    selection: {
+      enabled: false,
+      opacity: 0.2,
+      multiple: false
+    },
     stat: "count"
   };
   var defaults_default = defaults3;
@@ -24888,8 +24917,10 @@ var gsmViz = (() => {
       legend: { ...defaults_default.legend, ...spec.legend },
       callbacks: {
         onClick: spec.callbacks?.onClick ?? defaults_default.callbacks.onClick,
-        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover
-      }
+        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover,
+        onSelect: spec.callbacks?.onSelect ?? null
+      },
+      selection: { ...defaults_default.selection, ...spec.selection }
     };
   }
 
@@ -26209,6 +26240,7 @@ var gsmViz = (() => {
 
   // src/bars/updateData.js
   function updateData2(chart, data, spec) {
+    delete chart.data._selectionState_;
     const existing = chart.data._spec_;
     const merged = mergeSpec(data, spec);
     if (existing?._originalNCategories) {
@@ -26252,6 +26284,7 @@ var gsmViz = (() => {
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
+    delete chart.data._selectionState_;
     const combined = {
       ...existing,
       ...spec,
@@ -26381,13 +26414,223 @@ var gsmViz = (() => {
     document.body.removeChild(a);
   }
 
+  // src/bars/selection.js
+  var NAMED_COLORS = {
+    transparent: [0, 0, 0],
+    black: [0, 0, 0],
+    white: [255, 255, 255],
+    red: [255, 0, 0],
+    green: [0, 128, 0],
+    blue: [0, 0, 255],
+    yellow: [255, 255, 0],
+    orange: [255, 165, 0],
+    purple: [128, 0, 128],
+    gray: [128, 128, 128],
+    grey: [128, 128, 128]
+  };
+  function toRgba(color3, alpha2) {
+    if (!color3 || color3 === "transparent")
+      return `rgba(128, 128, 128, ${alpha2})`;
+    const rgbaMatch = color3.match(
+      /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/
+    );
+    if (rgbaMatch) {
+      return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha2})`;
+    }
+    if (color3.startsWith("#")) {
+      let hex3 = color3.slice(1);
+      if (hex3.length === 3) {
+        hex3 = hex3[0] + hex3[0] + hex3[1] + hex3[1] + hex3[2] + hex3[2];
+      }
+      const r = parseInt(hex3.slice(0, 2), 16);
+      const g = parseInt(hex3.slice(2, 4), 16);
+      const b = parseInt(hex3.slice(4, 6), 16);
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+        return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+      }
+    }
+    const named2 = NAMED_COLORS[color3.toLowerCase()];
+    if (named2) {
+      return `rgba(${named2[0]}, ${named2[1]}, ${named2[2]}, ${alpha2})`;
+    }
+    return color3;
+  }
+  function getCategoryValue(point, orientation) {
+    return orientation === "horizontal" ? point.y : point.x;
+  }
+  function isPointSelected(point, selectionState, orientation) {
+    if (!selectionState || selectionState.type === null) return true;
+    const category = getCategoryValue(point, orientation);
+    if (selectionState.type === "category") {
+      return selectionState.values.includes(category);
+    }
+    if (selectionState.type === "segment") {
+      const fill2 = point._fill;
+      return selectionState.values.some(
+        (seg) => seg.category === category && (seg.fill === void 0 || seg.fill === fill2)
+      );
+    }
+    return true;
+  }
+  function storeOriginalColors(chart) {
+    if (chart.data._selectionState_?.originalColors) return;
+    const originalColors = chart.data.datasets.map((ds) => ({
+      backgroundColor: ds.backgroundColor,
+      borderColor: ds.borderColor
+    }));
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.originalColors = originalColors;
+  }
+  function applySelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || state.selection.type === null) return;
+    const spec = chart.data._spec_;
+    const opacity = spec.selection?.opacity ?? 0.2;
+    const orientation = spec.orientation;
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      const origBg = state.originalColors[dsIndex].backgroundColor;
+      const origBorder = state.originalColors[dsIndex].borderColor;
+      const bgColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBg = Array.isArray(origBg) ? origBg[ptIndex] : origBg;
+        return selected ? pointBg : toRgba(pointBg, opacity);
+      });
+      const borderColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBorder = Array.isArray(origBorder) ? origBorder[ptIndex] : origBorder;
+        return selected ? pointBorder : toRgba(pointBorder, opacity);
+      });
+      ds.backgroundColor = bgColors;
+      ds.borderColor = borderColors;
+    });
+    chart.update();
+  }
+  function removeSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state?.originalColors) return;
+    chart.data.datasets.forEach((ds, i) => {
+      ds.backgroundColor = state.originalColors[i].backgroundColor;
+      ds.borderColor = state.originalColors[i].borderColor;
+    });
+    delete state.originalColors;
+    chart.update();
+  }
+  function selectionLegendPlugin() {
+    return {
+      id: "selectionLegend",
+      beforeDraw(chart) {
+        const state = chart.data?._selectionState_;
+        if (!state?.originalColors || !chart.legend?.legendItems) return;
+        chart.legend.legendItems.forEach((item) => {
+          const dsIndex = item.datasetIndex;
+          if (dsIndex == null || !state.originalColors[dsIndex]) return;
+          const orig = state.originalColors[dsIndex];
+          const bg = orig.backgroundColor;
+          item.fillStyle = Array.isArray(bg) ? bg[0] : bg;
+          const border = orig.borderColor;
+          item.strokeStyle = Array.isArray(border) ? border[0] : border;
+        });
+      }
+    };
+  }
+  function fireOnSelect(chart, selection2, event) {
+    const onSelect = chart.data._spec_?.callbacks?.onSelect;
+    if (typeof onSelect === "function") {
+      onSelect(selection2, event);
+    }
+  }
+  function selectCategory(chart, values, event, options) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "category",
+      values: valArray
+    };
+    applySelection(chart);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
+  }
+  function selectSegment(chart, values, event, options) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "segment",
+      values: valArray
+    };
+    applySelection(chart);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
+  }
+  function clearSelection(chart, event, options) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection || state.selection.type === null) return;
+    state.selection = { type: null, values: [] };
+    removeSelection(chart);
+    if (!options?._silent) {
+      fireOnSelect(chart, { type: null, values: [] }, event);
+    }
+  }
+  function getSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection) return { type: null, values: [] };
+    return { ...state.selection, values: [...state.selection.values] };
+  }
+
   // src/bars/onClick.js
   function onClick2(event, activeElements, chart) {
     const spec = chart.data._spec_;
-    if (!activeElements.length || !spec.callbacks?.onClick) return;
+    if (!activeElements.length) {
+      if (spec.selection?.enabled) {
+        const current = getSelection(chart);
+        if (current.type !== null) {
+          clearSelection(chart, event);
+        }
+      }
+      return;
+    }
     const { datasetIndex, index: index3 } = activeElements[0];
     const point = chart.data.datasets[datasetIndex].data[index3];
-    spec.callbacks.onClick(point, event);
+    if (spec.callbacks?.onClick) {
+      spec.callbacks.onClick(point, event);
+    }
+    if (spec.selection?.enabled) {
+      const orientation = spec.orientation;
+      const category = orientation === "horizontal" ? point.y : point.x;
+      const current = getSelection(chart);
+      const multiple = spec.selection.multiple;
+      if (current.type === "category" && current.values.includes(category)) {
+        if (multiple) {
+          const remaining = current.values.filter(
+            (v) => v !== category
+          );
+          if (remaining.length === 0) {
+            clearSelection(chart, event);
+          } else {
+            selectCategory(chart, remaining, event);
+          }
+        } else {
+          clearSelection(chart, event);
+        }
+      } else if (multiple && current.type === "category") {
+        selectCategory(chart, [...current.values, category], event);
+      } else {
+        selectCategory(chart, category, event);
+      }
+    }
   }
 
   // src/bars/onHover.js
@@ -26464,7 +26707,8 @@ var gsmViz = (() => {
         plugin2,
         displayWhiteBackground(),
         nCategoriesToggle(),
-        positionToggle()
+        positionToggle(),
+        selectionLegendPlugin()
       ]
     });
     canvas.chart = chart;
@@ -26490,7 +26734,11 @@ var gsmViz = (() => {
     chart.helpers = {
       updateData: updateData2,
       updateSpec,
-      exportImage
+      exportImage,
+      selectCategory,
+      selectSegment,
+      clearSelection,
+      getSelection
     };
     return chart;
   }
@@ -26955,6 +27203,57 @@ var gsmViz = (() => {
     });
   }
 
+  // src/facetBars/syncSelection.js
+  function syncSelection(charts) {
+    charts.forEach((chart) => {
+      const baseSelectCategory = chart.helpers.selectCategory;
+      const baseSelectSegment = chart.helpers.selectSegment;
+      const baseClearSelection = chart.helpers.clearSelection;
+      chart.helpers.selectCategory = function(chartInstance, values, event) {
+        baseSelectCategory(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectCategory(sibling, values, void 0, { _silent: true });
+        });
+      };
+      chart.helpers.selectSegment = function(chartInstance, values, event) {
+        baseSelectSegment(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectSegment(sibling, values, void 0, { _silent: true });
+        });
+      };
+      chart.helpers.clearSelection = function(chartInstance, event) {
+        baseClearSelection(chartInstance, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          clearSelection(sibling, void 0, { _silent: true });
+        });
+      };
+    });
+    charts.forEach((chart) => {
+      const originalOnClick = chart.options.onClick;
+      chart.options.onClick = (event, activeElements, chartInstance) => {
+        if (originalOnClick) {
+          originalOnClick(event, activeElements, chartInstance);
+        }
+        const state = chartInstance.data._selectionState_;
+        if (!state?.selection) return;
+        const sel = state.selection;
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          if (sel.type === null) {
+            clearSelection(sibling);
+          } else if (sel.type === "category") {
+            selectCategory(sibling, sel.values);
+          } else if (sel.type === "segment") {
+            selectSegment(sibling, sel.values);
+          }
+        });
+      };
+    });
+  }
+
   // src/facetBars.js
   function facetBars(element = "body", data = [], spec = {}) {
     validateSpec2(data, spec);
@@ -27057,6 +27356,7 @@ var gsmViz = (() => {
       if (needsUpdate) chart.update("none");
     });
     syncCharts(charts);
+    syncSelection(charts);
     if (hasFill) {
       const syncOpts = { sync: merged.facet.legend.sync };
       syncLegendClicks(charts, syncOpts);

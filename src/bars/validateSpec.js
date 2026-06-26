@@ -166,6 +166,49 @@ export default function validateSpec(data, spec) {
                 'spec.callbacks.onHover must be a function or null'
             );
         }
+        if (
+            callbacks.onSelect !== undefined &&
+            callbacks.onSelect !== null &&
+            typeof callbacks.onSelect !== 'function'
+        ) {
+            throw new Error(
+                'spec.callbacks.onSelect must be a function or null'
+            );
+        }
+    }
+
+    const selection = spec.selection;
+    if (selection !== undefined) {
+        if (
+            selection === null ||
+            typeof selection !== 'object' ||
+            Array.isArray(selection)
+        ) {
+            throw new Error('spec.selection must be a plain object');
+        }
+        if (
+            selection.enabled !== undefined &&
+            typeof selection.enabled !== 'boolean'
+        ) {
+            throw new Error('spec.selection.enabled must be a boolean');
+        }
+        if (selection.opacity !== undefined) {
+            if (
+                typeof selection.opacity !== 'number' ||
+                selection.opacity < 0 ||
+                selection.opacity > 1
+            ) {
+                throw new Error(
+                    'spec.selection.opacity must be a number between 0 and 1'
+                );
+            }
+        }
+        if (
+            selection.multiple !== undefined &&
+            typeof selection.multiple !== 'boolean'
+        ) {
+            throw new Error('spec.selection.multiple must be a boolean');
+        }
     }
 
     const captions = spec.labels?.captions;
