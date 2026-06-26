@@ -10,13 +10,32 @@
  */
 
 /**
- * Convert a hex color to an rgba string with the given alpha.
- * Handles #RGB, #RRGGBB, and existing rgba(...) strings.
+ * Named CSS colors → RGB lookup (covers common Chart.js/d3 defaults).
+ */
+const NAMED_COLORS = {
+    transparent: [0, 0, 0],
+    black: [0, 0, 0],
+    white: [255, 255, 255],
+    red: [255, 0, 0],
+    green: [0, 128, 0],
+    blue: [0, 0, 255],
+    yellow: [255, 255, 0],
+    orange: [255, 165, 0],
+    purple: [128, 0, 128],
+    gray: [128, 128, 128],
+    grey: [128, 128, 128],
+};
+
+/**
+ * Convert any CSS color string to an rgba string with the given alpha.
+ * Handles #RGB, #RRGGBB, rgb(...), rgba(...), and named CSS colors.
+ * Falls back to a semi-transparent grey for unsupported formats.
  */
 function toRgba(color, alpha) {
-    if (!color) return `rgba(128, 128, 128, ${alpha})`;
+    if (!color || color === 'transparent')
+        return `rgba(128, 128, 128, ${alpha})`;
 
-    // Already rgba — replace the alpha
+    // Already rgba/rgb — replace the alpha
     const rgbaMatch = color.match(
         /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/
     );
@@ -24,15 +43,29 @@ function toRgba(color, alpha) {
         return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha})`;
     }
 
-    // Hex color
-    let hex = color.replace('#', '');
-    if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    // Hex color (#RGB or #RRGGBB)
+    if (color.startsWith('#')) {
+        let hex = color.slice(1);
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
     }
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+    // Named CSS color
+    const named = NAMED_COLORS[color.toLowerCase()];
+    if (named) {
+        return `rgba(${named[0]}, ${named[1]}, ${named[2]}, ${alpha})`;
+    }
+
+    // Unsupported format — return the original color unchanged rather than
+    // producing rgba(NaN, NaN, NaN, ...).
+    return color;
 }
 
 /**
@@ -191,8 +224,10 @@ function fireOnSelect(chart, selection, event) {
  * @param {Object} chart - Chart.js instance
  * @param {string|string[]} values - category value(s) to select
  * @param {Object} [event] - optional event that triggered the selection
+ * @param {Object} [options] - internal options
+ * @param {boolean} [options._silent] - suppress onSelect callback (used by syncSelection)
  */
-export function selectCategory(chart, values, event) {
+export function selectCategory(chart, values, event, options) {
     const valArray = Array.isArray(values) ? values : [values];
 
     storeOriginalColors(chart);
@@ -205,8 +240,10 @@ export function selectCategory(chart, values, event) {
 
     applySelection(chart);
 
-    const selection = getSelection(chart);
-    fireOnSelect(chart, selection, event);
+    if (!options?._silent) {
+        const selection = getSelection(chart);
+        fireOnSelect(chart, selection, event);
+    }
 }
 
 /**
@@ -215,8 +252,10 @@ export function selectCategory(chart, values, event) {
  * @param {Object} chart - Chart.js instance
  * @param {Object|Object[]} values - segment descriptor(s) { category, fill }
  * @param {Object} [event] - optional event that triggered the selection
+ * @param {Object} [options] - internal options
+ * @param {boolean} [options._silent] - suppress onSelect callback (used by syncSelection)
  */
-export function selectSegment(chart, values, event) {
+export function selectSegment(chart, values, event, options) {
     const valArray = Array.isArray(values) ? values : [values];
 
     storeOriginalColors(chart);
@@ -229,8 +268,10 @@ export function selectSegment(chart, values, event) {
 
     applySelection(chart);
 
-    const selection = getSelection(chart);
-    fireOnSelect(chart, selection, event);
+    if (!options?._silent) {
+        const selection = getSelection(chart);
+        fireOnSelect(chart, selection, event);
+    }
 }
 
 /**
@@ -238,15 +279,19 @@ export function selectSegment(chart, values, event) {
  *
  * @param {Object} chart - Chart.js instance
  * @param {Object} [event] - optional event that triggered the clear
+ * @param {Object} [options] - internal options
+ * @param {boolean} [options._silent] - suppress onSelect callback (used by syncSelection)
  */
-export function clearSelection(chart, event) {
+export function clearSelection(chart, event, options) {
     const state = chart.data._selectionState_;
     if (!state || !state.selection || state.selection.type === null) return;
 
     state.selection = { type: null, values: [] };
     removeSelection(chart);
 
-    fireOnSelect(chart, { type: null, values: [] }, event);
+    if (!options?._silent) {
+        fireOnSelect(chart, { type: null, values: [] }, event);
+    }
 }
 
 /**

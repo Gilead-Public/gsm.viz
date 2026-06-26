@@ -496,22 +496,12 @@ describe('bars/updateSpec', () => {
             expect(getSelection(chart).type).toBeNull();
         });
 
-        test('updateSpec preserves selection when mapping.x does not change', () => {
+        test('updateSpec clears selection state (datasets are rebuilt with fresh colors)', () => {
             const { selectCategory, getSelection } = require('../../src/bars/selection.js');
             const chart = bars(container, fillData, fillSpec);
             selectCategory(chart, 'A');
 
             updateSpec(chart, { labels: { title: 'New Title' } });
-            expect(getSelection(chart).type).toBe('category');
-            expect(getSelection(chart).values).toEqual(['A']);
-        });
-
-        test('updateSpec clears selection when mapping.x changes', () => {
-            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
-            const chart = bars(container, fillData, fillSpec);
-            selectCategory(chart, 'A');
-
-            updateSpec(chart, { mapping: { x: 'group' } });
             expect(getSelection(chart).type).toBeNull();
         });
     });

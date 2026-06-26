@@ -26433,6 +26433,24 @@ var gsmViz = (() => {
     delete state.originalColors;
     chart.update();
   }
+  function selectionLegendPlugin() {
+    return {
+      id: "selectionLegend",
+      beforeDraw(chart) {
+        const state = chart.data?._selectionState_;
+        if (!state?.originalColors || !chart.legend?.legendItems) return;
+        chart.legend.legendItems.forEach((item) => {
+          const dsIndex = item.datasetIndex;
+          if (dsIndex == null || !state.originalColors[dsIndex]) return;
+          const orig = state.originalColors[dsIndex];
+          const bg = orig.backgroundColor;
+          item.fillStyle = Array.isArray(bg) ? bg[0] : bg;
+          const border = orig.borderColor;
+          item.strokeStyle = Array.isArray(border) ? border[0] : border;
+        });
+      }
+    };
+  }
   function fireOnSelect(chart, selection2, event) {
     const onSelect = chart.data._spec_?.callbacks?.onSelect;
     if (typeof onSelect === "function") {
@@ -26593,7 +26611,8 @@ var gsmViz = (() => {
         plugin2,
         displayWhiteBackground(),
         nCategoriesToggle(),
-        positionToggle()
+        positionToggle(),
+        selectionLegendPlugin()
       ]
     });
     canvas.chart = chart;

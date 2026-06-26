@@ -8,8 +8,8 @@ import {
  * Wire up cross-chart selection synchronization across all facet charts.
  *
  * When selection helpers are called on any one chart, the same selection is
- * applied to all sibling charts. This ensures that clicking a bar in one
- * facet highlights the same category/segment across all facets.
+ * applied to all sibling charts. Sibling callbacks are suppressed (via the
+ * _silent option) so onSelect only fires once from the originating chart.
  *
  * Also hooks into the onClick handler so that click-to-select in one facet
  * propagates to siblings.
@@ -23,13 +23,13 @@ export default function syncSelection(charts) {
         const baseClearSelection = chart.helpers.clearSelection;
 
         chart.helpers.selectCategory = function (chartInstance, values, event) {
-            // Apply to the target chart
+            // Apply to the target chart (fires onSelect)
             baseSelectCategory(chartInstance, values, event);
 
-            // Propagate to siblings (without firing onSelect again)
+            // Propagate to siblings silently (no duplicate onSelect callbacks)
             charts.forEach((sibling) => {
                 if (sibling === chartInstance) return;
-                selectCategory(sibling, values);
+                selectCategory(sibling, values, undefined, { _silent: true });
             });
         };
 
@@ -38,7 +38,7 @@ export default function syncSelection(charts) {
 
             charts.forEach((sibling) => {
                 if (sibling === chartInstance) return;
-                selectSegment(sibling, values);
+                selectSegment(sibling, values, undefined, { _silent: true });
             });
         };
 
@@ -47,7 +47,7 @@ export default function syncSelection(charts) {
 
             charts.forEach((sibling) => {
                 if (sibling === chartInstance) return;
-                clearSelection(sibling);
+                clearSelection(sibling, undefined, { _silent: true });
             });
         };
     });
