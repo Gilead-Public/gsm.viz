@@ -26281,51 +26281,30 @@ var gsmViz = (() => {
     }
   }
 
+  // src/util/merge.js
+  function mergeDeep(...objects) {
+    const isObject2 = (obj) => obj && typeof obj === "object";
+    return objects.reduce((prev, obj) => {
+      Object.keys(obj).forEach((key) => {
+        const pVal = prev[key];
+        const oVal = obj[key];
+        if (Array.isArray(pVal) && Array.isArray(oVal)) {
+          prev[key] = oVal;
+        } else if (isObject2(pVal) && isObject2(oVal)) {
+          prev[key] = mergeDeep(pVal, oVal);
+        } else {
+          prev[key] = oVal;
+        }
+      });
+      return prev;
+    }, {});
+  }
+
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
     delete chart.data._selectionState_;
-    const combined = {
-      ...existing,
-      ...spec,
-      mapping: { ...existing.mapping, ...spec.mapping },
-      scales: {
-        x: {
-          ...existing.scales?.x,
-          ...spec.scales?.x,
-          ticks: {
-            ...existing.scales?.x?.ticks,
-            ...spec.scales?.x?.ticks
-          }
-        },
-        y: { ...existing.scales?.y, ...spec.scales?.y },
-        fill: { ...existing.scales?.fill, ...spec.scales?.fill }
-      },
-      labels: { ...existing.labels, ...spec.labels },
-      annotations: {
-        ...existing.annotations,
-        ...spec.annotations,
-        labels: {
-          segment: {
-            ...existing.annotations?.labels?.segment,
-            ...spec.annotations?.labels?.segment
-          },
-          total: {
-            ...existing.annotations?.labels?.total,
-            ...spec.annotations?.labels?.total
-          },
-          inside: {
-            ...existing.annotations?.labels?.inside,
-            ...spec.annotations?.labels?.inside
-          },
-          outside: {
-            ...existing.annotations?.labels?.outside,
-            ...spec.annotations?.labels?.outside
-          }
-        }
-      },
-      theme: { ...existing.theme, ...spec.theme }
-    };
+    const combined = mergeDeep(existing, spec);
     const merged = mergeSpec(existing.data, combined);
     if (existing._originalNCategories) {
       merged._originalNCategories = existing._originalNCategories;
@@ -27024,9 +27003,12 @@ var gsmViz = (() => {
       tooltip: tooltip5,
       theme,
       legend: legend5,
+      selection: mergedSpec.selection,
+      zoom: mergedSpec.zoom,
       callbacks: {
         onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
-        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null
+        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null,
+        onSelect: callbacks.onSelect ?? null
       }
     };
   }
@@ -28360,9 +28342,11 @@ var gsmViz = (() => {
     const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
-    const analysisType = config?.AnalysisType === "rate" ? "rate" : "binary";
+    const rawType = (config?.AnalysisType ?? "").toLowerCase();
+    if (rawType === "identity") return [];
+    const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {
-      const variance = analysisType === "rate" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
+      const variance = analysisType === "poisson" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
       if (variance <= 0) return Number.NaN;
       const score = (d.Metric - vMu) / Math.sqrt(variance);
       return score * score;
@@ -28373,7 +28357,7 @@ var gsmViz = (() => {
     const bounds = [];
     thresholds2.forEach((threshold) => {
       denominatorRange.forEach((denominator) => {
-        const variance = analysisType === "rate" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
+        const variance = analysisType === "poisson" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
         if (variance < 0) return;
         const Metric = vMu + threshold * Math.sqrt(variance);
         const Numerator = Metric * denominator;
