@@ -6,6 +6,7 @@ import initializeDynamicCategoryData from './getPlugins/initializeDynamicCategor
 import getVisibleCategories from './getPlugins/getVisibleCategories.js';
 import getAllLabels from './getPlugins/getAllLabels.js';
 import refreshDynamicCategoryData from './getPlugins/refreshDynamicCategoryData.js';
+import mergeDeep from '../util/merge.js';
 
 /**
  * Re-run the spec pipeline on an existing chart with a partial spec update.
@@ -23,48 +24,11 @@ export default function updateSpec(chart, spec) {
     // after the update if needed.
     delete chart.data._selectionState_;
 
-    // Merge incoming partial spec over the existing stored spec.
-    const combined = {
-        ...existing,
-        ...spec,
-        mapping: { ...existing.mapping, ...spec.mapping },
-        scales: {
-            x: {
-                ...existing.scales?.x,
-                ...spec.scales?.x,
-                ticks: {
-                    ...existing.scales?.x?.ticks,
-                    ...spec.scales?.x?.ticks,
-                },
-            },
-            y: { ...existing.scales?.y, ...spec.scales?.y },
-            fill: { ...existing.scales?.fill, ...spec.scales?.fill },
-        },
-        labels: { ...existing.labels, ...spec.labels },
-        annotations: {
-            ...existing.annotations,
-            ...spec.annotations,
-            labels: {
-                segment: {
-                    ...existing.annotations?.labels?.segment,
-                    ...spec.annotations?.labels?.segment,
-                },
-                total: {
-                    ...existing.annotations?.labels?.total,
-                    ...spec.annotations?.labels?.total,
-                },
-                inside: {
-                    ...existing.annotations?.labels?.inside,
-                    ...spec.annotations?.labels?.inside,
-                },
-                outside: {
-                    ...existing.annotations?.labels?.outside,
-                    ...spec.annotations?.labels?.outside,
-                },
-            },
-        },
-        theme: { ...existing.theme, ...spec.theme },
-    };
+    // Deep-merge incoming partial spec over the existing stored spec.
+    // mergeDeep handles all nesting uniformly, avoiding the bug where
+    // top-level spread clobbered sibling keys in tooltip/zoom/legend/
+    // callbacks/selection on partial updates.
+    const combined = mergeDeep(existing, spec);
 
     const merged = mergeSpec(existing.data, combined);
     if (existing._originalNCategories) {

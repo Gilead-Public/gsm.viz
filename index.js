@@ -26281,51 +26281,30 @@ var gsmViz = (() => {
     }
   }
 
+  // src/util/merge.js
+  function mergeDeep(...objects) {
+    const isObject2 = (obj) => obj && typeof obj === "object";
+    return objects.reduce((prev, obj) => {
+      Object.keys(obj).forEach((key) => {
+        const pVal = prev[key];
+        const oVal = obj[key];
+        if (Array.isArray(pVal) && Array.isArray(oVal)) {
+          prev[key] = oVal;
+        } else if (isObject2(pVal) && isObject2(oVal)) {
+          prev[key] = mergeDeep(pVal, oVal);
+        } else {
+          prev[key] = oVal;
+        }
+      });
+      return prev;
+    }, {});
+  }
+
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
     delete chart.data._selectionState_;
-    const combined = {
-      ...existing,
-      ...spec,
-      mapping: { ...existing.mapping, ...spec.mapping },
-      scales: {
-        x: {
-          ...existing.scales?.x,
-          ...spec.scales?.x,
-          ticks: {
-            ...existing.scales?.x?.ticks,
-            ...spec.scales?.x?.ticks
-          }
-        },
-        y: { ...existing.scales?.y, ...spec.scales?.y },
-        fill: { ...existing.scales?.fill, ...spec.scales?.fill }
-      },
-      labels: { ...existing.labels, ...spec.labels },
-      annotations: {
-        ...existing.annotations,
-        ...spec.annotations,
-        labels: {
-          segment: {
-            ...existing.annotations?.labels?.segment,
-            ...spec.annotations?.labels?.segment
-          },
-          total: {
-            ...existing.annotations?.labels?.total,
-            ...spec.annotations?.labels?.total
-          },
-          inside: {
-            ...existing.annotations?.labels?.inside,
-            ...spec.annotations?.labels?.inside
-          },
-          outside: {
-            ...existing.annotations?.labels?.outside,
-            ...spec.annotations?.labels?.outside
-          }
-        }
-      },
-      theme: { ...existing.theme, ...spec.theme }
-    };
+    const combined = mergeDeep(existing, spec);
     const merged = mergeSpec(existing.data, combined);
     if (existing._originalNCategories) {
       merged._originalNCategories = existing._originalNCategories;

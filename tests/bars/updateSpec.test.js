@@ -505,4 +505,62 @@ describe('bars/updateSpec', () => {
             expect(getSelection(chart).type).toBeNull();
         });
     });
+
+    describe('partial spec updates preserve sibling keys', () => {
+        test('partial selection update preserves existing selection keys', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                selection: { enabled: true, opacity: 0.5, multiple: true },
+            });
+
+            updateSpec(chart, { selection: { opacity: 0.3 } });
+
+            expect(chart.data._spec_.selection.enabled).toBe(true);
+            expect(chart.data._spec_.selection.multiple).toBe(true);
+            expect(chart.data._spec_.selection.opacity).toBe(0.3);
+        });
+
+        test('partial callbacks update preserves sibling callbacks', () => {
+            const onClick = jest.fn();
+            const onHover = jest.fn();
+            const onSelect = jest.fn();
+            const chart = bars(container, data, {
+                ...spec,
+                callbacks: { onClick, onHover, onSelect },
+            });
+
+            const newOnClick = jest.fn();
+            updateSpec(chart, { callbacks: { onClick: newOnClick } });
+
+            expect(chart.data._spec_.callbacks.onClick).toBe(newOnClick);
+            expect(chart.data._spec_.callbacks.onHover).toBe(onHover);
+            expect(chart.data._spec_.callbacks.onSelect).toBe(onSelect);
+        });
+
+        test('partial tooltip update preserves existing tooltip keys', () => {
+            const formatter = jest.fn();
+            const chart = bars(container, data, {
+                ...spec,
+                tooltip: { format: '.2f', formatter },
+            });
+
+            updateSpec(chart, { tooltip: { format: '.1f' } });
+
+            expect(chart.data._spec_.tooltip.format).toBe('.1f');
+            expect(chart.data._spec_.tooltip.formatter).toBe(formatter);
+        });
+
+        test('partial zoom update preserves existing zoom keys', () => {
+            const chart = bars(container, data, {
+                ...spec,
+                zoom: { enabled: true, mode: 'x', pan: true, wheel: true, pinch: true },
+            });
+
+            updateSpec(chart, { zoom: { mode: 'xy' } });
+
+            expect(chart.data._spec_.zoom.enabled).toBe(true);
+            expect(chart.data._spec_.zoom.mode).toBe('xy');
+            expect(chart.data._spec_.zoom.pan).toBe(true);
+        });
+    });
 });
