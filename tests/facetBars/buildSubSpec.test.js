@@ -197,13 +197,22 @@ describe('facetBars/buildSubSpec', () => {
         });
     });
 
-    test('forwards callbacks.onSelect unchanged', () => {
+    test('forwards callbacks.onSelect with facetValue as second argument', () => {
         const userOnSelect = jest.fn();
         const merged = makeMergedSpec({
             callbacks: { onClick: null, onHover: null, onSelect: userOnSelect },
         });
-        const result = buildSubSpec('US', merged);
-        expect(result.callbacks.onSelect).toBe(userOnSelect);
+        const result = buildSubSpec('EU', merged);
+
+        const fakeSelection = { type: 'category', values: ['A'] };
+        const fakeEvent = {};
+        result.callbacks.onSelect(fakeSelection, fakeEvent);
+
+        expect(userOnSelect).toHaveBeenCalledWith(
+            fakeSelection,
+            'EU',
+            fakeEvent
+        );
     });
 
     test('null onSelect passes through as null', () => {

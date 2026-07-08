@@ -60,7 +60,10 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
             onHover: callbacks.onHover
                 ? (point, event) => callbacks.onHover(point, facetValue, event)
                 : null,
-            onSelect: callbacks.onSelect ?? null,
+            onSelect: callbacks.onSelect
+                ? (selection, event) =>
+                      callbacks.onSelect(selection, facetValue, event)
+                : null,
         },
     };
 }

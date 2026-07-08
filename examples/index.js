@@ -27008,7 +27008,7 @@ var gsmViz = (() => {
       callbacks: {
         onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
         onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null,
-        onSelect: callbacks.onSelect ?? null
+        onSelect: callbacks.onSelect ? (selection2, event) => callbacks.onSelect(selection2, facetValue, event) : null
       }
     };
   }
