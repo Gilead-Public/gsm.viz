@@ -174,4 +174,72 @@ describe('predictBounds()', () => {
             expect(match.Numerator).toBeCloseTo(row.Numerator, 6);
         });
     });
+
+    describe('AnalysisType handling', () => {
+        // Poisson/rate data: vMu > 1 triggers negative variance under
+        // the binomial formula, so only the Poisson branch produces valid bounds.
+        const poissonData = [
+            { Numerator: 30, Denominator: 10, Metric: 3.0 },
+            { Numerator: 25, Denominator: 10, Metric: 2.5 },
+            { Numerator: 35, Denominator: 10, Metric: 3.5 },
+        ];
+
+        test('AnalysisType "poisson" uses Poisson variance and produces valid bounds when vMu > 1', () => {
+            const bounds = predictBounds(poissonData, {
+                AnalysisType: 'poisson',
+                Threshold: '-2,2',
+            });
+
+            expect(bounds.length).toBeGreaterThan(0);
+            expect(
+                bounds.every(
+                    (d) =>
+                        Number.isFinite(d.Metric) &&
+                        Number.isFinite(d.Numerator) &&
+                        d.Numerator >= 0
+                )
+            ).toBe(true);
+        });
+
+        test('AnalysisType "poisson" is case-insensitive', () => {
+            const bounds = predictBounds(poissonData, {
+                AnalysisType: 'Poisson',
+                Threshold: '-2,2',
+            });
+
+            expect(bounds.length).toBeGreaterThan(0);
+        });
+
+        test('AnalysisType "identity" returns empty array (no bounds)', () => {
+            const bounds = predictBounds(poissonData, {
+                AnalysisType: 'identity',
+                Threshold: '-2,2',
+            });
+
+            expect(bounds).toEqual([]);
+        });
+
+        test('missing AnalysisType defaults to binary formula', () => {
+            // Binary data with vMu < 1 so the formula is valid.
+            const binaryData = [
+                { Numerator: 3, Denominator: 10, Metric: 0.3 },
+                { Numerator: 5, Denominator: 10, Metric: 0.5 },
+            ];
+            const bounds = predictBounds(binaryData, {
+                Threshold: '-2,2',
+            });
+
+            expect(bounds.length).toBeGreaterThan(0);
+        });
+
+        test('without "poisson", vMu > 1 data returns empty bounds (binomial goes negative)', () => {
+            const bounds = predictBounds(poissonData, {
+                Threshold: '-2,2',
+            });
+
+            // Binomial formula produces negative variance when vMu > 1,
+            // leading to NaN → filtered out → empty.
+            expect(bounds).toEqual([]);
+        });
+    });
 });

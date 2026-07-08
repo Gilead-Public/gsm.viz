@@ -28342,9 +28342,11 @@ var gsmViz = (() => {
     const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
-    const analysisType = config?.AnalysisType === "rate" ? "rate" : "binary";
+    const rawType = (config?.AnalysisType ?? "").toLowerCase();
+    if (rawType === "identity") return [];
+    const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {
-      const variance = analysisType === "rate" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
+      const variance = analysisType === "poisson" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
       if (variance <= 0) return Number.NaN;
       const score = (d.Metric - vMu) / Math.sqrt(variance);
       return score * score;
@@ -28355,7 +28357,7 @@ var gsmViz = (() => {
     const bounds = [];
     thresholds2.forEach((threshold) => {
       denominatorRange.forEach((denominator) => {
-        const variance = analysisType === "rate" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
+        const variance = analysisType === "poisson" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
         if (variance < 0) return;
         const Metric = vMu + threshold * Math.sqrt(variance);
         const Numerator = Metric * denominator;
