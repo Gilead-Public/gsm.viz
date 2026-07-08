@@ -210,18 +210,22 @@ describe('predictBounds()', () => {
             expect(bounds.length).toBeGreaterThan(0);
         });
 
-        test('AnalysisType "rate" uses Poisson variance (alias for poisson)', () => {
-            const poissonBounds = predictBounds(poissonData, {
-                AnalysisType: 'poisson',
+        test('AnalysisType "rate" uses binary variance (same as default per R convention)', () => {
+            const binaryData = [
+                { Numerator: 3, Denominator: 10, Metric: 0.3 },
+                { Numerator: 5, Denominator: 10, Metric: 0.5 },
+            ];
+            const rateBounds = predictBounds(binaryData, {
+                AnalysisType: 'rate',
                 Threshold: '-2,2',
             });
-            const rateBounds = predictBounds(poissonData, {
-                AnalysisType: 'rate',
+            const binaryBounds = predictBounds(binaryData, {
+                AnalysisType: 'binary',
                 Threshold: '-2,2',
             });
 
             expect(rateBounds.length).toBeGreaterThan(0);
-            expect(rateBounds).toEqual(poissonBounds);
+            expect(rateBounds).toEqual(binaryBounds);
         });
 
         test('AnalysisType "identity" returns empty array (no bounds)', () => {

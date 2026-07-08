@@ -28344,7 +28344,7 @@ var gsmViz = (() => {
     const vMu = numeratorSum / denominatorSum;
     const rawType = (config?.AnalysisType ?? "").toLowerCase();
     if (rawType === "identity") return [];
-    const analysisType = rawType === "poisson" || rawType === "rate" ? "poisson" : "binary";
+    const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {
       const variance = analysisType === "poisson" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
       if (variance <= 0) return Number.NaN;

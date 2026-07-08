@@ -55,13 +55,12 @@ export default function predictBounds(_results_, config) {
     const vMu = numeratorSum / denominatorSum;
 
     // Align with R convention (gsm.reporting::MakeBounds):
-    //   'poisson' / 'rate' → Poisson variance (vMu / n)
-    //   'identity'         → no bounds
-    //   default            → binomial variance (vMu * (1 - vMu) / n)
+    //   'poisson'  → Poisson variance (vMu / n)
+    //   'identity' → no bounds
+    //   default    → binomial variance (vMu * (1 - vMu) / n)
     const rawType = (config?.AnalysisType ?? '').toLowerCase();
     if (rawType === 'identity') return [];
-    const analysisType =
-        rawType === 'poisson' || rawType === 'rate' ? 'poisson' : 'binary';
+    const analysisType = rawType === 'poisson' ? 'poisson' : 'binary';
 
     const phiTerms = rows.map((d) => {
         const variance =
