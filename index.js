@@ -27024,9 +27024,12 @@ var gsmViz = (() => {
       tooltip: tooltip5,
       theme,
       legend: legend5,
+      selection: mergedSpec.selection,
+      zoom: mergedSpec.zoom,
       callbacks: {
         onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
-        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null
+        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null,
+        onSelect: callbacks.onSelect ?? null
       }
     };
   }

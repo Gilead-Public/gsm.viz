@@ -15,7 +15,9 @@ const makeMergedSpec = (overrides = {}) => ({
     tooltip: { format: undefined, formatter: undefined },
     theme: { maintainAspectRatio: false, animation: false },
     legend: { dense: false },
-    callbacks: { onClick: null, onHover: null },
+    callbacks: { onClick: null, onHover: null, onSelect: null },
+    selection: { enabled: false, opacity: 0.2, multiple: false },
+    zoom: { enabled: false, mode: 'x', pan: true, wheel: true, pinch: true },
     facet: {
         field: 'region',
         scales: { x: { free: false }, y: { free: false } },
@@ -167,5 +169,48 @@ describe('facetBars/buildSubSpec', () => {
             const result = buildSubSpec('US', makeMergedSpec(), []);
             expect(result.scales.x.order).toBeUndefined();
         });
+    });
+
+    test('forwards selection unchanged', () => {
+        const merged = makeMergedSpec({
+            selection: { enabled: true, opacity: 0.5, multiple: true },
+        });
+        const result = buildSubSpec('US', merged);
+        expect(result.selection).toEqual({
+            enabled: true,
+            opacity: 0.5,
+            multiple: true,
+        });
+    });
+
+    test('forwards zoom unchanged', () => {
+        const merged = makeMergedSpec({
+            zoom: { enabled: true, mode: 'xy', pan: false, wheel: true, pinch: false },
+        });
+        const result = buildSubSpec('US', merged);
+        expect(result.zoom).toEqual({
+            enabled: true,
+            mode: 'xy',
+            pan: false,
+            wheel: true,
+            pinch: false,
+        });
+    });
+
+    test('forwards callbacks.onSelect unchanged', () => {
+        const userOnSelect = jest.fn();
+        const merged = makeMergedSpec({
+            callbacks: { onClick: null, onHover: null, onSelect: userOnSelect },
+        });
+        const result = buildSubSpec('US', merged);
+        expect(result.callbacks.onSelect).toBe(userOnSelect);
+    });
+
+    test('null onSelect passes through as null', () => {
+        const merged = makeMergedSpec({
+            callbacks: { onClick: null, onHover: null, onSelect: null },
+        });
+        const result = buildSubSpec('US', merged);
+        expect(result.callbacks.onSelect).toBeNull();
     });
 });

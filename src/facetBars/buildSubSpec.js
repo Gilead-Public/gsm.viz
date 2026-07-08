@@ -51,6 +51,8 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
         tooltip,
         theme,
         legend,
+        selection: mergedSpec.selection,
+        zoom: mergedSpec.zoom,
         callbacks: {
             onClick: callbacks.onClick
                 ? (point, event) => callbacks.onClick(point, facetValue, event)
@@ -58,6 +60,7 @@ export default function buildSubSpec(facetValue, mergedSpec, facetData = []) {
             onHover: callbacks.onHover
                 ? (point, event) => callbacks.onHover(point, facetValue, event)
                 : null,
+            onSelect: callbacks.onSelect ?? null,
         },
     };
 }
