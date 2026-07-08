@@ -210,6 +210,20 @@ describe('predictBounds()', () => {
             expect(bounds.length).toBeGreaterThan(0);
         });
 
+        test('AnalysisType "rate" uses Poisson variance (alias for poisson)', () => {
+            const poissonBounds = predictBounds(poissonData, {
+                AnalysisType: 'poisson',
+                Threshold: '-2,2',
+            });
+            const rateBounds = predictBounds(poissonData, {
+                AnalysisType: 'rate',
+                Threshold: '-2,2',
+            });
+
+            expect(rateBounds.length).toBeGreaterThan(0);
+            expect(rateBounds).toEqual(poissonBounds);
+        });
+
         test('AnalysisType "identity" returns empty array (no bounds)', () => {
             const bounds = predictBounds(poissonData, {
                 AnalysisType: 'identity',
