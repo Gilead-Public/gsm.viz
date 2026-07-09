@@ -236,4 +236,32 @@ describe('facetBars/computeGlobalScales', () => {
             expect(result.yMin).toBe(0);
         });
     });
+
+    describe('theme passthrough', () => {
+        test('passes theme to structureData so dynamicCategoryAxis filters phantom categories', () => {
+            // Site C has only null y values — dynamicCategoryAxis should
+            // exclude it from bounds computation.
+            const data = new Map([
+                [
+                    'US',
+                    [
+                        { site: 'A', value: 10 },
+                        { site: 'B', value: 20 },
+                        { site: 'C', value: null },
+                    ],
+                ],
+            ]);
+            const spec = makeSpec({
+                mapping: { x: 'site', y: 'value' },
+                position: 'dodge',
+                theme: { dynamicCategoryAxis: true },
+            });
+            const result = computeGlobalScales(data, spec);
+            // If theme is passed, site C (null) is excluded; max comes from B=20
+            // Without theme, site C contributes y=0 which doesn't change max
+            // but the category is incorrectly included in bounds computation.
+            expect(result.yMax).toBe(20);
+            expect(result.yMin).toBe(0);
+        });
+    });
 });

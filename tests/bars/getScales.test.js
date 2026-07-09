@@ -706,5 +706,19 @@ describe('bars/getScales – y min/max pass-through', () => {
             const scales = getScales(spec);
             expect(scales.y.max).toBeUndefined();
         });
+
+        test('respects explicit y.max when stat is percent', () => {
+            const spec = {
+                orientation: 'vertical',
+                position: 'dodge',
+                stat: 'percent',
+                scales: {
+                    x: { type: 'category' },
+                    y: { type: 'linear', max: 50 },
+                },
+            };
+            const scales = getScales(spec);
+            expect(scales.y.max).toBe(50);
+        });
     });
 });

@@ -24900,14 +24900,6 @@ var gsmViz = (() => {
           total: {
             ...labelModes.total,
             ...userLabels.total
-          },
-          inside: {
-            ...labelModes.inside,
-            ...userLabels.inside
-          },
-          outside: {
-            ...labelModes.outside,
-            ...userLabels.outside
           }
         }
       },
@@ -25285,7 +25277,10 @@ var gsmViz = (() => {
       ...specScales.y.min !== void 0 ? { min: specScales.y.min } : { beginAtZero: true },
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
-      ...percent ? { max: 100, ticks: percentageTicks } : {}
+      ...percent ? {
+        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ticks: percentageTicks
+      } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -25853,7 +25848,7 @@ var gsmViz = (() => {
       const container = chart.canvas?.parentElement;
       if (container) {
         const numCategories = chart.data.labels.length;
-        const pxPerCategory = 30;
+        const pxPerCategory = chart.data._spec_?.theme?.pxPerCategory || 30;
         const horizontal = chart.data._spec_?.orientation === "horizontal";
         if (horizontal) {
           const area = chart.chartArea;
@@ -26441,12 +26436,14 @@ var gsmViz = (() => {
     if (!selectionState || selectionState.type === null) return true;
     const category = getCategoryValue(point, orientation);
     if (selectionState.type === "category") {
-      return selectionState.values.includes(category);
+      return selectionState.values.some(
+        (v) => String(v) === String(category)
+      );
     }
     if (selectionState.type === "segment") {
       const fill2 = point._fill;
       return selectionState.values.some(
-        (seg) => seg.category === category && (seg.fill === void 0 || seg.fill === fill2)
+        (seg) => String(seg.category) === String(category) && (seg.fill === void 0 || String(seg.fill) === String(fill2))
       );
     }
     return true;
@@ -26695,7 +26692,7 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -26881,7 +26878,8 @@ var gsmViz = (() => {
         position,
         stat: spec.stat,
         scales: resolvedScales,
-        nCategories: spec.nCategories
+        nCategories: spec.nCategories,
+        theme: spec.theme
       };
       const { datasets, labels } = structureData2(subSpec);
       if (stacked) {
@@ -27225,11 +27223,15 @@ var gsmViz = (() => {
         charts.forEach((sibling) => {
           if (sibling === chartInstance) return;
           if (sel.type === null) {
-            clearSelection(sibling);
+            clearSelection(sibling, void 0, { _silent: true });
           } else if (sel.type === "category") {
-            selectCategory(sibling, sel.values);
+            selectCategory(sibling, sel.values, void 0, {
+              _silent: true
+            });
           } else if (sel.type === "segment") {
-            selectSegment(sibling, sel.values);
+            selectSegment(sibling, sel.values, void 0, {
+              _silent: true
+            });
           }
         });
       };

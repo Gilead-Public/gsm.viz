@@ -45,7 +45,6 @@ export default function computeGlobalScales(facetDataMap, spec) {
                 ? { ...scales, x: { ...scales?.x, order: xOrder } }
                 : scales;
 
-        // Build a minimal spec compatible with bars/structureData
         const subSpec = {
             data: facetData,
             mapping,
@@ -54,6 +53,7 @@ export default function computeGlobalScales(facetDataMap, spec) {
             stat: spec.stat,
             scales: resolvedScales,
             nCategories: spec.nCategories,
+            theme: spec.theme,
         };
 
         const { datasets, labels } = structureData(subSpec);

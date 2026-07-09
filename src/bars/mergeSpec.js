@@ -52,14 +52,6 @@ export default function mergeSpec(data, spec) {
                     ...labelModes.total,
                     ...userLabels.total,
                 },
-                inside: {
-                    ...labelModes.inside,
-                    ...userLabels.inside,
-                },
-                outside: {
-                    ...labelModes.outside,
-                    ...userLabels.outside,
-                },
             },
         },
         theme: { ...defaults.theme, ...spec.theme },

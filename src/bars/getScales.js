@@ -73,7 +73,12 @@ export default function getScales(spec) {
             : { beginAtZero: true }),
         ...(specScales.y.max !== undefined ? { max: specScales.y.max } : {}),
         ...(stacked ? { stacked: true } : {}),
-        ...(percent ? { max: 100, ticks: percentageTicks } : {}),
+        ...(percent
+            ? {
+                  ...(specScales.y.max === undefined ? { max: 100 } : {}),
+                  ticks: percentageTicks,
+              }
+            : {}),
     };
 
     return {

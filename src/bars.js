@@ -130,7 +130,7 @@ export default function bars(element = 'body', data = [], spec = {}) {
     // charts with different legends, titles, and axis configurations.
     if (merged.theme.dynamicSizing) {
         const numCategories = labels.length;
-        const pxPerCategory = 30;
+        const pxPerCategory = merged.theme.pxPerCategory;
 
         if (merged.orientation === 'horizontal') {
             const area = chart.chartArea;
