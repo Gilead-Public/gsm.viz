@@ -58,7 +58,7 @@ export default function predictBounds(_results_, config) {
     //   'poisson'  → Poisson variance (vMu / n)
     //   'identity' → no bounds
     //   default    → binomial variance (vMu * (1 - vMu) / n)
-    const rawType = (config?.AnalysisType ?? '').toLowerCase();
+    const rawType = String(config?.AnalysisType ?? '').trim().toLowerCase();
     if (rawType === 'identity') return [];
     const analysisType = rawType === 'poisson' ? 'poisson' : 'binary';
 
