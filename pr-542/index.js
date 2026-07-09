@@ -28344,7 +28344,7 @@ var gsmViz = (() => {
     const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
-    const rawType = (config?.AnalysisType ?? "").toLowerCase();
+    const rawType = String(config?.AnalysisType ?? "").trim().toLowerCase();
     if (rawType === "identity") return [];
     const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {
