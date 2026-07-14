@@ -50,6 +50,12 @@ permissions:
 
 jobs:
   build-and-deploy:
+    # Skip builds for pull requests originating from forks. Fork PRs have
+    # downgraded tokens and cannot deploy to gh-pages, so running the full
+    # build just executes untrusted code for no benefit.
+    if: >-
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     # Concurrency key prevents parallel deploys to the same ref, which would
     # race on the gh-pages branch and potentially corrupt it.
     concurrency: ci-${{ github.ref }}

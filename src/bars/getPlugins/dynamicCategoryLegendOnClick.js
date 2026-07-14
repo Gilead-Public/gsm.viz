@@ -45,7 +45,8 @@ export default function dynamicCategoryLegendOnClick(e, legendItem, legendRef) {
         const container = chart.canvas?.parentElement;
         if (container) {
             const numCategories = chart.data.labels.length;
-            const pxPerCategory = 30;
+            const pxPerCategory =
+                chart.data._spec_?.theme?.pxPerCategory || 30;
             const horizontal = chart.data._spec_?.orientation === 'horizontal';
 
             if (horizontal) {

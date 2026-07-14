@@ -134,6 +134,26 @@ describe('bars/selection', () => {
             const sel = getSelection(chart);
             expect(sel).toEqual({ type: 'category', values: ['NonExistent'] });
         });
+
+        test('matches numeric categories when selected with string values', () => {
+            const container = document.createElement('div');
+            const numericData = [
+                { year: 2024, count: 10 },
+                { year: 2025, count: 20 },
+            ];
+            const chart = bars(container, numericData, {
+                mapping: { x: 'year', y: 'count' },
+            });
+            // Select with a string value for a numeric category.
+            selectCategory(chart, '2024');
+
+            // The selected category should dim the non-selected bar.
+            const colors = chart.data.datasets[0].backgroundColor;
+            expect(Array.isArray(colors)).toBe(true);
+            // First bar (2024) should be full opacity, second (2025) dimmed.
+            expect(colors[0]).not.toMatch(/rgba.*0\.2\)$/);
+            expect(colors[1]).toMatch(/rgba/);
+        });
     });
 
     describe('selectSegment', () => {

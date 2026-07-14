@@ -319,6 +319,17 @@ describe('bars entry point', () => {
             expect(c.style.width).toBe('90px');
         });
 
+        test('respects custom pxPerCategory on initial render', () => {
+            const c = document.createElement('div');
+            bars(c, singleSeriesData, {
+                ...singleSeriesSpec,
+                orientation: 'horizontal',
+                theme: { dynamicSizing: true, pxPerCategory: 50 },
+            });
+            // 3 categories × 50px
+            expect(c.style.height).toBe('150px');
+        });
+
         test('clears dynamic dimension when dynamicSizing is disabled', () => {
             const c = document.createElement('div');
             // First render: horizontal + dynamicSizing

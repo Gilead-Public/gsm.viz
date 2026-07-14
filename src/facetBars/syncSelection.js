@@ -72,11 +72,15 @@ export default function syncSelection(charts) {
                 if (sibling === chartInstance) return;
 
                 if (sel.type === null) {
-                    clearSelection(sibling);
+                    clearSelection(sibling, undefined, { _silent: true });
                 } else if (sel.type === 'category') {
-                    selectCategory(sibling, sel.values);
+                    selectCategory(sibling, sel.values, undefined, {
+                        _silent: true,
+                    });
                 } else if (sel.type === 'segment') {
-                    selectSegment(sibling, sel.values);
+                    selectSegment(sibling, sel.values, undefined, {
+                        _silent: true,
+                    });
                 }
             });
         };

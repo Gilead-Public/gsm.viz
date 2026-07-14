@@ -84,15 +84,17 @@ function isPointSelected(point, selectionState, orientation) {
     const category = getCategoryValue(point, orientation);
 
     if (selectionState.type === 'category') {
-        return selectionState.values.includes(category);
+        return selectionState.values.some(
+            (v) => String(v) === String(category)
+        );
     }
 
     if (selectionState.type === 'segment') {
         const fill = point._fill;
         return selectionState.values.some(
             (seg) =>
-                seg.category === category &&
-                (seg.fill === undefined || seg.fill === fill)
+                String(seg.category) === String(category) &&
+                (seg.fill === undefined || String(seg.fill) === String(fill))
         );
     }
 
