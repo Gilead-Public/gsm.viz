@@ -1,9 +1,18 @@
 'use strict'
 var gsmViz = (() => {
+  var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __commonJS = (cb, mod) => function __require() {
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
+  };
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
@@ -16,7 +25,1811 @@ var gsmViz = (() => {
     }
     return to2;
   };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // node_modules/hammerjs/hammer.js
+  var require_hammer = __commonJS({
+    "node_modules/hammerjs/hammer.js"(exports, module) {
+      (function(window2, document2, exportName, undefined2) {
+        "use strict";
+        var VENDOR_PREFIXES = ["", "webkit", "Moz", "MS", "ms", "o"];
+        var TEST_ELEMENT = document2.createElement("div");
+        var TYPE_FUNCTION = "function";
+        var round2 = Math.round;
+        var abs2 = Math.abs;
+        var now2 = Date.now;
+        function setTimeoutContext(fn, timeout2, context) {
+          return setTimeout(bindFn(fn, context), timeout2);
+        }
+        function invokeArrayArg(arg, fn, context) {
+          if (Array.isArray(arg)) {
+            each2(arg, context[fn], context);
+            return true;
+          }
+          return false;
+        }
+        function each2(obj, iterator, context) {
+          var i;
+          if (!obj) {
+            return;
+          }
+          if (obj.forEach) {
+            obj.forEach(iterator, context);
+          } else if (obj.length !== undefined2) {
+            i = 0;
+            while (i < obj.length) {
+              iterator.call(context, obj[i], i, obj);
+              i++;
+            }
+          } else {
+            for (i in obj) {
+              obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+            }
+          }
+        }
+        function deprecate(method, name, message) {
+          var deprecationMessage = "DEPRECATED METHOD: " + name + "\n" + message + " AT \n";
+          return function() {
+            var e = new Error("get-stack-trace");
+            var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, "").replace(/^\s+at\s+/gm, "").replace(/^Object.<anonymous>\s*\(/gm, "{anonymous}()@") : "Unknown Stack Trace";
+            var log = window2.console && (window2.console.warn || window2.console.log);
+            if (log) {
+              log.call(window2.console, deprecationMessage, stack);
+            }
+            return method.apply(this, arguments);
+          };
+        }
+        var assign;
+        if (typeof Object.assign !== "function") {
+          assign = function assign2(target) {
+            if (target === undefined2 || target === null) {
+              throw new TypeError("Cannot convert undefined or null to object");
+            }
+            var output = Object(target);
+            for (var index3 = 1; index3 < arguments.length; index3++) {
+              var source = arguments[index3];
+              if (source !== undefined2 && source !== null) {
+                for (var nextKey in source) {
+                  if (source.hasOwnProperty(nextKey)) {
+                    output[nextKey] = source[nextKey];
+                  }
+                }
+              }
+            }
+            return output;
+          };
+        } else {
+          assign = Object.assign;
+        }
+        var extend2 = deprecate(function extend3(dest, src, merge3) {
+          var keys = Object.keys(src);
+          var i = 0;
+          while (i < keys.length) {
+            if (!merge3 || merge3 && dest[keys[i]] === undefined2) {
+              dest[keys[i]] = src[keys[i]];
+            }
+            i++;
+          }
+          return dest;
+        }, "extend", "Use `assign`.");
+        var merge2 = deprecate(function merge3(dest, src) {
+          return extend2(dest, src, true);
+        }, "merge", "Use `assign`.");
+        function inherit2(child, base, properties) {
+          var baseP = base.prototype, childP;
+          childP = child.prototype = Object.create(baseP);
+          childP.constructor = child;
+          childP._super = baseP;
+          if (properties) {
+            assign(childP, properties);
+          }
+        }
+        function bindFn(fn, context) {
+          return function boundFn() {
+            return fn.apply(context, arguments);
+          };
+        }
+        function boolOrFn(val, args) {
+          if (typeof val == TYPE_FUNCTION) {
+            return val.apply(args ? args[0] || undefined2 : undefined2, args);
+          }
+          return val;
+        }
+        function ifUndefined(val1, val2) {
+          return val1 === undefined2 ? val2 : val1;
+        }
+        function addEventListeners(target, types, handler) {
+          each2(splitStr(types), function(type2) {
+            target.addEventListener(type2, handler, false);
+          });
+        }
+        function removeEventListeners(target, types, handler) {
+          each2(splitStr(types), function(type2) {
+            target.removeEventListener(type2, handler, false);
+          });
+        }
+        function hasParent(node, parent) {
+          while (node) {
+            if (node == parent) {
+              return true;
+            }
+            node = node.parentNode;
+          }
+          return false;
+        }
+        function inStr(str, find2) {
+          return str.indexOf(find2) > -1;
+        }
+        function splitStr(str) {
+          return str.trim().split(/\s+/g);
+        }
+        function inArray(src, find2, findByKey) {
+          if (src.indexOf && !findByKey) {
+            return src.indexOf(find2);
+          } else {
+            var i = 0;
+            while (i < src.length) {
+              if (findByKey && src[i][findByKey] == find2 || !findByKey && src[i] === find2) {
+                return i;
+              }
+              i++;
+            }
+            return -1;
+          }
+        }
+        function toArray(obj) {
+          return Array.prototype.slice.call(obj, 0);
+        }
+        function uniqueArray(src, key, sort) {
+          var results = [];
+          var values = [];
+          var i = 0;
+          while (i < src.length) {
+            var val = key ? src[i][key] : src[i];
+            if (inArray(values, val) < 0) {
+              results.push(src[i]);
+            }
+            values[i] = val;
+            i++;
+          }
+          if (sort) {
+            if (!key) {
+              results = results.sort();
+            } else {
+              results = results.sort(function sortUniqueArray(a, b) {
+                return a[key] > b[key];
+              });
+            }
+          }
+          return results;
+        }
+        function prefixed(obj, property) {
+          var prefix, prop;
+          var camelProp = property[0].toUpperCase() + property.slice(1);
+          var i = 0;
+          while (i < VENDOR_PREFIXES.length) {
+            prefix = VENDOR_PREFIXES[i];
+            prop = prefix ? prefix + camelProp : property;
+            if (prop in obj) {
+              return prop;
+            }
+            i++;
+          }
+          return undefined2;
+        }
+        var _uniqueId = 1;
+        function uniqueId() {
+          return _uniqueId++;
+        }
+        function getWindowForElement(element) {
+          var doc = element.ownerDocument || element;
+          return doc.defaultView || doc.parentWindow || window2;
+        }
+        var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+        var SUPPORT_TOUCH = "ontouchstart" in window2;
+        var SUPPORT_POINTER_EVENTS = prefixed(window2, "PointerEvent") !== undefined2;
+        var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
+        var INPUT_TYPE_TOUCH = "touch";
+        var INPUT_TYPE_PEN = "pen";
+        var INPUT_TYPE_MOUSE = "mouse";
+        var INPUT_TYPE_KINECT = "kinect";
+        var COMPUTE_INTERVAL = 25;
+        var INPUT_START = 1;
+        var INPUT_MOVE = 2;
+        var INPUT_END = 4;
+        var INPUT_CANCEL = 8;
+        var DIRECTION_NONE = 1;
+        var DIRECTION_LEFT = 2;
+        var DIRECTION_RIGHT = 4;
+        var DIRECTION_UP = 8;
+        var DIRECTION_DOWN = 16;
+        var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+        var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+        var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+        var PROPS_XY = ["x", "y"];
+        var PROPS_CLIENT_XY = ["clientX", "clientY"];
+        function Input(manager, callback2) {
+          var self2 = this;
+          this.manager = manager;
+          this.callback = callback2;
+          this.element = manager.element;
+          this.target = manager.options.inputTarget;
+          this.domHandler = function(ev) {
+            if (boolOrFn(manager.options.enable, [manager])) {
+              self2.handler(ev);
+            }
+          };
+          this.init();
+        }
+        Input.prototype = {
+          /**
+           * should handle the inputEvent data and trigger the callback
+           * @virtual
+           */
+          handler: function() {
+          },
+          /**
+           * bind the events
+           */
+          init: function() {
+            this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+            this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+            this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+          },
+          /**
+           * unbind the events
+           */
+          destroy: function() {
+            this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
+            this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+            this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+          }
+        };
+        function createInputInstance(manager) {
+          var Type;
+          var inputClass = manager.options.inputClass;
+          if (inputClass) {
+            Type = inputClass;
+          } else if (SUPPORT_POINTER_EVENTS) {
+            Type = PointerEventInput;
+          } else if (SUPPORT_ONLY_TOUCH) {
+            Type = TouchInput;
+          } else if (!SUPPORT_TOUCH) {
+            Type = MouseInput;
+          } else {
+            Type = TouchMouseInput;
+          }
+          return new Type(manager, inputHandler);
+        }
+        function inputHandler(manager, eventType, input) {
+          var pointersLen = input.pointers.length;
+          var changedPointersLen = input.changedPointers.length;
+          var isFirst = eventType & INPUT_START && pointersLen - changedPointersLen === 0;
+          var isFinal = eventType & (INPUT_END | INPUT_CANCEL) && pointersLen - changedPointersLen === 0;
+          input.isFirst = !!isFirst;
+          input.isFinal = !!isFinal;
+          if (isFirst) {
+            manager.session = {};
+          }
+          input.eventType = eventType;
+          computeInputData(manager, input);
+          manager.emit("hammer.input", input);
+          manager.recognize(input);
+          manager.session.prevInput = input;
+        }
+        function computeInputData(manager, input) {
+          var session = manager.session;
+          var pointers = input.pointers;
+          var pointersLength = pointers.length;
+          if (!session.firstInput) {
+            session.firstInput = simpleCloneInputData(input);
+          }
+          if (pointersLength > 1 && !session.firstMultiple) {
+            session.firstMultiple = simpleCloneInputData(input);
+          } else if (pointersLength === 1) {
+            session.firstMultiple = false;
+          }
+          var firstInput = session.firstInput;
+          var firstMultiple = session.firstMultiple;
+          var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+          var center = input.center = getCenter2(pointers);
+          input.timeStamp = now2();
+          input.deltaTime = input.timeStamp - firstInput.timeStamp;
+          input.angle = getAngle(offsetCenter, center);
+          input.distance = getDistance(offsetCenter, center);
+          computeDeltaXY(session, input);
+          input.offsetDirection = getDirection(input.deltaX, input.deltaY);
+          var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
+          input.overallVelocityX = overallVelocity.x;
+          input.overallVelocityY = overallVelocity.y;
+          input.overallVelocity = abs2(overallVelocity.x) > abs2(overallVelocity.y) ? overallVelocity.x : overallVelocity.y;
+          input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+          input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+          input.maxPointers = !session.prevInput ? input.pointers.length : input.pointers.length > session.prevInput.maxPointers ? input.pointers.length : session.prevInput.maxPointers;
+          computeIntervalInputData(session, input);
+          var target = manager.element;
+          if (hasParent(input.srcEvent.target, target)) {
+            target = input.srcEvent.target;
+          }
+          input.target = target;
+        }
+        function computeDeltaXY(session, input) {
+          var center = input.center;
+          var offset = session.offsetDelta || {};
+          var prevDelta = session.prevDelta || {};
+          var prevInput = session.prevInput || {};
+          if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+            prevDelta = session.prevDelta = {
+              x: prevInput.deltaX || 0,
+              y: prevInput.deltaY || 0
+            };
+            offset = session.offsetDelta = {
+              x: center.x,
+              y: center.y
+            };
+          }
+          input.deltaX = prevDelta.x + (center.x - offset.x);
+          input.deltaY = prevDelta.y + (center.y - offset.y);
+        }
+        function computeIntervalInputData(session, input) {
+          var last = session.lastInterval || input, deltaTime = input.timeStamp - last.timeStamp, velocity, velocityX, velocityY, direction;
+          if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined2)) {
+            var deltaX = input.deltaX - last.deltaX;
+            var deltaY = input.deltaY - last.deltaY;
+            var v = getVelocity(deltaTime, deltaX, deltaY);
+            velocityX = v.x;
+            velocityY = v.y;
+            velocity = abs2(v.x) > abs2(v.y) ? v.x : v.y;
+            direction = getDirection(deltaX, deltaY);
+            session.lastInterval = input;
+          } else {
+            velocity = last.velocity;
+            velocityX = last.velocityX;
+            velocityY = last.velocityY;
+            direction = last.direction;
+          }
+          input.velocity = velocity;
+          input.velocityX = velocityX;
+          input.velocityY = velocityY;
+          input.direction = direction;
+        }
+        function simpleCloneInputData(input) {
+          var pointers = [];
+          var i = 0;
+          while (i < input.pointers.length) {
+            pointers[i] = {
+              clientX: round2(input.pointers[i].clientX),
+              clientY: round2(input.pointers[i].clientY)
+            };
+            i++;
+          }
+          return {
+            timeStamp: now2(),
+            pointers,
+            center: getCenter2(pointers),
+            deltaX: input.deltaX,
+            deltaY: input.deltaY
+          };
+        }
+        function getCenter2(pointers) {
+          var pointersLength = pointers.length;
+          if (pointersLength === 1) {
+            return {
+              x: round2(pointers[0].clientX),
+              y: round2(pointers[0].clientY)
+            };
+          }
+          var x = 0, y = 0, i = 0;
+          while (i < pointersLength) {
+            x += pointers[i].clientX;
+            y += pointers[i].clientY;
+            i++;
+          }
+          return {
+            x: round2(x / pointersLength),
+            y: round2(y / pointersLength)
+          };
+        }
+        function getVelocity(deltaTime, x, y) {
+          return {
+            x: x / deltaTime || 0,
+            y: y / deltaTime || 0
+          };
+        }
+        function getDirection(x, y) {
+          if (x === y) {
+            return DIRECTION_NONE;
+          }
+          if (abs2(x) >= abs2(y)) {
+            return x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+          }
+          return y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
+        }
+        function getDistance(p1, p2, props) {
+          if (!props) {
+            props = PROPS_XY;
+          }
+          var x = p2[props[0]] - p1[props[0]], y = p2[props[1]] - p1[props[1]];
+          return Math.sqrt(x * x + y * y);
+        }
+        function getAngle(p1, p2, props) {
+          if (!props) {
+            props = PROPS_XY;
+          }
+          var x = p2[props[0]] - p1[props[0]], y = p2[props[1]] - p1[props[1]];
+          return Math.atan2(y, x) * 180 / Math.PI;
+        }
+        function getRotation(start2, end) {
+          return getAngle(end[1], end[0], PROPS_CLIENT_XY) + getAngle(start2[1], start2[0], PROPS_CLIENT_XY);
+        }
+        function getScale(start2, end) {
+          return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start2[0], start2[1], PROPS_CLIENT_XY);
+        }
+        var MOUSE_INPUT_MAP = {
+          mousedown: INPUT_START,
+          mousemove: INPUT_MOVE,
+          mouseup: INPUT_END
+        };
+        var MOUSE_ELEMENT_EVENTS = "mousedown";
+        var MOUSE_WINDOW_EVENTS = "mousemove mouseup";
+        function MouseInput() {
+          this.evEl = MOUSE_ELEMENT_EVENTS;
+          this.evWin = MOUSE_WINDOW_EVENTS;
+          this.pressed = false;
+          Input.apply(this, arguments);
+        }
+        inherit2(MouseInput, Input, {
+          /**
+           * handle mouse events
+           * @param {Object} ev
+           */
+          handler: function MEhandler(ev) {
+            var eventType = MOUSE_INPUT_MAP[ev.type];
+            if (eventType & INPUT_START && ev.button === 0) {
+              this.pressed = true;
+            }
+            if (eventType & INPUT_MOVE && ev.which !== 1) {
+              eventType = INPUT_END;
+            }
+            if (!this.pressed) {
+              return;
+            }
+            if (eventType & INPUT_END) {
+              this.pressed = false;
+            }
+            this.callback(this.manager, eventType, {
+              pointers: [ev],
+              changedPointers: [ev],
+              pointerType: INPUT_TYPE_MOUSE,
+              srcEvent: ev
+            });
+          }
+        });
+        var POINTER_INPUT_MAP = {
+          pointerdown: INPUT_START,
+          pointermove: INPUT_MOVE,
+          pointerup: INPUT_END,
+          pointercancel: INPUT_CANCEL,
+          pointerout: INPUT_CANCEL
+        };
+        var IE10_POINTER_TYPE_ENUM = {
+          2: INPUT_TYPE_TOUCH,
+          3: INPUT_TYPE_PEN,
+          4: INPUT_TYPE_MOUSE,
+          5: INPUT_TYPE_KINECT
+          // see https://twitter.com/jacobrossi/status/480596438489890816
+        };
+        var POINTER_ELEMENT_EVENTS = "pointerdown";
+        var POINTER_WINDOW_EVENTS = "pointermove pointerup pointercancel";
+        if (window2.MSPointerEvent && !window2.PointerEvent) {
+          POINTER_ELEMENT_EVENTS = "MSPointerDown";
+          POINTER_WINDOW_EVENTS = "MSPointerMove MSPointerUp MSPointerCancel";
+        }
+        function PointerEventInput() {
+          this.evEl = POINTER_ELEMENT_EVENTS;
+          this.evWin = POINTER_WINDOW_EVENTS;
+          Input.apply(this, arguments);
+          this.store = this.manager.session.pointerEvents = [];
+        }
+        inherit2(PointerEventInput, Input, {
+          /**
+           * handle mouse events
+           * @param {Object} ev
+           */
+          handler: function PEhandler(ev) {
+            var store = this.store;
+            var removePointer = false;
+            var eventTypeNormalized = ev.type.toLowerCase().replace("ms", "");
+            var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+            var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+            var isTouch = pointerType == INPUT_TYPE_TOUCH;
+            var storeIndex = inArray(store, ev.pointerId, "pointerId");
+            if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+              if (storeIndex < 0) {
+                store.push(ev);
+                storeIndex = store.length - 1;
+              }
+            } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+              removePointer = true;
+            }
+            if (storeIndex < 0) {
+              return;
+            }
+            store[storeIndex] = ev;
+            this.callback(this.manager, eventType, {
+              pointers: store,
+              changedPointers: [ev],
+              pointerType,
+              srcEvent: ev
+            });
+            if (removePointer) {
+              store.splice(storeIndex, 1);
+            }
+          }
+        });
+        var SINGLE_TOUCH_INPUT_MAP = {
+          touchstart: INPUT_START,
+          touchmove: INPUT_MOVE,
+          touchend: INPUT_END,
+          touchcancel: INPUT_CANCEL
+        };
+        var SINGLE_TOUCH_TARGET_EVENTS = "touchstart";
+        var SINGLE_TOUCH_WINDOW_EVENTS = "touchstart touchmove touchend touchcancel";
+        function SingleTouchInput() {
+          this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+          this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+          this.started = false;
+          Input.apply(this, arguments);
+        }
+        inherit2(SingleTouchInput, Input, {
+          handler: function TEhandler(ev) {
+            var type2 = SINGLE_TOUCH_INPUT_MAP[ev.type];
+            if (type2 === INPUT_START) {
+              this.started = true;
+            }
+            if (!this.started) {
+              return;
+            }
+            var touches = normalizeSingleTouches.call(this, ev, type2);
+            if (type2 & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+              this.started = false;
+            }
+            this.callback(this.manager, type2, {
+              pointers: touches[0],
+              changedPointers: touches[1],
+              pointerType: INPUT_TYPE_TOUCH,
+              srcEvent: ev
+            });
+          }
+        });
+        function normalizeSingleTouches(ev, type2) {
+          var all = toArray(ev.touches);
+          var changed = toArray(ev.changedTouches);
+          if (type2 & (INPUT_END | INPUT_CANCEL)) {
+            all = uniqueArray(all.concat(changed), "identifier", true);
+          }
+          return [all, changed];
+        }
+        var TOUCH_INPUT_MAP = {
+          touchstart: INPUT_START,
+          touchmove: INPUT_MOVE,
+          touchend: INPUT_END,
+          touchcancel: INPUT_CANCEL
+        };
+        var TOUCH_TARGET_EVENTS = "touchstart touchmove touchend touchcancel";
+        function TouchInput() {
+          this.evTarget = TOUCH_TARGET_EVENTS;
+          this.targetIds = {};
+          Input.apply(this, arguments);
+        }
+        inherit2(TouchInput, Input, {
+          handler: function MTEhandler(ev) {
+            var type2 = TOUCH_INPUT_MAP[ev.type];
+            var touches = getTouches.call(this, ev, type2);
+            if (!touches) {
+              return;
+            }
+            this.callback(this.manager, type2, {
+              pointers: touches[0],
+              changedPointers: touches[1],
+              pointerType: INPUT_TYPE_TOUCH,
+              srcEvent: ev
+            });
+          }
+        });
+        function getTouches(ev, type2) {
+          var allTouches = toArray(ev.touches);
+          var targetIds = this.targetIds;
+          if (type2 & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+            targetIds[allTouches[0].identifier] = true;
+            return [allTouches, allTouches];
+          }
+          var i, targetTouches, changedTouches = toArray(ev.changedTouches), changedTargetTouches = [], target = this.target;
+          targetTouches = allTouches.filter(function(touch) {
+            return hasParent(touch.target, target);
+          });
+          if (type2 === INPUT_START) {
+            i = 0;
+            while (i < targetTouches.length) {
+              targetIds[targetTouches[i].identifier] = true;
+              i++;
+            }
+          }
+          i = 0;
+          while (i < changedTouches.length) {
+            if (targetIds[changedTouches[i].identifier]) {
+              changedTargetTouches.push(changedTouches[i]);
+            }
+            if (type2 & (INPUT_END | INPUT_CANCEL)) {
+              delete targetIds[changedTouches[i].identifier];
+            }
+            i++;
+          }
+          if (!changedTargetTouches.length) {
+            return;
+          }
+          return [
+            // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+            uniqueArray(targetTouches.concat(changedTargetTouches), "identifier", true),
+            changedTargetTouches
+          ];
+        }
+        var DEDUP_TIMEOUT = 2500;
+        var DEDUP_DISTANCE = 25;
+        function TouchMouseInput() {
+          Input.apply(this, arguments);
+          var handler = bindFn(this.handler, this);
+          this.touch = new TouchInput(this.manager, handler);
+          this.mouse = new MouseInput(this.manager, handler);
+          this.primaryTouch = null;
+          this.lastTouches = [];
+        }
+        inherit2(TouchMouseInput, Input, {
+          /**
+           * handle mouse and touch events
+           * @param {Hammer} manager
+           * @param {String} inputEvent
+           * @param {Object} inputData
+           */
+          handler: function TMEhandler(manager, inputEvent, inputData) {
+            var isTouch = inputData.pointerType == INPUT_TYPE_TOUCH, isMouse = inputData.pointerType == INPUT_TYPE_MOUSE;
+            if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+              return;
+            }
+            if (isTouch) {
+              recordTouches.call(this, inputEvent, inputData);
+            } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+              return;
+            }
+            this.callback(manager, inputEvent, inputData);
+          },
+          /**
+           * remove the event listeners
+           */
+          destroy: function destroy() {
+            this.touch.destroy();
+            this.mouse.destroy();
+          }
+        });
+        function recordTouches(eventType, eventData) {
+          if (eventType & INPUT_START) {
+            this.primaryTouch = eventData.changedPointers[0].identifier;
+            setLastTouch.call(this, eventData);
+          } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+            setLastTouch.call(this, eventData);
+          }
+        }
+        function setLastTouch(eventData) {
+          var touch = eventData.changedPointers[0];
+          if (touch.identifier === this.primaryTouch) {
+            var lastTouch = { x: touch.clientX, y: touch.clientY };
+            this.lastTouches.push(lastTouch);
+            var lts = this.lastTouches;
+            var removeLastTouch = function() {
+              var i = lts.indexOf(lastTouch);
+              if (i > -1) {
+                lts.splice(i, 1);
+              }
+            };
+            setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+          }
+        }
+        function isSyntheticEvent(eventData) {
+          var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
+          for (var i = 0; i < this.lastTouches.length; i++) {
+            var t = this.lastTouches[i];
+            var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
+            if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
+              return true;
+            }
+          }
+          return false;
+        }
+        var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, "touchAction");
+        var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined2;
+        var TOUCH_ACTION_COMPUTE = "compute";
+        var TOUCH_ACTION_AUTO = "auto";
+        var TOUCH_ACTION_MANIPULATION = "manipulation";
+        var TOUCH_ACTION_NONE = "none";
+        var TOUCH_ACTION_PAN_X = "pan-x";
+        var TOUCH_ACTION_PAN_Y = "pan-y";
+        var TOUCH_ACTION_MAP = getTouchActionProps();
+        function TouchAction(manager, value) {
+          this.manager = manager;
+          this.set(value);
+        }
+        TouchAction.prototype = {
+          /**
+           * set the touchAction value on the element or enable the polyfill
+           * @param {String} value
+           */
+          set: function(value) {
+            if (value == TOUCH_ACTION_COMPUTE) {
+              value = this.compute();
+            }
+            if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+              this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+            }
+            this.actions = value.toLowerCase().trim();
+          },
+          /**
+           * just re-set the touchAction value
+           */
+          update: function() {
+            this.set(this.manager.options.touchAction);
+          },
+          /**
+           * compute the value for the touchAction property based on the recognizer's settings
+           * @returns {String} value
+           */
+          compute: function() {
+            var actions = [];
+            each2(this.manager.recognizers, function(recognizer) {
+              if (boolOrFn(recognizer.options.enable, [recognizer])) {
+                actions = actions.concat(recognizer.getTouchAction());
+              }
+            });
+            return cleanTouchActions(actions.join(" "));
+          },
+          /**
+           * this method is called on each input cycle and provides the preventing of the browser behavior
+           * @param {Object} input
+           */
+          preventDefaults: function(input) {
+            var srcEvent = input.srcEvent;
+            var direction = input.offsetDirection;
+            if (this.manager.session.prevented) {
+              srcEvent.preventDefault();
+              return;
+            }
+            var actions = this.actions;
+            var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+            var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+            var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
+            if (hasNone) {
+              var isTapPointer = input.pointers.length === 1;
+              var isTapMovement = input.distance < 2;
+              var isTapTouchTime = input.deltaTime < 250;
+              if (isTapPointer && isTapMovement && isTapTouchTime) {
+                return;
+              }
+            }
+            if (hasPanX && hasPanY) {
+              return;
+            }
+            if (hasNone || hasPanY && direction & DIRECTION_HORIZONTAL || hasPanX && direction & DIRECTION_VERTICAL) {
+              return this.preventSrc(srcEvent);
+            }
+          },
+          /**
+           * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
+           * @param {Object} srcEvent
+           */
+          preventSrc: function(srcEvent) {
+            this.manager.session.prevented = true;
+            srcEvent.preventDefault();
+          }
+        };
+        function cleanTouchActions(actions) {
+          if (inStr(actions, TOUCH_ACTION_NONE)) {
+            return TOUCH_ACTION_NONE;
+          }
+          var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+          var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+          if (hasPanX && hasPanY) {
+            return TOUCH_ACTION_NONE;
+          }
+          if (hasPanX || hasPanY) {
+            return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+          }
+          if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+            return TOUCH_ACTION_MANIPULATION;
+          }
+          return TOUCH_ACTION_AUTO;
+        }
+        function getTouchActionProps() {
+          if (!NATIVE_TOUCH_ACTION) {
+            return false;
+          }
+          var touchMap = {};
+          var cssSupports = window2.CSS && window2.CSS.supports;
+          ["auto", "manipulation", "pan-y", "pan-x", "pan-x pan-y", "none"].forEach(function(val) {
+            touchMap[val] = cssSupports ? window2.CSS.supports("touch-action", val) : true;
+          });
+          return touchMap;
+        }
+        var STATE_POSSIBLE = 1;
+        var STATE_BEGAN = 2;
+        var STATE_CHANGED = 4;
+        var STATE_ENDED = 8;
+        var STATE_RECOGNIZED = STATE_ENDED;
+        var STATE_CANCELLED = 16;
+        var STATE_FAILED = 32;
+        function Recognizer(options) {
+          this.options = assign({}, this.defaults, options || {});
+          this.id = uniqueId();
+          this.manager = null;
+          this.options.enable = ifUndefined(this.options.enable, true);
+          this.state = STATE_POSSIBLE;
+          this.simultaneous = {};
+          this.requireFail = [];
+        }
+        Recognizer.prototype = {
+          /**
+           * @virtual
+           * @type {Object}
+           */
+          defaults: {},
+          /**
+           * set options
+           * @param {Object} options
+           * @return {Recognizer}
+           */
+          set: function(options) {
+            assign(this.options, options);
+            this.manager && this.manager.touchAction.update();
+            return this;
+          },
+          /**
+           * recognize simultaneous with an other recognizer.
+           * @param {Recognizer} otherRecognizer
+           * @returns {Recognizer} this
+           */
+          recognizeWith: function(otherRecognizer) {
+            if (invokeArrayArg(otherRecognizer, "recognizeWith", this)) {
+              return this;
+            }
+            var simultaneous = this.simultaneous;
+            otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+            if (!simultaneous[otherRecognizer.id]) {
+              simultaneous[otherRecognizer.id] = otherRecognizer;
+              otherRecognizer.recognizeWith(this);
+            }
+            return this;
+          },
+          /**
+           * drop the simultaneous link. it doesnt remove the link on the other recognizer.
+           * @param {Recognizer} otherRecognizer
+           * @returns {Recognizer} this
+           */
+          dropRecognizeWith: function(otherRecognizer) {
+            if (invokeArrayArg(otherRecognizer, "dropRecognizeWith", this)) {
+              return this;
+            }
+            otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+            delete this.simultaneous[otherRecognizer.id];
+            return this;
+          },
+          /**
+           * recognizer can only run when an other is failing
+           * @param {Recognizer} otherRecognizer
+           * @returns {Recognizer} this
+           */
+          requireFailure: function(otherRecognizer) {
+            if (invokeArrayArg(otherRecognizer, "requireFailure", this)) {
+              return this;
+            }
+            var requireFail = this.requireFail;
+            otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+            if (inArray(requireFail, otherRecognizer) === -1) {
+              requireFail.push(otherRecognizer);
+              otherRecognizer.requireFailure(this);
+            }
+            return this;
+          },
+          /**
+           * drop the requireFailure link. it does not remove the link on the other recognizer.
+           * @param {Recognizer} otherRecognizer
+           * @returns {Recognizer} this
+           */
+          dropRequireFailure: function(otherRecognizer) {
+            if (invokeArrayArg(otherRecognizer, "dropRequireFailure", this)) {
+              return this;
+            }
+            otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+            var index3 = inArray(this.requireFail, otherRecognizer);
+            if (index3 > -1) {
+              this.requireFail.splice(index3, 1);
+            }
+            return this;
+          },
+          /**
+           * has require failures boolean
+           * @returns {boolean}
+           */
+          hasRequireFailures: function() {
+            return this.requireFail.length > 0;
+          },
+          /**
+           * if the recognizer can recognize simultaneous with an other recognizer
+           * @param {Recognizer} otherRecognizer
+           * @returns {Boolean}
+           */
+          canRecognizeWith: function(otherRecognizer) {
+            return !!this.simultaneous[otherRecognizer.id];
+          },
+          /**
+           * You should use `tryEmit` instead of `emit` directly to check
+           * that all the needed recognizers has failed before emitting.
+           * @param {Object} input
+           */
+          emit: function(input) {
+            var self2 = this;
+            var state = this.state;
+            function emit(event) {
+              self2.manager.emit(event, input);
+            }
+            if (state < STATE_ENDED) {
+              emit(self2.options.event + stateStr(state));
+            }
+            emit(self2.options.event);
+            if (input.additionalEvent) {
+              emit(input.additionalEvent);
+            }
+            if (state >= STATE_ENDED) {
+              emit(self2.options.event + stateStr(state));
+            }
+          },
+          /**
+           * Check that all the require failure recognizers has failed,
+           * if true, it emits a gesture event,
+           * otherwise, setup the state to FAILED.
+           * @param {Object} input
+           */
+          tryEmit: function(input) {
+            if (this.canEmit()) {
+              return this.emit(input);
+            }
+            this.state = STATE_FAILED;
+          },
+          /**
+           * can we emit?
+           * @returns {boolean}
+           */
+          canEmit: function() {
+            var i = 0;
+            while (i < this.requireFail.length) {
+              if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
+                return false;
+              }
+              i++;
+            }
+            return true;
+          },
+          /**
+           * update the recognizer
+           * @param {Object} inputData
+           */
+          recognize: function(inputData) {
+            var inputDataClone = assign({}, inputData);
+            if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
+              this.reset();
+              this.state = STATE_FAILED;
+              return;
+            }
+            if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+              this.state = STATE_POSSIBLE;
+            }
+            this.state = this.process(inputDataClone);
+            if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
+              this.tryEmit(inputDataClone);
+            }
+          },
+          /**
+           * return the state of the recognizer
+           * the actual recognizing happens in this method
+           * @virtual
+           * @param {Object} inputData
+           * @returns {Const} STATE
+           */
+          process: function(inputData) {
+          },
+          // jshint ignore:line
+          /**
+           * return the preferred touch-action
+           * @virtual
+           * @returns {Array}
+           */
+          getTouchAction: function() {
+          },
+          /**
+           * called when the gesture isn't allowed to recognize
+           * like when another is being recognized or it is disabled
+           * @virtual
+           */
+          reset: function() {
+          }
+        };
+        function stateStr(state) {
+          if (state & STATE_CANCELLED) {
+            return "cancel";
+          } else if (state & STATE_ENDED) {
+            return "end";
+          } else if (state & STATE_CHANGED) {
+            return "move";
+          } else if (state & STATE_BEGAN) {
+            return "start";
+          }
+          return "";
+        }
+        function directionStr(direction) {
+          if (direction == DIRECTION_DOWN) {
+            return "down";
+          } else if (direction == DIRECTION_UP) {
+            return "up";
+          } else if (direction == DIRECTION_LEFT) {
+            return "left";
+          } else if (direction == DIRECTION_RIGHT) {
+            return "right";
+          }
+          return "";
+        }
+        function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
+          var manager = recognizer.manager;
+          if (manager) {
+            return manager.get(otherRecognizer);
+          }
+          return otherRecognizer;
+        }
+        function AttrRecognizer() {
+          Recognizer.apply(this, arguments);
+        }
+        inherit2(AttrRecognizer, Recognizer, {
+          /**
+           * @namespace
+           * @memberof AttrRecognizer
+           */
+          defaults: {
+            /**
+             * @type {Number}
+             * @default 1
+             */
+            pointers: 1
+          },
+          /**
+           * Used to check if it the recognizer receives valid input, like input.distance > 10.
+           * @memberof AttrRecognizer
+           * @param {Object} input
+           * @returns {Boolean} recognized
+           */
+          attrTest: function(input) {
+            var optionPointers = this.options.pointers;
+            return optionPointers === 0 || input.pointers.length === optionPointers;
+          },
+          /**
+           * Process the input and return the state for the recognizer
+           * @memberof AttrRecognizer
+           * @param {Object} input
+           * @returns {*} State
+           */
+          process: function(input) {
+            var state = this.state;
+            var eventType = input.eventType;
+            var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
+            var isValid = this.attrTest(input);
+            if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
+              return state | STATE_CANCELLED;
+            } else if (isRecognized || isValid) {
+              if (eventType & INPUT_END) {
+                return state | STATE_ENDED;
+              } else if (!(state & STATE_BEGAN)) {
+                return STATE_BEGAN;
+              }
+              return state | STATE_CHANGED;
+            }
+            return STATE_FAILED;
+          }
+        });
+        function PanRecognizer() {
+          AttrRecognizer.apply(this, arguments);
+          this.pX = null;
+          this.pY = null;
+        }
+        inherit2(PanRecognizer, AttrRecognizer, {
+          /**
+           * @namespace
+           * @memberof PanRecognizer
+           */
+          defaults: {
+            event: "pan",
+            threshold: 10,
+            pointers: 1,
+            direction: DIRECTION_ALL
+          },
+          getTouchAction: function() {
+            var direction = this.options.direction;
+            var actions = [];
+            if (direction & DIRECTION_HORIZONTAL) {
+              actions.push(TOUCH_ACTION_PAN_Y);
+            }
+            if (direction & DIRECTION_VERTICAL) {
+              actions.push(TOUCH_ACTION_PAN_X);
+            }
+            return actions;
+          },
+          directionTest: function(input) {
+            var options = this.options;
+            var hasMoved = true;
+            var distance = input.distance;
+            var direction = input.direction;
+            var x = input.deltaX;
+            var y = input.deltaY;
+            if (!(direction & options.direction)) {
+              if (options.direction & DIRECTION_HORIZONTAL) {
+                direction = x === 0 ? DIRECTION_NONE : x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                hasMoved = x != this.pX;
+                distance = Math.abs(input.deltaX);
+              } else {
+                direction = y === 0 ? DIRECTION_NONE : y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
+                hasMoved = y != this.pY;
+                distance = Math.abs(input.deltaY);
+              }
+            }
+            input.direction = direction;
+            return hasMoved && distance > options.threshold && direction & options.direction;
+          },
+          attrTest: function(input) {
+            return AttrRecognizer.prototype.attrTest.call(this, input) && (this.state & STATE_BEGAN || !(this.state & STATE_BEGAN) && this.directionTest(input));
+          },
+          emit: function(input) {
+            this.pX = input.deltaX;
+            this.pY = input.deltaY;
+            var direction = directionStr(input.direction);
+            if (direction) {
+              input.additionalEvent = this.options.event + direction;
+            }
+            this._super.emit.call(this, input);
+          }
+        });
+        function PinchRecognizer() {
+          AttrRecognizer.apply(this, arguments);
+        }
+        inherit2(PinchRecognizer, AttrRecognizer, {
+          /**
+           * @namespace
+           * @memberof PinchRecognizer
+           */
+          defaults: {
+            event: "pinch",
+            threshold: 0,
+            pointers: 2
+          },
+          getTouchAction: function() {
+            return [TOUCH_ACTION_NONE];
+          },
+          attrTest: function(input) {
+            return this._super.attrTest.call(this, input) && (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
+          },
+          emit: function(input) {
+            if (input.scale !== 1) {
+              var inOut = input.scale < 1 ? "in" : "out";
+              input.additionalEvent = this.options.event + inOut;
+            }
+            this._super.emit.call(this, input);
+          }
+        });
+        function PressRecognizer() {
+          Recognizer.apply(this, arguments);
+          this._timer = null;
+          this._input = null;
+        }
+        inherit2(PressRecognizer, Recognizer, {
+          /**
+           * @namespace
+           * @memberof PressRecognizer
+           */
+          defaults: {
+            event: "press",
+            pointers: 1,
+            time: 251,
+            // minimal time of the pointer to be pressed
+            threshold: 9
+            // a minimal movement is ok, but keep it low
+          },
+          getTouchAction: function() {
+            return [TOUCH_ACTION_AUTO];
+          },
+          process: function(input) {
+            var options = this.options;
+            var validPointers = input.pointers.length === options.pointers;
+            var validMovement = input.distance < options.threshold;
+            var validTime = input.deltaTime > options.time;
+            this._input = input;
+            if (!validMovement || !validPointers || input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime) {
+              this.reset();
+            } else if (input.eventType & INPUT_START) {
+              this.reset();
+              this._timer = setTimeoutContext(function() {
+                this.state = STATE_RECOGNIZED;
+                this.tryEmit();
+              }, options.time, this);
+            } else if (input.eventType & INPUT_END) {
+              return STATE_RECOGNIZED;
+            }
+            return STATE_FAILED;
+          },
+          reset: function() {
+            clearTimeout(this._timer);
+          },
+          emit: function(input) {
+            if (this.state !== STATE_RECOGNIZED) {
+              return;
+            }
+            if (input && input.eventType & INPUT_END) {
+              this.manager.emit(this.options.event + "up", input);
+            } else {
+              this._input.timeStamp = now2();
+              this.manager.emit(this.options.event, this._input);
+            }
+          }
+        });
+        function RotateRecognizer() {
+          AttrRecognizer.apply(this, arguments);
+        }
+        inherit2(RotateRecognizer, AttrRecognizer, {
+          /**
+           * @namespace
+           * @memberof RotateRecognizer
+           */
+          defaults: {
+            event: "rotate",
+            threshold: 0,
+            pointers: 2
+          },
+          getTouchAction: function() {
+            return [TOUCH_ACTION_NONE];
+          },
+          attrTest: function(input) {
+            return this._super.attrTest.call(this, input) && (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+          }
+        });
+        function SwipeRecognizer() {
+          AttrRecognizer.apply(this, arguments);
+        }
+        inherit2(SwipeRecognizer, AttrRecognizer, {
+          /**
+           * @namespace
+           * @memberof SwipeRecognizer
+           */
+          defaults: {
+            event: "swipe",
+            threshold: 10,
+            velocity: 0.3,
+            direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
+            pointers: 1
+          },
+          getTouchAction: function() {
+            return PanRecognizer.prototype.getTouchAction.call(this);
+          },
+          attrTest: function(input) {
+            var direction = this.options.direction;
+            var velocity;
+            if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+              velocity = input.overallVelocity;
+            } else if (direction & DIRECTION_HORIZONTAL) {
+              velocity = input.overallVelocityX;
+            } else if (direction & DIRECTION_VERTICAL) {
+              velocity = input.overallVelocityY;
+            }
+            return this._super.attrTest.call(this, input) && direction & input.offsetDirection && input.distance > this.options.threshold && input.maxPointers == this.options.pointers && abs2(velocity) > this.options.velocity && input.eventType & INPUT_END;
+          },
+          emit: function(input) {
+            var direction = directionStr(input.offsetDirection);
+            if (direction) {
+              this.manager.emit(this.options.event + direction, input);
+            }
+            this.manager.emit(this.options.event, input);
+          }
+        });
+        function TapRecognizer() {
+          Recognizer.apply(this, arguments);
+          this.pTime = false;
+          this.pCenter = false;
+          this._timer = null;
+          this._input = null;
+          this.count = 0;
+        }
+        inherit2(TapRecognizer, Recognizer, {
+          /**
+           * @namespace
+           * @memberof PinchRecognizer
+           */
+          defaults: {
+            event: "tap",
+            pointers: 1,
+            taps: 1,
+            interval: 300,
+            // max time between the multi-tap taps
+            time: 250,
+            // max time of the pointer to be down (like finger on the screen)
+            threshold: 9,
+            // a minimal movement is ok, but keep it low
+            posThreshold: 10
+            // a multi-tap can be a bit off the initial position
+          },
+          getTouchAction: function() {
+            return [TOUCH_ACTION_MANIPULATION];
+          },
+          process: function(input) {
+            var options = this.options;
+            var validPointers = input.pointers.length === options.pointers;
+            var validMovement = input.distance < options.threshold;
+            var validTouchTime = input.deltaTime < options.time;
+            this.reset();
+            if (input.eventType & INPUT_START && this.count === 0) {
+              return this.failTimeout();
+            }
+            if (validMovement && validTouchTime && validPointers) {
+              if (input.eventType != INPUT_END) {
+                return this.failTimeout();
+              }
+              var validInterval = this.pTime ? input.timeStamp - this.pTime < options.interval : true;
+              var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+              this.pTime = input.timeStamp;
+              this.pCenter = input.center;
+              if (!validMultiTap || !validInterval) {
+                this.count = 1;
+              } else {
+                this.count += 1;
+              }
+              this._input = input;
+              var tapCount = this.count % options.taps;
+              if (tapCount === 0) {
+                if (!this.hasRequireFailures()) {
+                  return STATE_RECOGNIZED;
+                } else {
+                  this._timer = setTimeoutContext(function() {
+                    this.state = STATE_RECOGNIZED;
+                    this.tryEmit();
+                  }, options.interval, this);
+                  return STATE_BEGAN;
+                }
+              }
+            }
+            return STATE_FAILED;
+          },
+          failTimeout: function() {
+            this._timer = setTimeoutContext(function() {
+              this.state = STATE_FAILED;
+            }, this.options.interval, this);
+            return STATE_FAILED;
+          },
+          reset: function() {
+            clearTimeout(this._timer);
+          },
+          emit: function() {
+            if (this.state == STATE_RECOGNIZED) {
+              this._input.tapCount = this.count;
+              this.manager.emit(this.options.event, this._input);
+            }
+          }
+        });
+        function Hammer2(element, options) {
+          options = options || {};
+          options.recognizers = ifUndefined(options.recognizers, Hammer2.defaults.preset);
+          return new Manager(element, options);
+        }
+        Hammer2.VERSION = "2.0.7";
+        Hammer2.defaults = {
+          /**
+           * set if DOM events are being triggered.
+           * But this is slower and unused by simple implementations, so disabled by default.
+           * @type {Boolean}
+           * @default false
+           */
+          domEvents: false,
+          /**
+           * The value for the touchAction property/fallback.
+           * When set to `compute` it will magically set the correct value based on the added recognizers.
+           * @type {String}
+           * @default compute
+           */
+          touchAction: TOUCH_ACTION_COMPUTE,
+          /**
+           * @type {Boolean}
+           * @default true
+           */
+          enable: true,
+          /**
+           * EXPERIMENTAL FEATURE -- can be removed/changed
+           * Change the parent input target element.
+           * If Null, then it is being set the to main element.
+           * @type {Null|EventTarget}
+           * @default null
+           */
+          inputTarget: null,
+          /**
+           * force an input class
+           * @type {Null|Function}
+           * @default null
+           */
+          inputClass: null,
+          /**
+           * Default recognizer setup when calling `Hammer()`
+           * When creating a new Manager these will be skipped.
+           * @type {Array}
+           */
+          preset: [
+            // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
+            [RotateRecognizer, { enable: false }],
+            [PinchRecognizer, { enable: false }, ["rotate"]],
+            [SwipeRecognizer, { direction: DIRECTION_HORIZONTAL }],
+            [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, ["swipe"]],
+            [TapRecognizer],
+            [TapRecognizer, { event: "doubletap", taps: 2 }, ["tap"]],
+            [PressRecognizer]
+          ],
+          /**
+           * Some CSS properties can be used to improve the working of Hammer.
+           * Add them to this method and they will be set when creating a new Manager.
+           * @namespace
+           */
+          cssProps: {
+            /**
+             * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
+             * @type {String}
+             * @default 'none'
+             */
+            userSelect: "none",
+            /**
+             * Disable the Windows Phone grippers when pressing an element.
+             * @type {String}
+             * @default 'none'
+             */
+            touchSelect: "none",
+            /**
+             * Disables the default callout shown when you touch and hold a touch target.
+             * On iOS, when you touch and hold a touch target such as a link, Safari displays
+             * a callout containing information about the link. This property allows you to disable that callout.
+             * @type {String}
+             * @default 'none'
+             */
+            touchCallout: "none",
+            /**
+             * Specifies whether zooming is enabled. Used by IE10>
+             * @type {String}
+             * @default 'none'
+             */
+            contentZooming: "none",
+            /**
+             * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+             * @type {String}
+             * @default 'none'
+             */
+            userDrag: "none",
+            /**
+             * Overrides the highlight color shown when the user taps a link or a JavaScript
+             * clickable element in iOS. This property obeys the alpha value, if specified.
+             * @type {String}
+             * @default 'rgba(0,0,0,0)'
+             */
+            tapHighlightColor: "rgba(0,0,0,0)"
+          }
+        };
+        var STOP = 1;
+        var FORCED_STOP = 2;
+        function Manager(element, options) {
+          this.options = assign({}, Hammer2.defaults, options || {});
+          this.options.inputTarget = this.options.inputTarget || element;
+          this.handlers = {};
+          this.session = {};
+          this.recognizers = [];
+          this.oldCssProps = {};
+          this.element = element;
+          this.input = createInputInstance(this);
+          this.touchAction = new TouchAction(this, this.options.touchAction);
+          toggleCssProps(this, true);
+          each2(this.options.recognizers, function(item) {
+            var recognizer = this.add(new item[0](item[1]));
+            item[2] && recognizer.recognizeWith(item[2]);
+            item[3] && recognizer.requireFailure(item[3]);
+          }, this);
+        }
+        Manager.prototype = {
+          /**
+           * set options
+           * @param {Object} options
+           * @returns {Manager}
+           */
+          set: function(options) {
+            assign(this.options, options);
+            if (options.touchAction) {
+              this.touchAction.update();
+            }
+            if (options.inputTarget) {
+              this.input.destroy();
+              this.input.target = options.inputTarget;
+              this.input.init();
+            }
+            return this;
+          },
+          /**
+           * stop recognizing for this session.
+           * This session will be discarded, when a new [input]start event is fired.
+           * When forced, the recognizer cycle is stopped immediately.
+           * @param {Boolean} [force]
+           */
+          stop: function(force) {
+            this.session.stopped = force ? FORCED_STOP : STOP;
+          },
+          /**
+           * run the recognizers!
+           * called by the inputHandler function on every movement of the pointers (touches)
+           * it walks through all the recognizers and tries to detect the gesture that is being made
+           * @param {Object} inputData
+           */
+          recognize: function(inputData) {
+            var session = this.session;
+            if (session.stopped) {
+              return;
+            }
+            this.touchAction.preventDefaults(inputData);
+            var recognizer;
+            var recognizers = this.recognizers;
+            var curRecognizer = session.curRecognizer;
+            if (!curRecognizer || curRecognizer && curRecognizer.state & STATE_RECOGNIZED) {
+              curRecognizer = session.curRecognizer = null;
+            }
+            var i = 0;
+            while (i < recognizers.length) {
+              recognizer = recognizers[i];
+              if (session.stopped !== FORCED_STOP && // 1
+              (!curRecognizer || recognizer == curRecognizer || // 2
+              recognizer.canRecognizeWith(curRecognizer))) {
+                recognizer.recognize(inputData);
+              } else {
+                recognizer.reset();
+              }
+              if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+                curRecognizer = session.curRecognizer = recognizer;
+              }
+              i++;
+            }
+          },
+          /**
+           * get a recognizer by its event name.
+           * @param {Recognizer|String} recognizer
+           * @returns {Recognizer|Null}
+           */
+          get: function(recognizer) {
+            if (recognizer instanceof Recognizer) {
+              return recognizer;
+            }
+            var recognizers = this.recognizers;
+            for (var i = 0; i < recognizers.length; i++) {
+              if (recognizers[i].options.event == recognizer) {
+                return recognizers[i];
+              }
+            }
+            return null;
+          },
+          /**
+           * add a recognizer to the manager
+           * existing recognizers with the same event name will be removed
+           * @param {Recognizer} recognizer
+           * @returns {Recognizer|Manager}
+           */
+          add: function(recognizer) {
+            if (invokeArrayArg(recognizer, "add", this)) {
+              return this;
+            }
+            var existing = this.get(recognizer.options.event);
+            if (existing) {
+              this.remove(existing);
+            }
+            this.recognizers.push(recognizer);
+            recognizer.manager = this;
+            this.touchAction.update();
+            return recognizer;
+          },
+          /**
+           * remove a recognizer by name or instance
+           * @param {Recognizer|String} recognizer
+           * @returns {Manager}
+           */
+          remove: function(recognizer) {
+            if (invokeArrayArg(recognizer, "remove", this)) {
+              return this;
+            }
+            recognizer = this.get(recognizer);
+            if (recognizer) {
+              var recognizers = this.recognizers;
+              var index3 = inArray(recognizers, recognizer);
+              if (index3 !== -1) {
+                recognizers.splice(index3, 1);
+                this.touchAction.update();
+              }
+            }
+            return this;
+          },
+          /**
+           * bind event
+           * @param {String} events
+           * @param {Function} handler
+           * @returns {EventEmitter} this
+           */
+          on: function(events, handler) {
+            if (events === undefined2) {
+              return;
+            }
+            if (handler === undefined2) {
+              return;
+            }
+            var handlers = this.handlers;
+            each2(splitStr(events), function(event) {
+              handlers[event] = handlers[event] || [];
+              handlers[event].push(handler);
+            });
+            return this;
+          },
+          /**
+           * unbind event, leave emit blank to remove all handlers
+           * @param {String} events
+           * @param {Function} [handler]
+           * @returns {EventEmitter} this
+           */
+          off: function(events, handler) {
+            if (events === undefined2) {
+              return;
+            }
+            var handlers = this.handlers;
+            each2(splitStr(events), function(event) {
+              if (!handler) {
+                delete handlers[event];
+              } else {
+                handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+              }
+            });
+            return this;
+          },
+          /**
+           * emit event to the listeners
+           * @param {String} event
+           * @param {Object} data
+           */
+          emit: function(event, data) {
+            if (this.options.domEvents) {
+              triggerDomEvent(event, data);
+            }
+            var handlers = this.handlers[event] && this.handlers[event].slice();
+            if (!handlers || !handlers.length) {
+              return;
+            }
+            data.type = event;
+            data.preventDefault = function() {
+              data.srcEvent.preventDefault();
+            };
+            var i = 0;
+            while (i < handlers.length) {
+              handlers[i](data);
+              i++;
+            }
+          },
+          /**
+           * destroy the manager and unbinds all events
+           * it doesn't unbind dom events, that is the user own responsibility
+           */
+          destroy: function() {
+            this.element && toggleCssProps(this, false);
+            this.handlers = {};
+            this.session = {};
+            this.input.destroy();
+            this.element = null;
+          }
+        };
+        function toggleCssProps(manager, add) {
+          var element = manager.element;
+          if (!element.style) {
+            return;
+          }
+          var prop;
+          each2(manager.options.cssProps, function(value, name) {
+            prop = prefixed(element.style, name);
+            if (add) {
+              manager.oldCssProps[prop] = element.style[prop];
+              element.style[prop] = value;
+            } else {
+              element.style[prop] = manager.oldCssProps[prop] || "";
+            }
+          });
+          if (!add) {
+            manager.oldCssProps = {};
+          }
+        }
+        function triggerDomEvent(event, data) {
+          var gestureEvent = document2.createEvent("Event");
+          gestureEvent.initEvent(event, true, true);
+          gestureEvent.gesture = data;
+          data.target.dispatchEvent(gestureEvent);
+        }
+        assign(Hammer2, {
+          INPUT_START,
+          INPUT_MOVE,
+          INPUT_END,
+          INPUT_CANCEL,
+          STATE_POSSIBLE,
+          STATE_BEGAN,
+          STATE_CHANGED,
+          STATE_ENDED,
+          STATE_RECOGNIZED,
+          STATE_CANCELLED,
+          STATE_FAILED,
+          DIRECTION_NONE,
+          DIRECTION_LEFT,
+          DIRECTION_RIGHT,
+          DIRECTION_UP,
+          DIRECTION_DOWN,
+          DIRECTION_HORIZONTAL,
+          DIRECTION_VERTICAL,
+          DIRECTION_ALL,
+          Manager,
+          Input,
+          TouchAction,
+          TouchInput,
+          MouseInput,
+          PointerEventInput,
+          TouchMouseInput,
+          SingleTouchInput,
+          Recognizer,
+          AttrRecognizer,
+          Tap: TapRecognizer,
+          Pan: PanRecognizer,
+          Swipe: SwipeRecognizer,
+          Pinch: PinchRecognizer,
+          Rotate: RotateRecognizer,
+          Press: PressRecognizer,
+          on: addEventListeners,
+          off: removeEventListeners,
+          each: each2,
+          merge: merge2,
+          extend: extend2,
+          assign,
+          inherit: inherit2,
+          bindFn,
+          prefixed
+        });
+        var freeGlobal = typeof window2 !== "undefined" ? window2 : typeof self !== "undefined" ? self : {};
+        freeGlobal.Hammer = Hammer2;
+        if (typeof define === "function" && define.amd) {
+          define(function() {
+            return Hammer2;
+          });
+        } else if (typeof module != "undefined" && module.exports) {
+          module.exports = Hammer2;
+        } else {
+          window2[exportName] = Hammer2;
+        }
+      })(window, document, "Hammer");
+    }
+  });
 
   // src/main.js
   var main_exports = {};
@@ -27,12 +1840,12 @@ var gsmViz = (() => {
   // node_modules/chart.js/dist/chunks/helpers.segment.mjs
   function noop() {
   }
-  var uid = /* @__PURE__ */ function() {
+  var uid = /* @__PURE__ */ (function() {
     let id2 = 0;
     return function() {
       return id2++;
     };
-  }();
+  })();
   function isNullOrUndef(value) {
     return value === null || typeof value === "undefined";
   }
@@ -420,14 +2233,14 @@ var gsmViz = (() => {
     }
     return Array.from(set4);
   }
-  var requestAnimFrame = function() {
+  var requestAnimFrame = (function() {
     if (typeof window === "undefined") {
       return function(callback2) {
         return callback2();
       };
     }
     return window.requestAnimationFrame;
-  }();
+  })();
   function throttled(fn, thisArg, updateFn) {
     const updateArgs = updateFn || ((args2) => Array.prototype.slice.call(args2));
     let ticking = false;
@@ -1733,8 +3546,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults3 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults3.scriptable, _indexable = defaults3.indexable, _allKeys = defaults3.allKeys } = proxy;
+  function _descriptors(proxy, defaults5 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults5.scriptable, _indexable = defaults5.indexable, _allKeys = defaults5.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -1745,11 +3558,11 @@ var gsmViz = (() => {
   }
   var readKey = (prefix, name) => prefix ? prefix + _capitalize(name) : name;
   var needsSubResolver = (prop, value) => isObject(value) && prop !== "adapters" && (Object.getPrototypeOf(value) === null || value.constructor === Object);
-  function _cached(target, prop, resolve2) {
+  function _cached(target, prop, resolve3) {
     if (Object.prototype.hasOwnProperty.call(target, prop)) {
       return target[prop];
     }
-    const value = resolve2();
+    const value = resolve3();
     target[prop] = value;
     return value;
   }
@@ -1780,9 +3593,9 @@ var gsmViz = (() => {
     }
     return value;
   }
-  function _resolveArray(prop, value, target, isIndexable) {
+  function _resolveArray(prop, value, target, isIndexable2) {
     const { _proxy, _context, _subProxy, _descriptors: descriptors2 } = target;
-    if (defined(_context.index) && isIndexable(prop)) {
+    if (defined(_context.index) && isIndexable2(prop)) {
       value = value[_context.index % value.length];
     } else if (isObject(value[0])) {
       const arr = value;
@@ -2079,9 +3892,9 @@ var gsmViz = (() => {
     }
     return valueInPixels;
   }
-  var getComputedStyle = (element) => window.getComputedStyle(element, null);
+  var getComputedStyle2 = (element) => window.getComputedStyle(element, null);
   function getStyle(el, property) {
-    return getComputedStyle(el).getPropertyValue(property);
+    return getComputedStyle2(el).getPropertyValue(property);
   }
   var positions = ["top", "right", "bottom", "left"];
   function getPositionedStyle(styles, style, suffix) {
@@ -2118,7 +3931,7 @@ var gsmViz = (() => {
       return evt;
     }
     const { canvas, currentDevicePixelRatio } = chart;
-    const style = getComputedStyle(canvas);
+    const style = getComputedStyle2(canvas);
     const borderBox = style.boxSizing === "border-box";
     const paddings = getPositionedStyle(style, "padding");
     const borders = getPositionedStyle(style, "border", "width");
@@ -2144,7 +3957,7 @@ var gsmViz = (() => {
         height = canvas.clientHeight;
       } else {
         const rect = container.getBoundingClientRect();
-        const containerStyle = getComputedStyle(container);
+        const containerStyle = getComputedStyle2(container);
         const containerBorder = getPositionedStyle(containerStyle, "border", "width");
         const containerPadding = getPositionedStyle(containerStyle, "padding");
         width = rect.width - containerPadding.width - containerBorder.width;
@@ -2162,7 +3975,7 @@ var gsmViz = (() => {
   }
   var round1 = (v) => Math.round(v * 10) / 10;
   function getMaximumSize(canvas, bbWidth, bbHeight, aspectRatio) {
-    const style = getComputedStyle(canvas);
+    const style = getComputedStyle2(canvas);
     const margins = getPositionedStyle(style, "margin");
     const maxWidth = parseMaxStyle(style.maxWidth, canvas, "clientWidth") || INFINITY;
     const maxHeight = parseMaxStyle(style.maxHeight, canvas, "clientHeight") || INFINITY;
@@ -2206,7 +4019,7 @@ var gsmViz = (() => {
     }
     return false;
   }
-  var supportsEventListenerOptions = function() {
+  var supportsEventListenerOptions = (function() {
     let passiveSupported = false;
     try {
       const options = {
@@ -2220,7 +4033,7 @@ var gsmViz = (() => {
     } catch (e) {
     }
     return passiveSupported;
-  }();
+  })();
   function readUsedSize(element, property) {
     const value = getStyle(element, property);
     const matches = value && value.match(/^(\d+)(\.\d+)?px$/);
@@ -2598,7 +4411,7 @@ var gsmViz = (() => {
         }
         const items = anims.items;
         let i = items.length - 1;
-        let draw3 = false;
+        let draw4 = false;
         let item;
         for (; i >= 0; --i) {
           item = items[i];
@@ -2607,13 +4420,13 @@ var gsmViz = (() => {
               anims.duration = item._total;
             }
             item.tick(date);
-            draw3 = true;
+            draw4 = true;
           } else {
             items[i] = items[items.length - 1];
             items.pop();
           }
         }
-        if (draw3) {
+        if (draw4) {
           chart.draw();
           this._notify(chart, anims, date, "progress");
         }
@@ -3936,7 +5749,7 @@ var gsmViz = (() => {
       const meta = this._cachedMeta;
       this.updateElements(meta.data, 0, meta.data.length, mode);
     }
-    updateElements(bars, start2, count, mode) {
+    updateElements(bars2, start2, count, mode) {
       const reset = mode === "reset";
       const { index: index3, _cachedMeta: { vScale } } = this;
       const base = vScale.getBasePixel();
@@ -3958,12 +5771,12 @@ var gsmViz = (() => {
           width: horizontal ? Math.abs(vpixels.size) : ipixels.size
         };
         if (includeOptions) {
-          properties.options = sharedOptions || this.resolveDataElementOptions(i, bars[i].active ? "active" : mode);
+          properties.options = sharedOptions || this.resolveDataElementOptions(i, bars2[i].active ? "active" : mode);
         }
-        const options = properties.options || bars[i].options;
+        const options = properties.options || bars2[i].options;
         setBorderSkipped(properties, options, stack, index3);
         setInflateAmount(properties, options, ruler.ratio);
-        this.updateElement(bars[i], i, properties, mode);
+        this.updateElement(bars2[i], i, properties, mode);
       }
     }
     _getStacks(last, dataIndex) {
@@ -7475,10 +9288,10 @@ var gsmViz = (() => {
     _notify(descriptors2, chart, hook, args) {
       args = args || {};
       for (const descriptor of descriptors2) {
-        const plugin2 = descriptor.plugin;
-        const method = plugin2[hook];
+        const plugin3 = descriptor.plugin;
+        const method = plugin3[hook];
         const params = [chart, args, descriptor.options];
-        if (callback(method, params, plugin2) === false && args.cancelable) {
+        if (callback(method, params, plugin3) === false && args.cancelable) {
           return false;
         }
       }
@@ -7521,10 +9334,10 @@ var gsmViz = (() => {
     }
     const local = config.plugins || [];
     for (let i = 0; i < local.length; i++) {
-      const plugin2 = local[i];
-      if (plugins2.indexOf(plugin2) === -1) {
-        plugins2.push(plugin2);
-        localIds[plugin2.id] = true;
+      const plugin3 = local[i];
+      if (plugins2.indexOf(plugin3) === -1) {
+        plugins2.push(plugin3);
+        localIds[plugin3.id] = true;
       }
     }
     return { plugins: plugins2, localIds };
@@ -7541,24 +9354,24 @@ var gsmViz = (() => {
   function createDescriptors(chart, { plugins: plugins2, localIds }, options, all) {
     const result = [];
     const context = chart.getContext();
-    for (const plugin2 of plugins2) {
-      const id2 = plugin2.id;
+    for (const plugin3 of plugins2) {
+      const id2 = plugin3.id;
       const opts = getOpts(options[id2], all);
       if (opts === null) {
         continue;
       }
       result.push({
-        plugin: plugin2,
-        options: pluginOpts(chart.config, { plugin: plugin2, local: localIds[id2] }, opts, context)
+        plugin: plugin3,
+        options: pluginOpts(chart.config, { plugin: plugin3, local: localIds[id2] }, opts, context)
       });
     }
     return result;
   }
-  function pluginOpts(config, { plugin: plugin2, local }, opts, context) {
-    const keys = config.pluginScopeKeys(plugin2);
+  function pluginOpts(config, { plugin: plugin3, local }, opts, context) {
+    const keys = config.pluginScopeKeys(plugin3);
     const scopes = config.getOptionScopes(opts, keys);
-    if (local && plugin2.defaults) {
-      scopes.push(plugin2.defaults);
+    if (local && plugin3.defaults) {
+      scopes.push(plugin3.defaults);
     }
     return config.createResolver(scopes, context, [""], {
       scriptable: false,
@@ -7743,14 +9556,14 @@ var gsmViz = (() => {
         ]]
       );
     }
-    pluginScopeKeys(plugin2) {
-      const id2 = plugin2.id;
+    pluginScopeKeys(plugin3) {
+      const id2 = plugin3.id;
       const type2 = this.type;
       return cachedKeys(
         `${type2}-plugin-${id2}`,
         () => [[
           `plugins.${id2}`,
-          ...plugin2.additionalOptionScopes || []
+          ...plugin3.additionalOptionScopes || []
         ]]
       );
     }
@@ -7841,10 +9654,10 @@ var gsmViz = (() => {
   }
   var hasFunction = (value) => isObject(value) && Object.getOwnPropertyNames(value).reduce((acc, key) => acc || isFunction(value[key]), false);
   function needContext(proxy, names2) {
-    const { isScriptable, isIndexable } = _descriptors(proxy);
+    const { isScriptable, isIndexable: isIndexable2 } = _descriptors(proxy);
     for (const prop of names2) {
       const scriptable = isScriptable(prop);
-      const indexable = isIndexable(prop);
+      const indexable = isIndexable2(prop);
       const value = (indexable || scriptable) && proxy[prop];
       if (scriptable && (isFunction(value) || hasFunction(value)) || indexable && isArray(value)) {
         return true;
@@ -8629,7 +10442,7 @@ var gsmViz = (() => {
         cancelable: true,
         inChartArea: this.isPointInArea(e)
       };
-      const eventFilter = (plugin2) => (plugin2.options.events || this.options.events).includes(e.native.type);
+      const eventFilter = (plugin3) => (plugin3.options.events || this.options.events).includes(e.native.type);
       if (this.notifyPlugins("beforeEvent", args, eventFilter) === false) {
         return;
       }
@@ -9311,10 +11124,10 @@ var gsmViz = (() => {
     backgroundColor: "backgroundColor",
     borderColor: "borderColor"
   };
-  function getBarBounds(bar, useFinalPosition) {
-    const { x, y, base, width, height } = bar.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
+  function getBarBounds(bar2, useFinalPosition) {
+    const { x, y, base, width, height } = bar2.getProps(["x", "y", "base", "width", "height"], useFinalPosition);
     let left, right, top, bottom, half;
-    if (bar.horizontal) {
+    if (bar2.horizontal) {
       half = height / 2;
       left = Math.min(x, base);
       right = Math.max(x, base);
@@ -9332,9 +11145,9 @@ var gsmViz = (() => {
   function skipOrLimit(skip2, value, min3, max3) {
     return skip2 ? 0 : _limitValue(value, min3, max3);
   }
-  function parseBorderWidth(bar, maxW, maxH) {
-    const value = bar.options.borderWidth;
-    const skip2 = bar.borderSkipped;
+  function parseBorderWidth(bar2, maxW, maxH) {
+    const value = bar2.options.borderWidth;
+    const skip2 = bar2.borderSkipped;
     const o = toTRBL(value);
     return {
       t: skipOrLimit(skip2.top, o.top, 0, maxH),
@@ -9343,12 +11156,12 @@ var gsmViz = (() => {
       l: skipOrLimit(skip2.left, o.left, 0, maxW)
     };
   }
-  function parseBorderRadius(bar, maxW, maxH) {
-    const { enableBorderRadius } = bar.getProps(["enableBorderRadius"]);
-    const value = bar.options.borderRadius;
+  function parseBorderRadius(bar2, maxW, maxH) {
+    const { enableBorderRadius } = bar2.getProps(["enableBorderRadius"]);
+    const value = bar2.options.borderRadius;
     const o = toTRBLCorners(value);
     const maxR = Math.min(maxW, maxH);
-    const skip2 = bar.borderSkipped;
+    const skip2 = bar2.borderSkipped;
     const enableBorder = enableBorderRadius || isObject(value);
     return {
       topLeft: skipOrLimit(!enableBorder || skip2.top || skip2.left, o.topLeft, 0, maxR),
@@ -9357,12 +11170,12 @@ var gsmViz = (() => {
       bottomRight: skipOrLimit(!enableBorder || skip2.bottom || skip2.right, o.bottomRight, 0, maxR)
     };
   }
-  function boundingRects(bar) {
-    const bounds = getBarBounds(bar);
+  function boundingRects(bar2) {
+    const bounds = getBarBounds(bar2);
     const width = bounds.right - bounds.left;
     const height = bounds.bottom - bounds.top;
-    const border = parseBorderWidth(bar, width / 2, height / 2);
-    const radius3 = parseBorderRadius(bar, width / 2, height / 2);
+    const border = parseBorderWidth(bar2, width / 2, height / 2);
+    const radius3 = parseBorderRadius(bar2, width / 2, height / 2);
     return {
       outer: {
         x: bounds.left,
@@ -9385,11 +11198,11 @@ var gsmViz = (() => {
       }
     };
   }
-  function inRange(bar, x, y, useFinalPosition) {
+  function inRange(bar2, x, y, useFinalPosition) {
     const skipX = x === null;
     const skipY = y === null;
     const skipBoth = skipX && skipY;
-    const bounds = bar && !skipBoth && getBarBounds(bar, useFinalPosition);
+    const bounds = bar2 && !skipBoth && getBarBounds(bar2, useFinalPosition);
     return bounds && (skipX || _isBetween(x, bounds.left, bounds.right)) && (skipY || _isBetween(y, bounds.top, bounds.bottom));
   }
   function hasRadius(radius3) {
@@ -10147,7 +11960,7 @@ var gsmViz = (() => {
       }
     },
     beforeDraw(chart, _args, options) {
-      const draw3 = options.drawTime === "beforeDraw";
+      const draw4 = options.drawTime === "beforeDraw";
       const metasets = chart.getSortedVisibleDatasetMetas();
       const area = chart.chartArea;
       for (let i = metasets.length - 1; i >= 0; --i) {
@@ -10156,7 +11969,7 @@ var gsmViz = (() => {
           continue;
         }
         source.line.updateControlPoints(area, source.axis);
-        if (draw3 && source.fill) {
+        if (draw4 && source.fill) {
           _drawfill(chart.ctx, source, area);
         }
       }
@@ -10531,12 +12344,12 @@ var gsmViz = (() => {
       return titleOpts.display ? titleFont.lineHeight + titlePadding.height : 0;
     }
     _getLegendItemAt(x, y) {
-      let i, hitBox, lh;
+      let i, hitBox2, lh;
       if (_isBetween(x, this.left, this.right) && _isBetween(y, this.top, this.bottom)) {
         lh = this.legendHitBoxes;
         for (i = 0; i < lh.length; ++i) {
-          hitBox = lh[i];
-          if (_isBetween(x, hitBox.left, hitBox.left + hitBox.width) && _isBetween(y, hitBox.top, hitBox.top + hitBox.height)) {
+          hitBox2 = lh[i];
+          if (_isBetween(x, hitBox2.left, hitBox2.left + hitBox2.width) && _isBetween(y, hitBox2.top, hitBox2.top + hitBox2.height)) {
             return this.legendItems[i];
           }
         }
@@ -13266,89 +15079,6 @@ var gsmViz = (() => {
       return nearestItems;
     }, []).sort((a, b) => a._index - b._index).slice(0, 1);
   }
-  var moveHooks = ["enter", "leave"];
-  var hooks = moveHooks.concat("click");
-  function updateListeners(chart, state, options) {
-    state.listened = false;
-    state.moveListened = false;
-    state._getElements = getElements;
-    hooks.forEach((hook) => {
-      if (typeof options[hook] === "function") {
-        state.listened = true;
-        state.listeners[hook] = options[hook];
-      } else if (defined(state.listeners[hook])) {
-        delete state.listeners[hook];
-      }
-    });
-    moveHooks.forEach((hook) => {
-      if (typeof options[hook] === "function") {
-        state.moveListened = true;
-      }
-    });
-    if (!state.listened || !state.moveListened) {
-      state.annotations.forEach((scope) => {
-        if (!state.listened && typeof scope.click === "function") {
-          state.listened = true;
-        }
-        if (!state.moveListened) {
-          moveHooks.forEach((hook) => {
-            if (typeof scope[hook] === "function") {
-              state.listened = true;
-              state.moveListened = true;
-            }
-          });
-        }
-      });
-    }
-  }
-  function handleEvent(state, event, options) {
-    if (state.listened) {
-      switch (event.type) {
-        case "mousemove":
-        case "mouseout":
-          return handleMoveEvents(state, event, options);
-        case "click":
-          return handleClickEvents(state, event, options);
-      }
-    }
-  }
-  function handleMoveEvents(state, event, options) {
-    if (!state.moveListened) {
-      return;
-    }
-    let elements2;
-    if (event.type === "mousemove") {
-      elements2 = getElements(state, event, options.interaction);
-    } else {
-      elements2 = [];
-    }
-    const previous = state.hovered;
-    state.hovered = elements2;
-    const context = { state, event };
-    let changed = dispatchMoveEvents(context, "leave", previous, elements2);
-    return dispatchMoveEvents(context, "enter", elements2, previous) || changed;
-  }
-  function dispatchMoveEvents({ state, event }, hook, elements2, checkElements) {
-    let changed;
-    for (const element of elements2) {
-      if (checkElements.indexOf(element) < 0) {
-        changed = dispatchEvent(element.options[hook] || state.listeners[hook], element, event) || changed;
-      }
-    }
-    return changed;
-  }
-  function handleClickEvents(state, event, options) {
-    const listeners = state.listeners;
-    const elements2 = getElements(state, event, options.interaction);
-    let changed;
-    for (const element of elements2) {
-      changed = dispatchEvent(element.options.click || listeners.click, element, event) || changed;
-    }
-    return changed;
-  }
-  function dispatchEvent(handler, element, event) {
-    return callback(handler, [element.$context, event]) === true;
-  }
   var isOlderPart = (act, req) => req > act || act.length > req.length && act.slice(0, req.length) === req;
   var EPSILON2 = 1e-3;
   var clamp = (x, from2, to2) => Math.min(to2, Math.max(from2, x));
@@ -13399,7 +15129,8 @@ var gsmViz = (() => {
     return true;
   }
   var isPercentString = (s) => typeof s === "string" && s.endsWith("%");
-  var toPercent = (s) => clamp(parseFloat(s) / 100, 0, 1);
+  var toPercent = (s) => parseFloat(s) / 100;
+  var toPositivePercent = (s) => clamp(toPercent(s), 0, 1);
   function getRelativePosition2(size, position) {
     if (position === "start") {
       return 0;
@@ -13408,15 +15139,15 @@ var gsmViz = (() => {
       return size;
     }
     if (isPercentString(position)) {
-      return toPercent(position) * size;
+      return toPositivePercent(position) * size;
     }
     return size / 2;
   }
-  function getSize(size, value) {
+  function getSize(size, value, positivePercent = true) {
     if (typeof value === "number") {
       return value;
     } else if (isPercentString(value)) {
-      return toPercent(value) * size;
+      return (positivePercent ? toPositivePercent(value) : toPercent(value)) * size;
     }
     return size;
   }
@@ -13430,14 +15161,14 @@ var gsmViz = (() => {
     }
     return x;
   }
-  function toPosition(value) {
+  function toPosition(value, defaultValue = "center") {
     if (isObject(value)) {
       return {
-        x: valueOrDefault(value.x, "center"),
-        y: valueOrDefault(value.y, "center")
+        x: valueOrDefault(value.x, defaultValue),
+        y: valueOrDefault(value.y, defaultValue)
       };
     }
-    value = valueOrDefault(value, "center");
+    value = valueOrDefault(value, defaultValue);
     return {
       x: value,
       y: value
@@ -13446,7 +15177,46 @@ var gsmViz = (() => {
   function isBoundToPoint(options) {
     return options && (defined(options.xValue) || defined(options.yValue));
   }
+  function initAnimationProperties(chart, properties, options, centerBased = false) {
+    const initAnim = options.init;
+    if (!initAnim) {
+      return;
+    } else if (initAnim === true) {
+      return applyDefault(properties, centerBased);
+    }
+    return checkCallbackResult(properties, centerBased, callback(initAnim, [{ chart, properties, options }]));
+  }
+  function loadHooks(options, hooks2, hooksContainer) {
+    let activated = false;
+    hooks2.forEach((hook) => {
+      if (isFunction(options[hook])) {
+        activated = true;
+        hooksContainer[hook] = options[hook];
+      } else if (defined(hooksContainer[hook])) {
+        delete hooksContainer[hook];
+      }
+    });
+    return activated;
+  }
+  function applyDefault({ centerX, centerY }, centerBased) {
+    if (centerBased) {
+      return { centerX, centerY, radius: 0, width: 0, height: 0 };
+    }
+    return { x: centerX, y: centerY, x2: centerX, y2: centerY, width: 0, height: 0 };
+  }
+  function checkCallbackResult(properties, centerBased, result) {
+    if (result === true) {
+      return applyDefault(properties, centerBased);
+    } else if (isObject(result)) {
+      return result;
+    }
+  }
   var widthCache = /* @__PURE__ */ new Map();
+  var notRadius = (radius3) => isNaN(radius3) || radius3 <= 0;
+  var fontsKey = (fonts) => fonts.reduce(function(prev, item) {
+    prev += item.string;
+    return prev;
+  }, "");
   function isImageOrCanvas(content) {
     if (content && typeof content === "object") {
       const type2 = content.toString();
@@ -13485,22 +15255,13 @@ var gsmViz = (() => {
         height: getSize(content.height, options.height)
       };
     }
-    const font = toFont(options.font);
+    const optFont = options.font;
+    const fonts = isArray(optFont) ? optFont.map((f) => toFont(f)) : [toFont(optFont)];
     const strokeWidth = options.textStrokeWidth;
     const lines = isArray(content) ? content : [content];
-    const mapKey = lines.join() + font.string + strokeWidth + (ctx._measureText ? "-spriting" : "");
+    const mapKey = lines.join() + fontsKey(fonts) + strokeWidth + (ctx._measureText ? "-spriting" : "");
     if (!widthCache.has(mapKey)) {
-      ctx.save();
-      ctx.font = font.string;
-      const count = lines.length;
-      let width = 0;
-      for (let i = 0; i < count; i++) {
-        const text = lines[i];
-        width = Math.max(width, ctx.measureText(text).width + strokeWidth);
-      }
-      ctx.restore();
-      const height = count * font.lineHeight + strokeWidth;
-      widthCache.set(mapKey, { width, height });
+      widthCache.set(mapKey, calculateLabelSize(ctx, lines, fonts, strokeWidth));
     }
     return widthCache.get(mapKey);
   }
@@ -13529,23 +15290,26 @@ var gsmViz = (() => {
   function drawLabel(ctx, rect, options) {
     const content = options.content;
     if (isImageOrCanvas(content)) {
+      ctx.save();
+      ctx.globalAlpha = getOpacity(options.opacity, content.style.opacity);
       ctx.drawImage(content, rect.x, rect.y, rect.width, rect.height);
+      ctx.restore();
       return;
     }
     const labels = isArray(content) ? content : [content];
-    const font = toFont(options.font);
-    const lh = font.lineHeight;
+    const optFont = options.font;
+    const fonts = isArray(optFont) ? optFont.map((f) => toFont(f)) : [toFont(optFont)];
+    const optColor = options.color;
+    const colors2 = isArray(optColor) ? optColor : [optColor];
     const x = calculateTextAlignment(rect, options);
-    const y = rect.y + lh / 2 + options.textStrokeWidth / 2;
+    const y = rect.y + options.textStrokeWidth / 2;
     ctx.save();
-    ctx.font = font.string;
     ctx.textBaseline = "middle";
     ctx.textAlign = options.textAlign;
     if (setTextStrokeStyle(ctx, options)) {
-      labels.forEach((l, i) => ctx.strokeText(l, x, y + i * lh));
+      applyLabelDecoration(ctx, { x, y }, labels, fonts);
     }
-    ctx.fillStyle = options.color;
-    labels.forEach((l, i) => ctx.fillText(l, x, y + i * lh));
+    applyLabelContent(ctx, { x, y }, labels, { fonts, colors: colors2 });
     ctx.restore();
   }
   function setTextStrokeStyle(ctx, options) {
@@ -13557,6 +15321,157 @@ var gsmViz = (() => {
       return true;
     }
   }
+  function drawPoint2(ctx, element, x, y) {
+    const { radius: radius3, options } = element;
+    const style = options.pointStyle;
+    const rotation = options.rotation;
+    let rad = (rotation || 0) * RAD_PER_DEG;
+    if (isImageOrCanvas(style)) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rad);
+      ctx.drawImage(style, -style.width / 2, -style.height / 2, style.width, style.height);
+      ctx.restore();
+      return;
+    }
+    if (notRadius(radius3)) {
+      return;
+    }
+    drawPointStyle(ctx, { x, y, radius: radius3, rotation, style, rad });
+  }
+  function drawPointStyle(ctx, { x, y, radius: radius3, rotation, style, rad }) {
+    let xOffset, yOffset, size, cornerRadius;
+    ctx.beginPath();
+    switch (style) {
+      // Default includes circle
+      default:
+        ctx.arc(x, y, radius3, 0, TAU);
+        ctx.closePath();
+        break;
+      case "triangle":
+        ctx.moveTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        rad += TWO_THIRDS_PI;
+        ctx.lineTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        rad += TWO_THIRDS_PI;
+        ctx.lineTo(x + Math.sin(rad) * radius3, y - Math.cos(rad) * radius3);
+        ctx.closePath();
+        break;
+      case "rectRounded":
+        cornerRadius = radius3 * 0.516;
+        size = radius3 - cornerRadius;
+        xOffset = Math.cos(rad + QUARTER_PI) * size;
+        yOffset = Math.sin(rad + QUARTER_PI) * size;
+        ctx.arc(x - xOffset, y - yOffset, cornerRadius, rad - PI, rad - HALF_PI);
+        ctx.arc(x + yOffset, y - xOffset, cornerRadius, rad - HALF_PI, rad);
+        ctx.arc(x + xOffset, y + yOffset, cornerRadius, rad, rad + HALF_PI);
+        ctx.arc(x - yOffset, y + xOffset, cornerRadius, rad + HALF_PI, rad + PI);
+        ctx.closePath();
+        break;
+      case "rect":
+        if (!rotation) {
+          size = Math.SQRT1_2 * radius3;
+          ctx.rect(x - size, y - size, 2 * size, 2 * size);
+          break;
+        }
+        rad += QUARTER_PI;
+      /* falls through */
+      case "rectRot":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        ctx.closePath();
+        break;
+      case "crossRot":
+        rad += QUARTER_PI;
+      /* falls through */
+      case "cross":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        break;
+      case "star":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        rad += QUARTER_PI;
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        ctx.moveTo(x + yOffset, y - xOffset);
+        ctx.lineTo(x - yOffset, y + xOffset);
+        break;
+      case "line":
+        xOffset = Math.cos(rad) * radius3;
+        yOffset = Math.sin(rad) * radius3;
+        ctx.moveTo(x - xOffset, y - yOffset);
+        ctx.lineTo(x + xOffset, y + yOffset);
+        break;
+      case "dash":
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(rad) * radius3, y + Math.sin(rad) * radius3);
+        break;
+    }
+    ctx.fill();
+  }
+  function calculateLabelSize(ctx, lines, fonts, strokeWidth) {
+    ctx.save();
+    const count = lines.length;
+    let width = 0;
+    let height = strokeWidth;
+    for (let i = 0; i < count; i++) {
+      const font = fonts[Math.min(i, fonts.length - 1)];
+      ctx.font = font.string;
+      const text = lines[i];
+      width = Math.max(width, ctx.measureText(text).width + strokeWidth);
+      height += font.lineHeight;
+    }
+    ctx.restore();
+    return { width, height };
+  }
+  function applyLabelDecoration(ctx, { x, y }, labels, fonts) {
+    ctx.beginPath();
+    let lhs = 0;
+    labels.forEach(function(l, i) {
+      const f = fonts[Math.min(i, fonts.length - 1)];
+      const lh = f.lineHeight;
+      ctx.font = f.string;
+      ctx.strokeText(l, x, y + lh / 2 + lhs);
+      lhs += lh;
+    });
+    ctx.stroke();
+  }
+  function applyLabelContent(ctx, { x, y }, labels, { fonts, colors: colors2 }) {
+    let lhs = 0;
+    labels.forEach(function(l, i) {
+      const c = colors2[Math.min(i, colors2.length - 1)];
+      const f = fonts[Math.min(i, fonts.length - 1)];
+      const lh = f.lineHeight;
+      ctx.beginPath();
+      ctx.font = f.string;
+      ctx.fillStyle = c;
+      ctx.fillText(l, x, y + lh / 2 + lhs);
+      lhs += lh;
+      ctx.fill();
+    });
+  }
+  function getOpacity(value, elementValue) {
+    const opacity = isNumber(value) ? value : elementValue;
+    return isNumber(opacity) ? clamp(opacity, 0, 1) : 1;
+  }
+  var limitedLineScale = {
+    xScaleID: { min: "xMin", max: "xMax", start: "left", end: "right", startProp: "x", endProp: "x2" },
+    yScaleID: { min: "yMin", max: "yMax", start: "bottom", end: "top", startProp: "y", endProp: "y2" }
+  };
   function scaleValue(scale, value, fallback) {
     value = typeof value === "number" ? value : scale.parse(value);
     return isNumberFinite(value) ? scale.getPixelForValue(value) : fallback;
@@ -13633,18 +15548,43 @@ var gsmViz = (() => {
         options.radius = radius3;
       }
       const size = radius3 * 2;
+      const adjustCenterX = box.centerX + options.xAdjust;
+      const adjustCenterY = box.centerY + options.yAdjust;
       return {
-        x: box.x + options.xAdjust,
-        y: box.y + options.yAdjust,
-        x2: box.x + size + options.xAdjust,
-        y2: box.y + size + options.yAdjust,
-        centerX: box.centerX + options.xAdjust,
-        centerY: box.centerY + options.yAdjust,
+        x: adjustCenterX - radius3,
+        y: adjustCenterY - radius3,
+        x2: adjustCenterX + radius3,
+        y2: adjustCenterY + radius3,
+        centerX: adjustCenterX,
+        centerY: adjustCenterY,
         width: size,
-        height: size
+        height: size,
+        radius: radius3
       };
     }
     return getChartCircle(chart, options);
+  }
+  function resolveLineProperties(chart, options) {
+    const { scales: scales2, chartArea } = chart;
+    const scale = scales2[options.scaleID];
+    const area = { x: chartArea.left, y: chartArea.top, x2: chartArea.right, y2: chartArea.bottom };
+    if (scale) {
+      resolveFullLineProperties(scale, area, options);
+    } else {
+      resolveLimitedLineProperties(scales2, area, options);
+    }
+    return area;
+  }
+  function resolveBoxAndLabelProperties(chart, options, centerBased) {
+    const properties = resolveBoxProperties(chart, options);
+    properties.initProperties = initAnimationProperties(chart, properties, options, centerBased);
+    properties.elements = [{
+      type: "label",
+      optionScope: "label",
+      properties: resolveLabelElementProperties$1(chart, properties, options),
+      initProperties: properties.initProperties
+    }];
+    return properties;
   }
   function getChartCircle(chart, options) {
     const point = getChartPoint(chart, options);
@@ -13656,6 +15596,7 @@ var gsmViz = (() => {
       y2: point.y + options.radius + options.yAdjust,
       centerX: point.x + options.xAdjust,
       centerY: point.y + options.yAdjust,
+      radius: options.radius,
       width: size,
       height: size
     };
@@ -13665,6 +15606,75 @@ var gsmViz = (() => {
     return {
       start: Math.min(result.start, result.end),
       end: Math.max(result.start, result.end)
+    };
+  }
+  function resolveFullLineProperties(scale, area, options) {
+    const min3 = scaleValue(scale, options.value, NaN);
+    const max3 = scaleValue(scale, options.endValue, min3);
+    if (scale.isHorizontal()) {
+      area.x = min3;
+      area.x2 = max3;
+    } else {
+      area.y = min3;
+      area.y2 = max3;
+    }
+  }
+  function resolveLimitedLineProperties(scales2, area, options) {
+    for (const scaleId of Object.keys(limitedLineScale)) {
+      const scale = scales2[retrieveScaleID(scales2, options, scaleId)];
+      if (scale) {
+        const { min: min3, max: max3, start: start2, end, startProp, endProp } = limitedLineScale[scaleId];
+        const dim = getDimensionByScale(scale, { min: options[min3], max: options[max3], start: scale[start2], end: scale[end] });
+        area[startProp] = dim.start;
+        area[endProp] = dim.end;
+      }
+    }
+  }
+  function calculateX({ properties, options }, labelSize, position, padding) {
+    const { x: start2, x2: end, width: size } = properties;
+    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
+      position: position.x,
+      padding: { start: padding.left, end: padding.right },
+      adjust: options.label.xAdjust,
+      size: labelSize.width
+    });
+  }
+  function calculateY({ properties, options }, labelSize, position, padding) {
+    const { y: start2, y2: end, height: size } = properties;
+    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
+      position: position.y,
+      padding: { start: padding.top, end: padding.bottom },
+      adjust: options.label.yAdjust,
+      size: labelSize.height
+    });
+  }
+  function calculatePosition$1(boxOpts, labelOpts) {
+    const { start: start2, end, borderWidth: borderWidth3 } = boxOpts;
+    const { position, padding: { start: padStart, end: padEnd }, adjust } = labelOpts;
+    const availableSize = end - borderWidth3 - start2 - padStart - padEnd - labelOpts.size;
+    return start2 + borderWidth3 / 2 + adjust + getRelativePosition2(availableSize, position);
+  }
+  function resolveLabelElementProperties$1(chart, properties, options) {
+    const label = options.label;
+    label.backgroundColor = "transparent";
+    label.callout.display = false;
+    const position = toPosition(label.position);
+    const padding = toPadding(label.padding);
+    const labelSize = measureLabelSize2(chart.ctx, label);
+    const x = calculateX({ properties, options }, labelSize, position, padding);
+    const y = calculateY({ properties, options }, labelSize, position, padding);
+    const width = labelSize.width + padding.width;
+    const height = labelSize.height + padding.height;
+    return {
+      x,
+      y,
+      x2: x + width,
+      y2: y + height,
+      width,
+      height,
+      centerX: x + width / 2,
+      centerY: y + height / 2,
+      rotation: label.rotation
     };
   }
   function rotated(point, center, angle) {
@@ -13677,11 +15687,108 @@ var gsmViz = (() => {
       y: cy + sin * (point.x - cx) + cos * (point.y - cy)
     };
   }
+  var moveHooks = ["enter", "leave"];
+  var eventHooks = moveHooks.concat("click");
+  function updateListeners(chart, state, options) {
+    state.listened = loadHooks(options, eventHooks, state.listeners);
+    state.moveListened = false;
+    state._getElements = getElements;
+    moveHooks.forEach((hook) => {
+      if (isFunction(options[hook])) {
+        state.moveListened = true;
+      }
+    });
+    if (!state.listened || !state.moveListened) {
+      state.annotations.forEach((scope) => {
+        if (!state.listened && isFunction(scope.click)) {
+          state.listened = true;
+        }
+        if (!state.moveListened) {
+          moveHooks.forEach((hook) => {
+            if (isFunction(scope[hook])) {
+              state.listened = true;
+              state.moveListened = true;
+            }
+          });
+        }
+      });
+    }
+  }
+  function handleEvent(state, event, options) {
+    if (state.listened) {
+      switch (event.type) {
+        case "mousemove":
+        case "mouseout":
+          return handleMoveEvents(state, event, options);
+        case "click":
+          return handleClickEvents(state, event, options);
+      }
+    }
+  }
+  function handleMoveEvents(state, event, options) {
+    if (!state.moveListened) {
+      return;
+    }
+    let elements2;
+    if (event.type === "mousemove") {
+      elements2 = getElements(state, event, options.interaction);
+    } else {
+      elements2 = [];
+    }
+    const previous = state.hovered;
+    state.hovered = elements2;
+    const context = { state, event };
+    let changed = dispatchMoveEvents(context, "leave", previous, elements2);
+    return dispatchMoveEvents(context, "enter", elements2, previous) || changed;
+  }
+  function dispatchMoveEvents({ state, event }, hook, elements2, checkElements) {
+    let changed;
+    for (const element of elements2) {
+      if (checkElements.indexOf(element) < 0) {
+        changed = dispatchEvent(element.options[hook] || state.listeners[hook], element, event) || changed;
+      }
+    }
+    return changed;
+  }
+  function handleClickEvents(state, event, options) {
+    const listeners = state.listeners;
+    const elements2 = getElements(state, event, options.interaction);
+    let changed;
+    for (const element of elements2) {
+      changed = dispatchEvent(element.options.click || listeners.click, element, event) || changed;
+    }
+    return changed;
+  }
+  function dispatchEvent(handler, element, event) {
+    return callback(handler, [element.$context, event]) === true;
+  }
+  var elementHooks = ["afterDraw", "beforeDraw"];
+  function updateHooks(chart, state, options) {
+    const visibleElements = state.visibleElements;
+    state.hooked = loadHooks(options, elementHooks, state.hooks);
+    if (!state.hooked) {
+      visibleElements.forEach((scope) => {
+        if (!state.hooked) {
+          elementHooks.forEach((hook) => {
+            if (isFunction(scope.options[hook])) {
+              state.hooked = true;
+            }
+          });
+        }
+      });
+    }
+  }
+  function invokeHook(state, element, hook) {
+    if (state.hooked) {
+      const callbackHook = element.options[hook] || state.hooks[hook];
+      return callback(callbackHook, [element.$context]);
+    }
+  }
   function adjustScaleRange(chart, scale, annotations5) {
     const range = getScaleLimits(chart.scales, scale, annotations5);
     let changed = changeScaleLimit(scale, range, "min", "suggestedMin");
     changed = changeScaleLimit(scale, range, "max", "suggestedMax") || changed;
-    if (changed && typeof scale.handleTickRangeOptions === "function") {
+    if (changed && isFunction(scale.handleTickRangeOptions)) {
       scale.handleTickRangeOptions();
     }
   }
@@ -13765,15 +15872,7 @@ var gsmViz = (() => {
       return this.elements && this.elements[0];
     }
     resolveElementProperties(chart, options) {
-      const properties = resolveBoxProperties(chart, options);
-      const { x, y } = properties;
-      properties.elements = [{
-        type: "label",
-        optionScope: "label",
-        properties: resolveLabelElementProperties$1(chart, properties, options)
-      }];
-      properties.initProperties = { x, y };
-      return properties;
+      return resolveBoxAndLabelProperties(chart, options);
     }
   };
   BoxAnnotation.id = "boxAnnotation";
@@ -13788,6 +15887,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     label: {
       backgroundColor: "transparent",
       borderWidth: 0,
@@ -13806,6 +15906,7 @@ var gsmViz = (() => {
         weight: "bold"
       },
       height: void 0,
+      opacity: void 0,
       padding: 6,
       position: "center",
       rotation: void 0,
@@ -13838,504 +15939,6 @@ var gsmViz = (() => {
       _fallback: true
     }
   };
-  function calculateX({ properties, options }, labelSize, position, padding) {
-    const { x: start2, x2: end, width: size } = properties;
-    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
-      position: position.x,
-      padding: { start: padding.left, end: padding.right },
-      adjust: options.label.xAdjust,
-      size: labelSize.width
-    });
-  }
-  function calculateY({ properties, options }, labelSize, position, padding) {
-    const { y: start2, y2: end, height: size } = properties;
-    return calculatePosition$1({ start: start2, end, size, borderWidth: options.borderWidth }, {
-      position: position.y,
-      padding: { start: padding.top, end: padding.bottom },
-      adjust: options.label.yAdjust,
-      size: labelSize.height
-    });
-  }
-  function calculatePosition$1(boxOpts, labelOpts) {
-    const { start: start2, end, borderWidth: borderWidth3 } = boxOpts;
-    const { position, padding: { start: padStart, end: padEnd }, adjust } = labelOpts;
-    const availableSize = end - borderWidth3 - start2 - padStart - padEnd - labelOpts.size;
-    return start2 + borderWidth3 / 2 + adjust + getRelativePosition2(availableSize, position);
-  }
-  function resolveLabelElementProperties$1(chart, properties, options) {
-    const label = options.label;
-    label.backgroundColor = "transparent";
-    label.callout.display = false;
-    const position = toPosition(label.position);
-    const padding = toPadding(label.padding);
-    const labelSize = measureLabelSize2(chart.ctx, label);
-    const x = calculateX({ properties, options }, labelSize, position, padding);
-    const y = calculateY({ properties, options }, labelSize, position, padding);
-    const width = labelSize.width + padding.width;
-    const height = labelSize.height + padding.height;
-    return {
-      x,
-      y,
-      x2: x + width,
-      y2: y + height,
-      width,
-      height,
-      centerX: x + width / 2,
-      centerY: y + height / 2,
-      rotation: label.rotation
-    };
-  }
-  var pointInLine = (p1, p2, t) => ({ x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) });
-  var interpolateX = (y, p1, p2) => pointInLine(p1, p2, Math.abs((y - p1.y) / (p2.y - p1.y))).x;
-  var interpolateY = (x, p1, p2) => pointInLine(p1, p2, Math.abs((x - p1.x) / (p2.x - p1.x))).y;
-  var sqr = (v) => v * v;
-  var rangeLimit = (mouseX, mouseY, { x, y, x2, y2 }, axis) => axis === "y" ? { start: Math.min(y, y2), end: Math.max(y, y2), value: mouseY } : { start: Math.min(x, x2), end: Math.max(x, x2), value: mouseX };
-  var LineAnnotation = class extends Element {
-    inRange(mouseX, mouseY, axis, useFinalPosition) {
-      const hBorderWidth = this.options.borderWidth / 2;
-      if (axis !== "x" && axis !== "y") {
-        const epsilon = sqr(hBorderWidth);
-        const point = { mouseX, mouseY };
-        return intersects(this, point, epsilon, useFinalPosition) || isOnLabel(this, point, useFinalPosition);
-      }
-      const limit = rangeLimit(mouseX, mouseY, this.getProps(["x", "y", "x2", "y2"], useFinalPosition), axis);
-      return limit.value >= limit.start - hBorderWidth && limit.value <= limit.end + hBorderWidth || isOnLabel(this, { mouseX, mouseY }, useFinalPosition, axis);
-    }
-    getCenterPoint(useFinalPosition) {
-      return getElementCenterPoint(this, useFinalPosition);
-    }
-    draw(ctx) {
-      const { x, y, x2, y2, options } = this;
-      ctx.save();
-      if (!setBorderStyle(ctx, options)) {
-        return ctx.restore();
-      }
-      setShadowStyle(ctx, options);
-      const angle = Math.atan2(y2 - y, x2 - x);
-      const length = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
-      const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(this);
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(0 + startAdjust, 0);
-      ctx.lineTo(length - endAdjust, 0);
-      ctx.shadowColor = options.borderShadowColor;
-      ctx.stroke();
-      drawArrowHead(ctx, 0, startAdjust, startOpts);
-      drawArrowHead(ctx, length, -endAdjust, endOpts);
-      ctx.restore();
-    }
-    get label() {
-      return this.elements && this.elements[0];
-    }
-    resolveElementProperties(chart, options) {
-      const { scales: scales2, chartArea } = chart;
-      const scale = scales2[options.scaleID];
-      const area = { x: chartArea.left, y: chartArea.top, x2: chartArea.right, y2: chartArea.bottom };
-      let min3, max3;
-      if (scale) {
-        min3 = scaleValue(scale, options.value, NaN);
-        max3 = scaleValue(scale, options.endValue, min3);
-        if (scale.isHorizontal()) {
-          area.x = min3;
-          area.x2 = max3;
-        } else {
-          area.y = min3;
-          area.y2 = max3;
-        }
-      } else {
-        const xScale = scales2[retrieveScaleID(scales2, options, "xScaleID")];
-        const yScale = scales2[retrieveScaleID(scales2, options, "yScaleID")];
-        if (xScale) {
-          applyScaleValueToDimension(area, xScale, { min: options.xMin, max: options.xMax, start: xScale.left, end: xScale.right, startProp: "x", endProp: "x2" });
-        }
-        if (yScale) {
-          applyScaleValueToDimension(area, yScale, { min: options.yMin, max: options.yMax, start: yScale.bottom, end: yScale.top, startProp: "y", endProp: "y2" });
-        }
-      }
-      const { x, y, x2, y2 } = area;
-      const inside = isLineInArea(area, chart.chartArea);
-      const properties = inside ? limitLineToArea({ x, y }, { x: x2, y: y2 }, chart.chartArea) : { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
-      properties.centerX = (x2 + x) / 2;
-      properties.centerY = (y2 + y) / 2;
-      const labelProperties = resolveLabelElementProperties(chart, properties, options.label);
-      labelProperties._visible = inside;
-      properties.elements = [{
-        type: "label",
-        optionScope: "label",
-        properties: labelProperties
-      }];
-      return properties;
-    }
-  };
-  LineAnnotation.id = "lineAnnotation";
-  var arrowHeadsDefaults = {
-    backgroundColor: void 0,
-    backgroundShadowColor: void 0,
-    borderColor: void 0,
-    borderDash: void 0,
-    borderDashOffset: void 0,
-    borderShadowColor: void 0,
-    borderWidth: void 0,
-    display: void 0,
-    fill: void 0,
-    length: void 0,
-    shadowBlur: void 0,
-    shadowOffsetX: void 0,
-    shadowOffsetY: void 0,
-    width: void 0
-  };
-  LineAnnotation.defaults = {
-    adjustScaleRange: true,
-    arrowHeads: {
-      display: false,
-      end: Object.assign({}, arrowHeadsDefaults),
-      fill: false,
-      length: 12,
-      start: Object.assign({}, arrowHeadsDefaults),
-      width: 6
-    },
-    borderDash: [],
-    borderDashOffset: 0,
-    borderShadowColor: "transparent",
-    borderWidth: 2,
-    display: true,
-    endValue: void 0,
-    label: {
-      backgroundColor: "rgba(0,0,0,0.8)",
-      backgroundShadowColor: "transparent",
-      borderCapStyle: "butt",
-      borderColor: "black",
-      borderDash: [],
-      borderDashOffset: 0,
-      borderJoinStyle: "miter",
-      borderRadius: 6,
-      borderShadowColor: "transparent",
-      borderWidth: 0,
-      callout: {
-        display: false
-      },
-      color: "#fff",
-      content: null,
-      display: false,
-      drawTime: void 0,
-      font: {
-        family: void 0,
-        lineHeight: void 0,
-        size: void 0,
-        style: void 0,
-        weight: "bold"
-      },
-      height: void 0,
-      padding: 6,
-      position: "center",
-      rotation: 0,
-      shadowBlur: 0,
-      shadowOffsetX: 0,
-      shadowOffsetY: 0,
-      textAlign: "center",
-      textStrokeColor: void 0,
-      textStrokeWidth: 0,
-      width: void 0,
-      xAdjust: 0,
-      yAdjust: 0,
-      z: void 0
-    },
-    scaleID: void 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    value: void 0,
-    xMax: void 0,
-    xMin: void 0,
-    xScaleID: void 0,
-    yMax: void 0,
-    yMin: void 0,
-    yScaleID: void 0,
-    z: 0
-  };
-  LineAnnotation.descriptors = {
-    arrowHeads: {
-      start: {
-        _fallback: true
-      },
-      end: {
-        _fallback: true
-      },
-      _fallback: true
-    }
-  };
-  LineAnnotation.defaultRoutes = {
-    borderColor: "color"
-  };
-  function isLineInArea({ x, y, x2, y2 }, { top, right, bottom, left }) {
-    return !(x < left && x2 < left || x > right && x2 > right || y < top && y2 < top || y > bottom && y2 > bottom);
-  }
-  function limitPointToArea({ x, y }, p2, { top, right, bottom, left }) {
-    if (x < left) {
-      y = interpolateY(left, { x, y }, p2);
-      x = left;
-    }
-    if (x > right) {
-      y = interpolateY(right, { x, y }, p2);
-      x = right;
-    }
-    if (y < top) {
-      x = interpolateX(top, { x, y }, p2);
-      y = top;
-    }
-    if (y > bottom) {
-      x = interpolateX(bottom, { x, y }, p2);
-      y = bottom;
-    }
-    return { x, y };
-  }
-  function limitLineToArea(p1, p2, area) {
-    const { x, y } = limitPointToArea(p1, p2, area);
-    const { x: x2, y: y2 } = limitPointToArea(p2, p1, area);
-    return { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
-  }
-  function intersects(element, { mouseX, mouseY }, epsilon = EPSILON2, useFinalPosition) {
-    const { x: x1, y: y1, x2, y2 } = element.getProps(["x", "y", "x2", "y2"], useFinalPosition);
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const lenSq = sqr(dx) + sqr(dy);
-    const t = lenSq === 0 ? -1 : ((mouseX - x1) * dx + (mouseY - y1) * dy) / lenSq;
-    let xx, yy;
-    if (t < 0) {
-      xx = x1;
-      yy = y1;
-    } else if (t > 1) {
-      xx = x2;
-      yy = y2;
-    } else {
-      xx = x1 + t * dx;
-      yy = y1 + t * dy;
-    }
-    return sqr(mouseX - xx) + sqr(mouseY - yy) <= epsilon;
-  }
-  function isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis) {
-    const label = element.label;
-    return label.options.display && label.inRange(mouseX, mouseY, axis, useFinalPosition);
-  }
-  function applyScaleValueToDimension(area, scale, options) {
-    const dim = getDimensionByScale(scale, options);
-    area[options.startProp] = dim.start;
-    area[options.endProp] = dim.end;
-  }
-  function resolveLabelElementProperties(chart, properties, options) {
-    options.callout.display = false;
-    const borderWidth3 = options.borderWidth;
-    const padding = toPadding(options.padding);
-    const textSize = measureLabelSize2(chart.ctx, options);
-    const width = textSize.width + padding.width + borderWidth3;
-    const height = textSize.height + padding.height + borderWidth3;
-    return calculateLabelPosition(properties, options, { width, height, padding }, chart.chartArea);
-  }
-  function calculateAutoRotation(properties) {
-    const { x, y, x2, y2 } = properties;
-    const rotation = Math.atan2(y2 - y, x2 - x);
-    return rotation > PI / 2 ? rotation - PI : rotation < PI / -2 ? rotation + PI : rotation;
-  }
-  function calculateLabelPosition(properties, label, sizes, chartArea) {
-    const { width, height, padding } = sizes;
-    const { xAdjust, yAdjust } = label;
-    const p1 = { x: properties.x, y: properties.y };
-    const p2 = { x: properties.x2, y: properties.y2 };
-    const rotation = label.rotation === "auto" ? calculateAutoRotation(properties) : toRadians(label.rotation);
-    const size = rotatedSize(width, height, rotation);
-    const t = calculateT(properties, label, { labelSize: size, padding }, chartArea);
-    const pt = pointInLine(p1, p2, t);
-    const xCoordinateSizes = { size: size.w, min: chartArea.left, max: chartArea.right, padding: padding.left };
-    const yCoordinateSizes = { size: size.h, min: chartArea.top, max: chartArea.bottom, padding: padding.top };
-    const centerX = adjustLabelCoordinate(pt.x, xCoordinateSizes) + xAdjust;
-    const centerY = adjustLabelCoordinate(pt.y, yCoordinateSizes) + yAdjust;
-    return {
-      x: centerX - width / 2,
-      y: centerY - height / 2,
-      x2: centerX + width / 2,
-      y2: centerY + height / 2,
-      centerX,
-      centerY,
-      width,
-      height,
-      rotation: toDegrees(rotation)
-    };
-  }
-  function rotatedSize(width, height, rotation) {
-    const cos = Math.cos(rotation);
-    const sin = Math.sin(rotation);
-    return {
-      w: Math.abs(width * cos) + Math.abs(height * sin),
-      h: Math.abs(width * sin) + Math.abs(height * cos)
-    };
-  }
-  function calculateT(properties, label, sizes, chartArea) {
-    let t;
-    const space = spaceAround(properties, chartArea);
-    if (label.position === "start") {
-      t = calculateTAdjust({ w: properties.x2 - properties.x, h: properties.y2 - properties.y }, sizes, label, space);
-    } else if (label.position === "end") {
-      t = 1 - calculateTAdjust({ w: properties.x - properties.x2, h: properties.y - properties.y2 }, sizes, label, space);
-    } else {
-      t = getRelativePosition2(1, label.position);
-    }
-    return t;
-  }
-  function calculateTAdjust(lineSize, sizes, label, space) {
-    const { labelSize, padding } = sizes;
-    const lineW = lineSize.w * space.dx;
-    const lineH = lineSize.h * space.dy;
-    const x = lineW > 0 && (labelSize.w / 2 + padding.left - space.x) / lineW;
-    const y = lineH > 0 && (labelSize.h / 2 + padding.top - space.y) / lineH;
-    return clamp(Math.max(x, y), 0, 0.25);
-  }
-  function spaceAround(properties, chartArea) {
-    const { x, x2, y, y2 } = properties;
-    const t = Math.min(y, y2) - chartArea.top;
-    const l = Math.min(x, x2) - chartArea.left;
-    const b = chartArea.bottom - Math.max(y, y2);
-    const r = chartArea.right - Math.max(x, x2);
-    return {
-      x: Math.min(l, r),
-      y: Math.min(t, b),
-      dx: l <= r ? 1 : -1,
-      dy: t <= b ? 1 : -1
-    };
-  }
-  function adjustLabelCoordinate(coordinate, labelSizes) {
-    const { size, min: min3, max: max3, padding } = labelSizes;
-    const halfSize = size / 2;
-    if (size > max3 - min3) {
-      return (max3 + min3) / 2;
-    }
-    if (min3 >= coordinate - padding - halfSize) {
-      coordinate = min3 + padding + halfSize;
-    }
-    if (max3 <= coordinate + padding + halfSize) {
-      coordinate = max3 - padding - halfSize;
-    }
-    return coordinate;
-  }
-  function getArrowHeads(line) {
-    const options = line.options;
-    const arrowStartOpts = options.arrowHeads && options.arrowHeads.start;
-    const arrowEndOpts = options.arrowHeads && options.arrowHeads.end;
-    return {
-      startOpts: arrowStartOpts,
-      endOpts: arrowEndOpts,
-      startAdjust: getLineAdjust(line, arrowStartOpts),
-      endAdjust: getLineAdjust(line, arrowEndOpts)
-    };
-  }
-  function getLineAdjust(line, arrowOpts) {
-    if (!arrowOpts || !arrowOpts.display) {
-      return 0;
-    }
-    const { length, width } = arrowOpts;
-    const adjust = line.options.borderWidth / 2;
-    const p1 = { x: length, y: width + adjust };
-    const p2 = { x: 0, y: adjust };
-    return Math.abs(interpolateX(0, p1, p2));
-  }
-  function drawArrowHead(ctx, offset, adjust, arrowOpts) {
-    if (!arrowOpts || !arrowOpts.display) {
-      return;
-    }
-    const { length, width, fill: fill2, backgroundColor: backgroundColor4, borderColor: borderColor4 } = arrowOpts;
-    const arrowOffsetX = Math.abs(offset - length) + adjust;
-    ctx.beginPath();
-    setShadowStyle(ctx, arrowOpts);
-    setBorderStyle(ctx, arrowOpts);
-    ctx.moveTo(arrowOffsetX, -width);
-    ctx.lineTo(offset + adjust, 0);
-    ctx.lineTo(arrowOffsetX, width);
-    if (fill2 === true) {
-      ctx.fillStyle = backgroundColor4 || borderColor4;
-      ctx.closePath();
-      ctx.fill();
-      ctx.shadowColor = "transparent";
-    } else {
-      ctx.shadowColor = arrowOpts.borderShadowColor;
-    }
-    ctx.stroke();
-  }
-  var EllipseAnnotation = class extends Element {
-    inRange(mouseX, mouseY, axis, useFinalPosition) {
-      const rotation = this.options.rotation;
-      const borderWidth3 = this.options.borderWidth;
-      if (axis !== "x" && axis !== "y") {
-        return pointInEllipse({ x: mouseX, y: mouseY }, this.getProps(["width", "height", "centerX", "centerY"], useFinalPosition), rotation, borderWidth3);
-      }
-      const { x, y, x2, y2 } = this.getProps(["x", "y", "x2", "y2"], useFinalPosition);
-      const hBorderWidth = borderWidth3 / 2;
-      const limit = axis === "y" ? { start: y, end: y2 } : { start: x, end: x2 };
-      const rotatedPoint = rotated({ x: mouseX, y: mouseY }, this.getCenterPoint(useFinalPosition), toRadians(-rotation));
-      return rotatedPoint[axis] >= limit.start - hBorderWidth - EPSILON2 && rotatedPoint[axis] <= limit.end + hBorderWidth + EPSILON2;
-    }
-    getCenterPoint(useFinalPosition) {
-      return getElementCenterPoint(this, useFinalPosition);
-    }
-    draw(ctx) {
-      const { width, height, centerX, centerY, options } = this;
-      ctx.save();
-      translate(ctx, this.getCenterPoint(), options.rotation);
-      setShadowStyle(ctx, this.options);
-      ctx.beginPath();
-      ctx.fillStyle = options.backgroundColor;
-      const stroke = setBorderStyle(ctx, options);
-      ctx.ellipse(centerX, centerY, height / 2, width / 2, PI / 2, 0, 2 * PI);
-      ctx.fill();
-      if (stroke) {
-        ctx.shadowColor = options.borderShadowColor;
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-    resolveElementProperties(chart, options) {
-      return resolveBoxProperties(chart, options);
-    }
-  };
-  EllipseAnnotation.id = "ellipseAnnotation";
-  EllipseAnnotation.defaults = {
-    adjustScaleRange: true,
-    backgroundShadowColor: "transparent",
-    borderDash: [],
-    borderDashOffset: 0,
-    borderShadowColor: "transparent",
-    borderWidth: 1,
-    display: true,
-    rotation: 0,
-    shadowBlur: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    xMax: void 0,
-    xMin: void 0,
-    xScaleID: void 0,
-    yMax: void 0,
-    yMin: void 0,
-    yScaleID: void 0,
-    z: 0
-  };
-  EllipseAnnotation.defaultRoutes = {
-    borderColor: "color",
-    backgroundColor: "color"
-  };
-  function pointInEllipse(p, ellipse, rotation, borderWidth3) {
-    const { width, height, centerX, centerY } = ellipse;
-    const xRadius = width / 2;
-    const yRadius = height / 2;
-    if (xRadius <= 0 || yRadius <= 0) {
-      return false;
-    }
-    const angle = toRadians(rotation || 0);
-    const hBorderWidth = borderWidth3 / 2 || 0;
-    const cosAngle = Math.cos(angle);
-    const sinAngle = Math.sin(angle);
-    const a = Math.pow(cosAngle * (p.x - centerX) + sinAngle * (p.y - centerY), 2);
-    const b = Math.pow(sinAngle * (p.x - centerX) - cosAngle * (p.y - centerY), 2);
-    return a / Math.pow(xRadius + hBorderWidth, 2) + b / Math.pow(yRadius + hBorderWidth, 2) <= 1.0001;
-  }
   var positions2 = ["left", "bottom", "top", "right"];
   var LabelAnnotation = class extends Element {
     inRange(mouseX, mouseY, axis, useFinalPosition) {
@@ -14370,6 +15973,7 @@ var gsmViz = (() => {
       const labelSize = measureLabelSize2(chart.ctx, options);
       const boxSize = measureRect(point, labelSize, options, padding);
       return {
+        initProperties: initAnimationProperties(chart, boxSize, options),
         pointX: point.x,
         pointY: point.y,
         ...boxSize,
@@ -14413,6 +16017,8 @@ var gsmViz = (() => {
       weight: void 0
     },
     height: void 0,
+    init: void 0,
+    opacity: void 0,
     padding: 6,
     position: "center",
     rotation: 0,
@@ -14441,7 +16047,7 @@ var gsmViz = (() => {
   function measureRect(point, size, options, padding) {
     const width = size.width + padding.width + options.borderWidth;
     const height = size.height + padding.height + options.borderWidth;
-    const position = toPosition(options.position);
+    const position = toPosition(options.position, "center");
     const x = calculatePosition(point.x, width, options.xAdjust, position.x);
     const y = calculatePosition(point.y, height, options.yAdjust, position.y);
     return {
@@ -14579,6 +16185,512 @@ var gsmViz = (() => {
     }
     return element.inRange(x, y);
   }
+  var pointInLine = (p1, p2, t) => ({ x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) });
+  var interpolateX = (y, p1, p2) => pointInLine(p1, p2, Math.abs((y - p1.y) / (p2.y - p1.y))).x;
+  var interpolateY = (x, p1, p2) => pointInLine(p1, p2, Math.abs((x - p1.x) / (p2.x - p1.x))).y;
+  var sqr = (v) => v * v;
+  var rangeLimit = (mouseX, mouseY, { x, y, x2, y2 }, axis) => axis === "y" ? { start: Math.min(y, y2), end: Math.max(y, y2), value: mouseY } : { start: Math.min(x, x2), end: Math.max(x, x2), value: mouseX };
+  var coordInCurve = (start2, cp, end, t) => (1 - t) * (1 - t) * start2 + 2 * (1 - t) * t * cp + t * t * end;
+  var pointInCurve = (start2, cp, end, t) => ({ x: coordInCurve(start2.x, cp.x, end.x, t), y: coordInCurve(start2.y, cp.y, end.y, t) });
+  var coordAngleInCurve = (start2, cp, end, t) => 2 * (1 - t) * (cp - start2) + 2 * t * (end - cp);
+  var angleInCurve = (start2, cp, end, t) => -Math.atan2(coordAngleInCurve(start2.x, cp.x, end.x, t), coordAngleInCurve(start2.y, cp.y, end.y, t)) + 0.5 * PI;
+  var LineAnnotation = class extends Element {
+    inRange(mouseX, mouseY, axis, useFinalPosition) {
+      const hBorderWidth = this.options.borderWidth / 2;
+      if (axis !== "x" && axis !== "y") {
+        const point = { mouseX, mouseY };
+        const { path, ctx } = this;
+        if (path) {
+          setBorderStyle(ctx, this.options);
+          const { chart } = this.$context;
+          const mx = mouseX * chart.currentDevicePixelRatio;
+          const my = mouseY * chart.currentDevicePixelRatio;
+          const result = ctx.isPointInStroke(path, mx, my) || isOnLabel(this, point, useFinalPosition);
+          ctx.restore();
+          return result;
+        }
+        const epsilon = sqr(hBorderWidth);
+        return intersects(this, point, epsilon, useFinalPosition) || isOnLabel(this, point, useFinalPosition);
+      }
+      return inAxisRange(this, { mouseX, mouseY }, axis, { hBorderWidth, useFinalPosition });
+    }
+    getCenterPoint(useFinalPosition) {
+      return getElementCenterPoint(this, useFinalPosition);
+    }
+    draw(ctx) {
+      const { x, y, x2, y2, cp, options } = this;
+      ctx.save();
+      if (!setBorderStyle(ctx, options)) {
+        return ctx.restore();
+      }
+      setShadowStyle(ctx, options);
+      const length = Math.sqrt(Math.pow(x2 - x, 2) + Math.pow(y2 - y, 2));
+      if (options.curve && cp) {
+        drawCurve(ctx, this, cp, length);
+        return ctx.restore();
+      }
+      const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(this);
+      const angle = Math.atan2(y2 - y, x2 - x);
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.moveTo(0 + startAdjust, 0);
+      ctx.lineTo(length - endAdjust, 0);
+      ctx.shadowColor = options.borderShadowColor;
+      ctx.stroke();
+      drawArrowHead(ctx, 0, startAdjust, startOpts);
+      drawArrowHead(ctx, length, -endAdjust, endOpts);
+      ctx.restore();
+    }
+    get label() {
+      return this.elements && this.elements[0];
+    }
+    resolveElementProperties(chart, options) {
+      const area = resolveLineProperties(chart, options);
+      const { x, y, x2, y2 } = area;
+      const inside = isLineInArea(area, chart.chartArea);
+      const properties = inside ? limitLineToArea({ x, y }, { x: x2, y: y2 }, chart.chartArea) : { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
+      properties.centerX = (x2 + x) / 2;
+      properties.centerY = (y2 + y) / 2;
+      properties.initProperties = initAnimationProperties(chart, properties, options);
+      if (options.curve) {
+        const p1 = { x: properties.x, y: properties.y };
+        const p2 = { x: properties.x2, y: properties.y2 };
+        properties.cp = getControlPoint(properties, options, distanceBetweenPoints(p1, p2));
+      }
+      const labelProperties = resolveLabelElementProperties(chart, properties, options.label);
+      labelProperties._visible = inside;
+      properties.elements = [{
+        type: "label",
+        optionScope: "label",
+        properties: labelProperties,
+        initProperties: properties.initProperties
+      }];
+      return properties;
+    }
+  };
+  LineAnnotation.id = "lineAnnotation";
+  var arrowHeadsDefaults = {
+    backgroundColor: void 0,
+    backgroundShadowColor: void 0,
+    borderColor: void 0,
+    borderDash: void 0,
+    borderDashOffset: void 0,
+    borderShadowColor: void 0,
+    borderWidth: void 0,
+    display: void 0,
+    fill: void 0,
+    length: void 0,
+    shadowBlur: void 0,
+    shadowOffsetX: void 0,
+    shadowOffsetY: void 0,
+    width: void 0
+  };
+  LineAnnotation.defaults = {
+    adjustScaleRange: true,
+    arrowHeads: {
+      display: false,
+      end: Object.assign({}, arrowHeadsDefaults),
+      fill: false,
+      length: 12,
+      start: Object.assign({}, arrowHeadsDefaults),
+      width: 6
+    },
+    borderDash: [],
+    borderDashOffset: 0,
+    borderShadowColor: "transparent",
+    borderWidth: 2,
+    curve: false,
+    controlPoint: {
+      y: "-50%"
+    },
+    display: true,
+    endValue: void 0,
+    init: void 0,
+    label: {
+      backgroundColor: "rgba(0,0,0,0.8)",
+      backgroundShadowColor: "transparent",
+      borderCapStyle: "butt",
+      borderColor: "black",
+      borderDash: [],
+      borderDashOffset: 0,
+      borderJoinStyle: "miter",
+      borderRadius: 6,
+      borderShadowColor: "transparent",
+      borderWidth: 0,
+      callout: Object.assign({}, LabelAnnotation.defaults.callout),
+      color: "#fff",
+      content: null,
+      display: false,
+      drawTime: void 0,
+      font: {
+        family: void 0,
+        lineHeight: void 0,
+        size: void 0,
+        style: void 0,
+        weight: "bold"
+      },
+      height: void 0,
+      opacity: void 0,
+      padding: 6,
+      position: "center",
+      rotation: 0,
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      textAlign: "center",
+      textStrokeColor: void 0,
+      textStrokeWidth: 0,
+      width: void 0,
+      xAdjust: 0,
+      yAdjust: 0,
+      z: void 0
+    },
+    scaleID: void 0,
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    value: void 0,
+    xMax: void 0,
+    xMin: void 0,
+    xScaleID: void 0,
+    yMax: void 0,
+    yMin: void 0,
+    yScaleID: void 0,
+    z: 0
+  };
+  LineAnnotation.descriptors = {
+    arrowHeads: {
+      start: {
+        _fallback: true
+      },
+      end: {
+        _fallback: true
+      },
+      _fallback: true
+    }
+  };
+  LineAnnotation.defaultRoutes = {
+    borderColor: "color"
+  };
+  function inAxisRange(element, { mouseX, mouseY }, axis, { hBorderWidth, useFinalPosition }) {
+    const limit = rangeLimit(mouseX, mouseY, element.getProps(["x", "y", "x2", "y2"], useFinalPosition), axis);
+    return limit.value >= limit.start - hBorderWidth && limit.value <= limit.end + hBorderWidth || isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis);
+  }
+  function isLineInArea({ x, y, x2, y2 }, { top, right, bottom, left }) {
+    return !(x < left && x2 < left || x > right && x2 > right || y < top && y2 < top || y > bottom && y2 > bottom);
+  }
+  function limitPointToArea({ x, y }, p2, { top, right, bottom, left }) {
+    if (x < left) {
+      y = interpolateY(left, { x, y }, p2);
+      x = left;
+    }
+    if (x > right) {
+      y = interpolateY(right, { x, y }, p2);
+      x = right;
+    }
+    if (y < top) {
+      x = interpolateX(top, { x, y }, p2);
+      y = top;
+    }
+    if (y > bottom) {
+      x = interpolateX(bottom, { x, y }, p2);
+      y = bottom;
+    }
+    return { x, y };
+  }
+  function limitLineToArea(p1, p2, area) {
+    const { x, y } = limitPointToArea(p1, p2, area);
+    const { x: x2, y: y2 } = limitPointToArea(p2, p1, area);
+    return { x, y, x2, y2, width: Math.abs(x2 - x), height: Math.abs(y2 - y) };
+  }
+  function intersects(element, { mouseX, mouseY }, epsilon = EPSILON2, useFinalPosition) {
+    const { x: x1, y: y1, x2, y2 } = element.getProps(["x", "y", "x2", "y2"], useFinalPosition);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lenSq = sqr(dx) + sqr(dy);
+    const t = lenSq === 0 ? -1 : ((mouseX - x1) * dx + (mouseY - y1) * dy) / lenSq;
+    let xx, yy;
+    if (t < 0) {
+      xx = x1;
+      yy = y1;
+    } else if (t > 1) {
+      xx = x2;
+      yy = y2;
+    } else {
+      xx = x1 + t * dx;
+      yy = y1 + t * dy;
+    }
+    return sqr(mouseX - xx) + sqr(mouseY - yy) <= epsilon;
+  }
+  function isOnLabel(element, { mouseX, mouseY }, useFinalPosition, axis) {
+    const label = element.label;
+    return label.options.display && label.inRange(mouseX, mouseY, axis, useFinalPosition);
+  }
+  function resolveLabelElementProperties(chart, properties, options) {
+    const borderWidth3 = options.borderWidth;
+    const padding = toPadding(options.padding);
+    const textSize = measureLabelSize2(chart.ctx, options);
+    const width = textSize.width + padding.width + borderWidth3;
+    const height = textSize.height + padding.height + borderWidth3;
+    return calculateLabelPosition(properties, options, { width, height, padding }, chart.chartArea);
+  }
+  function calculateAutoRotation(properties) {
+    const { x, y, x2, y2 } = properties;
+    const rotation = Math.atan2(y2 - y, x2 - x);
+    return rotation > PI / 2 ? rotation - PI : rotation < PI / -2 ? rotation + PI : rotation;
+  }
+  function calculateLabelPosition(properties, label, sizes, chartArea) {
+    const { width, height, padding } = sizes;
+    const { xAdjust, yAdjust } = label;
+    const p1 = { x: properties.x, y: properties.y };
+    const p2 = { x: properties.x2, y: properties.y2 };
+    const rotation = label.rotation === "auto" ? calculateAutoRotation(properties) : toRadians(label.rotation);
+    const size = rotatedSize(width, height, rotation);
+    const t = calculateT(properties, label, { labelSize: size, padding }, chartArea);
+    const pt = properties.cp ? pointInCurve(p1, properties.cp, p2, t) : pointInLine(p1, p2, t);
+    const xCoordinateSizes = { size: size.w, min: chartArea.left, max: chartArea.right, padding: padding.left };
+    const yCoordinateSizes = { size: size.h, min: chartArea.top, max: chartArea.bottom, padding: padding.top };
+    const centerX = adjustLabelCoordinate(pt.x, xCoordinateSizes) + xAdjust;
+    const centerY = adjustLabelCoordinate(pt.y, yCoordinateSizes) + yAdjust;
+    return {
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      x2: centerX + width / 2,
+      y2: centerY + height / 2,
+      centerX,
+      centerY,
+      pointX: pt.x,
+      pointY: pt.y,
+      width,
+      height,
+      rotation: toDegrees(rotation)
+    };
+  }
+  function rotatedSize(width, height, rotation) {
+    const cos = Math.cos(rotation);
+    const sin = Math.sin(rotation);
+    return {
+      w: Math.abs(width * cos) + Math.abs(height * sin),
+      h: Math.abs(width * sin) + Math.abs(height * cos)
+    };
+  }
+  function calculateT(properties, label, sizes, chartArea) {
+    let t;
+    const space = spaceAround(properties, chartArea);
+    if (label.position === "start") {
+      t = calculateTAdjust({ w: properties.x2 - properties.x, h: properties.y2 - properties.y }, sizes, label, space);
+    } else if (label.position === "end") {
+      t = 1 - calculateTAdjust({ w: properties.x - properties.x2, h: properties.y - properties.y2 }, sizes, label, space);
+    } else {
+      t = getRelativePosition2(1, label.position);
+    }
+    return t;
+  }
+  function calculateTAdjust(lineSize, sizes, label, space) {
+    const { labelSize, padding } = sizes;
+    const lineW = lineSize.w * space.dx;
+    const lineH = lineSize.h * space.dy;
+    const x = lineW > 0 && (labelSize.w / 2 + padding.left - space.x) / lineW;
+    const y = lineH > 0 && (labelSize.h / 2 + padding.top - space.y) / lineH;
+    return clamp(Math.max(x, y), 0, 0.25);
+  }
+  function spaceAround(properties, chartArea) {
+    const { x, x2, y, y2 } = properties;
+    const t = Math.min(y, y2) - chartArea.top;
+    const l = Math.min(x, x2) - chartArea.left;
+    const b = chartArea.bottom - Math.max(y, y2);
+    const r = chartArea.right - Math.max(x, x2);
+    return {
+      x: Math.min(l, r),
+      y: Math.min(t, b),
+      dx: l <= r ? 1 : -1,
+      dy: t <= b ? 1 : -1
+    };
+  }
+  function adjustLabelCoordinate(coordinate, labelSizes) {
+    const { size, min: min3, max: max3, padding } = labelSizes;
+    const halfSize = size / 2;
+    if (size > max3 - min3) {
+      return (max3 + min3) / 2;
+    }
+    if (min3 >= coordinate - padding - halfSize) {
+      coordinate = min3 + padding + halfSize;
+    }
+    if (max3 <= coordinate + padding + halfSize) {
+      coordinate = max3 - padding - halfSize;
+    }
+    return coordinate;
+  }
+  function getArrowHeads(line) {
+    const options = line.options;
+    const arrowStartOpts = options.arrowHeads && options.arrowHeads.start;
+    const arrowEndOpts = options.arrowHeads && options.arrowHeads.end;
+    return {
+      startOpts: arrowStartOpts,
+      endOpts: arrowEndOpts,
+      startAdjust: getLineAdjust(line, arrowStartOpts),
+      endAdjust: getLineAdjust(line, arrowEndOpts)
+    };
+  }
+  function getLineAdjust(line, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return 0;
+    }
+    const { length, width } = arrowOpts;
+    const adjust = line.options.borderWidth / 2;
+    const p1 = { x: length, y: width + adjust };
+    const p2 = { x: 0, y: adjust };
+    return Math.abs(interpolateX(0, p1, p2));
+  }
+  function drawArrowHead(ctx, offset, adjust, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return;
+    }
+    const { length, width, fill: fill2, backgroundColor: backgroundColor4, borderColor: borderColor4 } = arrowOpts;
+    const arrowOffsetX = Math.abs(offset - length) + adjust;
+    ctx.beginPath();
+    setShadowStyle(ctx, arrowOpts);
+    setBorderStyle(ctx, arrowOpts);
+    ctx.moveTo(arrowOffsetX, -width);
+    ctx.lineTo(offset + adjust, 0);
+    ctx.lineTo(arrowOffsetX, width);
+    if (fill2 === true) {
+      ctx.fillStyle = backgroundColor4 || borderColor4;
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+    } else {
+      ctx.shadowColor = arrowOpts.borderShadowColor;
+    }
+    ctx.stroke();
+  }
+  function getControlPoint(properties, options, distance) {
+    const { x, y, x2, y2, centerX, centerY } = properties;
+    const angle = Math.atan2(y2 - y, x2 - x);
+    const cp = toPosition(options.controlPoint, 0);
+    const point = {
+      x: centerX + getSize(distance, cp.x, false),
+      y: centerY + getSize(distance, cp.y, false)
+    };
+    return rotated(point, { x: centerX, y: centerY }, angle);
+  }
+  function drawArrowHeadOnCurve(ctx, { x, y }, { angle, adjust }, arrowOpts) {
+    if (!arrowOpts || !arrowOpts.display) {
+      return;
+    }
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    drawArrowHead(ctx, 0, -adjust, arrowOpts);
+    ctx.restore();
+  }
+  function drawCurve(ctx, element, cp, length) {
+    const { x, y, x2, y2, options } = element;
+    const { startOpts, endOpts, startAdjust, endAdjust } = getArrowHeads(element);
+    const p1 = { x, y };
+    const p2 = { x: x2, y: y2 };
+    const startAngle = angleInCurve(p1, cp, p2, 0);
+    const endAngle = angleInCurve(p1, cp, p2, 1) - PI;
+    const ps = pointInCurve(p1, cp, p2, startAdjust / length);
+    const pe = pointInCurve(p1, cp, p2, 1 - endAdjust / length);
+    const path = new Path2D();
+    ctx.beginPath();
+    path.moveTo(ps.x, ps.y);
+    path.quadraticCurveTo(cp.x, cp.y, pe.x, pe.y);
+    ctx.shadowColor = options.borderShadowColor;
+    ctx.stroke(path);
+    element.path = path;
+    element.ctx = ctx;
+    drawArrowHeadOnCurve(ctx, ps, { angle: startAngle, adjust: startAdjust }, startOpts);
+    drawArrowHeadOnCurve(ctx, pe, { angle: endAngle, adjust: endAdjust }, endOpts);
+  }
+  var EllipseAnnotation = class extends Element {
+    inRange(mouseX, mouseY, axis, useFinalPosition) {
+      const rotation = this.options.rotation;
+      const borderWidth3 = this.options.borderWidth;
+      if (axis !== "x" && axis !== "y") {
+        return pointInEllipse({ x: mouseX, y: mouseY }, this.getProps(["width", "height", "centerX", "centerY"], useFinalPosition), rotation, borderWidth3);
+      }
+      const { x, y, x2, y2 } = this.getProps(["x", "y", "x2", "y2"], useFinalPosition);
+      const hBorderWidth = borderWidth3 / 2;
+      const limit = axis === "y" ? { start: y, end: y2 } : { start: x, end: x2 };
+      const rotatedPoint = rotated({ x: mouseX, y: mouseY }, this.getCenterPoint(useFinalPosition), toRadians(-rotation));
+      return rotatedPoint[axis] >= limit.start - hBorderWidth - EPSILON2 && rotatedPoint[axis] <= limit.end + hBorderWidth + EPSILON2;
+    }
+    getCenterPoint(useFinalPosition) {
+      return getElementCenterPoint(this, useFinalPosition);
+    }
+    draw(ctx) {
+      const { width, height, centerX, centerY, options } = this;
+      ctx.save();
+      translate(ctx, this.getCenterPoint(), options.rotation);
+      setShadowStyle(ctx, this.options);
+      ctx.beginPath();
+      ctx.fillStyle = options.backgroundColor;
+      const stroke = setBorderStyle(ctx, options);
+      ctx.ellipse(centerX, centerY, height / 2, width / 2, PI / 2, 0, 2 * PI);
+      ctx.fill();
+      if (stroke) {
+        ctx.shadowColor = options.borderShadowColor;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    get label() {
+      return this.elements && this.elements[0];
+    }
+    resolveElementProperties(chart, options) {
+      return resolveBoxAndLabelProperties(chart, options, true);
+    }
+  };
+  EllipseAnnotation.id = "ellipseAnnotation";
+  EllipseAnnotation.defaults = {
+    adjustScaleRange: true,
+    backgroundShadowColor: "transparent",
+    borderDash: [],
+    borderDashOffset: 0,
+    borderShadowColor: "transparent",
+    borderWidth: 1,
+    display: true,
+    init: void 0,
+    label: Object.assign({}, BoxAnnotation.defaults.label),
+    rotation: 0,
+    shadowBlur: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    xMax: void 0,
+    xMin: void 0,
+    xScaleID: void 0,
+    yMax: void 0,
+    yMin: void 0,
+    yScaleID: void 0,
+    z: 0
+  };
+  EllipseAnnotation.defaultRoutes = {
+    borderColor: "color",
+    backgroundColor: "color"
+  };
+  EllipseAnnotation.descriptors = {
+    label: {
+      _fallback: true
+    }
+  };
+  function pointInEllipse(p, ellipse, rotation, borderWidth3) {
+    const { width, height, centerX, centerY } = ellipse;
+    const xRadius = width / 2;
+    const yRadius = height / 2;
+    if (xRadius <= 0 || yRadius <= 0) {
+      return false;
+    }
+    const angle = toRadians(rotation || 0);
+    const hBorderWidth = borderWidth3 / 2 || 0;
+    const cosAngle = Math.cos(angle);
+    const sinAngle = Math.sin(angle);
+    const a = Math.pow(cosAngle * (p.x - centerX) + sinAngle * (p.y - centerY), 2);
+    const b = Math.pow(sinAngle * (p.x - centerX) - cosAngle * (p.y - centerY), 2);
+    return a / Math.pow(xRadius + hBorderWidth, 2) + b / Math.pow(yRadius + hBorderWidth, 2) <= 1.0001;
+  }
   var PointAnnotation = class extends Element {
     inRange(mouseX, mouseY, axis, useFinalPosition) {
       const { x, y, x2, y2, width } = this.getProps(["x", "y", "x2", "y2", "width"], useFinalPosition);
@@ -14603,8 +16715,7 @@ var gsmViz = (() => {
       ctx.fillStyle = options.backgroundColor;
       setShadowStyle(ctx, options);
       const stroke = setBorderStyle(ctx, options);
-      options.borderWidth = 0;
-      drawPoint(ctx, options, this.centerX, this.centerY);
+      drawPoint2(ctx, this, this.centerX, this.centerY);
       if (stroke && !isImageOrCanvas(options.pointStyle)) {
         ctx.shadowColor = options.borderShadowColor;
         ctx.stroke();
@@ -14613,7 +16724,9 @@ var gsmViz = (() => {
       options.borderWidth = borderWidth3;
     }
     resolveElementProperties(chart, options) {
-      return resolvePointProperties(chart, options);
+      const properties = resolvePointProperties(chart, options);
+      properties.initProperties = initAnimationProperties(chart, properties, options, true);
+      return properties;
     }
   };
   PointAnnotation.id = "pointAnnotation";
@@ -14625,6 +16738,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     pointStyle: "circle",
     radius: 10,
     rotation: 0,
@@ -14687,16 +16801,16 @@ var gsmViz = (() => {
     }
     resolveElementProperties(chart, options) {
       const properties = resolvePointProperties(chart, options);
-      const { x, y } = properties;
       const { sides, rotation } = options;
       const elements2 = [];
       const angle = 2 * PI / sides;
       let rad = rotation * RAD_PER_DEG;
       for (let i = 0; i < sides; i++, rad += angle) {
-        elements2.push(buildPointElement(properties, options, rad));
+        const elProps = buildPointElement(properties, options, rad);
+        elProps.initProperties = initAnimationProperties(chart, properties, options);
+        elements2.push(elProps);
       }
       properties.elements = elements2;
-      properties.initProperties = { x, y };
       return properties;
     }
   };
@@ -14711,6 +16825,7 @@ var gsmViz = (() => {
     borderShadowColor: "transparent",
     borderWidth: 1,
     display: true,
+    init: void 0,
     point: {
       radius: 0
     },
@@ -14782,6 +16897,9 @@ var gsmViz = (() => {
   var directUpdater = {
     update: Object.assign
   };
+  var hooks$1 = eventHooks.concat(elementHooks);
+  var resolve2 = (value, optDefs) => isObject(optDefs) ? resolveObj(value, optDefs) : value;
+  var isIndexable = (prop) => prop === "color" || prop === "font";
   function resolveType(type2 = "line") {
     if (annotationTypes[type2]) {
       return type2;
@@ -14800,12 +16918,13 @@ var gsmViz = (() => {
       const properties = element.resolveElementProperties(chart, resolver);
       properties.skip = toSkip(properties);
       if ("elements" in properties) {
-        updateSubElements(element, properties, resolver, animations);
+        updateSubElements(element, properties.elements, resolver, animations);
         delete properties.elements;
       }
       if (!defined(element.x)) {
         Object.assign(element, properties);
       }
+      Object.assign(element, properties.initProperties);
       properties.options = resolveAnnotationOptions(resolver);
       animations.update(element, properties);
     }
@@ -14819,13 +16938,13 @@ var gsmViz = (() => {
     }
     return new Animations(chart, animOpts);
   }
-  function updateSubElements(mainElement, { elements: elements2, initProperties }, resolver, animations) {
+  function updateSubElements(mainElement, elements2, resolver, animations) {
     const subElements = mainElement.elements || (mainElement.elements = []);
     subElements.length = elements2.length;
     for (let i = 0; i < elements2.length; i++) {
       const definition = elements2[i];
       const properties = definition.properties;
-      const subElement = getOrCreateElement(subElements, i, definition.type, initProperties);
+      const subElement = getOrCreateElement(subElements, i, definition.type, definition.initProperties);
       const subResolver = resolver[definition.optionScope].override(definition);
       properties.options = resolveAnnotationOptions(subResolver);
       animations.update(subElement, properties);
@@ -14836,9 +16955,7 @@ var gsmViz = (() => {
     let element = elements2[index3];
     if (!element || !(element instanceof elementClass)) {
       element = elements2[index3] = new elementClass();
-      if (isObject(initProperties)) {
-        Object.assign(element, initProperties);
-      }
+      Object.assign(element, initProperties);
     }
     return element;
   }
@@ -14853,7 +16970,7 @@ var gsmViz = (() => {
       resolveObj(resolver, elementClass.defaults),
       resolveObj(resolver, elementClass.defaultRoutes)
     );
-    for (const hook of hooks) {
+    for (const hook of hooks$1) {
       result[hook] = resolver[hook];
     }
     return result;
@@ -14863,7 +16980,11 @@ var gsmViz = (() => {
     for (const prop of Object.keys(defs)) {
       const optDefs = defs[prop];
       const value = resolver[prop];
-      result[prop] = isObject(optDefs) ? resolveObj(value, optDefs) : value;
+      if (isIndexable(prop) && isArray(value)) {
+        result[prop] = value.map((item) => resolve2(item, optDefs));
+      } else {
+        result[prop] = resolve2(value, optDefs);
+      }
     }
     return result;
   }
@@ -14885,8 +17006,9 @@ var gsmViz = (() => {
     }
     return elements2;
   }
-  var version2 = "2.0.1";
+  var version2 = "2.2.1";
   var chartStates = /* @__PURE__ */ new Map();
+  var hooks = eventHooks.concat(elementHooks);
   var annotation = {
     id: "annotation",
     version: version2,
@@ -14907,6 +17029,8 @@ var gsmViz = (() => {
         listeners: {},
         listened: false,
         moveListened: false,
+        hooks: {},
+        hooked: false,
         hovered: []
       });
     },
@@ -14936,6 +17060,7 @@ var gsmViz = (() => {
       updateListeners(chart, state, options);
       updateElements(chart, state, options, args.mode);
       state.visibleElements = state.elements.filter((el) => !el.skip && el.options.display);
+      updateHooks(chart, state, options);
     },
     beforeDatasetsDraw(chart, _args, options) {
       draw2(chart, "beforeDatasetsDraw", options.clip);
@@ -14955,7 +17080,7 @@ var gsmViz = (() => {
         args.changed = true;
       }
     },
-    destroy(chart) {
+    afterDestroy(chart) {
       chartStates.delete(chart);
     },
     _getState(chart) {
@@ -14976,12 +17101,13 @@ var gsmViz = (() => {
       },
       common: {
         drawTime: "afterDatasetsDraw",
+        init: false,
         label: {}
       }
     },
     descriptors: {
       _indexable: false,
-      _scriptable: (prop) => !hooks.includes(prop),
+      _scriptable: (prop) => !hooks.includes(prop) && prop !== "init",
       annotations: {
         _allKeys: false,
         _fallback: (prop, opts) => `elements.${annotationTypes[resolveType(opts.type)].id}`
@@ -14991,21 +17117,23 @@ var gsmViz = (() => {
       },
       common: {
         label: {
+          _indexable: isIndexable,
           _fallback: true
-        }
+        },
+        _indexable: isIndexable
       }
     },
     additionalOptionScopes: [""]
   };
   function draw2(chart, caller, clip) {
     const { ctx, chartArea } = chart;
-    const { visibleElements } = chartStates.get(chart);
+    const state = chartStates.get(chart);
     if (clip) {
       clipArea(ctx, chartArea);
     }
-    const drawableElements = getDrawableElements(visibleElements, caller).sort((a, b) => a.options.z - b.options.z);
-    for (const element of drawableElements) {
-      element.draw(chart.ctx, chartArea);
+    const drawableElements = getDrawableElements(state.visibleElements, caller).sort((a, b) => a.element.options.z - b.element.options.z);
+    for (const item of drawableElements) {
+      drawElement(ctx, chartArea, state, item);
     }
     if (clip) {
       unclipArea(ctx);
@@ -15015,18 +17143,978 @@ var gsmViz = (() => {
     const drawableElements = [];
     for (const el of elements2) {
       if (el.options.drawTime === caller) {
-        drawableElements.push(el);
+        drawableElements.push({ element: el, main: true });
       }
       if (el.elements && el.elements.length) {
         for (const sub of el.elements) {
           if (sub.options.display && sub.options.drawTime === caller) {
-            drawableElements.push(sub);
+            drawableElements.push({ element: sub });
           }
         }
       }
     }
     return drawableElements;
   }
+  function drawElement(ctx, chartArea, state, item) {
+    const el = item.element;
+    if (item.main) {
+      invokeHook(state, el, "beforeDraw");
+      el.draw(ctx, chartArea);
+      invokeHook(state, el, "afterDraw");
+    } else {
+      el.draw(ctx, chartArea);
+    }
+  }
+
+  // node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.esm.js
+  var import_hammerjs = __toESM(require_hammer());
+  var getModifierKey = (opts) => opts && opts.enabled && opts.modifierKey;
+  var keyPressed = (key, event) => key && event[key + "Key"];
+  var keyNotPressed = (key, event) => key && !event[key + "Key"];
+  function directionEnabled(mode, dir, chart) {
+    if (mode === void 0) {
+      return true;
+    } else if (typeof mode === "string") {
+      return mode.indexOf(dir) !== -1;
+    } else if (typeof mode === "function") {
+      return mode({ chart }).indexOf(dir) !== -1;
+    }
+    return false;
+  }
+  function directionsEnabled(mode, chart) {
+    if (typeof mode === "function") {
+      mode = mode({ chart });
+    }
+    if (typeof mode === "string") {
+      return { x: mode.indexOf("x") !== -1, y: mode.indexOf("y") !== -1 };
+    }
+    return { x: false, y: false };
+  }
+  function debounce2(fn, delay) {
+    let timeout2;
+    return function() {
+      clearTimeout(timeout2);
+      timeout2 = setTimeout(fn, delay);
+      return delay;
+    };
+  }
+  function getScaleUnderPoint({ x, y }, chart) {
+    const scales2 = chart.scales;
+    const scaleIds = Object.keys(scales2);
+    for (let i = 0; i < scaleIds.length; i++) {
+      const scale = scales2[scaleIds[i]];
+      if (y >= scale.top && y <= scale.bottom && x >= scale.left && x <= scale.right) {
+        return scale;
+      }
+    }
+    return null;
+  }
+  function getEnabledScalesByPoint(options, point, chart) {
+    const { mode = "xy", scaleMode, overScaleMode } = options || {};
+    const scale = getScaleUnderPoint(point, chart);
+    const enabled = directionsEnabled(mode, chart);
+    const scaleEnabled = directionsEnabled(scaleMode, chart);
+    if (overScaleMode) {
+      const overScaleEnabled = directionsEnabled(overScaleMode, chart);
+      for (const axis of ["x", "y"]) {
+        if (overScaleEnabled[axis]) {
+          scaleEnabled[axis] = enabled[axis];
+          enabled[axis] = false;
+        }
+      }
+    }
+    if (scale && scaleEnabled[scale.axis]) {
+      return [scale];
+    }
+    const enabledScales = [];
+    each(chart.scales, function(scaleItem) {
+      if (enabled[scaleItem.axis]) {
+        enabledScales.push(scaleItem);
+      }
+    });
+    return enabledScales;
+  }
+  var chartStates2 = /* @__PURE__ */ new WeakMap();
+  function getState(chart) {
+    let state = chartStates2.get(chart);
+    if (!state) {
+      state = {
+        originalScaleLimits: {},
+        updatedScaleLimits: {},
+        handlers: {},
+        panDelta: {},
+        dragging: false,
+        panning: false
+      };
+      chartStates2.set(chart, state);
+    }
+    return state;
+  }
+  function removeState(chart) {
+    chartStates2.delete(chart);
+  }
+  function zoomDelta(val, min3, range, newRange) {
+    const minPercent = Math.max(0, Math.min(1, (val - min3) / range || 0));
+    const maxPercent = 1 - minPercent;
+    return {
+      min: newRange * minPercent,
+      max: newRange * maxPercent
+    };
+  }
+  function getValueAtPoint(scale, point) {
+    const pixel = scale.isHorizontal() ? point.x : point.y;
+    return scale.getValueForPixel(pixel);
+  }
+  function linearZoomDelta(scale, zoom2, center) {
+    const range = scale.max - scale.min;
+    const newRange = range * (zoom2 - 1);
+    const centerValue = getValueAtPoint(scale, center);
+    return zoomDelta(centerValue, scale.min, range, newRange);
+  }
+  function logarithmicZoomRange(scale, zoom2, center) {
+    const centerValue = getValueAtPoint(scale, center);
+    if (centerValue === void 0) {
+      return { min: scale.min, max: scale.max };
+    }
+    const logMin = Math.log10(scale.min);
+    const logMax = Math.log10(scale.max);
+    const logCenter = Math.log10(centerValue);
+    const logRange = logMax - logMin;
+    const newLogRange = logRange * (zoom2 - 1);
+    const delta = zoomDelta(logCenter, logMin, logRange, newLogRange);
+    return {
+      min: Math.pow(10, logMin + delta.min),
+      max: Math.pow(10, logMax - delta.max)
+    };
+  }
+  function getScaleLimits2(scale, limits) {
+    return limits && (limits[scale.id] || limits[scale.axis]) || {};
+  }
+  function getLimit(state, scale, scaleLimits, prop, fallback) {
+    let limit = scaleLimits[prop];
+    if (limit === "original") {
+      const original = state.originalScaleLimits[scale.id][prop];
+      limit = valueOrDefault(original.options, original.scale);
+    }
+    return valueOrDefault(limit, fallback);
+  }
+  function linearRange(scale, pixel0, pixel1) {
+    const v0 = scale.getValueForPixel(pixel0);
+    const v1 = scale.getValueForPixel(pixel1);
+    return {
+      min: Math.min(v0, v1),
+      max: Math.max(v0, v1)
+    };
+  }
+  function fixRange(range, { min: min3, max: max3, minLimit, maxLimit }, originalLimits) {
+    const offset = (range - max3 + min3) / 2;
+    min3 -= offset;
+    max3 += offset;
+    const origMin = originalLimits.min.options ?? originalLimits.min.scale;
+    const origMax = originalLimits.max.options ?? originalLimits.max.scale;
+    const epsilon = range / 1e6;
+    if (almostEquals(min3, origMin, epsilon)) {
+      min3 = origMin;
+    }
+    if (almostEquals(max3, origMax, epsilon)) {
+      max3 = origMax;
+    }
+    if (min3 < minLimit) {
+      min3 = minLimit;
+      max3 = Math.min(minLimit + range, maxLimit);
+    } else if (max3 > maxLimit) {
+      max3 = maxLimit;
+      min3 = Math.max(maxLimit - range, minLimit);
+    }
+    return { min: min3, max: max3 };
+  }
+  function updateRange(scale, { min: min3, max: max3 }, limits, zoom2 = false) {
+    const state = getState(scale.chart);
+    const { options: scaleOpts } = scale;
+    const scaleLimits = getScaleLimits2(scale, limits);
+    const { minRange = 0 } = scaleLimits;
+    const minLimit = getLimit(state, scale, scaleLimits, "min", -Infinity);
+    const maxLimit = getLimit(state, scale, scaleLimits, "max", Infinity);
+    if (zoom2 === "pan" && (min3 < minLimit || max3 > maxLimit)) {
+      return true;
+    }
+    const scaleRange = scale.max - scale.min;
+    const range = zoom2 ? Math.max(max3 - min3, minRange) : scaleRange;
+    if (zoom2 && range === minRange && scaleRange <= minRange) {
+      return true;
+    }
+    const newRange = fixRange(range, { min: min3, max: max3, minLimit, maxLimit }, state.originalScaleLimits[scale.id]);
+    scaleOpts.min = newRange.min;
+    scaleOpts.max = newRange.max;
+    state.updatedScaleLimits[scale.id] = newRange;
+    return scale.parse(newRange.min) !== scale.min || scale.parse(newRange.max) !== scale.max;
+  }
+  function zoomNumericalScale(scale, zoom2, center, limits) {
+    const delta = linearZoomDelta(scale, zoom2, center);
+    const newRange = { min: scale.min + delta.min, max: scale.max - delta.max };
+    return updateRange(scale, newRange, limits, true);
+  }
+  function zoomLogarithmicScale(scale, zoom2, center, limits) {
+    const newRange = logarithmicZoomRange(scale, zoom2, center);
+    return updateRange(scale, newRange, limits, true);
+  }
+  function zoomRectNumericalScale(scale, from2, to2, limits) {
+    updateRange(scale, linearRange(scale, from2, to2), limits, true);
+  }
+  var integerChange = (v) => v === 0 || isNaN(v) ? 0 : v < 0 ? Math.min(Math.round(v), -1) : Math.max(Math.round(v), 1);
+  function existCategoryFromMaxZoom(scale) {
+    const labels = scale.getLabels();
+    const maxIndex = labels.length - 1;
+    if (scale.min > 0) {
+      scale.min -= 1;
+    }
+    if (scale.max < maxIndex) {
+      scale.max += 1;
+    }
+  }
+  function zoomCategoryScale(scale, zoom2, center, limits) {
+    const delta = linearZoomDelta(scale, zoom2, center);
+    if (scale.min === scale.max && zoom2 < 1) {
+      existCategoryFromMaxZoom(scale);
+    }
+    const newRange = { min: scale.min + integerChange(delta.min), max: scale.max - integerChange(delta.max) };
+    return updateRange(scale, newRange, limits, true);
+  }
+  function scaleLength(scale) {
+    return scale.isHorizontal() ? scale.width : scale.height;
+  }
+  function panCategoryScale(scale, delta, limits) {
+    const labels = scale.getLabels();
+    const lastLabelIndex = labels.length - 1;
+    let { min: min3, max: max3 } = scale;
+    const range = Math.max(max3 - min3, 1);
+    const stepDelta = Math.round(scaleLength(scale) / Math.max(range, 10));
+    const stepSize = Math.round(Math.abs(delta / stepDelta));
+    let applied;
+    if (delta < -stepDelta) {
+      max3 = Math.min(max3 + stepSize, lastLabelIndex);
+      min3 = range === 1 ? max3 : max3 - range;
+      applied = max3 === lastLabelIndex;
+    } else if (delta > stepDelta) {
+      min3 = Math.max(0, min3 - stepSize);
+      max3 = range === 1 ? min3 : min3 + range;
+      applied = min3 === 0;
+    }
+    return updateRange(scale, { min: min3, max: max3 }, limits) || applied;
+  }
+  var OFFSETS = {
+    second: 500,
+    minute: 30 * 1e3,
+    hour: 30 * 60 * 1e3,
+    day: 12 * 60 * 60 * 1e3,
+    week: 3.5 * 24 * 60 * 60 * 1e3,
+    month: 15 * 24 * 60 * 60 * 1e3,
+    quarter: 60 * 24 * 60 * 60 * 1e3,
+    year: 182 * 24 * 60 * 60 * 1e3
+  };
+  function panNumericalScale(scale, delta, limits, pan2 = false) {
+    const { min: prevStart, max: prevEnd, options } = scale;
+    const round2 = options.time && options.time.round;
+    const offset = OFFSETS[round2] || 0;
+    const newMin = scale.getValueForPixel(scale.getPixelForValue(prevStart + offset) - delta);
+    const newMax = scale.getValueForPixel(scale.getPixelForValue(prevEnd + offset) - delta);
+    if (isNaN(newMin) || isNaN(newMax)) {
+      return true;
+    }
+    return updateRange(scale, { min: newMin, max: newMax }, limits, pan2 ? "pan" : false);
+  }
+  function panNonLinearScale(scale, delta, limits) {
+    return panNumericalScale(scale, delta, limits, true);
+  }
+  var zoomFunctions = {
+    category: zoomCategoryScale,
+    default: zoomNumericalScale,
+    logarithmic: zoomLogarithmicScale
+  };
+  var zoomRectFunctions = {
+    default: zoomRectNumericalScale
+  };
+  var panFunctions = {
+    category: panCategoryScale,
+    default: panNumericalScale,
+    logarithmic: panNonLinearScale,
+    timeseries: panNonLinearScale
+  };
+  function shouldUpdateScaleLimits(scale, originalScaleLimits, updatedScaleLimits) {
+    const { id: id2, options: { min: min3, max: max3 } } = scale;
+    if (!originalScaleLimits[id2] || !updatedScaleLimits[id2]) {
+      return true;
+    }
+    const previous = updatedScaleLimits[id2];
+    return previous.min !== min3 || previous.max !== max3;
+  }
+  function removeMissingScales(limits, scales2) {
+    each(limits, (opt, key) => {
+      if (!scales2[key]) {
+        delete limits[key];
+      }
+    });
+  }
+  function storeOriginalScaleLimits(chart, state) {
+    const { scales: scales2 } = chart;
+    const { originalScaleLimits, updatedScaleLimits } = state;
+    each(scales2, function(scale) {
+      if (shouldUpdateScaleLimits(scale, originalScaleLimits, updatedScaleLimits)) {
+        originalScaleLimits[scale.id] = {
+          min: { scale: scale.min, options: scale.options.min },
+          max: { scale: scale.max, options: scale.options.max }
+        };
+      }
+    });
+    removeMissingScales(originalScaleLimits, scales2);
+    removeMissingScales(updatedScaleLimits, scales2);
+    return originalScaleLimits;
+  }
+  function doZoom(scale, amount, center, limits) {
+    const fn = zoomFunctions[scale.type] || zoomFunctions.default;
+    callback(fn, [scale, amount, center, limits]);
+  }
+  function doZoomRect(scale, from2, to2, limits) {
+    const fn = zoomRectFunctions[scale.type] || zoomRectFunctions.default;
+    callback(fn, [scale, from2, to2, limits]);
+  }
+  function getCenter(chart) {
+    const ca = chart.chartArea;
+    return {
+      x: (ca.left + ca.right) / 2,
+      y: (ca.top + ca.bottom) / 2
+    };
+  }
+  function zoom(chart, amount, transition2 = "none", trigger = "api") {
+    const { x = 1, y = 1, focalPoint = getCenter(chart) } = typeof amount === "number" ? { x: amount, y: amount } : amount;
+    const state = getState(chart);
+    const { options: { limits, zoom: zoomOptions } } = state;
+    storeOriginalScaleLimits(chart, state);
+    const xEnabled = x !== 1;
+    const yEnabled = y !== 1;
+    const enabledScales = getEnabledScalesByPoint(zoomOptions, focalPoint, chart);
+    each(enabledScales || chart.scales, function(scale) {
+      if (scale.isHorizontal() && xEnabled) {
+        doZoom(scale, x, focalPoint, limits);
+      } else if (!scale.isHorizontal() && yEnabled) {
+        doZoom(scale, y, focalPoint, limits);
+      }
+    });
+    chart.update(transition2);
+    callback(zoomOptions.onZoom, [{ chart, trigger }]);
+  }
+  function zoomRect(chart, p0, p1, transition2 = "none", trigger = "api") {
+    const state = getState(chart);
+    const { options: { limits, zoom: zoomOptions } } = state;
+    const { mode = "xy" } = zoomOptions;
+    storeOriginalScaleLimits(chart, state);
+    const xEnabled = directionEnabled(mode, "x", chart);
+    const yEnabled = directionEnabled(mode, "y", chart);
+    each(chart.scales, function(scale) {
+      if (scale.isHorizontal() && xEnabled) {
+        doZoomRect(scale, p0.x, p1.x, limits);
+      } else if (!scale.isHorizontal() && yEnabled) {
+        doZoomRect(scale, p0.y, p1.y, limits);
+      }
+    });
+    chart.update(transition2);
+    callback(zoomOptions.onZoom, [{ chart, trigger }]);
+  }
+  function zoomScale(chart, scaleId, range, transition2 = "none", trigger = "api") {
+    const state = getState(chart);
+    storeOriginalScaleLimits(chart, state);
+    const scale = chart.scales[scaleId];
+    updateRange(scale, range, void 0, true);
+    chart.update(transition2);
+    callback(state.options.zoom?.onZoom, [{ chart, trigger }]);
+  }
+  function resetZoom(chart, transition2 = "default") {
+    const state = getState(chart);
+    const originalScaleLimits = storeOriginalScaleLimits(chart, state);
+    each(chart.scales, function(scale) {
+      const scaleOptions = scale.options;
+      if (originalScaleLimits[scale.id]) {
+        scaleOptions.min = originalScaleLimits[scale.id].min.options;
+        scaleOptions.max = originalScaleLimits[scale.id].max.options;
+      } else {
+        delete scaleOptions.min;
+        delete scaleOptions.max;
+      }
+      delete state.updatedScaleLimits[scale.id];
+    });
+    chart.update(transition2);
+    callback(state.options.zoom.onZoomComplete, [{ chart }]);
+  }
+  function getOriginalRange(state, scaleId) {
+    const original = state.originalScaleLimits[scaleId];
+    if (!original) {
+      return;
+    }
+    const { min: min3, max: max3 } = original;
+    return valueOrDefault(max3.options, max3.scale) - valueOrDefault(min3.options, min3.scale);
+  }
+  function getZoomLevel(chart) {
+    const state = getState(chart);
+    let min3 = 1;
+    let max3 = 1;
+    each(chart.scales, function(scale) {
+      const origRange = getOriginalRange(state, scale.id);
+      if (origRange) {
+        const level = Math.round(origRange / (scale.max - scale.min) * 100) / 100;
+        min3 = Math.min(min3, level);
+        max3 = Math.max(max3, level);
+      }
+    });
+    return min3 < 1 ? min3 : max3;
+  }
+  function panScale(scale, delta, limits, state) {
+    const { panDelta } = state;
+    const storedDelta = panDelta[scale.id] || 0;
+    if (sign(storedDelta) === sign(delta)) {
+      delta += storedDelta;
+    }
+    const fn = panFunctions[scale.type] || panFunctions.default;
+    if (callback(fn, [scale, delta, limits])) {
+      panDelta[scale.id] = 0;
+    } else {
+      panDelta[scale.id] = delta;
+    }
+  }
+  function pan(chart, delta, enabledScales, transition2 = "none") {
+    const { x = 0, y = 0 } = typeof delta === "number" ? { x: delta, y: delta } : delta;
+    const state = getState(chart);
+    const { options: { pan: panOptions, limits } } = state;
+    const { onPan } = panOptions || {};
+    storeOriginalScaleLimits(chart, state);
+    const xEnabled = x !== 0;
+    const yEnabled = y !== 0;
+    each(enabledScales || chart.scales, function(scale) {
+      if (scale.isHorizontal() && xEnabled) {
+        panScale(scale, x, limits, state);
+      } else if (!scale.isHorizontal() && yEnabled) {
+        panScale(scale, y, limits, state);
+      }
+    });
+    chart.update(transition2);
+    callback(onPan, [{ chart }]);
+  }
+  function getInitialScaleBounds(chart) {
+    const state = getState(chart);
+    storeOriginalScaleLimits(chart, state);
+    const scaleBounds = {};
+    for (const scaleId of Object.keys(chart.scales)) {
+      const { min: min3, max: max3 } = state.originalScaleLimits[scaleId] || { min: {}, max: {} };
+      scaleBounds[scaleId] = { min: min3.scale, max: max3.scale };
+    }
+    return scaleBounds;
+  }
+  function getZoomedScaleBounds(chart) {
+    const state = getState(chart);
+    const scaleBounds = {};
+    for (const scaleId of Object.keys(chart.scales)) {
+      scaleBounds[scaleId] = state.updatedScaleLimits[scaleId];
+    }
+    return scaleBounds;
+  }
+  function isZoomedOrPanned(chart) {
+    const scaleBounds = getInitialScaleBounds(chart);
+    for (const scaleId of Object.keys(chart.scales)) {
+      const { min: originalMin, max: originalMax } = scaleBounds[scaleId];
+      if (originalMin !== void 0 && chart.scales[scaleId].min !== originalMin) {
+        return true;
+      }
+      if (originalMax !== void 0 && chart.scales[scaleId].max !== originalMax) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function isZoomingOrPanning(chart) {
+    const state = getState(chart);
+    return state.panning || state.dragging;
+  }
+  var clamp2 = (x, from2, to2) => Math.min(to2, Math.max(from2, x));
+  function removeHandler(chart, type2) {
+    const { handlers } = getState(chart);
+    const handler = handlers[type2];
+    if (handler && handler.target) {
+      handler.target.removeEventListener(type2, handler);
+      delete handlers[type2];
+    }
+  }
+  function addHandler(chart, target, type2, handler) {
+    const { handlers, options } = getState(chart);
+    const oldHandler = handlers[type2];
+    if (oldHandler && oldHandler.target === target) {
+      return;
+    }
+    removeHandler(chart, type2);
+    handlers[type2] = (event) => handler(chart, event, options);
+    handlers[type2].target = target;
+    const passive = type2 === "wheel" ? false : void 0;
+    target.addEventListener(type2, handlers[type2], { passive });
+  }
+  function mouseMove(chart, event) {
+    const state = getState(chart);
+    if (state.dragStart) {
+      state.dragging = true;
+      state.dragEnd = event;
+      chart.update("none");
+    }
+  }
+  function keyDown(chart, event) {
+    const state = getState(chart);
+    if (!state.dragStart || event.key !== "Escape") {
+      return;
+    }
+    removeHandler(chart, "keydown");
+    state.dragging = false;
+    state.dragStart = state.dragEnd = null;
+    chart.update("none");
+  }
+  function getPointPosition(event, chart) {
+    if (event.target !== chart.canvas) {
+      const canvasArea = chart.canvas.getBoundingClientRect();
+      return {
+        x: event.clientX - canvasArea.left,
+        y: event.clientY - canvasArea.top
+      };
+    }
+    return getRelativePosition(event, chart);
+  }
+  function zoomStart(chart, event, zoomOptions) {
+    const { onZoomStart, onZoomRejected } = zoomOptions;
+    if (onZoomStart) {
+      const point = getPointPosition(event, chart);
+      if (callback(onZoomStart, [{ chart, event, point }]) === false) {
+        callback(onZoomRejected, [{ chart, event }]);
+        return false;
+      }
+    }
+  }
+  function mouseDown(chart, event) {
+    if (chart.legend) {
+      const point = getRelativePosition(event, chart);
+      if (_isPointInArea(point, chart.legend)) {
+        return;
+      }
+    }
+    const state = getState(chart);
+    const { pan: panOptions, zoom: zoomOptions = {} } = state.options;
+    if (event.button !== 0 || keyPressed(getModifierKey(panOptions), event) || keyNotPressed(getModifierKey(zoomOptions.drag), event)) {
+      return callback(zoomOptions.onZoomRejected, [{ chart, event }]);
+    }
+    if (zoomStart(chart, event, zoomOptions) === false) {
+      return;
+    }
+    state.dragStart = event;
+    addHandler(chart, chart.canvas.ownerDocument, "mousemove", mouseMove);
+    addHandler(chart, window.document, "keydown", keyDown);
+  }
+  function applyAspectRatio({ begin, end }, aspectRatio) {
+    let width = end.x - begin.x;
+    let height = end.y - begin.y;
+    const ratio = Math.abs(width / height);
+    if (ratio > aspectRatio) {
+      width = Math.sign(width) * Math.abs(height * aspectRatio);
+    } else if (ratio < aspectRatio) {
+      height = Math.sign(height) * Math.abs(width / aspectRatio);
+    }
+    end.x = begin.x + width;
+    end.y = begin.y + height;
+  }
+  function applyMinMaxProps(rect, chartArea, points, { min: min3, max: max3, prop }) {
+    rect[min3] = clamp2(Math.min(points.begin[prop], points.end[prop]), chartArea[min3], chartArea[max3]);
+    rect[max3] = clamp2(Math.max(points.begin[prop], points.end[prop]), chartArea[min3], chartArea[max3]);
+  }
+  function getRelativePoints(chart, pointEvents, maintainAspectRatio) {
+    const points = {
+      begin: getPointPosition(pointEvents.dragStart, chart),
+      end: getPointPosition(pointEvents.dragEnd, chart)
+    };
+    if (maintainAspectRatio) {
+      const aspectRatio = chart.chartArea.width / chart.chartArea.height;
+      applyAspectRatio(points, aspectRatio);
+    }
+    return points;
+  }
+  function computeDragRect(chart, mode, pointEvents, maintainAspectRatio) {
+    const xEnabled = directionEnabled(mode, "x", chart);
+    const yEnabled = directionEnabled(mode, "y", chart);
+    const { top, left, right, bottom, width: chartWidth, height: chartHeight } = chart.chartArea;
+    const rect = { top, left, right, bottom };
+    const points = getRelativePoints(chart, pointEvents, maintainAspectRatio && xEnabled && yEnabled);
+    if (xEnabled) {
+      applyMinMaxProps(rect, chart.chartArea, points, { min: "left", max: "right", prop: "x" });
+    }
+    if (yEnabled) {
+      applyMinMaxProps(rect, chart.chartArea, points, { min: "top", max: "bottom", prop: "y" });
+    }
+    const width = rect.right - rect.left;
+    const height = rect.bottom - rect.top;
+    return {
+      ...rect,
+      width,
+      height,
+      zoomX: xEnabled && width ? 1 + (chartWidth - width) / chartWidth : 1,
+      zoomY: yEnabled && height ? 1 + (chartHeight - height) / chartHeight : 1
+    };
+  }
+  function mouseUp(chart, event) {
+    const state = getState(chart);
+    if (!state.dragStart) {
+      return;
+    }
+    removeHandler(chart, "mousemove");
+    const { mode, onZoomComplete, drag: { threshold = 0, maintainAspectRatio } } = state.options.zoom;
+    const rect = computeDragRect(chart, mode, { dragStart: state.dragStart, dragEnd: event }, maintainAspectRatio);
+    const distanceX = directionEnabled(mode, "x", chart) ? rect.width : 0;
+    const distanceY = directionEnabled(mode, "y", chart) ? rect.height : 0;
+    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+    state.dragStart = state.dragEnd = null;
+    if (distance <= threshold) {
+      state.dragging = false;
+      chart.update("none");
+      return;
+    }
+    zoomRect(chart, { x: rect.left, y: rect.top }, { x: rect.right, y: rect.bottom }, "zoom", "drag");
+    state.dragging = false;
+    state.filterNextClick = true;
+    callback(onZoomComplete, [{ chart }]);
+  }
+  function wheelPreconditions(chart, event, zoomOptions) {
+    if (keyNotPressed(getModifierKey(zoomOptions.wheel), event)) {
+      callback(zoomOptions.onZoomRejected, [{ chart, event }]);
+      return;
+    }
+    if (zoomStart(chart, event, zoomOptions) === false) {
+      return;
+    }
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    if (event.deltaY === void 0) {
+      return;
+    }
+    return true;
+  }
+  function wheel(chart, event) {
+    const { handlers: { onZoomComplete }, options: { zoom: zoomOptions } } = getState(chart);
+    if (!wheelPreconditions(chart, event, zoomOptions)) {
+      return;
+    }
+    const rect = event.target.getBoundingClientRect();
+    const speed = zoomOptions.wheel.speed;
+    const percentage = event.deltaY >= 0 ? 2 - 1 / (1 - speed) : 1 + speed;
+    const amount = {
+      x: percentage,
+      y: percentage,
+      focalPoint: {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      }
+    };
+    zoom(chart, amount, "zoom", "wheel");
+    callback(onZoomComplete, [{ chart }]);
+  }
+  function addDebouncedHandler(chart, name, handler, delay) {
+    if (handler) {
+      getState(chart).handlers[name] = debounce2(() => callback(handler, [{ chart }]), delay);
+    }
+  }
+  function addListeners(chart, options) {
+    const canvas = chart.canvas;
+    const { wheel: wheelOptions, drag: dragOptions, onZoomComplete } = options.zoom;
+    if (wheelOptions.enabled) {
+      addHandler(chart, canvas, "wheel", wheel);
+      addDebouncedHandler(chart, "onZoomComplete", onZoomComplete, 250);
+    } else {
+      removeHandler(chart, "wheel");
+    }
+    if (dragOptions.enabled) {
+      addHandler(chart, canvas, "mousedown", mouseDown);
+      addHandler(chart, canvas.ownerDocument, "mouseup", mouseUp);
+    } else {
+      removeHandler(chart, "mousedown");
+      removeHandler(chart, "mousemove");
+      removeHandler(chart, "mouseup");
+      removeHandler(chart, "keydown");
+    }
+  }
+  function removeListeners(chart) {
+    removeHandler(chart, "mousedown");
+    removeHandler(chart, "mousemove");
+    removeHandler(chart, "mouseup");
+    removeHandler(chart, "wheel");
+    removeHandler(chart, "click");
+    removeHandler(chart, "keydown");
+  }
+  function createEnabler(chart, state) {
+    return function(recognizer, event) {
+      const { pan: panOptions, zoom: zoomOptions = {} } = state.options;
+      if (!panOptions || !panOptions.enabled) {
+        return false;
+      }
+      const srcEvent = event && event.srcEvent;
+      if (!srcEvent) {
+        return true;
+      }
+      if (!state.panning && event.pointerType === "mouse" && (keyNotPressed(getModifierKey(panOptions), srcEvent) || keyPressed(getModifierKey(zoomOptions.drag), srcEvent))) {
+        callback(panOptions.onPanRejected, [{ chart, event }]);
+        return false;
+      }
+      return true;
+    };
+  }
+  function pinchAxes(p0, p1) {
+    const pinchX = Math.abs(p0.clientX - p1.clientX);
+    const pinchY = Math.abs(p0.clientY - p1.clientY);
+    const p = pinchX / pinchY;
+    let x, y;
+    if (p > 0.3 && p < 1.7) {
+      x = y = true;
+    } else if (pinchX > pinchY) {
+      x = true;
+    } else {
+      y = true;
+    }
+    return { x, y };
+  }
+  function handlePinch(chart, state, e) {
+    if (state.scale) {
+      const { center, pointers } = e;
+      const zoomPercent = 1 / state.scale * e.scale;
+      const rect = e.target.getBoundingClientRect();
+      const pinch = pinchAxes(pointers[0], pointers[1]);
+      const mode = state.options.zoom.mode;
+      const amount = {
+        x: pinch.x && directionEnabled(mode, "x", chart) ? zoomPercent : 1,
+        y: pinch.y && directionEnabled(mode, "y", chart) ? zoomPercent : 1,
+        focalPoint: {
+          x: center.x - rect.left,
+          y: center.y - rect.top
+        }
+      };
+      zoom(chart, amount, "zoom", "pinch");
+      state.scale = e.scale;
+    }
+  }
+  function startPinch(chart, state, event) {
+    if (state.options.zoom.pinch.enabled) {
+      const point = getRelativePosition(event, chart);
+      if (callback(state.options.zoom.onZoomStart, [{ chart, event, point }]) === false) {
+        state.scale = null;
+        callback(state.options.zoom.onZoomRejected, [{ chart, event }]);
+      } else {
+        state.scale = 1;
+      }
+    }
+  }
+  function endPinch(chart, state, e) {
+    if (state.scale) {
+      handlePinch(chart, state, e);
+      state.scale = null;
+      callback(state.options.zoom.onZoomComplete, [{ chart }]);
+    }
+  }
+  function handlePan(chart, state, e) {
+    const delta = state.delta;
+    if (delta) {
+      state.panning = true;
+      pan(chart, { x: e.deltaX - delta.x, y: e.deltaY - delta.y }, state.panScales);
+      state.delta = { x: e.deltaX, y: e.deltaY };
+    }
+  }
+  function startPan(chart, state, event) {
+    const { enabled, onPanStart, onPanRejected } = state.options.pan;
+    if (!enabled) {
+      return;
+    }
+    const rect = event.target.getBoundingClientRect();
+    const point = {
+      x: event.center.x - rect.left,
+      y: event.center.y - rect.top
+    };
+    if (callback(onPanStart, [{ chart, event, point }]) === false) {
+      return callback(onPanRejected, [{ chart, event }]);
+    }
+    state.panScales = getEnabledScalesByPoint(state.options.pan, point, chart);
+    state.delta = { x: 0, y: 0 };
+    handlePan(chart, state, event);
+  }
+  function endPan(chart, state) {
+    state.delta = null;
+    if (state.panning) {
+      state.panning = false;
+      state.filterNextClick = true;
+      callback(state.options.pan.onPanComplete, [{ chart }]);
+    }
+  }
+  var hammers = /* @__PURE__ */ new WeakMap();
+  function startHammer(chart, options) {
+    const state = getState(chart);
+    const canvas = chart.canvas;
+    const { pan: panOptions, zoom: zoomOptions } = options;
+    const mc = new import_hammerjs.default.Manager(canvas);
+    if (zoomOptions && zoomOptions.pinch.enabled) {
+      mc.add(new import_hammerjs.default.Pinch());
+      mc.on("pinchstart", (e) => startPinch(chart, state, e));
+      mc.on("pinch", (e) => handlePinch(chart, state, e));
+      mc.on("pinchend", (e) => endPinch(chart, state, e));
+    }
+    if (panOptions && panOptions.enabled) {
+      mc.add(new import_hammerjs.default.Pan({
+        threshold: panOptions.threshold,
+        enable: createEnabler(chart, state)
+      }));
+      mc.on("panstart", (e) => startPan(chart, state, e));
+      mc.on("panmove", (e) => handlePan(chart, state, e));
+      mc.on("panend", () => endPan(chart, state));
+    }
+    hammers.set(chart, mc);
+  }
+  function stopHammer(chart) {
+    const mc = hammers.get(chart);
+    if (mc) {
+      mc.remove("pinchstart");
+      mc.remove("pinch");
+      mc.remove("pinchend");
+      mc.remove("panstart");
+      mc.remove("pan");
+      mc.remove("panend");
+      mc.destroy();
+      hammers.delete(chart);
+    }
+  }
+  function hammerOptionsChanged(oldOptions, newOptions) {
+    const { pan: oldPan, zoom: oldZoom } = oldOptions;
+    const { pan: newPan, zoom: newZoom } = newOptions;
+    if (oldZoom?.zoom?.pinch?.enabled !== newZoom?.zoom?.pinch?.enabled) {
+      return true;
+    }
+    if (oldPan?.enabled !== newPan?.enabled) {
+      return true;
+    }
+    if (oldPan?.threshold !== newPan?.threshold) {
+      return true;
+    }
+    return false;
+  }
+  var version3 = "2.2.0";
+  function draw3(chart, caller, options) {
+    const dragOptions = options.zoom.drag;
+    const { dragStart, dragEnd } = getState(chart);
+    if (dragOptions.drawTime !== caller || !dragEnd) {
+      return;
+    }
+    const { left, top, width, height } = computeDragRect(chart, options.zoom.mode, { dragStart, dragEnd }, dragOptions.maintainAspectRatio);
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = dragOptions.backgroundColor || "rgba(225,225,225,0.3)";
+    ctx.fillRect(left, top, width, height);
+    if (dragOptions.borderWidth > 0) {
+      ctx.lineWidth = dragOptions.borderWidth;
+      ctx.strokeStyle = dragOptions.borderColor || "rgba(225,225,225)";
+      ctx.strokeRect(left, top, width, height);
+    }
+    ctx.restore();
+  }
+  var plugin = {
+    id: "zoom",
+    version: version3,
+    defaults: {
+      pan: {
+        enabled: false,
+        mode: "xy",
+        threshold: 10,
+        modifierKey: null
+      },
+      zoom: {
+        wheel: {
+          enabled: false,
+          speed: 0.1,
+          modifierKey: null
+        },
+        drag: {
+          enabled: false,
+          drawTime: "beforeDatasetsDraw",
+          modifierKey: null
+        },
+        pinch: {
+          enabled: false
+        },
+        mode: "xy"
+      }
+    },
+    start: function(chart, _args, options) {
+      const state = getState(chart);
+      state.options = options;
+      if (Object.prototype.hasOwnProperty.call(options.zoom, "enabled")) {
+        console.warn("The option `zoom.enabled` is no longer supported. Please use `zoom.wheel.enabled`, `zoom.drag.enabled`, or `zoom.pinch.enabled`.");
+      }
+      if (Object.prototype.hasOwnProperty.call(options.zoom, "overScaleMode") || Object.prototype.hasOwnProperty.call(options.pan, "overScaleMode")) {
+        console.warn("The option `overScaleMode` is deprecated. Please use `scaleMode` instead (and update `mode` as desired).");
+      }
+      if (import_hammerjs.default) {
+        startHammer(chart, options);
+      }
+      chart.pan = (delta, panScales, transition2) => pan(chart, delta, panScales, transition2);
+      chart.zoom = (args, transition2) => zoom(chart, args, transition2);
+      chart.zoomRect = (p0, p1, transition2) => zoomRect(chart, p0, p1, transition2);
+      chart.zoomScale = (id2, range, transition2) => zoomScale(chart, id2, range, transition2);
+      chart.resetZoom = (transition2) => resetZoom(chart, transition2);
+      chart.getZoomLevel = () => getZoomLevel(chart);
+      chart.getInitialScaleBounds = () => getInitialScaleBounds(chart);
+      chart.getZoomedScaleBounds = () => getZoomedScaleBounds(chart);
+      chart.isZoomedOrPanned = () => isZoomedOrPanned(chart);
+      chart.isZoomingOrPanning = () => isZoomingOrPanning(chart);
+    },
+    beforeEvent(chart, { event }) {
+      if (isZoomingOrPanning(chart)) {
+        return false;
+      }
+      if (event.type === "click" || event.type === "mouseup") {
+        const state = getState(chart);
+        if (state.filterNextClick) {
+          state.filterNextClick = false;
+          return false;
+        }
+      }
+    },
+    beforeUpdate: function(chart, args, options) {
+      const state = getState(chart);
+      const previousOptions = state.options;
+      state.options = options;
+      if (hammerOptionsChanged(previousOptions, options)) {
+        stopHammer(chart);
+        startHammer(chart, options);
+      }
+      addListeners(chart, options);
+    },
+    beforeDatasetsDraw(chart, _args, options) {
+      draw3(chart, "beforeDatasetsDraw", options);
+    },
+    afterDatasetsDraw(chart, _args, options) {
+      draw3(chart, "afterDatasetsDraw", options);
+    },
+    beforeDraw(chart, _args, options) {
+      draw3(chart, "beforeDraw", options);
+    },
+    afterDraw(chart, _args, options) {
+      draw3(chart, "afterDraw", options);
+    },
+    stop: function(chart) {
+      removeListeners(chart);
+      if (import_hammerjs.default) {
+        stopHammer(chart);
+      }
+      removeState(chart);
+    },
+    panFunctions,
+    zoomFunctions,
+    zoomRectFunctions
+  };
 
   // node_modules/@sgratzl/boxplots/build/index.js
   var HELPER = Math.sqrt(2 * Math.PI);
@@ -16195,7 +19283,7 @@ var gsmViz = (() => {
     return nest(values, Array.from, reduce, keys);
   }
   function nest(values, map4, reduce, keys) {
-    return function regroup(values2, i) {
+    return (function regroup(values2, i) {
       if (i >= keys.length) return reduce(values2);
       const groups2 = new InternMap();
       const keyof2 = keys[i++];
@@ -16210,7 +19298,7 @@ var gsmViz = (() => {
         groups2.set(key, regroup(values3, i));
       }
       return map4(groups2);
-    }(values, 0);
+    })(values, 0);
   }
 
   // node_modules/d3-array/src/max.js
@@ -17527,7 +20615,7 @@ var gsmViz = (() => {
   }
 
   // node_modules/d3-interpolate/src/rgb.js
-  var rgb_default = function rgbGamma(y) {
+  var rgb_default = (function rgbGamma(y) {
     var color3 = gamma(y);
     function rgb2(start2, end) {
       var r = color3((start2 = rgb(start2)).r, (end = rgb(end)).r), g = color3(start2.g, end.g), b = color3(start2.b, end.b), opacity = nogamma(start2.opacity, end.opacity);
@@ -17541,7 +20629,7 @@ var gsmViz = (() => {
     }
     rgb2.gamma = rgbGamma;
     return rgb2;
-  }(1);
+  })(1);
   function rgbSpline(spline) {
     return function(colors2) {
       var n = colors2.length, r = new Array(n), g = new Array(n), b = new Array(n), i, color3;
@@ -17869,21 +20957,21 @@ var gsmViz = (() => {
     if (!schedule || !(schedule = schedule[id2])) throw new Error("transition not found");
     return schedule;
   }
-  function create(node, id2, self) {
+  function create(node, id2, self2) {
     var schedules = node.__transition, tween;
-    schedules[id2] = self;
-    self.timer = timer(schedule, 0, self.time);
+    schedules[id2] = self2;
+    self2.timer = timer(schedule, 0, self2.time);
     function schedule(elapsed) {
-      self.state = SCHEDULED;
-      self.timer.restart(start2, self.delay, self.time);
-      if (self.delay <= elapsed) start2(elapsed - self.delay);
+      self2.state = SCHEDULED;
+      self2.timer.restart(start2, self2.delay, self2.time);
+      if (self2.delay <= elapsed) start2(elapsed - self2.delay);
     }
     function start2(elapsed) {
       var i, j, n, o;
-      if (self.state !== SCHEDULED) return stop();
+      if (self2.state !== SCHEDULED) return stop();
       for (i in schedules) {
         o = schedules[i];
-        if (o.name !== self.name) continue;
+        if (o.name !== self2.name) continue;
         if (o.state === STARTED) return timeout_default(start2);
         if (o.state === RUNNING) {
           o.state = ENDED;
@@ -17898,37 +20986,37 @@ var gsmViz = (() => {
         }
       }
       timeout_default(function() {
-        if (self.state === STARTED) {
-          self.state = RUNNING;
-          self.timer.restart(tick, self.delay, self.time);
+        if (self2.state === STARTED) {
+          self2.state = RUNNING;
+          self2.timer.restart(tick, self2.delay, self2.time);
           tick(elapsed);
         }
       });
-      self.state = STARTING;
-      self.on.call("start", node, node.__data__, self.index, self.group);
-      if (self.state !== STARTING) return;
-      self.state = STARTED;
-      tween = new Array(n = self.tween.length);
+      self2.state = STARTING;
+      self2.on.call("start", node, node.__data__, self2.index, self2.group);
+      if (self2.state !== STARTING) return;
+      self2.state = STARTED;
+      tween = new Array(n = self2.tween.length);
       for (i = 0, j = -1; i < n; ++i) {
-        if (o = self.tween[i].value.call(node, node.__data__, self.index, self.group)) {
+        if (o = self2.tween[i].value.call(node, node.__data__, self2.index, self2.group)) {
           tween[++j] = o;
         }
       }
       tween.length = j + 1;
     }
     function tick(elapsed) {
-      var t = elapsed < self.duration ? self.ease.call(null, elapsed / self.duration) : (self.timer.restart(stop), self.state = ENDING, 1), i = -1, n = tween.length;
+      var t = elapsed < self2.duration ? self2.ease.call(null, elapsed / self2.duration) : (self2.timer.restart(stop), self2.state = ENDING, 1), i = -1, n = tween.length;
       while (++i < n) {
         tween[i].call(node, t);
       }
-      if (self.state === ENDING) {
-        self.on.call("end", node, node.__data__, self.index, self.group);
+      if (self2.state === ENDING) {
+        self2.on.call("end", node, node.__data__, self2.index, self2.group);
         stop();
       }
     }
     function stop() {
-      self.state = ENDED;
-      self.timer.stop();
+      self2.state = ENDED;
+      self2.timer.stop();
       delete schedules[id2];
       for (var i in schedules) return;
       delete node.__transition;
@@ -18406,9 +21494,9 @@ var gsmViz = (() => {
   // node_modules/d3-transition/src/transition/end.js
   function end_default() {
     var on0, on1, that = this, id2 = that._id, size = that.size();
-    return new Promise(function(resolve2, reject) {
+    return new Promise(function(resolve3, reject) {
       var cancel = { value: reject }, end = { value: function() {
-        if (--size === 0) resolve2();
+        if (--size === 0) resolve3();
       } };
       that.each(function() {
         var schedule = set3(this, id2), on = schedule.on;
@@ -18420,7 +21508,7 @@ var gsmViz = (() => {
         }
         schedule.on = on1;
       });
-      if (size === 0) resolve2();
+      if (size === 0) resolve3();
     });
   }
 
@@ -18562,8 +21650,8 @@ var gsmViz = (() => {
     return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
   }
   function formatDecimalParts(x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null;
-    var i, coefficient = x.slice(0, i);
+    if (!isFinite(x) || x === 0) return null;
+    var i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e"), coefficient = x.slice(0, i);
     return [
       coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
       +x.slice(i + 1)
@@ -18657,7 +21745,7 @@ var gsmViz = (() => {
   var prefixExponent;
   function formatPrefixAuto_default(x, p) {
     var d = formatDecimalParts(x, p);
-    if (!d) return x + "";
+    if (!d) return prefixExponent = void 0, x.toPrecision(p);
     var coefficient = d[0], exponent = d[1], i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1, n = coefficient.length;
     return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0];
   }
@@ -18697,13 +21785,13 @@ var gsmViz = (() => {
   var prefixes = ["y", "z", "a", "f", "p", "n", "\xB5", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
   function locale_default(locale2) {
     var group2 = locale2.grouping === void 0 || locale2.thousands === void 0 ? identity_default : formatGroup_default(map3.call(locale2.grouping, Number), locale2.thousands + ""), currencyPrefix = locale2.currency === void 0 ? "" : locale2.currency[0] + "", currencySuffix = locale2.currency === void 0 ? "" : locale2.currency[1] + "", decimal = locale2.decimal === void 0 ? "." : locale2.decimal + "", numerals = locale2.numerals === void 0 ? identity_default : formatNumerals_default(map3.call(locale2.numerals, String)), percent = locale2.percent === void 0 ? "%" : locale2.percent + "", minus = locale2.minus === void 0 ? "\u2212" : locale2.minus + "", nan = locale2.nan === void 0 ? "NaN" : locale2.nan + "";
-    function newFormat(specifier) {
+    function newFormat(specifier, options) {
       specifier = formatSpecifier(specifier);
       var fill2 = specifier.fill, align = specifier.align, sign2 = specifier.sign, symbol = specifier.symbol, zero2 = specifier.zero, width = specifier.width, comma = specifier.comma, precision = specifier.precision, trim = specifier.trim, type2 = specifier.type;
       if (type2 === "n") comma = true, type2 = "g";
       else if (!formatTypes_default[type2]) precision === void 0 && (precision = 12), trim = true, type2 = "g";
       if (zero2 || fill2 === "0" && align === "=") zero2 = true, fill2 = "0", align = "=";
-      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type2) ? "0" + type2.toLowerCase() : "", suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type2) ? percent : "";
+      var prefix = (options && options.prefix !== void 0 ? options.prefix : "") + (symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type2) ? "0" + type2.toLowerCase() : ""), suffix = (symbol === "$" ? currencySuffix : /[%p]/.test(type2) ? percent : "") + (options && options.suffix !== void 0 ? options.suffix : "");
       var formatType = formatTypes_default[type2], maybeSuffix = /[defgprs%]/.test(type2);
       precision = precision === void 0 ? 6 : /[gprs]/.test(type2) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
       function format2(value) {
@@ -18718,7 +21806,7 @@ var gsmViz = (() => {
           if (trim) value = formatTrim_default(value);
           if (valueNegative && +value === 0 && sign2 !== "+") valueNegative = false;
           valuePrefix = (valueNegative ? sign2 === "(" ? sign2 : minus : sign2 === "-" || sign2 === "(" ? "" : sign2) + valuePrefix;
-          valueSuffix = (type2 === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign2 === "(" ? ")" : "");
+          valueSuffix = (type2 === "s" && !isNaN(value) && prefixExponent !== void 0 ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign2 === "(" ? ")" : "");
           if (maybeSuffix) {
             i = -1, n = value.length;
             while (++i < n) {
@@ -18755,9 +21843,9 @@ var gsmViz = (() => {
       return format2;
     }
     function formatPrefix2(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)), e = Math.max(-8, Math.min(8, Math.floor(exponent_default(value) / 3))) * 3, k = Math.pow(10, -e), prefix = prefixes[8 + e / 3];
+      var e = Math.max(-8, Math.min(8, Math.floor(exponent_default(value) / 3))) * 3, k = Math.pow(10, -e), f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier), { suffix: prefixes[8 + e / 3] });
       return function(value2) {
-        return f(k * value2) + prefix;
+        return f(k * value2);
       };
     }
     return {
@@ -18836,7 +21924,7 @@ var gsmViz = (() => {
   var auto_default = Chart;
 
   // node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js
-  var devicePixelRatio = function() {
+  var devicePixelRatio = (function() {
     if (typeof window !== "undefined") {
       if (window.devicePixelRatio) {
         return window.devicePixelRatio;
@@ -18847,7 +21935,7 @@ var gsmViz = (() => {
       }
     }
     return 1;
-  }();
+  })();
   var utils = {
     // @todo move this in Chart.helpers.toTextLines
     toTextLines: function(inputs) {
@@ -19805,7 +22893,7 @@ var gsmViz = (() => {
       dispatchEvent3(chart, handlers, label, event);
     }
   }
-  var plugin = {
+  var plugin2 = {
     id: "datalabels",
     defaults: defaults2,
     beforeInit: function(chart) {
@@ -20625,10 +23713,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults3, _config_, customSettings = null) {
+  function configure2(defaults5, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults3) {
-      config[key] = coalesce(config[key], defaults3[key]);
+    for (const key in defaults5) {
+      config[key] = coalesce(config[key], defaults5[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -20749,30 +23837,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.x = "GroupID";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.x = "GroupID";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.displayTitle = false;
-    defaults3.maintainAspectRatio = false;
-    const config = configure2(defaults3, _config_ || {}, {
+    defaults5.displayTitle = false;
+    defaults5.dynamicSizing = false;
+    defaults5.maintainAspectRatio = false;
+    const config = configure2(defaults5, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -21254,7 +24343,7 @@ var gsmViz = (() => {
 
   // src/barChart/getPlugins.js
   function getPlugins(config) {
-    const getPlugins5 = {
+    const getPlugins6 = {
       annotation: {
         annotations: annotations(config),
         clip: true
@@ -21264,7 +24353,7 @@ var gsmViz = (() => {
       title: title(config),
       tooltip: tooltip(config)
     };
-    return getPlugins5;
+    return getPlugins6;
   }
 
   // src/util/getDefaultScales.js
@@ -21319,7 +24408,7 @@ var gsmViz = (() => {
 
   // src/util/displayWhiteBackground.js
   function displayWhiteBackground() {
-    const plugin2 = {
+    const plugin3 = {
       id: "customCanvasBackgroundColor",
       beforeDraw: (chart, args, options) => {
         const { ctx } = chart;
@@ -21330,7 +24419,7 @@ var gsmViz = (() => {
         ctx.restore();
       }
     };
-    return plugin2;
+    return plugin3;
   }
 
   // src/util/triggerTooltip.js
@@ -21432,9 +24521,18 @@ var gsmViz = (() => {
         _groupMetadata_
       },
       options,
-      plugins: [plugin, displayWhiteBackground()]
+      plugins: [plugin2, displayWhiteBackground()]
     });
     canvas.chart = chart;
+    canvas.parentNode.style.width = "";
+    if (config.dynamicSizing) {
+      const numCategories = datasets[0].data.length;
+      const pxPerCategory = 30;
+      const area = chart.chartArea;
+      const chartAreaWidth = area ? area.right - area.left : 0;
+      const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+      canvas.parentNode.style.width = numCategories * pxPerCategory + overhead + "px";
+    }
     chart.helpers = {
       updateConfig,
       updateData,
@@ -21443,6 +24541,2818 @@ var gsmViz = (() => {
     };
     triggerTooltip(chart);
     return chart;
+  }
+
+  // src/bars/validateSpec.js
+  function validateSpec(data, spec) {
+    if (data === void 0 || data === null) {
+      throw new Error("data is required");
+    }
+    if (!Array.isArray(data)) {
+      throw new Error("data must be an array");
+    }
+    if (spec === void 0 || spec === null) {
+      throw new Error("spec is required");
+    }
+    if (typeof spec !== "object" || Array.isArray(spec)) {
+      throw new Error("spec must be a plain object");
+    }
+    if (!spec.mapping) {
+      throw new Error("spec.mapping is required");
+    }
+    if (!spec.mapping.x) {
+      throw new Error("spec.mapping.x is required");
+    }
+    if (spec.position !== void 0 && spec.position !== "stack" && spec.position !== "dodge" && spec.position !== "identity" && spec.position !== "fill" && spec.position !== "layer") {
+      throw new Error(
+        "spec.position must be 'stack', 'dodge', 'identity', 'fill', or 'layer'"
+      );
+    }
+    if (spec.stat !== void 0 && spec.stat !== "count" && spec.stat !== "identity" && spec.stat !== "percent") {
+      throw new Error(
+        "spec.stat must be 'count', 'identity', or 'percent'"
+      );
+    }
+    if (spec.orientation !== void 0 && spec.orientation !== "vertical" && spec.orientation !== "horizontal") {
+      throw new Error("spec.orientation must be 'vertical' or 'horizontal'");
+    }
+    if (spec.nCategories !== void 0 && (typeof spec.nCategories !== "number" || !Number.isInteger(spec.nCategories) || spec.nCategories < 1)) {
+      throw new Error("spec.nCategories must be a positive integer");
+    }
+    const xSort = spec.scales?.x?.sort;
+    if (xSort !== void 0 && xSort !== "total" && xSort !== "alphanumeric") {
+      throw new Error("spec.scales.x.sort must be 'total' or 'alphanumeric'");
+    }
+    const xSortDir = spec.scales?.x?.sortDir;
+    if (xSortDir !== void 0 && xSortDir !== "asc" && xSortDir !== "desc") {
+      throw new Error("spec.scales.x.sortDir must be 'asc' or 'desc'");
+    }
+    const xGrid = spec.scales?.x?.grid;
+    if (xGrid !== void 0 && typeof xGrid !== "boolean") {
+      throw new Error("spec.scales.x.grid must be a boolean");
+    }
+    const xTicks = spec.scales?.x?.ticks;
+    if (xTicks !== void 0) {
+      if (xTicks === null || typeof xTicks !== "object" || Array.isArray(xTicks) || Object.getPrototypeOf(xTicks) !== Object.prototype && Object.getPrototypeOf(xTicks) !== null) {
+        throw new Error("spec.scales.x.ticks must be a plain object");
+      }
+      if (xTicks.maxLength !== void 0) {
+        if (typeof xTicks.maxLength !== "number" || !Number.isInteger(xTicks.maxLength) || xTicks.maxLength < 1) {
+          throw new Error(
+            "spec.scales.x.ticks.maxLength must be a positive integer"
+          );
+        }
+      }
+      if (xTicks.rotation !== void 0) {
+        if (typeof xTicks.rotation !== "number" || !Number.isFinite(xTicks.rotation) || xTicks.rotation < 0 || xTicks.rotation > 90) {
+          throw new Error(
+            "spec.scales.x.ticks.rotation must be a number between 0 and 90"
+          );
+        }
+      }
+    }
+    const colors2 = spec.scales?.fill?.colors;
+    if (colors2 !== void 0) {
+      if (colors2 === null || typeof colors2 !== "object" || Array.isArray(colors2) || Object.getPrototypeOf(colors2) !== Object.prototype && Object.getPrototypeOf(colors2) !== null) {
+        throw new Error("scales.fill.colors must be a plain object");
+      }
+    }
+    const callbacks = spec.callbacks;
+    if (callbacks !== void 0) {
+      if (callbacks === null || typeof callbacks !== "object" || Array.isArray(callbacks) || Object.getPrototypeOf(callbacks) !== Object.prototype && Object.getPrototypeOf(callbacks) !== null) {
+        throw new Error("spec.callbacks must be a plain object");
+      }
+      if (callbacks.onClick !== void 0 && callbacks.onClick !== null && typeof callbacks.onClick !== "function") {
+        throw new Error(
+          "spec.callbacks.onClick must be a function or null"
+        );
+      }
+      if (callbacks.onHover !== void 0 && callbacks.onHover !== null && typeof callbacks.onHover !== "function") {
+        throw new Error(
+          "spec.callbacks.onHover must be a function or null"
+        );
+      }
+      if (callbacks.onSelect !== void 0 && callbacks.onSelect !== null && typeof callbacks.onSelect !== "function") {
+        throw new Error(
+          "spec.callbacks.onSelect must be a function or null"
+        );
+      }
+    }
+    const selection2 = spec.selection;
+    if (selection2 !== void 0) {
+      if (selection2 === null || typeof selection2 !== "object" || Array.isArray(selection2)) {
+        throw new Error("spec.selection must be a plain object");
+      }
+      if (selection2.enabled !== void 0 && typeof selection2.enabled !== "boolean") {
+        throw new Error("spec.selection.enabled must be a boolean");
+      }
+      if (selection2.opacity !== void 0) {
+        if (typeof selection2.opacity !== "number" || selection2.opacity < 0 || selection2.opacity > 1) {
+          throw new Error(
+            "spec.selection.opacity must be a number between 0 and 1"
+          );
+        }
+      }
+      if (selection2.multiple !== void 0 && typeof selection2.multiple !== "boolean") {
+        throw new Error("spec.selection.multiple must be a boolean");
+      }
+    }
+    const captions = spec.labels?.captions;
+    if (captions !== void 0 && captions !== null) {
+      const isValidString = typeof captions === "string";
+      const isValidStringArray = Array.isArray(captions) && captions.every((item) => typeof item === "string");
+      if (!isValidString && !isValidStringArray) {
+        throw new Error(
+          "spec.labels.captions must be a string or an array of strings"
+        );
+      }
+    }
+    const captionsOptions = spec.labels?.captionsOptions;
+    if (captionsOptions !== void 0) {
+      if (captionsOptions === null || typeof captionsOptions !== "object" || Array.isArray(captionsOptions) || Object.getPrototypeOf(captionsOptions) !== Object.prototype && Object.getPrototypeOf(captionsOptions) !== null) {
+        throw new Error(
+          "spec.labels.captionsOptions must be a plain object"
+        );
+      }
+    }
+    function validateFormatter(value, path) {
+      if (value !== void 0 && typeof value !== "string" && typeof value !== "function") {
+        throw new Error(`${path} must be a string or function`);
+      }
+    }
+    validateFormatter(
+      spec.annotations?.labels?.segment?.formatter,
+      "spec.annotations.labels.segment.formatter"
+    );
+    validateFormatter(
+      spec.annotations?.labels?.total?.formatter,
+      "spec.annotations.labels.total.formatter"
+    );
+    const referenceLines2 = spec.annotations?.referenceLines;
+    if (referenceLines2 !== void 0) {
+      if (!Array.isArray(referenceLines2)) {
+        throw new Error("spec.annotations.referenceLines must be an array");
+      }
+      referenceLines2.forEach((line, i) => {
+        const prefix = `spec.annotations.referenceLines[${i}]`;
+        if (line === null || typeof line !== "object" || Array.isArray(line) || Object.getPrototypeOf(line) !== Object.prototype && Object.getPrototypeOf(line) !== null) {
+          throw new Error(`${prefix} must be a plain object`);
+        }
+        if (!Number.isFinite(line.value)) {
+          throw new Error(
+            `${prefix}.value is required and must be a finite number`
+          );
+        }
+        if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+          throw new Error(`${prefix}.label must be a string`);
+        }
+        if (line.color !== void 0 && typeof line.color !== "string") {
+          throw new Error(`${prefix}.color must be a string`);
+        }
+        if (line.lineWidth !== void 0 && (!Number.isFinite(line.lineWidth) || line.lineWidth <= 0)) {
+          throw new Error(
+            `${prefix}.lineWidth must be a positive number`
+          );
+        }
+        if (line.lineDash !== void 0) {
+          if (!Array.isArray(line.lineDash) || !line.lineDash.every((n) => Number.isFinite(n) && n >= 0)) {
+            throw new Error(
+              `${prefix}.lineDash must be an array of non-negative numbers`
+            );
+          }
+        }
+        if (line.labelPosition !== void 0 && line.labelPosition !== "start" && line.labelPosition !== "center" && line.labelPosition !== "end") {
+          throw new Error(
+            `${prefix}.labelPosition must be 'start', 'center', or 'end'`
+          );
+        }
+      });
+    }
+    const zoom2 = spec.zoom;
+    if (zoom2 !== void 0) {
+      if (zoom2 === null || typeof zoom2 !== "object" || Array.isArray(zoom2) || Object.getPrototypeOf(zoom2) !== Object.prototype && Object.getPrototypeOf(zoom2) !== null) {
+        throw new Error("spec.zoom must be a plain object");
+      }
+      if (zoom2.enabled !== void 0 && typeof zoom2.enabled !== "boolean") {
+        throw new Error("spec.zoom.enabled must be a boolean");
+      }
+      if (zoom2.mode !== void 0 && zoom2.mode !== "x" && zoom2.mode !== "y" && zoom2.mode !== "xy") {
+        throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
+      }
+      if (zoom2.pan !== void 0 && typeof zoom2.pan !== "boolean") {
+        throw new Error("spec.zoom.pan must be a boolean");
+      }
+      if (zoom2.wheel !== void 0 && typeof zoom2.wheel !== "boolean") {
+        throw new Error("spec.zoom.wheel must be a boolean");
+      }
+      if (zoom2.pinch !== void 0 && typeof zoom2.pinch !== "boolean") {
+        throw new Error("spec.zoom.pinch must be a boolean");
+      }
+    }
+    const legend5 = spec.legend;
+    if (legend5 !== void 0) {
+      if (legend5 === null || typeof legend5 !== "object" || Array.isArray(legend5) || Object.getPrototypeOf(legend5) !== Object.prototype && Object.getPrototypeOf(legend5) !== null) {
+        throw new Error("spec.legend must be a plain object");
+      }
+      if (legend5.dense !== void 0 && typeof legend5.dense !== "boolean") {
+        throw new Error("spec.legend.dense must be a boolean");
+      }
+    }
+  }
+
+  // src/bars/defaults.js
+  var DEFAULT_PALETTE = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac",
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f"
+  ];
+  var defaults3 = {
+    interactive: true,
+    orientation: "vertical",
+    position: "stack",
+    scales: {
+      x: {
+        type: "category",
+        label: void 0,
+        grid: false,
+        ticks: {}
+      },
+      y: {
+        type: "linear",
+        label: void 0
+      },
+      fill: {
+        palette: DEFAULT_PALETTE
+      }
+    },
+    labels: {
+      captions: void 0
+    },
+    annotations: {
+      referenceLines: [],
+      labels: {
+        segment: {
+          display: false,
+          placement: "center",
+          value: "auto",
+          format: void 0,
+          formatter: void 0,
+          minSize: 16,
+          color: void 0,
+          font: void 0
+        },
+        total: {
+          display: false,
+          placement: "outside",
+          format: void 0,
+          formatter: void 0,
+          color: void 0,
+          font: void 0
+        }
+      }
+    },
+    callbacks: {
+      onClick: null,
+      onHover: null
+    },
+    tooltip: {
+      format: void 0,
+      formatter: void 0
+    },
+    theme: {
+      maintainAspectRatio: false,
+      animation: false,
+      dynamicSizing: false,
+      dynamicCategoryAxis: false,
+      pxPerCategory: 30
+    },
+    zoom: {
+      enabled: false,
+      mode: "x",
+      pan: true,
+      wheel: true,
+      pinch: true
+    },
+    legend: {
+      dense: false
+    },
+    selection: {
+      enabled: false,
+      opacity: 0.2,
+      multiple: false
+    },
+    stat: "count"
+  };
+  var defaults_default = defaults3;
+
+  // src/bars/mergeSpec.js
+  function mergeSpec(data, spec) {
+    const labelModes = defaults_default.annotations.labels;
+    const userLabels = spec.annotations?.labels || {};
+    return {
+      data,
+      mapping: { ...spec.mapping },
+      interactive: spec.interactive ?? defaults_default.interactive,
+      orientation: spec.orientation ?? defaults_default.orientation,
+      position: spec.position === "fill" ? "stack" : spec.position ?? defaults_default.position,
+      stat: spec.position === "fill" && spec.stat === void 0 ? "percent" : spec.stat ?? defaults_default.stat,
+      nCategories: spec.nCategories,
+      scales: {
+        x: {
+          ...defaults_default.scales.x,
+          ...spec.scales?.x,
+          ticks: {
+            ...defaults_default.scales.x.ticks,
+            ...spec.scales?.x?.ticks
+          }
+        },
+        y: { ...defaults_default.scales.y, ...spec.scales?.y },
+        fill: { ...defaults_default.scales.fill, ...spec.scales?.fill }
+      },
+      labels: { ...defaults_default.labels, ...spec.labels },
+      annotations: {
+        ...defaults_default.annotations,
+        ...spec.annotations,
+        labels: {
+          segment: {
+            ...labelModes.segment,
+            ...userLabels.segment
+          },
+          total: {
+            ...labelModes.total,
+            ...userLabels.total
+          }
+        }
+      },
+      theme: { ...defaults_default.theme, ...spec.theme },
+      tooltip: { ...defaults_default.tooltip, ...spec.tooltip },
+      zoom: { ...defaults_default.zoom, ...spec.zoom },
+      legend: { ...defaults_default.legend, ...spec.legend },
+      callbacks: {
+        onClick: spec.callbacks?.onClick ?? defaults_default.callbacks.onClick,
+        onHover: spec.callbacks?.onHover ?? defaults_default.callbacks.onHover,
+        onSelect: spec.callbacks?.onSelect ?? null
+      },
+      selection: { ...defaults_default.selection, ...spec.selection }
+    };
+  }
+
+  // src/bars/structureData/aggregateCounts.js
+  function aggregateCounts(data, xKey, fillKey, categoryIndex) {
+    if (fillKey) {
+      const groups2 = /* @__PURE__ */ new Map();
+      for (const d of data) {
+        const key = d[fillKey];
+        if (!groups2.has(key)) groups2.set(key, /* @__PURE__ */ new Map());
+        const catMap2 = groups2.get(key);
+        const cat = d[xKey];
+        if (!catMap2.has(cat)) catMap2.set(cat, []);
+        catMap2.get(cat).push(d);
+      }
+      return [...groups2.entries()].map(([fillValue, catMap2]) => ({
+        label: fillValue,
+        data: [...catMap2.entries()].map(([cat, rows]) => ({
+          x: cat,
+          y: rows.length,
+          _fill: fillValue,
+          _datum: rows
+        })).sort(
+          (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+        )
+      }));
+    }
+    const catMap = /* @__PURE__ */ new Map();
+    for (const d of data) {
+      const cat = d[xKey];
+      if (!catMap.has(cat)) catMap.set(cat, []);
+      catMap.get(cat).push(d);
+    }
+    return [
+      {
+        data: [...catMap.entries()].map(([cat, rows]) => ({
+          x: cat,
+          y: rows.length,
+          _datum: rows
+        })).sort(
+          (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+        )
+      }
+    ];
+  }
+
+  // src/bars/structureData/applyLayerWidths.js
+  function applyLayerWidths(datasets) {
+    const n = datasets.length;
+    if (n === 0) return;
+    datasets.reverse();
+    const maxWidth = 0.9;
+    const minWidth = 0.3;
+    const step = n > 1 ? (maxWidth - minWidth) / (n - 1) : 0;
+    for (let i = 0; i < n; i++) {
+      const ds = datasets[i];
+      ds.barPercentage = n === 1 ? maxWidth : minWidth + i * step;
+      ds.categoryPercentage = 1;
+      ds.grouped = false;
+      if (!ds.borderWidth || ds.borderWidth < 1) {
+        ds.borderWidth = 1;
+      }
+    }
+  }
+
+  // src/bars/structureData/darkenHex.js
+  var HEX6_RE = /^#[0-9a-fA-F]{6}$/;
+  function darkenHex(hex3) {
+    if (!hex3 || !HEX6_RE.test(hex3)) return hex3;
+    const r = Math.round(parseInt(hex3.slice(1, 3), 16) * 0.8);
+    const g = Math.round(parseInt(hex3.slice(3, 5), 16) * 0.8);
+    const b = Math.round(parseInt(hex3.slice(5, 7), 16) * 0.8);
+    return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0");
+  }
+
+  // src/bars/structureData/limitCategories.js
+  function limitCategories(categories, data, xKey, yKey, nCategories, sort = "total") {
+    if (!nCategories || nCategories >= categories.length) {
+      return {
+        limitedCategories: categories,
+        nExcluded: 0,
+        nRowsExcluded: 0
+      };
+    }
+    const nExcluded = categories.length - nCategories;
+    let limitedCategories;
+    if (sort === "total") {
+      const totals = /* @__PURE__ */ new Map();
+      for (const d of data) {
+        const cat = d[xKey];
+        const val = yKey ? Number(d[yKey]) || 0 : 1;
+        totals.set(cat, (totals.get(cat) || 0) + val);
+      }
+      const sorted = [...categories].sort((a, b) => {
+        const diff = (totals.get(b) || 0) - (totals.get(a) || 0);
+        if (diff !== 0) return diff;
+        return String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        });
+      });
+      limitedCategories = sorted.slice(0, nCategories);
+    } else {
+      limitedCategories = categories.slice(0, nCategories);
+    }
+    const kept = new Set(limitedCategories);
+    let nRowsExcluded = 0;
+    for (const d of data) {
+      if (!kept.has(d[xKey])) nRowsExcluded++;
+    }
+    return { limitedCategories, nExcluded, nRowsExcluded };
+  }
+
+  // src/bars/structureData/normalizeFill.js
+  function normalizeFill(datasets, horizontal) {
+    const valueKey = horizontal ? "x" : "y";
+    const categoryKey = horizontal ? "y" : "x";
+    const totals = /* @__PURE__ */ new Map();
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const category = pt[categoryKey];
+        const value = pt[valueKey];
+        totals.set(category, (totals.get(category) || 0) + value);
+      }
+    }
+    for (const ds of datasets) {
+      for (const pt of ds.data) {
+        const category = pt[categoryKey];
+        const total = totals.get(category) || 0;
+        pt._rawY = pt[valueKey];
+        pt[valueKey] = total === 0 ? 0 : pt._rawY / total * 100;
+      }
+    }
+  }
+
+  // src/bars/structureData/reorderDatasets.js
+  function reorderDatasets(datasets, fillOrder) {
+    const datasetMap = new Map(datasets.map((ds) => [String(ds.label), ds]));
+    const ordered = fillOrder.filter((val) => datasetMap.has(String(val))).map((val) => datasetMap.get(String(val)));
+    const orderedSet = new Set(fillOrder.map(String));
+    const remaining = datasets.filter(
+      (ds) => !orderedSet.has(String(ds.label))
+    );
+    return [...ordered, ...remaining];
+  }
+
+  // src/bars/structureData/resolveCategories.js
+  function resolveCategories(data, xKey, explicitOrder) {
+    const dataCategories = [...new Set(data.map((d) => d[xKey]))];
+    if (explicitOrder) {
+      const dataSet = new Set(dataCategories);
+      const ordered = explicitOrder.filter((cat) => dataSet.has(cat));
+      const orderedSet = new Set(ordered);
+      const remaining = dataCategories.filter((cat) => !orderedSet.has(cat)).sort(
+        (a, b) => String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        })
+      );
+      return [...ordered, ...remaining];
+    }
+    return dataCategories.sort(
+      (a, b) => String(a).localeCompare(String(b), void 0, {
+        sensitivity: "base"
+      })
+    );
+  }
+
+  // src/bars/structureData/swapPointAxes.js
+  function swapPointAxes(datasets) {
+    for (const ds of datasets) {
+      for (const point of ds.data) {
+        const tmp = point.x;
+        point.x = point.y;
+        point.y = tmp;
+      }
+    }
+  }
+
+  // src/bars/structureData/structureData.js
+  function structureData2(spec) {
+    const { data, mapping, scales: scales2, orientation } = spec;
+    const { x: xKey, y: yKey, fill: fillKey } = mapping;
+    const fillColors = scales2.fill?.colors;
+    const fillOrder = fillColors ? Object.keys(fillColors) : scales2.fill?.order;
+    const palette = fillColors ? Object.values(fillColors) : scales2.fill?.palette;
+    let activeData = fillKey && fillOrder ? (() => {
+      const allowed = new Set(fillOrder.map(String));
+      return data.filter((d) => allowed.has(String(d[fillKey])));
+    })() : data;
+    let labels = resolveCategories(activeData, xKey, scales2.x?.order);
+    const xSort = scales2.x?.sort;
+    const xSortDir = scales2.x?.sortDir;
+    if (!scales2.x?.order) {
+      if (xSort === "total") {
+        const totals = /* @__PURE__ */ new Map();
+        for (const d of activeData) {
+          const cat = d[xKey];
+          const val = yKey ? Number(d[yKey]) || 0 : 1;
+          totals.set(cat, (totals.get(cat) || 0) + val);
+        }
+        labels = [...labels].sort((a, b) => {
+          const diff = (totals.get(b) || 0) - (totals.get(a) || 0);
+          return diff !== 0 ? diff : String(a).localeCompare(String(b), void 0, {
+            sensitivity: "base"
+          });
+        });
+      } else if (xSortDir === "desc") {
+        labels = [...labels].reverse();
+      }
+    }
+    let nExcluded = 0;
+    let nRowsExcluded = 0;
+    if (spec.nCategories) {
+      const limitSort = scales2.x?.order ? "alphanumeric" : xSort;
+      const result = limitCategories(
+        labels,
+        activeData,
+        xKey,
+        yKey,
+        spec.nCategories,
+        limitSort
+      );
+      labels = result.limitedCategories;
+      nExcluded = result.nExcluded;
+      nRowsExcluded = result.nRowsExcluded;
+      const allowed = new Set(labels);
+      activeData = activeData.filter((d) => allowed.has(d[xKey]));
+    }
+    const categoryIndex = new Map(labels.map((cat, i) => [cat, i]));
+    if (yKey && spec.theme?.dynamicCategoryAxis) {
+      const catsWithData = new Set(
+        activeData.filter((d) => {
+          const v = d[yKey];
+          return v != null && v !== "" && Number.isFinite(Number(v));
+        }).map((d) => d[xKey])
+      );
+      labels = labels.filter((cat) => catsWithData.has(cat));
+      activeData = activeData.filter((d) => catsWithData.has(d[xKey]));
+      categoryIndex.clear();
+      labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
+    if (!scales2.x?.order && xSort === "total" && xSortDir === "asc") {
+      labels = [...labels].reverse();
+      categoryIndex.clear();
+      labels.forEach((cat, i) => categoryIndex.set(cat, i));
+    }
+    let datasets;
+    if (!yKey) {
+      datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
+    } else {
+      const points = activeData.map((d) => ({
+        x: d[xKey],
+        y: Number(d[yKey]) || 0,
+        _fill: fillKey ? d[fillKey] : void 0,
+        _datum: d
+      }));
+      if (fillKey) {
+        const groups2 = /* @__PURE__ */ new Map();
+        for (const point of points) {
+          const key = point._fill;
+          if (!groups2.has(key)) groups2.set(key, []);
+          groups2.get(key).push(point);
+        }
+        datasets = [...groups2.entries()].map(([fillValue, pts]) => ({
+          label: fillValue,
+          data: pts.sort(
+            (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+          )
+        }));
+      } else {
+        datasets = [
+          {
+            data: points.sort(
+              (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
+            )
+          }
+        ];
+      }
+    }
+    if (fillOrder && fillKey) {
+      datasets = reorderDatasets(datasets, fillOrder);
+    }
+    if (palette && palette.length > 0) {
+      if (fillKey) {
+        const fillOrderStrings = fillOrder ? fillOrder.map(String) : null;
+        datasets.forEach((ds, i) => {
+          const colorIndex = fillOrderStrings ? fillOrderStrings.indexOf(String(ds.label)) : -1;
+          const bg = palette[(colorIndex >= 0 ? colorIndex : i) % palette.length];
+          ds.backgroundColor = bg;
+          ds.borderColor = darkenHex(bg);
+          ds.borderWidth = 1;
+          ds.borderRadius = 2;
+        });
+      } else {
+        datasets[0].backgroundColor = palette[0];
+        datasets[0].borderColor = darkenHex(palette[0]);
+        datasets[0].borderWidth = 1;
+        datasets[0].borderRadius = 2;
+      }
+    }
+    if (orientation === "horizontal") {
+      swapPointAxes(datasets);
+    }
+    if (spec.stat === "percent" || spec.position === "fill") {
+      normalizeFill(datasets, orientation === "horizontal");
+    }
+    if (spec.position === "layer") {
+      applyLayerWidths(datasets);
+    }
+    return { datasets, labels, nExcluded, nRowsExcluded };
+  }
+
+  // src/bars/truncateLabel.js
+  function truncateLabel(label, maxLength) {
+    if (label == null) return "";
+    const str = String(label);
+    if (!Number.isFinite(maxLength) || maxLength < 1 || str.length <= maxLength)
+      return str;
+    return str.slice(0, maxLength - 1) + "\u2026";
+  }
+
+  // src/bars/getScales.js
+  function getScales2(spec) {
+    const { orientation, position, scales: specScales, mapping } = spec;
+    const horizontal = orientation === "horizontal";
+    const stacked = position === "stack" || position === "fill";
+    const percent = spec.stat === "percent" || position === "fill";
+    const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
+    const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
+    const percentageTicks = { callback: (v) => `${v}%` };
+    const specTicks = specScales.x.ticks || {};
+    const categoryTicks = {};
+    if (spec.theme?.dynamicSizing) {
+      categoryTicks.autoSkip = false;
+    }
+    if (specTicks.maxLength) {
+      const maxLen = specTicks.maxLength;
+      categoryTicks.callback = function(value) {
+        const label = this.getLabelForValue(value);
+        return truncateLabel(label, maxLen);
+      };
+    }
+    if (specTicks.rotation !== void 0) {
+      categoryTicks.maxRotation = specTicks.rotation;
+      categoryTicks.minRotation = specTicks.rotation;
+    }
+    const categoryScale = {
+      type: specScales.x.type,
+      grid: { display: !!specScales.x.grid },
+      title: {
+        display: !!xLabel,
+        text: xLabel
+      },
+      ...Object.keys(categoryTicks).length > 0 ? { ticks: categoryTicks } : {},
+      ...stacked ? { stacked: true } : {}
+    };
+    const valueScale = {
+      type: specScales.y.type,
+      title: {
+        display: !!yLabel,
+        text: yLabel
+      },
+      ...specScales.y.min !== void 0 ? { min: specScales.y.min } : { beginAtZero: true },
+      ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
+      ...stacked ? { stacked: true } : {},
+      ...percent ? {
+        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ticks: percentageTicks
+      } : {}
+    };
+    return {
+      x: horizontal ? valueScale : categoryScale,
+      y: horizontal ? categoryScale : valueScale,
+      _indexAxis: horizontal ? "y" : "x"
+    };
+  }
+
+  // src/bars/getPlugins/fillLabelCallback.js
+  function fillLabelCallback(context) {
+    const indexAxis = context.chart?.options?.indexAxis || "x";
+    const pct = indexAxis === "y" ? context.parsed.x : context.parsed.y;
+    const prefix = context.dataset.label ? `${context.dataset.label}: ` : "";
+    return `${prefix}${pct.toFixed(1)}%`;
+  }
+
+  // src/bars/getPlugins/formatTooltipLabel.js
+  function getValueKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "x" : "y";
+  }
+  function getCategoryKey(context) {
+    return context.chart?.options?.indexAxis === "y" ? "y" : "x";
+  }
+  function getPoint2(context) {
+    return context.dataset.data[context.dataIndex];
+  }
+  function getRawValue(point, context) {
+    if (point?._rawY !== void 0) return Number(point._rawY) || 0;
+    const val = point?.[getValueKey(context)];
+    return Number(val) || 0;
+  }
+  function getCategory(point, context) {
+    return point?.[getCategoryKey(context)];
+  }
+  function getDataForTotal(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+  }
+  function getRawTotal(context) {
+    const point = getPoint2(context);
+    const category = getCategory(point, context);
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = getDataForTotal(dataset).find(
+        (p) => getCategory(p, context) === category
+      );
+      return total + getRawValue(match, context);
+    }, 0);
+  }
+  function buildPrefix(context) {
+    return context.dataset.label ? `${context.dataset.label}: ` : "";
+  }
+  function buildFormatCallback(format2) {
+    return function formatLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const prefix = buildPrefix(context);
+      switch (format2) {
+        case "count":
+          return `${prefix}${count}`;
+        case "percent":
+          return `${prefix}${percent.toFixed(1)}%`;
+        case "percent+count":
+          return `${prefix}${percent.toFixed(1)}% (${count})`;
+        case "count+percent":
+        default:
+          return `${prefix}${count} (${percent.toFixed(1)}%)`;
+      }
+    };
+  }
+  function buildFormatterCallback(formatter2) {
+    return function formatterLabelCallback(context) {
+      const point = getPoint2(context);
+      const count = getRawValue(point, context);
+      const total = getRawTotal(context);
+      const percent = total === 0 ? 0 : count / total * 100;
+      const fill2 = point?._fill;
+      const datum2 = point?._datum;
+      return formatter2(count, context, { percent, total, fill: fill2, datum: datum2 });
+    };
+  }
+
+  // src/bars/getPlugins/buildTooltip.js
+  function buildTooltip(tooltip5, position, stat, ticks) {
+    const { format: format2, formatter: formatter2, ...rest } = tooltip5 || {};
+    const base = { enabled: true, ...rest };
+    if (ticks?.maxLength && !base.callbacks?.title) {
+      base.callbacks = {
+        ...base.callbacks,
+        title: (items) => {
+          if (!items.length) return "";
+          return items[0].label;
+        }
+      };
+    }
+    if (base.callbacks?.label) return base;
+    if (typeof formatter2 === "function") {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatterCallback(formatter2)
+        }
+      };
+    }
+    if (format2) {
+      return {
+        ...base,
+        callbacks: {
+          ...base.callbacks,
+          label: buildFormatCallback(format2)
+        }
+      };
+    }
+    if (position !== "fill" && stat !== "percent") return base;
+    return {
+      ...base,
+      callbacks: {
+        ...base.callbacks,
+        label: fillLabelCallback
+      }
+    };
+  }
+
+  // src/bars/getPlugins/buildZoom.js
+  function buildZoom(zoom2) {
+    if (!zoom2 || !zoom2.enabled) {
+      return void 0;
+    }
+    return {
+      pan: {
+        enabled: zoom2.pan,
+        mode: zoom2.mode
+      },
+      zoom: {
+        wheel: {
+          enabled: zoom2.wheel
+        },
+        pinch: {
+          enabled: zoom2.pinch
+        },
+        mode: zoom2.mode
+      }
+    };
+  }
+
+  // src/bars/structureData/getContrastColor.js
+  var HEX6_RE2 = /^#[0-9a-fA-F]{6}$/;
+  var LIGHT_TEXT = "#ffffff";
+  var DARK_TEXT = "#333333";
+  var L_DARK_TEXT = 0.0332;
+  function toLinear(c) {
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+  function relativeLuminance(r, g, b) {
+    return 0.2126 * toLinear(r / 255) + 0.7152 * toLinear(g / 255) + 0.0722 * toLinear(b / 255);
+  }
+  function getContrastColor(hex3) {
+    if (!hex3 || !HEX6_RE2.test(hex3)) return DARK_TEXT;
+    const r = parseInt(hex3.slice(1, 3), 16);
+    const g = parseInt(hex3.slice(3, 5), 16);
+    const b = parseInt(hex3.slice(5, 7), 16);
+    const L = relativeLuminance(r, g, b);
+    const contrastWithLight = (1 + 0.05) / (L + 0.05);
+    const contrastWithDark = (L + 0.05) / (L_DARK_TEXT + 0.05);
+    return contrastWithLight >= contrastWithDark ? LIGHT_TEXT : DARK_TEXT;
+  }
+
+  // src/bars/getPlugins/dataLabels.js
+  function getValueKey2(context) {
+    return context.chart.options?.indexAxis === "y" ? "x" : "y";
+  }
+  function getCategoryKey2(context) {
+    return context.chart.options?.indexAxis === "y" ? "y" : "x";
+  }
+  function toNumber(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+  function getPoint3(context) {
+    return context.dataset.data[context.dataIndex];
+  }
+  function getRenderedValue(point, context) {
+    return toNumber(point?.[getValueKey2(context)]);
+  }
+  function getRawValue2(point, context) {
+    return point?._rawY !== void 0 ? toNumber(point._rawY) : getRenderedValue(point, context);
+  }
+  function getCategory2(point, context) {
+    return point?.[getCategoryKey2(context)];
+  }
+  function isDatasetVisible(chart, datasetIndex) {
+    return typeof chart.isDatasetVisible === "function" ? chart.isDatasetVisible(datasetIndex) : true;
+  }
+  function findPointForCategory(dataset, category, context) {
+    return dataset.data.find(
+      (point) => getCategory2(point, context) === category
+    );
+  }
+  function getDataForTotal2(dataset) {
+    return dataset._backup_ ?? dataset.data ?? [];
+  }
+  function getRawTotal2(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    return context.chart.data.datasets.reduce((total, dataset) => {
+      const match = getDataForTotal2(dataset).find(
+        (p) => getCategory2(p, context) === category
+      );
+      return total + getRawValue2(match, context);
+    }, 0);
+  }
+  function getVisibleRawTotal(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    return context.chart.data.datasets.reduce((total, dataset, i) => {
+      if (dataset._backup_) return total;
+      if (!isDatasetVisible(context.chart, i)) return total;
+      const match = dataset.data.find(
+        (p) => getCategory2(p, context) === category
+      );
+      return total + getRawValue2(match, context);
+    }, 0);
+  }
+  function getSpec(context, spec) {
+    return context.chart.data?._spec_ || spec;
+  }
+  function isPercentStat(context, spec) {
+    const s = getSpec(context, spec);
+    return s?.stat === "percent" || s?.position === "fill";
+  }
+  function getPercentValue(point, context, spec) {
+    const rendered = getRenderedValue(point, context);
+    if (isPercentStat(context, spec)) return rendered;
+    const total = getRawTotal2(context);
+    return total === 0 ? 0 : getRawValue2(point, context) / total * 100;
+  }
+  function resolveLabelValue(point, context, options, mode, spec) {
+    const configuredValue = options.value ?? "auto";
+    const valueType = configuredValue === "auto" ? isPercentStat(context, spec) ? "percent" : "raw" : configuredValue;
+    if (mode === "total") {
+      return { value: getVisibleRawTotal(context), valueType: "raw" };
+    }
+    if (valueType === "percent") {
+      return {
+        value: getPercentValue(point, context, spec),
+        valueType
+      };
+    }
+    if (valueType === "value") {
+      return {
+        value: getRenderedValue(point, context),
+        valueType
+      };
+    }
+    return {
+      value: getRawValue2(point, context),
+      valueType: "raw"
+    };
+  }
+  function defaultFormat(value, valueType) {
+    const formatter2 = valueType === "percent" ? format(".1f") : format("~g");
+    const suffix = valueType === "percent" ? "%" : "";
+    return `${formatter2(value)}${suffix}`;
+  }
+  function interpolateTemplate(template, details) {
+    const knownTokens = {
+      fill: String(details.fill ?? ""),
+      value: format("~g")(details.value),
+      percent: `${format(".1f")(details.percent)}%`,
+      category: String(details.category ?? "")
+    };
+    return template.replace(
+      /\{(\w+)\}/g,
+      (match, key) => key in knownTokens ? knownTokens[key] : match
+    );
+  }
+  function buildDetails(point, context, mode, value, valueType) {
+    const rawValue = getRawValue2(point, context);
+    const rawTotal = getRawTotal2(context);
+    const labelValue = mode === "total" ? value : rawValue;
+    const percent = rawTotal === 0 ? 0 : labelValue / rawTotal * 100;
+    return {
+      mode,
+      valueType,
+      point,
+      total: rawTotal,
+      fill: point?._fill,
+      value: labelValue,
+      percent,
+      category: getCategory2(point, context),
+      datum: point?._datum
+    };
+  }
+  function formatLabel(point, context, options, mode, spec) {
+    const { value, valueType } = resolveLabelValue(
+      point,
+      context,
+      options,
+      mode,
+      spec
+    );
+    if (options.formatter !== void 0) {
+      const details = buildDetails(point, context, mode, value, valueType);
+      if (typeof options.formatter === "string") {
+        return interpolateTemplate(options.formatter, details);
+      }
+      return options.formatter(value, context, details);
+    }
+    if (options.format) {
+      const usesPercentFormat = options.format.includes("%");
+      const formatValue = valueType === "percent" && usesPercentFormat ? value / 100 : value;
+      const suffix = valueType === "percent" && !usesPercentFormat ? "%" : "";
+      return `${format(options.format)(formatValue)}${suffix}`;
+    }
+    return defaultFormat(value, valueType);
+  }
+  function hasVisibleValueForCategory(context, datasetIndex, category) {
+    if (!isDatasetVisible(context.chart, datasetIndex)) return false;
+    const dataset = context.chart.data.datasets[datasetIndex];
+    const point = findPointForCategory(dataset, category, context);
+    return Math.abs(getRawValue2(point, context)) > 0;
+  }
+  function isLastVisibleDatasetForCategory(context) {
+    const point = getPoint3(context);
+    const category = getCategory2(point, context);
+    for (let i = context.chart.data.datasets.length - 1; i >= context.datasetIndex; i--) {
+      if (hasVisibleValueForCategory(context, i, category)) {
+        return i === context.datasetIndex;
+      }
+    }
+    return false;
+  }
+  function isLargeEnoughForSegment(context, options) {
+    const minSize = options.minSize ?? 0;
+    if (!minSize) return true;
+    const element = context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[context.dataIndex];
+    if (!element) return true;
+    const size = context.chart.options?.indexAxis === "y" ? element.width : element.height;
+    return size === void 0 || size >= minSize;
+  }
+  function withStyle(config, options) {
+    return {
+      ...config,
+      ...options.color !== void 0 ? { color: options.color } : {},
+      ...options.font !== void 0 ? { font: options.font } : {}
+    };
+  }
+  function buildSegmentLabel(options, spec) {
+    const placement = options.placement ?? "center";
+    const isEnd = placement === "end";
+    const config = {
+      display: (context) => isLargeEnoughForSegment(context, options),
+      formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
+      anchor: () => "end",
+      align: isEnd ? (context) => context.chart.options?.indexAxis === "y" ? "right" : "end" : () => "center"
+    };
+    if (!isEnd) {
+      config.anchor = () => "center";
+    }
+    if (options.color !== void 0) {
+      config.color = options.color;
+    } else if (isEnd) {
+      config.color = "#333333";
+    } else {
+      config.color = (context) => getContrastColor(context.dataset.backgroundColor);
+    }
+    if (options.font !== void 0) {
+      config.font = options.font;
+    }
+    return config;
+  }
+  function buildTotalLabel(options, spec) {
+    const placement = options.placement ?? "outside";
+    const align = placement === "inside" ? () => "start" : () => "end";
+    return withStyle(
+      {
+        display: (context) => isLastVisibleDatasetForCategory(context),
+        formatter: (value, context) => formatLabel(value, context, options, "total", spec),
+        anchor: () => "end",
+        align,
+        offset: 4
+      },
+      options
+    );
+  }
+  function dataLabels2(spec) {
+    const labels = spec.annotations?.labels;
+    if (!labels?.segment?.display && !labels?.total?.display) {
+      return {
+        display: false
+      };
+    }
+    const config = { labels: {} };
+    if (labels.segment?.display) {
+      config.labels.segment = buildSegmentLabel(labels.segment, spec);
+    }
+    if (labels.total?.display) {
+      config.labels.total = buildTotalLabel(labels.total, spec);
+    }
+    return config;
+  }
+
+  // src/bars/getPlugins/denseLegend.js
+  function denseLegend() {
+    return {
+      labels: {
+        /**
+         * Generate legend items with empty text but preserve the full
+         * label in a custom _fullLabel property for tooltip display.
+         */
+        generateLabels(chart) {
+          return chart.data.datasets.map((dataset, i) => ({
+            text: "",
+            _fullLabel: dataset.label,
+            datasetIndex: i,
+            fillStyle: dataset.backgroundColor,
+            strokeStyle: dataset.borderColor,
+            lineWidth: 1,
+            hidden: !chart.isDatasetVisible(i)
+          }));
+        }
+      },
+      /**
+       * Show a positioned tooltip with the full label on legend item hover.
+       */
+      onHover(event, legendItem, legend5) {
+        const chart = legend5.chart;
+        const container = chart.canvas.parentElement;
+        if (!container) return;
+        const pos = getComputedStyle(container).position;
+        if (pos === "static") {
+          container.style.position = "relative";
+        }
+        let tooltip5 = container.querySelector(
+          "[data-dense-legend-tooltip]"
+        );
+        if (!tooltip5) {
+          tooltip5 = document.createElement("div");
+          tooltip5.setAttribute("data-dense-legend-tooltip", "");
+          tooltip5.style.position = "absolute";
+          tooltip5.style.pointerEvents = "none";
+          tooltip5.style.padding = "4px 8px";
+          tooltip5.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+          tooltip5.style.color = "#fff";
+          tooltip5.style.borderRadius = "4px";
+          tooltip5.style.fontSize = "12px";
+          tooltip5.style.whiteSpace = "nowrap";
+          tooltip5.style.zIndex = "1000";
+          container.appendChild(tooltip5);
+        }
+        tooltip5.textContent = legendItem._fullLabel || "";
+        tooltip5.style.display = "";
+        const canvasRect = chart.canvas.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const offsetX = canvasRect.left - containerRect.left;
+        const offsetY = canvasRect.top - containerRect.top;
+        const x = (event.x ?? event.native?.offsetX ?? 0) + offsetX;
+        const y = (event.y ?? event.native?.offsetY ?? 0) + offsetY;
+        tooltip5.style.left = `${x}px`;
+        tooltip5.style.top = `${y + 16}px`;
+      },
+      /**
+       * Hide the tooltip when the cursor leaves a legend item.
+       */
+      onLeave(event, legendItem, legend5) {
+        const chart = legend5.chart;
+        const container = chart.canvas.parentElement;
+        if (!container) return;
+        const tooltip5 = container.querySelector(
+          "[data-dense-legend-tooltip]"
+        );
+        if (tooltip5) {
+          tooltip5.style.display = "none";
+        }
+      }
+    };
+  }
+
+  // src/bars/getPlugins/getAllLabels.js
+  function getAllLabels(chart, visibleCats) {
+    return chart.data._allLabels_ || [...visibleCats];
+  }
+
+  // src/bars/getPlugins/getVisibleCategories.js
+  function getVisibleCategories(chart, catKey) {
+    const visibleCats = /* @__PURE__ */ new Set();
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      if (!chart.isDatasetVisible(i)) continue;
+      const originalData = chart.data.datasets[i]._dynamicCategoryAxisOriginalData_ || [];
+      for (const point of originalData) {
+        visibleCats.add(point[catKey]);
+      }
+    }
+    return visibleCats;
+  }
+
+  // src/bars/getPlugins/initializeDynamicCategoryData.js
+  function initializeDynamicCategoryData(datasets) {
+    for (const dataset of datasets) {
+      if (!dataset._dynamicCategoryAxisOriginalData_) {
+        dataset._dynamicCategoryAxisOriginalData_ = dataset._backup_ || dataset.data || [];
+      }
+    }
+  }
+
+  // src/bars/getPlugins/alignDataToLabels.js
+  function alignDataToLabels(data, labels, catKey, valKey) {
+    const pointByCategory = new Map(
+      data.map((point) => [point[catKey], point])
+    );
+    return labels.map(
+      (cat) => pointByCategory.get(cat) || {
+        [catKey]: cat,
+        [valKey]: 0,
+        _rawY: 0,
+        _placeholder: true
+      }
+    );
+  }
+
+  // src/bars/getPlugins/refreshDynamicCategoryData.js
+  function refreshDynamicCategoryData(chart, labels, catKey, valKey) {
+    const alignStacked = chart.data._spec_?.mapping?.fill && ["stack", "fill"].includes(chart.data._spec_?.position);
+    const labelSet = new Set(labels);
+    for (let i = 0; i < chart.data.datasets.length; i++) {
+      const dataset = chart.data.datasets[i];
+      const originalData = dataset._dynamicCategoryAxisOriginalData_ || [];
+      if (!chart.isDatasetVisible(i)) {
+        dataset.data = [];
+        dataset._backup_ = originalData;
+        continue;
+      }
+      delete dataset._backup_;
+      const filteredData = originalData.filter(
+        (point) => labelSet.has(point[catKey])
+      );
+      dataset.data = alignStacked ? alignDataToLabels(filteredData, labels, catKey, valKey) : filteredData;
+    }
+  }
+
+  // src/bars/getPlugins/dynamicCategoryLegendOnClick.js
+  function dynamicCategoryLegendOnClick(e, legendItem, legendRef) {
+    const chart = legendRef.chart;
+    const { datasetIndex } = legendItem;
+    const dataset = chart.data.datasets[datasetIndex];
+    initializeDynamicCategoryData(chart.data.datasets);
+    if (chart.isDatasetVisible(datasetIndex)) {
+      dataset.data = [];
+      dataset._backup_ = dataset._dynamicCategoryAxisOriginalData_;
+      chart.setDatasetVisibility(datasetIndex, false);
+    } else {
+      delete dataset._backup_;
+      chart.setDatasetVisibility(datasetIndex, true);
+    }
+    const catKey = chart.data._spec_?.orientation === "horizontal" ? "y" : "x";
+    const valKey = catKey === "x" ? "y" : "x";
+    const visibleCats = getVisibleCategories(chart, catKey);
+    chart.data.labels = getAllLabels(chart, visibleCats).filter(
+      (cat) => visibleCats.has(cat)
+    );
+    refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    chart.update();
+    if (chart.data._spec_?.theme?.dynamicSizing) {
+      const container = chart.canvas?.parentElement;
+      if (container) {
+        const numCategories = chart.data.labels.length;
+        const pxPerCategory = chart.data._spec_?.theme?.pxPerCategory || 30;
+        const horizontal = chart.data._spec_?.orientation === "horizontal";
+        if (horizontal) {
+          const area = chart.chartArea;
+          const chartAreaHeight = area ? area.bottom - area.top : 0;
+          const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+          container.style.height = numCategories * pxPerCategory + overhead + "px";
+        } else {
+          const area = chart.chartArea;
+          const chartAreaWidth = area ? area.right - area.left : 0;
+          const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+          container.style.width = numCategories * pxPerCategory + overhead + "px";
+        }
+      }
+    }
+  }
+
+  // src/bars/getPlugins/referenceLines.js
+  function referenceLines(spec) {
+    const lines = spec.annotations?.referenceLines;
+    if (!Array.isArray(lines) || lines.length === 0) return null;
+    const isHorizontal = spec.orientation === "horizontal";
+    return lines.map((line) => {
+      const color3 = line.color ?? "#666666";
+      const annotation2 = {
+        type: "line",
+        adjustScaleRange: false,
+        borderColor: color3,
+        borderWidth: line.lineWidth ?? 1,
+        borderDash: line.lineDash ?? []
+      };
+      if (isHorizontal) {
+        annotation2.xMin = line.value;
+        annotation2.xMax = line.value;
+      } else {
+        annotation2.yMin = line.value;
+        annotation2.yMax = line.value;
+      }
+      if (line.label) {
+        annotation2.label = {
+          display: true,
+          content: line.label,
+          color: color3,
+          backgroundColor: "white",
+          position: line.labelPosition ?? "end",
+          rotation: "auto",
+          font: { size: 12 },
+          padding: 2
+        };
+      }
+      return annotation2;
+    });
+  }
+
+  // src/bars/getPlugins/getPlugins.js
+  function getPlugins2(spec) {
+    const { labels, mapping, scales: scales2, tooltip: tooltip5, theme, position } = spec;
+    const fillLabel = scales2.fill?.label !== void 0 ? scales2.fill.label : mapping?.fill;
+    const legend5 = {
+      display: !!mapping.fill,
+      title: {
+        display: !!fillLabel,
+        text: fillLabel || ""
+      },
+      // applyLayerWidths reverses the dataset array for correct draw order
+      // (widest in back), so reverse the legend to restore the original
+      // fill order (first fill group listed first).
+      ...position === "layer" ? { reverse: true } : {}
+    };
+    if (theme?.dynamicCategoryAxis) {
+      legend5.onClick = dynamicCategoryLegendOnClick;
+    }
+    if (spec.legend?.dense) {
+      const dense = denseLegend();
+      legend5.labels = dense.labels;
+      legend5.onHover = dense.onHover;
+      legend5.onLeave = dense.onLeave;
+    }
+    const captionsRaw = labels.captions;
+    const captionsArray = Array.isArray(captionsRaw) ? [...captionsRaw] : captionsRaw != null && captionsRaw !== "" ? [captionsRaw] : [];
+    const nExcluded = spec._nExcluded;
+    const nRowsExcluded = spec._nRowsExcluded ?? 0;
+    const origN = spec._originalNCategories;
+    if (spec.nCategories && (scales2.x?.sort === "total" || scales2.x?.sort === void 0) && nExcluded > 0) {
+      const xLabel = scales2.x?.label || mapping?.x || "category";
+      const sort = scales2.x?.sort ?? "total";
+      const rowsNote = nRowsExcluded > 0 ? ` (${nRowsExcluded.toLocaleString()} records)` : "";
+      const clickNote = spec.interactive !== false ? " Click to show all." : "";
+      captionsArray.push(
+        `Displaying top ${spec.nCategories} values of ${xLabel} by ${sort}. Remaining ${nExcluded} values of ${xLabel} are hidden${rowsNote}.${clickNote}`
+      );
+    } else if (origN && !spec.nCategories) {
+      const xLabel = scales2.x?.label || mapping?.x || "category";
+      const clickNote = spec.interactive !== false ? ` Click to show top ${origN}.` : "";
+      captionsArray.push(`Showing all values of ${xLabel}.${clickNote}`);
+    }
+    const config = {
+      title: {
+        display: !!labels.title,
+        text: labels.title || ""
+      },
+      subtitle: {
+        display: captionsArray.length > 0,
+        position: "bottom",
+        align: "start",
+        ...labels.captionsOptions,
+        text: captionsArray
+      },
+      annotation: {
+        annotations: referenceLines(spec),
+        clip: false
+      },
+      tooltip: buildTooltip(tooltip5, position, spec.stat, scales2.x?.ticks),
+      legend: legend5,
+      datalabels: dataLabels2(spec)
+    };
+    const zoomConfig = buildZoom(spec.zoom);
+    if (zoomConfig) {
+      config.zoom = zoomConfig;
+    }
+    return config;
+  }
+
+  // src/bars/getPlugins/nCategoriesToggle.js
+  function nCategoriesToggle() {
+    return {
+      id: "nCategoriesToggle",
+      afterEvent(chart, args) {
+        if (args.event.type !== "click") return;
+        const spec = chart.data._spec_;
+        if (!spec || spec.interactive === false) return;
+        const origN = spec._originalNCategories ?? spec.nCategories;
+        if (!origN) return;
+        const subtitle = chart.options.plugins.subtitle;
+        if (!subtitle?.display) return;
+        const { x, y } = args.event;
+        const chartArea = chart.chartArea;
+        if (!chartArea) return;
+        const subtitleTop = chartArea.bottom;
+        const subtitleBottom = chart.height;
+        if (y < subtitleTop || y > subtitleBottom || x < 0 || x > chart.width)
+          return;
+        const isShowingAll = !spec.nCategories;
+        if (isShowingAll) {
+          chart.helpers.updateSpec(chart, { nCategories: origN });
+        } else {
+          spec._originalNCategories = origN;
+          chart.helpers.updateSpec(chart, { nCategories: void 0 });
+        }
+      },
+      afterDraw(chart) {
+        const spec = chart.data._spec_;
+        if (!spec || spec.interactive === false) return;
+        const origN = spec._originalNCategories ?? spec.nCategories;
+        if (!origN) return;
+        const subtitle = chart.options.plugins.subtitle;
+        if (!subtitle?.display) return;
+        const canvas = chart.canvas;
+        if (!chart.chartArea) return;
+        const handler = (e) => {
+          const area = chart.chartArea;
+          if (!area) return;
+          const rect = canvas.getBoundingClientRect();
+          const my = e.clientY - rect.top;
+          const subtitleTop = area.bottom;
+          const subtitleBottom = chart.height;
+          canvas.style.cursor = my >= subtitleTop && my <= subtitleBottom ? "pointer" : "";
+        };
+        if (!canvas._nCatToggleHandler) {
+          canvas._nCatToggleHandler = handler;
+          canvas.addEventListener("mousemove", handler);
+        }
+      }
+    };
+  }
+
+  // src/bars/getPlugins/positionToggle.js
+  var POSITIONS = ["stack", "dodge", "fill"];
+  var TOOLTIP_LABELS = {
+    stack: "Stacked Bars",
+    dodge: "Side-by-Side Bars",
+    fill: "Stacked, Scaled Bars"
+  };
+  var BUTTON = 18;
+  var GAP = 4;
+  var INSET = 6;
+  function getIconBoxes(chart) {
+    const { chartArea, titleBlock, width } = chart;
+    const total = POSITIONS.length * BUTTON + (POSITIONS.length - 1) * GAP;
+    const startX = (width || chartArea.right) - INSET - total;
+    let y;
+    if (titleBlock && titleBlock.height > 0) {
+      y = Math.round((titleBlock.top + titleBlock.bottom) / 2 - BUTTON / 2);
+    } else {
+      y = chartArea.top - BUTTON - INSET;
+    }
+    return POSITIONS.map((value, i) => ({
+      value,
+      x: startX + i * (BUTTON + GAP),
+      y,
+      w: BUTTON,
+      h: BUTTON
+    }));
+  }
+  function enabledSpec(chart) {
+    const spec = chart.data?._spec_;
+    if (!spec || spec.interactive === false) return null;
+    if (!spec.mapping?.fill) return null;
+    if (spec.position === "layer") return null;
+    if (!chart.chartArea) return null;
+    return spec;
+  }
+  function hitBox(boxes, x, y) {
+    return boxes.find(
+      (b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h
+    );
+  }
+  function bar(ctx, x, bottom, w, h, color3) {
+    ctx.fillStyle = color3;
+    ctx.fillRect(x, bottom - h, w, h);
+  }
+  function drawGlyph(ctx, box, color3) {
+    const p = 4;
+    const x0 = box.x + p;
+    const y0 = box.y + p;
+    const iw = box.w - 2 * p;
+    const ih = box.h - 2 * p;
+    const bottom = y0 + ih;
+    const light = color3 === "#4e79a7" ? "rgba(78,121,167,0.45)" : "rgba(158,158,158,0.45)";
+    if (box.value === "stack") {
+      const w = Math.round(iw * 0.55);
+      const x = x0 + (iw - w) / 2;
+      const seg = ih * 0.75 / 3;
+      bar(ctx, x, bottom, w, seg, color3);
+      bar(ctx, x, bottom - seg, w, seg, light);
+      bar(ctx, x, bottom - 2 * seg, w, seg, color3);
+    } else if (box.value === "dodge") {
+      const w = Math.round(iw * 0.22);
+      const gap = (iw - 3 * w) / 2;
+      const heights = [ih * 0.5, ih * 0.9, ih * 0.65];
+      [color3, light, color3].forEach((c, i) => {
+        bar(ctx, x0 + i * (w + gap), bottom, w, heights[i], c);
+      });
+    } else if (box.value === "fill") {
+      const w = Math.round(iw * 0.4);
+      const gap = iw - 2 * w;
+      const splits = [0.6, 0.4];
+      splits.forEach((split, i) => {
+        const x = x0 + i * (w + gap);
+        bar(ctx, x, bottom, w, ih * split, color3);
+        bar(ctx, x, bottom - ih * split, w, ih * (1 - split), light);
+      });
+    }
+  }
+  function drawIcons(ctx, boxes, active) {
+    ctx.save();
+    boxes.forEach((box) => {
+      const isActive = box.value === active;
+      ctx.fillStyle = isActive ? "rgba(78,121,167,0.15)" : "rgba(255,255,255,0.85)";
+      ctx.fillRect(box.x, box.y, box.w, box.h);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isActive ? "#4e79a7" : "#cccccc";
+      ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+      drawGlyph(ctx, box, isActive ? "#4e79a7" : "#9e9e9e");
+    });
+    ctx.restore();
+  }
+  function drawTooltip(ctx, box) {
+    const label = TOOLTIP_LABELS[box.value];
+    if (!label) return;
+    ctx.save();
+    ctx.font = "11px sans-serif";
+    const metrics = ctx.measureText(label);
+    const pw = 5;
+    const ph = 3;
+    const tw = metrics.width + pw * 2;
+    const th = 16 + ph * 2;
+    const tx = box.x + box.w - tw;
+    const ty = box.y + box.h + 4;
+    ctx.fillStyle = "rgba(50,50,50,0.9)";
+    ctx.fillRect(tx, ty, tw, th);
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, tx + tw / 2, ty + th / 2);
+    ctx.restore();
+  }
+  function positionToggle() {
+    let hoveredValue = null;
+    return {
+      id: "positionToggle",
+      afterEvent(chart, args) {
+        if (args.event.type === "mousemove") {
+          const spec2 = enabledSpec(chart);
+          if (!spec2) {
+            if (hoveredValue !== null) {
+              hoveredValue = null;
+              chart.draw();
+            }
+            return;
+          }
+          const boxes = getIconBoxes(chart);
+          const hit2 = hitBox(boxes, args.event.x, args.event.y);
+          const prev = hoveredValue;
+          hoveredValue = hit2 ? hit2.value : null;
+          if (hoveredValue !== prev) chart.draw();
+          return;
+        }
+        if (args.event.type !== "click") return;
+        const spec = enabledSpec(chart);
+        if (!spec) return;
+        const { x, y } = args.event;
+        const hit = hitBox(getIconBoxes(chart), x, y);
+        if (!hit) return;
+        const effectivePosition = spec.stat === "percent" && spec.position === "stack" ? "fill" : spec.position;
+        if (hit.value === effectivePosition) return;
+        const update = { position: hit.value };
+        if (hit.value === "fill") {
+          update.position = "stack";
+          update.stat = "percent";
+        } else if (spec.stat === "percent" && spec.position === "stack" && hit.value === "stack") {
+          update.stat = "count";
+        }
+        chart.helpers.updateSpec(chart, update);
+      },
+      afterDraw(chart) {
+        const spec = enabledSpec(chart);
+        if (!spec) {
+          hoveredValue = null;
+          return;
+        }
+        const boxes = getIconBoxes(chart);
+        if (chart.ctx) {
+          drawIcons(
+            chart.ctx,
+            boxes,
+            spec.stat === "percent" && spec.position === "stack" ? "fill" : spec.position
+          );
+          if (hoveredValue) {
+            const hoveredBox = boxes.find(
+              (b) => b.value === hoveredValue
+            );
+            if (hoveredBox) drawTooltip(chart.ctx, hoveredBox);
+          }
+        }
+        const canvas = chart.canvas;
+        if (!canvas || canvas._positionToggleHandler) return;
+        const handler = (e) => {
+          const area = chart.chartArea;
+          if (!area || !enabledSpec(chart)) {
+            if (canvas._positionTogglePointer) {
+              canvas.style.cursor = "";
+              canvas._positionTogglePointer = false;
+            }
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          const over = !!hitBox(getIconBoxes(chart), mx, my);
+          if (over) {
+            canvas.style.cursor = "pointer";
+            canvas._positionTogglePointer = true;
+          } else if (canvas._positionTogglePointer) {
+            canvas.style.cursor = "";
+            canvas._positionTogglePointer = false;
+          }
+        };
+        canvas._positionToggleHandler = handler;
+        canvas.addEventListener("mousemove", handler);
+      },
+      beforeDestroy(chart) {
+        const canvas = chart.canvas;
+        if (canvas && canvas._positionToggleHandler) {
+          canvas.removeEventListener(
+            "mousemove",
+            canvas._positionToggleHandler
+          );
+          delete canvas._positionToggleHandler;
+          delete canvas._positionTogglePointer;
+        }
+      }
+    };
+  }
+
+  // src/bars/updateData.js
+  function updateData2(chart, data, spec) {
+    delete chart.data._selectionState_;
+    const existing = chart.data._spec_;
+    const merged = mergeSpec(data, spec);
+    if (existing?._originalNCategories) {
+      merged._originalNCategories = existing._originalNCategories;
+    }
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
+    const scalesConfig = getScales2(merged);
+    chart.data.datasets = datasets;
+    chart.data.labels = labels;
+    chart.data._allLabels_ = [...labels];
+    chart.data._spec_ = merged;
+    chart.options.indexAxis = scalesConfig._indexAxis;
+    chart.options.scales = {
+      x: scalesConfig.x,
+      y: scalesConfig.y
+    };
+    chart.options.plugins = getPlugins2(merged);
+    chart.update();
+    const el = chart.canvas.parentNode;
+    el.style.height = "";
+    el.style.width = "";
+    if (merged.theme.dynamicSizing) {
+      const numCategories = labels.length;
+      const pxPerCategory = merged.theme.pxPerCategory;
+      if (merged.orientation === "horizontal") {
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        el.style.height = numCategories * pxPerCategory + overhead + "px";
+      } else {
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        el.style.width = numCategories * pxPerCategory + overhead + "px";
+      }
+    }
+  }
+
+  // src/util/merge.js
+  function mergeDeep(...objects) {
+    const isObject2 = (obj) => obj && typeof obj === "object";
+    return objects.reduce((prev, obj) => {
+      Object.keys(obj).forEach((key) => {
+        const pVal = prev[key];
+        const oVal = obj[key];
+        if (Array.isArray(pVal) && Array.isArray(oVal)) {
+          prev[key] = oVal;
+        } else if (isObject2(pVal) && isObject2(oVal)) {
+          prev[key] = mergeDeep(pVal, oVal);
+        } else {
+          prev[key] = oVal;
+        }
+      });
+      return prev;
+    }, {});
+  }
+
+  // src/bars/updateSpec.js
+  function updateSpec(chart, spec) {
+    const existing = chart.data._spec_;
+    delete chart.data._selectionState_;
+    const combined = mergeDeep(existing, spec);
+    const merged = mergeSpec(existing.data, combined);
+    if (existing._originalNCategories) {
+      merged._originalNCategories = existing._originalNCategories;
+    }
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
+    const scalesConfig = getScales2(merged);
+    const hiddenLabels = new Set(
+      chart.data.datasets.filter((_, i) => !chart.isDatasetVisible(i)).map((ds) => ds.label)
+    );
+    chart.data.datasets = datasets;
+    chart.data.labels = labels;
+    chart.data._allLabels_ = [...labels];
+    chart.data._spec_ = merged;
+    chart.options.indexAxis = scalesConfig._indexAxis;
+    chart.options.scales = {
+      x: scalesConfig.x,
+      y: scalesConfig.y
+    };
+    chart.options.plugins = getPlugins2(merged);
+    datasets.forEach((ds, i) => {
+      if (hiddenLabels.has(ds.label)) {
+        chart.setDatasetVisibility(i, false);
+      }
+    });
+    if (merged.theme?.dynamicCategoryAxis && hiddenLabels.size > 0) {
+      const catKey = merged.orientation === "horizontal" ? "y" : "x";
+      const valKey = catKey === "x" ? "y" : "x";
+      initializeDynamicCategoryData(datasets);
+      const visibleCats = getVisibleCategories(chart, catKey);
+      chart.data.labels = getAllLabels(chart, visibleCats).filter(
+        (cat) => visibleCats.has(cat)
+      );
+      refreshDynamicCategoryData(chart, chart.data.labels, catKey, valKey);
+    }
+    chart.update();
+    const el = chart.canvas.parentNode;
+    el.style.height = "";
+    el.style.width = "";
+    if (merged.theme.dynamicSizing) {
+      const numCategories = chart.data.labels.length;
+      const pxPerCategory = merged.theme.pxPerCategory;
+      if (merged.orientation === "horizontal") {
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        el.style.height = numCategories * pxPerCategory + overhead + "px";
+      } else {
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        el.style.width = numCategories * pxPerCategory + overhead + "px";
+      }
+    }
+  }
+
+  // src/bars/defaultFilename.js
+  function toFilename(str) {
+    return str.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  }
+  function defaultFilename(spec) {
+    const { labels = {}, scales: scales2 = {}, mapping = {} } = spec || {};
+    if (labels.title) {
+      return toFilename(labels.title) + ".png";
+    }
+    if (scales2.fill?.label && scales2.x?.label) {
+      return toFilename(scales2.fill.label) + "-by-" + toFilename(scales2.x.label) + ".png";
+    }
+    if (mapping.x) {
+      const prefix = mapping.fill ? toFilename(mapping.fill) + "-by-" : "";
+      return prefix + toFilename(mapping.x) + ".png";
+    }
+    return "bars.png";
+  }
+
+  // src/bars/exportImage.js
+  function exportImage(chart, filename) {
+    const name = filename !== void 0 ? filename : defaultFilename(chart.data?._spec_);
+    const dataURL = chart.toBase64Image();
+    const a = document.createElement("a");
+    a.download = name;
+    a.href = dataURL;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // src/bars/selection.js
+  var NAMED_COLORS = {
+    transparent: [0, 0, 0],
+    black: [0, 0, 0],
+    white: [255, 255, 255],
+    red: [255, 0, 0],
+    green: [0, 128, 0],
+    blue: [0, 0, 255],
+    yellow: [255, 255, 0],
+    orange: [255, 165, 0],
+    purple: [128, 0, 128],
+    gray: [128, 128, 128],
+    grey: [128, 128, 128]
+  };
+  function toRgba(color3, alpha2) {
+    if (!color3 || color3 === "transparent")
+      return `rgba(128, 128, 128, ${alpha2})`;
+    const rgbaMatch = color3.match(
+      /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/
+    );
+    if (rgbaMatch) {
+      return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha2})`;
+    }
+    if (color3.startsWith("#")) {
+      let hex3 = color3.slice(1);
+      if (hex3.length === 3) {
+        hex3 = hex3[0] + hex3[0] + hex3[1] + hex3[1] + hex3[2] + hex3[2];
+      }
+      const r = parseInt(hex3.slice(0, 2), 16);
+      const g = parseInt(hex3.slice(2, 4), 16);
+      const b = parseInt(hex3.slice(4, 6), 16);
+      if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+        return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+      }
+    }
+    const named2 = NAMED_COLORS[color3.toLowerCase()];
+    if (named2) {
+      return `rgba(${named2[0]}, ${named2[1]}, ${named2[2]}, ${alpha2})`;
+    }
+    return color3;
+  }
+  function getCategoryValue(point, orientation) {
+    return orientation === "horizontal" ? point.y : point.x;
+  }
+  function isPointSelected(point, selectionState, orientation) {
+    if (!selectionState || selectionState.type === null) return true;
+    const category = getCategoryValue(point, orientation);
+    if (selectionState.type === "category") {
+      return selectionState.values.some(
+        (v) => String(v) === String(category)
+      );
+    }
+    if (selectionState.type === "segment") {
+      const fill2 = point._fill;
+      return selectionState.values.some(
+        (seg) => String(seg.category) === String(category) && (seg.fill === void 0 || String(seg.fill) === String(fill2))
+      );
+    }
+    return true;
+  }
+  function storeOriginalColors(chart) {
+    if (chart.data._selectionState_?.originalColors) return;
+    const originalColors = chart.data.datasets.map((ds) => ({
+      backgroundColor: ds.backgroundColor,
+      borderColor: ds.borderColor
+    }));
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.originalColors = originalColors;
+  }
+  function applySelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || state.selection.type === null) return;
+    const spec = chart.data._spec_;
+    const opacity = spec.selection?.opacity ?? 0.2;
+    const orientation = spec.orientation;
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      const origBg = state.originalColors[dsIndex].backgroundColor;
+      const origBorder = state.originalColors[dsIndex].borderColor;
+      const bgColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBg = Array.isArray(origBg) ? origBg[ptIndex] : origBg;
+        return selected ? pointBg : toRgba(pointBg, opacity);
+      });
+      const borderColors = ds.data.map((point, ptIndex) => {
+        const selected = isPointSelected(
+          point,
+          state.selection,
+          orientation
+        );
+        const pointBorder = Array.isArray(origBorder) ? origBorder[ptIndex] : origBorder;
+        return selected ? pointBorder : toRgba(pointBorder, opacity);
+      });
+      ds.backgroundColor = bgColors;
+      ds.borderColor = borderColors;
+    });
+    chart.update();
+  }
+  function removeSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state?.originalColors) return;
+    chart.data.datasets.forEach((ds, i) => {
+      ds.backgroundColor = state.originalColors[i].backgroundColor;
+      ds.borderColor = state.originalColors[i].borderColor;
+    });
+    delete state.originalColors;
+    chart.update();
+  }
+  function selectionLegendPlugin() {
+    return {
+      id: "selectionLegend",
+      beforeDraw(chart) {
+        const state = chart.data?._selectionState_;
+        if (!state?.originalColors || !chart.legend?.legendItems) return;
+        chart.legend.legendItems.forEach((item) => {
+          const dsIndex = item.datasetIndex;
+          if (dsIndex == null || !state.originalColors[dsIndex]) return;
+          const orig = state.originalColors[dsIndex];
+          const bg = orig.backgroundColor;
+          item.fillStyle = Array.isArray(bg) ? bg[0] : bg;
+          const border = orig.borderColor;
+          item.strokeStyle = Array.isArray(border) ? border[0] : border;
+        });
+      }
+    };
+  }
+  function fireOnSelect(chart, selection2, event) {
+    const onSelect = chart.data._spec_?.callbacks?.onSelect;
+    if (typeof onSelect === "function") {
+      onSelect(selection2, event);
+    }
+  }
+  function selectCategory(chart, values, event, options) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "category",
+      values: valArray
+    };
+    applySelection(chart);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
+  }
+  function selectSegment(chart, values, event, options) {
+    const valArray = Array.isArray(values) ? values : [values];
+    storeOriginalColors(chart);
+    chart.data._selectionState_ = chart.data._selectionState_ || {};
+    chart.data._selectionState_.selection = {
+      type: "segment",
+      values: valArray
+    };
+    applySelection(chart);
+    if (!options?._silent) {
+      const selection2 = getSelection(chart);
+      fireOnSelect(chart, selection2, event);
+    }
+  }
+  function clearSelection(chart, event, options) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection || state.selection.type === null) return;
+    state.selection = { type: null, values: [] };
+    removeSelection(chart);
+    if (!options?._silent) {
+      fireOnSelect(chart, { type: null, values: [] }, event);
+    }
+  }
+  function getSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (!state || !state.selection) return { type: null, values: [] };
+    return { ...state.selection, values: [...state.selection.values] };
+  }
+
+  // src/bars/onClick.js
+  function onClick2(event, activeElements, chart) {
+    const spec = chart.data._spec_;
+    if (!activeElements.length) {
+      if (spec.selection?.enabled) {
+        const current = getSelection(chart);
+        if (current.type !== null) {
+          clearSelection(chart, event);
+        }
+      }
+      return;
+    }
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const point = chart.data.datasets[datasetIndex].data[index3];
+    if (spec.callbacks?.onClick) {
+      spec.callbacks.onClick(point, event);
+    }
+    if (spec.selection?.enabled) {
+      const orientation = spec.orientation;
+      const category = orientation === "horizontal" ? point.y : point.x;
+      const current = getSelection(chart);
+      const multiple = spec.selection.multiple;
+      if (current.type === "category" && current.values.includes(category)) {
+        if (multiple) {
+          const remaining = current.values.filter(
+            (v) => v !== category
+          );
+          if (remaining.length === 0) {
+            clearSelection(chart, event);
+          } else {
+            selectCategory(chart, remaining, event);
+          }
+        } else {
+          clearSelection(chart, event);
+        }
+      } else if (multiple && current.type === "category") {
+        selectCategory(chart, [...current.values, category], event);
+      } else {
+        selectCategory(chart, category, event);
+      }
+    }
+  }
+
+  // src/bars/onHover.js
+  function onHover2(event, activeElements, chart) {
+    const spec = chart.data._spec_;
+    const target = event?.native?.target;
+    const hasClickCallback = !!spec.callbacks?.onClick;
+    const hasHoverCallback = !!spec.callbacks?.onHover;
+    if (!hasClickCallback && !hasHoverCallback) {
+      if (target?.style?.cursor === "pointer")
+        target.style.cursor = "default";
+      return;
+    }
+    if (activeElements.length) {
+      if (target) target.style.cursor = "pointer";
+      if (hasHoverCallback) {
+        const { datasetIndex, index: index3 } = activeElements[0];
+        const point = chart.data.datasets[datasetIndex].data[index3];
+        spec.callbacks.onHover(point, event);
+      }
+    } else {
+      if (target) target.style.cursor = "default";
+    }
+  }
+
+  // src/bars.js
+  function bars(element = "body", data = [], spec = {}) {
+    validateSpec(data, spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(
+          `bars: could not find element matching "${element}"`
+        );
+      }
+    }
+    const merged = mergeSpec(data, spec);
+    el._gsmVizBarsHoverCallbackWrapper ??= () => {
+    };
+    el._gsmVizBarsClickCallbackWrapper ??= () => {
+    };
+    const canvas = addCanvas(el, {
+      maintainAspectRatio: merged.theme.maintainAspectRatio,
+      hoverCallbackWrapper: el._gsmVizBarsHoverCallbackWrapper,
+      clickCallbackWrapper: el._gsmVizBarsClickCallbackWrapper
+    });
+    const { datasets, labels, nExcluded, nRowsExcluded } = structureData2(merged);
+    merged._nExcluded = nExcluded;
+    merged._nRowsExcluded = nRowsExcluded;
+    const scalesConfig = getScales2(merged);
+    const options = {
+      animation: merged.theme.animation,
+      indexAxis: scalesConfig._indexAxis,
+      maintainAspectRatio: merged.theme.maintainAspectRatio,
+      onClick: onClick2,
+      onHover: onHover2,
+      plugins: getPlugins2(merged),
+      scales: {
+        x: scalesConfig.x,
+        y: scalesConfig.y
+      }
+    };
+    const chart = new auto_default(canvas, {
+      type: "bar",
+      data: {
+        datasets,
+        labels,
+        _allLabels_: [...labels],
+        _spec_: merged
+      },
+      options,
+      plugins: [
+        plugin2,
+        displayWhiteBackground(),
+        nCategoriesToggle(),
+        positionToggle(),
+        selectionLegendPlugin()
+      ]
+    });
+    canvas.chart = chart;
+    el.style.height = "";
+    el.style.width = "";
+    if (merged.theme.dynamicSizing) {
+      const numCategories = labels.length;
+      const pxPerCategory = merged.theme.pxPerCategory;
+      if (merged.orientation === "horizontal") {
+        const area = chart.chartArea;
+        const chartAreaHeight = area ? area.bottom - area.top : 0;
+        const overhead = chartAreaHeight > 0 ? chart.height - chartAreaHeight : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.height = corrected + "px";
+      } else {
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        const corrected = numCategories * pxPerCategory + overhead;
+        el.style.width = corrected + "px";
+      }
+    }
+    chart.helpers = {
+      updateData: updateData2,
+      updateSpec,
+      exportImage,
+      selectCategory,
+      selectSegment,
+      clearSelection,
+      getSelection
+    };
+    return chart;
+  }
+
+  // src/facetBars/validateSpec.js
+  function validateSpec2(data, spec) {
+    validateSpec(data, spec);
+    if (!spec.facet) {
+      throw new Error("spec.facet is required");
+    }
+    if (spec.facet === null || typeof spec.facet !== "object" || Array.isArray(spec.facet) || Object.getPrototypeOf(spec.facet) !== Object.prototype && Object.getPrototypeOf(spec.facet) !== null) {
+      throw new Error("spec.facet must be a plain object");
+    }
+    if (!spec.facet.field) {
+      throw new Error("spec.facet.field is required");
+    }
+    if (typeof spec.facet.field !== "string") {
+      throw new Error("spec.facet.field must be a string");
+    }
+    if (spec.facet.order !== void 0 && !Array.isArray(spec.facet.order)) {
+      throw new Error("spec.facet.order must be an array");
+    }
+    if (spec.facet.nCol !== void 0 && (!Number.isInteger(spec.facet.nCol) || spec.facet.nCol < 1)) {
+      throw new Error("spec.facet.nCol must be a positive integer");
+    }
+    if (spec.facet.chartHeight !== void 0 && (typeof spec.facet.chartHeight !== "number" || spec.facet.chartHeight <= 0)) {
+      throw new Error("spec.facet.chartHeight must be a positive number");
+    }
+    const xFree = spec.facet?.scales?.x?.free;
+    if (xFree !== void 0 && typeof xFree !== "boolean") {
+      throw new Error("spec.facet.scales.x.free must be a boolean");
+    }
+    const yFree = spec.facet?.scales?.y?.free;
+    if (yFree !== void 0 && typeof yFree !== "boolean") {
+      throw new Error("spec.facet.scales.y.free must be a boolean");
+    }
+    const legendSync = spec.facet?.legend?.sync;
+    if (legendSync !== void 0 && typeof legendSync !== "boolean") {
+      throw new Error("spec.facet.legend.sync must be a boolean");
+    }
+    const legendChart = spec.facet?.legend?.chart;
+    if (legendChart !== void 0) {
+      console.warn(
+        "facetBars: spec.facet.legend.chart is deprecated and has no effect. Legends now display on every facet. Use spec.facet.legend.sync to control whether legend clicks propagate across facets."
+      );
+    }
+    const legendDisplay = spec.facet?.legend?.display;
+    if (legendDisplay !== void 0 && typeof legendDisplay !== "boolean") {
+      throw new Error("spec.facet.legend.display must be a boolean");
+    }
+    const labelPosition = spec.facet?.label?.position;
+    if (labelPosition !== void 0 && labelPosition !== "top" && labelPosition !== "bottom") {
+      throw new Error("spec.facet.label.position must be 'top' or 'bottom'");
+    }
+    const labelFont = spec.facet?.label?.font;
+    if (labelFont !== void 0 && typeof labelFont !== "string") {
+      throw new Error("spec.facet.label.font must be a string");
+    }
+    const xOrder = spec.scales?.x?.order;
+    if (xOrder !== void 0 && !Array.isArray(xOrder) && typeof xOrder !== "function") {
+      throw new Error("spec.scales.x.order must be an array or a function");
+    }
+  }
+
+  // src/facetBars/defaults.js
+  var defaults4 = {
+    facet: {
+      field: void 0,
+      order: void 0,
+      nCol: void 0,
+      chartHeight: void 0,
+      label: {
+        position: "top",
+        font: void 0
+      },
+      scales: {
+        x: { free: false },
+        y: { free: false }
+      },
+      legend: {
+        display: true,
+        sync: true
+      }
+    }
+  };
+  var defaults_default2 = defaults4;
+
+  // src/facetBars/mergeSpec.js
+  function mergeSpec2(data, spec) {
+    const barsMerged = mergeSpec(data, spec);
+    const userFacet = spec.facet ?? {};
+    const defaultFacet = defaults_default2.facet;
+    const userLabel = userFacet.label ?? {};
+    const userScales = userFacet.scales ?? {};
+    const userLegend = userFacet.legend ?? {};
+    return {
+      ...barsMerged,
+      facet: {
+        field: userFacet.field,
+        order: userFacet.order,
+        nCol: userFacet.nCol,
+        chartHeight: userFacet.chartHeight,
+        label: {
+          ...defaultFacet.label,
+          ...userLabel
+        },
+        scales: {
+          x: {
+            ...defaultFacet.scales.x,
+            ...userScales.x ?? {}
+          },
+          y: {
+            ...defaultFacet.scales.y,
+            ...userScales.y ?? {}
+          }
+        },
+        legend: {
+          ...defaultFacet.legend,
+          ...userLegend
+        }
+      }
+    };
+  }
+
+  // src/facetBars/splitData.js
+  function splitData(data, field, order) {
+    const map4 = /* @__PURE__ */ new Map();
+    if (order) {
+      for (const val of order) {
+        map4.set(String(val), []);
+      }
+    }
+    for (const row of data) {
+      const key = String(row[field]);
+      if (order && !map4.has(key)) continue;
+      if (!map4.has(key)) map4.set(key, []);
+      map4.get(key).push(row);
+    }
+    return map4;
+  }
+
+  // src/facetBars/computeGlobalScales.js
+  function computeGlobalScales(facetDataMap, spec) {
+    const { position, orientation, mapping, scales: scales2, facet } = spec;
+    const horizontal = orientation === "horizontal";
+    if (position === "fill" || spec.stat === "percent") {
+      return { yMin: 0, yMax: 100 };
+    }
+    const yFree = facet?.scales?.y?.free ?? false;
+    if (yFree) return {};
+    const stacked = position === "stack";
+    let globalMax = 0;
+    let globalMin = 0;
+    for (const [facetValue, facetData] of facetDataMap) {
+      const xOrder = typeof scales2?.x?.order === "function" ? scales2.x.order(facetValue, facetData) : scales2?.x?.order;
+      const resolvedScales = xOrder !== scales2?.x?.order ? { ...scales2, x: { ...scales2?.x, order: xOrder } } : scales2;
+      const subSpec = {
+        data: facetData,
+        mapping,
+        orientation,
+        position,
+        stat: spec.stat,
+        scales: resolvedScales,
+        nCategories: spec.nCategories,
+        theme: spec.theme
+      };
+      const { datasets, labels } = structureData2(subSpec);
+      if (stacked) {
+        const positiveTotals = new Map(labels.map((l) => [String(l), 0]));
+        const negativeTotals = new Map(labels.map((l) => [String(l), 0]));
+        for (const ds of datasets) {
+          for (const point of ds.data) {
+            const cat = horizontal ? point.y : point.x;
+            const val = Number(horizontal ? point.x : point.y) || 0;
+            const key = String(cat);
+            if (val > 0 && positiveTotals.has(key)) {
+              positiveTotals.set(key, positiveTotals.get(key) + val);
+            } else if (val < 0 && negativeTotals.has(key)) {
+              negativeTotals.set(key, negativeTotals.get(key) + val);
+            }
+          }
+        }
+        for (const total of positiveTotals.values()) {
+          if (total > globalMax) globalMax = total;
+        }
+        for (const total of negativeTotals.values()) {
+          if (total < globalMin) globalMin = total;
+        }
+      } else {
+        for (const ds of datasets) {
+          for (const point of ds.data) {
+            const val = Number(horizontal ? point.x : point.y) || 0;
+            if (val > globalMax) globalMax = val;
+            if (val < globalMin) globalMin = val;
+          }
+        }
+      }
+    }
+    return { yMin: globalMin, yMax: globalMax };
+  }
+
+  // src/facetBars/computeGlobalCategories.js
+  function computeGlobalCategories(facetDataMap, spec) {
+    const xFree = spec.facet?.scales?.x?.free ?? false;
+    if (xFree) return null;
+    const xOrder = spec.scales?.x?.order;
+    const xKey = spec.mapping.x;
+    if (Array.isArray(xOrder)) {
+      return xOrder;
+    }
+    if (typeof xOrder === "function") {
+      const seen2 = /* @__PURE__ */ new Set();
+      const ordered = [];
+      for (const [facetValue, facetData] of facetDataMap) {
+        const perFacet = xOrder(facetValue, facetData);
+        if (!Array.isArray(perFacet)) {
+          throw new Error(
+            "spec.scales.x.order (function) must return an array of categories"
+          );
+        }
+        for (const cat of perFacet) {
+          const key = String(cat);
+          if (!seen2.has(key)) {
+            seen2.add(key);
+            ordered.push(cat);
+          }
+        }
+      }
+      const allDataCats = [];
+      for (const facetData of facetDataMap.values()) {
+        for (const row of facetData) {
+          const cat = row[xKey];
+          const key = String(cat);
+          if (!seen2.has(key)) {
+            seen2.add(key);
+            allDataCats.push(cat);
+          }
+        }
+      }
+      allDataCats.sort(
+        (a, b) => String(a).localeCompare(String(b), void 0, {
+          sensitivity: "base"
+        })
+      );
+      return [...ordered, ...allDataCats];
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (const facetData of facetDataMap.values()) {
+      for (const row of facetData) {
+        seen.add(row[xKey]);
+      }
+    }
+    return [...seen].sort(
+      (a, b) => String(a).localeCompare(String(b), void 0, { sensitivity: "base" })
+    );
+  }
+
+  // src/facetBars/buildSubSpec.js
+  function buildSubSpec(facetValue, mergedSpec, facetData = []) {
+    const {
+      mapping,
+      orientation,
+      position,
+      nCategories,
+      scales: scales2,
+      labels,
+      annotations: annotations5,
+      tooltip: tooltip5,
+      theme,
+      legend: legend5,
+      callbacks
+    } = mergedSpec;
+    const xOrder = typeof scales2?.x?.order === "function" ? scales2.x.order(facetValue, facetData) : scales2?.x?.order;
+    const resolvedScales = xOrder !== scales2?.x?.order ? { ...scales2, x: { ...scales2?.x, order: xOrder } } : scales2;
+    return {
+      mapping,
+      orientation,
+      position,
+      stat: mergedSpec.stat,
+      nCategories,
+      scales: resolvedScales,
+      labels,
+      annotations: annotations5,
+      tooltip: tooltip5,
+      theme,
+      legend: legend5,
+      selection: mergedSpec.selection,
+      zoom: mergedSpec.zoom,
+      callbacks: {
+        onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
+        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null,
+        onSelect: callbacks.onSelect ? (selection2, event) => callbacks.onSelect(selection2, facetValue, event) : null
+      }
+    };
+  }
+
+  // src/facetBars/renderGrid.js
+  function renderGrid(parentElement, facetValues, mergedSpec) {
+    const existing = parentElement.querySelector(".gsm-facet-grid");
+    if (existing) {
+      existing.querySelectorAll("canvas").forEach((canvas) => {
+        const chart = Chart.getChart(canvas);
+        if (chart) chart.destroy();
+      });
+      existing.remove();
+    }
+    const { facet } = mergedSpec;
+    const nCol = facet.nCol ?? Math.min(facetValues.length, 3);
+    const labelPosition = facet.label?.position ?? "top";
+    const grid = document.createElement("div");
+    grid.className = "gsm-facet-grid";
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = `repeat(${nCol}, 1fr)`;
+    grid.style.gap = "8px";
+    const containers = /* @__PURE__ */ new Map();
+    for (const facetValue of facetValues) {
+      const cell = document.createElement("div");
+      cell.className = "gsm-facet-cell";
+      const label = document.createElement("div");
+      label.className = "gsm-facet-label";
+      label.textContent = String(facetValue);
+      if (facet.label?.font) {
+        label.style.font = facet.label.font;
+      }
+      const canvasContainer = document.createElement("div");
+      canvasContainer.className = "gsm-facet-canvas";
+      if (facet.chartHeight) {
+        canvasContainer.style.height = `${facet.chartHeight}px`;
+      }
+      if (labelPosition === "bottom") {
+        cell.appendChild(canvasContainer);
+        cell.appendChild(label);
+      } else {
+        cell.appendChild(label);
+        cell.appendChild(canvasContainer);
+      }
+      grid.appendChild(cell);
+      containers.set(String(facetValue), canvasContainer);
+    }
+    parentElement.appendChild(grid);
+    return { containers, grid };
+  }
+
+  // src/facetBars/syncCharts.js
+  function syncCharts(charts) {
+    charts.forEach((chart) => {
+      const originalOnHover = chart.options.onHover;
+      chart.options.onHover = (event, activeElements, chartInstance) => {
+        if (originalOnHover) {
+          originalOnHover(event, activeElements, chartInstance);
+        }
+        const horizontal = chartInstance.options.indexAxis === "y";
+        if (activeElements.length > 0) {
+          const { datasetIndex, index: index3 } = activeElements[0];
+          const point = chartInstance.data.datasets[datasetIndex].data[index3];
+          const hoveredCategory = horizontal ? point.y : point.x;
+          charts.forEach((sibling) => {
+            if (sibling === chartInstance) return;
+            const siblingLabels = sibling.data.labels;
+            if (!siblingLabels.some(
+              (l) => String(l) === String(hoveredCategory)
+            ))
+              return;
+            const newActiveElements = sibling.data.datasets.map((ds, dsIndex) => {
+              const pointIndex = ds.data.findIndex((p) => {
+                const cat = horizontal ? p.y : p.x;
+                return String(cat) === String(hoveredCategory);
+              });
+              if (pointIndex === -1) return null;
+              const meta = sibling.getDatasetMeta(dsIndex);
+              if (!meta?.data?.[pointIndex]) return null;
+              return { datasetIndex: dsIndex, index: pointIndex };
+            }).filter(Boolean);
+            sibling.setActiveElements(newActiveElements);
+            sibling.update("none");
+          });
+        } else {
+          charts.forEach((sibling) => {
+            if (sibling === chartInstance) return;
+            sibling.setActiveElements([]);
+            sibling.update("none");
+          });
+        }
+      };
+    });
+  }
+
+  // src/facetBars/syncLegendClicks.js
+  function syncLegendClicks(charts, { sync = true } = {}) {
+    charts.forEach((chart) => {
+      const currentOnClick = chart.options.plugins?.legend?.onClick;
+      const storedOriginal = chart._facetLegendOriginalOnClick;
+      let original;
+      if (storedOriginal && currentOnClick === chart._facetLegendSyncWrapper) {
+        original = storedOriginal;
+      } else {
+        original = currentOnClick ?? Chart.defaults.plugins.legend.onClick;
+        chart._facetLegendOriginalOnClick = original;
+      }
+      const wrapper = function(e, legendItem, legendRef) {
+        original.call(this, e, legendItem, legendRef);
+        if (!sync) return;
+        const clickedLabel = String(legendItem.text);
+        const isNowVisible = chart.isDatasetVisible(
+          legendItem.datasetIndex
+        );
+        charts.forEach((sibling) => {
+          if (sibling === chart) return;
+          const siblingIdx = sibling.data.datasets.findIndex(
+            (ds) => String(ds.label) === clickedLabel
+          );
+          if (siblingIdx === -1) return;
+          const useDynamic = sibling.data._spec_?.theme?.dynamicCategoryAxis;
+          if (useDynamic) {
+            const siblingDataset = sibling.data.datasets[siblingIdx];
+            initializeDynamicCategoryData(sibling.data.datasets);
+            if (!isNowVisible) {
+              siblingDataset.data = [];
+              siblingDataset._backup_ = siblingDataset._dynamicCategoryAxisOriginalData_;
+              sibling.setDatasetVisibility(siblingIdx, false);
+            } else {
+              delete siblingDataset._backup_;
+              sibling.setDatasetVisibility(siblingIdx, true);
+            }
+            const catKey = sibling.data._spec_?.orientation === "horizontal" ? "y" : "x";
+            const valKey = catKey === "x" ? "y" : "x";
+            const visibleCats = getVisibleCategories(sibling, catKey);
+            sibling.data.labels = getAllLabels(
+              sibling,
+              visibleCats
+            ).filter((cat) => visibleCats.has(cat));
+            refreshDynamicCategoryData(
+              sibling,
+              sibling.data.labels,
+              catKey,
+              valKey
+            );
+            sibling.update();
+            if (sibling.data._spec_?.theme?.dynamicSizing) {
+              const sibContainer = sibling.canvas?.parentElement;
+              if (sibContainer) {
+                const numCategories = sibling.data.labels.length;
+                const pxPerCategory = sibling.data._spec_?.theme?.pxPerCategory || 30;
+                const horizontal = sibling.data._spec_?.orientation === "horizontal";
+                if (horizontal) {
+                  const area = sibling.chartArea;
+                  const chartAreaHeight = area ? area.bottom - area.top : 0;
+                  const overhead = chartAreaHeight > 0 ? sibling.height - chartAreaHeight : 0;
+                  sibContainer.style.height = numCategories * pxPerCategory + overhead + "px";
+                } else {
+                  const area = sibling.chartArea;
+                  const chartAreaWidth = area ? area.right - area.left : 0;
+                  const overhead = chartAreaWidth > 0 ? sibling.width - chartAreaWidth : 0;
+                  sibContainer.style.width = numCategories * pxPerCategory + overhead + "px";
+                }
+              }
+            }
+          } else {
+            sibling.setDatasetVisibility(siblingIdx, isNowVisible);
+            sibling.update();
+          }
+        });
+      };
+      chart.options.plugins.legend.onClick = wrapper;
+      chart._facetLegendSyncWrapper = wrapper;
+    });
+  }
+
+  // src/facetBars/syncSelection.js
+  function syncSelection(charts) {
+    charts.forEach((chart) => {
+      const baseSelectCategory = chart.helpers.selectCategory;
+      const baseSelectSegment = chart.helpers.selectSegment;
+      const baseClearSelection = chart.helpers.clearSelection;
+      chart.helpers.selectCategory = function(chartInstance, values, event) {
+        baseSelectCategory(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectCategory(sibling, values, void 0, { _silent: true });
+        });
+      };
+      chart.helpers.selectSegment = function(chartInstance, values, event) {
+        baseSelectSegment(chartInstance, values, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          selectSegment(sibling, values, void 0, { _silent: true });
+        });
+      };
+      chart.helpers.clearSelection = function(chartInstance, event) {
+        baseClearSelection(chartInstance, event);
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          clearSelection(sibling, void 0, { _silent: true });
+        });
+      };
+    });
+    charts.forEach((chart) => {
+      const originalOnClick = chart.options.onClick;
+      chart.options.onClick = (event, activeElements, chartInstance) => {
+        if (originalOnClick) {
+          originalOnClick(event, activeElements, chartInstance);
+        }
+        const state = chartInstance.data._selectionState_;
+        if (!state?.selection) return;
+        const sel = state.selection;
+        charts.forEach((sibling) => {
+          if (sibling === chartInstance) return;
+          if (sel.type === null) {
+            clearSelection(sibling, void 0, { _silent: true });
+          } else if (sel.type === "category") {
+            selectCategory(sibling, sel.values, void 0, {
+              _silent: true
+            });
+          } else if (sel.type === "segment") {
+            selectSegment(sibling, sel.values, void 0, {
+              _silent: true
+            });
+          }
+        });
+      };
+    });
+  }
+
+  // src/facetBars.js
+  function facetBars(element = "body", data = [], spec = {}) {
+    validateSpec2(data, spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(
+          `facetBars: could not find element matching "${element}"`
+        );
+      }
+    }
+    const merged = mergeSpec2(data, spec);
+    const facetDataMap = splitData(
+      data,
+      merged.facet.field,
+      merged.facet.order
+    );
+    const facetValues = [...facetDataMap.keys()];
+    const globalScales = computeGlobalScales(facetDataMap, merged);
+    const globalCategories = computeGlobalCategories(facetDataMap, merged);
+    const { containers, grid } = renderGrid(el, facetValues, merged);
+    const fillKey = merged.mapping.fill;
+    let globalFillDomain;
+    if (fillKey) {
+      if (merged.scales?.fill?.order) {
+        globalFillDomain = merged.scales.fill.order.map(String);
+      } else {
+        const seen = /* @__PURE__ */ new Set();
+        globalFillDomain = [];
+        for (const facetData of facetDataMap.values()) {
+          for (const d of facetData) {
+            const val = String(d[fillKey]);
+            if (!seen.has(val)) {
+              seen.add(val);
+              globalFillDomain.push(val);
+            }
+          }
+        }
+      }
+    }
+    const charts = [];
+    for (const facetValue of facetValues) {
+      const facetData = facetDataMap.get(facetValue);
+      const subSpec = buildSubSpec(facetValue, merged, facetData);
+      const container = containers.get(facetValue);
+      const chart = bars(container, facetData, subSpec);
+      if (merged.facet.chartHeight) {
+        container.style.height = `${merged.facet.chartHeight}px`;
+        chart.resize();
+      }
+      charts.push(chart);
+    }
+    const horizontal = merged.orientation === "horizontal";
+    const valueAxisKey = horizontal ? "x" : "y";
+    const categoryAxisKey = horizontal ? "y" : "x";
+    const xFree = merged.facet.scales.x.free;
+    const yFree = merged.facet.scales.y.free;
+    const legendDisplay = merged.facet.legend.display;
+    const hasFill = !!merged.mapping.fill;
+    const showLegend = hasFill && legendDisplay;
+    charts.forEach((chart, i) => {
+      let needsUpdate = false;
+      if (!xFree && !merged.theme?.dynamicCategoryAxis && globalCategories && globalCategories.length > 0) {
+        chart.data.labels = globalCategories;
+        chart.options.scales[categoryAxisKey].min = 0;
+        chart.options.scales[categoryAxisKey].max = globalCategories.length - 1;
+        needsUpdate = true;
+      }
+      if (!yFree && globalScales.yMax !== void 0) {
+        chart.options.scales[valueAxisKey].min = globalScales.yMin;
+        chart.options.scales[valueAxisKey].max = globalScales.yMax;
+        needsUpdate = true;
+      }
+      if (chart.options.plugins.legend.display !== showLegend) {
+        chart.options.plugins.legend.display = showLegend;
+        needsUpdate = true;
+      }
+      if (showLegend && globalFillDomain) {
+        const existing = new Set(
+          chart.data.datasets.map((ds) => String(ds.label))
+        );
+        for (const fillVal of globalFillDomain) {
+          if (!existing.has(fillVal)) {
+            const styleSource = charts.flatMap((c) => c.data.datasets).find(
+              (ds) => String(ds.label) === fillVal && ds.backgroundColor !== void 0
+            );
+            chart.data.datasets.push({
+              label: fillVal,
+              data: [],
+              backgroundColor: styleSource?.backgroundColor,
+              borderColor: styleSource?.borderColor,
+              borderWidth: styleSource?.borderWidth,
+              borderRadius: styleSource?.borderRadius
+            });
+            needsUpdate = true;
+          }
+        }
+      }
+      if (needsUpdate) chart.update("none");
+    });
+    syncCharts(charts);
+    syncSelection(charts);
+    if (hasFill) {
+      const syncOpts = { sync: merged.facet.legend.sync };
+      syncLegendClicks(charts, syncOpts);
+      charts.forEach((chart) => {
+        const baseUpdateSpec = chart.helpers.updateSpec;
+        chart.helpers.updateSpec = function(chartInstance, spec2) {
+          baseUpdateSpec(chartInstance, spec2);
+          syncLegendClicks(charts, syncOpts);
+        };
+      });
+    }
+    return { charts, container: grid };
   }
 
   // src/groupOverview/checkInputs.js
@@ -21469,26 +27379,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = null;
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults3.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults3.groupClickCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = null;
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults5.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults5.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.metricClickCallback = (datum2) => {
+    defaults5.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults3, _config_);
+    const config = configure2(defaults5, _config_);
     return config;
   }
 
@@ -21787,7 +27697,7 @@ var gsmViz = (() => {
   }
 
   // src/groupOverview/structureData.js
-  function structureData2(results, columns, groupMetadata, config) {
+  function structureData3(results, columns, groupMetadata, config) {
     const lookup = group(
       results,
       (d) => d.GroupID,
@@ -22096,7 +28006,7 @@ var gsmViz = (() => {
       _results_,
       this.config
     );
-    const rows = structureData2(_results_, columns, groupMetadata, this.config);
+    const rows = structureData3(_results_, columns, groupMetadata, this.config);
     const tbody = this.table.select("tbody");
     const bodyRows = addBodyRows(tbody, rows);
     const cells = addCells(bodyRows);
@@ -22134,7 +28044,7 @@ var gsmViz = (() => {
       _results_,
       config
     );
-    const rows = structureData2(_results_, columns, groupMetadata, config);
+    const rows = structureData3(_results_, columns, groupMetadata, config);
     const table = makeTable(_element_, rows, columns, config);
     table.updateTable = updateTable.bind({
       _results_,
@@ -22164,12 +28074,14 @@ var gsmViz = (() => {
       schemaName: "metricMetadatum",
       module: "scatterPlot"
     });
-    checkInput({
-      parameter: "_bounds_",
-      argument: _bounds_,
-      schemaName: "resultsPredicted",
-      module: "scatterPlot"
-    });
+    if (_bounds_ !== null && _bounds_ !== void 0) {
+      checkInput({
+        parameter: "_bounds_",
+        argument: _bounds_,
+        schemaName: "resultsPredicted",
+        module: "scatterPlot"
+      });
+    }
     if (_groupMetadata_ !== null) {
       checkInput({
         parameter: "_groupMetadata_",
@@ -22182,34 +28094,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.x = "Denominator";
-    defaults3[defaults3.x] = defaults3.x;
-    defaults3.xType = "logarithmic";
-    defaults3.y = "Numerator";
-    defaults3[defaults3.y] = defaults3.y;
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.x = "Denominator";
+    defaults5[defaults5.x] = defaults5.x;
+    defaults5.xType = "logarithmic";
+    defaults5.y = "Numerator";
+    defaults5[defaults5.y] = defaults5.y;
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.displayTitle = false;
-    defaults3.displayLegend = true;
-    defaults3.displayTrendLine = false;
-    defaults3.maintainAspectRatio = false;
-    const config = configure2(defaults3, _config_, {
+    defaults5.displayTitle = false;
+    defaults5.displayLegend = true;
+    defaults5.displayTrendLine = false;
+    defaults5.maintainAspectRatio = false;
+    const config = configure2(defaults5, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -22401,8 +28313,71 @@ var gsmViz = (() => {
     }
   }
 
+  // src/scatterPlot/predictBounds.js
+  var defaultThreshold = "-3,-2,2,3";
+  function parseThresholds(threshold) {
+    const parsed = String(threshold ?? defaultThreshold).split(",").map((value) => Number(value.trim())).filter((value) => Number.isFinite(value));
+    return parsed.length > 0 ? parsed : [-3, -2, 2, 3];
+  }
+  function predictBounds(_results_, config) {
+    if (Array.isArray(_results_) === false || _results_.length === 0) return [];
+    const rows = _results_.map((d) => ({
+      Numerator: Number(d.Numerator),
+      Denominator: Number(d.Denominator),
+      Metric: Number(d.Metric)
+    })).filter(
+      (d) => Number.isFinite(d.Numerator) && Number.isFinite(d.Denominator) && Number.isFinite(d.Metric) && d.Denominator > 0
+    );
+    if (rows.length === 0) return [];
+    const thresholds2 = [.../* @__PURE__ */ new Set([...parseThresholds(config?.Threshold), 0])];
+    const denominatorMin = Math.min(...rows.map((d) => d.Denominator));
+    const denominatorMax = Math.max(...rows.map((d) => d.Denominator));
+    const range = denominatorMax - denominatorMin;
+    const nStep = Number.isFinite(range) && range !== 0 ? range / 250 : 1;
+    const denominatorRange = [];
+    const rangeStart = denominatorMin - nStep;
+    const rangeEnd = denominatorMax + nStep;
+    for (let denominator = rangeStart; denominator <= rangeEnd + nStep / 2; denominator += nStep) {
+      if (denominator > 0) denominatorRange.push(denominator);
+    }
+    const numeratorSum = rows.reduce((sum, d) => sum + d.Numerator, 0);
+    const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
+    if (denominatorSum <= 0) return [];
+    const vMu = numeratorSum / denominatorSum;
+    const rawType = String(config?.AnalysisType ?? "").trim().toLowerCase();
+    if (rawType === "identity") return [];
+    const analysisType = rawType === "poisson" ? "poisson" : "binary";
+    const phiTerms = rows.map((d) => {
+      const variance = analysisType === "poisson" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
+      if (variance <= 0) return Number.NaN;
+      const score = (d.Metric - vMu) / Math.sqrt(variance);
+      return score * score;
+    });
+    const finitePhiTerms = phiTerms.filter((term) => Number.isFinite(term));
+    if (finitePhiTerms.length === 0) return [];
+    const phi = finitePhiTerms.reduce((sum, term) => sum + term, 0) / finitePhiTerms.length;
+    const bounds = [];
+    thresholds2.forEach((threshold) => {
+      denominatorRange.forEach((denominator) => {
+        const variance = analysisType === "poisson" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
+        if (variance < 0) return;
+        const Metric = vMu + threshold * Math.sqrt(variance);
+        const Numerator = Metric * denominator;
+        if (Numerator < 0 || Number.isFinite(Numerator) === false) return;
+        bounds.push({
+          Threshold: threshold,
+          Denominator: denominator,
+          LogDenominator: Math.log(denominator),
+          Numerator,
+          Metric
+        });
+      });
+    });
+    return bounds;
+  }
+
   // src/scatterPlot/structureData.js
-  function structureData3(_results_, config, _bounds_, _groupMetadata_ = null) {
+  function structureData4(_results_, config, _bounds_, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const data = mutate2(_results_, config, groupMetadata);
     let datasets = [
@@ -22426,7 +28401,8 @@ var gsmViz = (() => {
         return dataset;
       })
     ];
-    const bounds = rollupBounds(_bounds_, config);
+    const boundsData = _bounds_ == null || Array.isArray(_bounds_) === false ? predictBounds(_results_, config) : _bounds_;
+    const bounds = rollupBounds(boundsData, config);
     if (bounds !== void 0)
       bounds.forEach((bound) => {
         datasets.push(bound);
@@ -22521,7 +28497,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getPlugins.js
-  function getPlugins2(config) {
+  function getPlugins3(config) {
     const plugins2 = {
       legend: legend2(config),
       title: title2(config),
@@ -22531,7 +28507,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getScales.js
-  function getScales2(config) {
+  function getScales3(config) {
     const scales2 = getDefaultScales();
     scales2.x.grid.display = true;
     scales2.x.ticks = {
@@ -22554,8 +28530,8 @@ var gsmViz = (() => {
       chart.data.datasets.find((dataset) => dataset.type === "scatter").data
     );
     chart.canvas.riskSignalSelected.data = config.selectedGroupDatum;
-    const plugins2 = getPlugins2(config);
-    const scales2 = getScales2(config);
+    const plugins2 = getPlugins3(config);
+    const scales2 = getScales3(config);
     chart.data.config = config;
     chart.options.plugins = plugins2;
     chart.options.scales = scales2;
@@ -22565,9 +28541,9 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/updateData.js
-  function updateData2(chart, _results_, _config_, _bounds_, _groupMetadata_) {
+  function updateData3(chart, _results_, _config_, _bounds_, _groupMetadata_) {
     const config = updateConfig2(chart, _config_, false, false);
-    const datasets = structureData3(
+    const datasets = structureData4(
       _results_,
       config,
       _bounds_,
@@ -22584,7 +28560,7 @@ var gsmViz = (() => {
     checkInputs3(_results_, _config_, _bounds_, _groupMetadata_);
     const config = configure5(_config_, _results_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData3(
+    const datasets = structureData4(
       _results_,
       config,
       _bounds_,
@@ -22595,8 +28571,8 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins2(config),
-      scales: getScales2(config)
+      plugins: getPlugins3(config),
+      scales: getScales3(config)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -22614,7 +28590,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig2,
-      updateData: updateData2,
+      updateData: updateData3,
       updateOption,
       triggerTooltip
     };
@@ -22647,21 +28623,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults3 = {};
-    defaults3.x = "SnapshotDate";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    const defaults5 = {};
+    defaults5.x = "SnapshotDate";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.maintainAspectRatio = false;
-    defaults3.nSnapshots = 5;
-    defaults3.displayThresholds = false;
-    const config = configure2(defaults3, _config_, {
+    defaults5.maintainAspectRatio = false;
+    defaults5.nSnapshots = 5;
+    defaults5.displayThresholds = false;
+    const config = configure2(defaults5, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -22719,7 +28695,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/structureData.js
-  function structureData4(_data_, config) {
+  function structureData5(_data_, config) {
     const data = mutate3(_data_, config);
     const labels = data.map((d) => d.SnapshotDate);
     const pointBackgroundColor = data.map((d, i) => {
@@ -22843,7 +28819,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getPlugins.js
-  function getPlugins3(config, _data_) {
+  function getPlugins4(config, _data_) {
     const plugins2 = {
       annotation: annotations3(config, _data_),
       legend: legend3(config),
@@ -22853,7 +28829,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getScales.js
-  function getScales3(config, data) {
+  function getScales4(config, data) {
     const scales2 = getDefaultScales();
     scales2.x.display = false;
     scales2.x.type = config.xType;
@@ -22876,14 +28852,14 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/updateData.js
-  function updateData3(chart, _data_, _config_) {
+  function updateData4(chart, _data_, _config_) {
     chart.data.config = updateConfig3(chart, _config_);
-    chart.data.datasets = structureData4(_data_, chart.data.config);
-    chart.options.plugins = getPlugins3(
+    chart.data.datasets = structureData5(_data_, chart.data.config);
+    chart.options.plugins = getPlugins4(
       chart.data.config,
       chart.data.datasets[0].data
     );
-    chart.options.scales = getScales3(
+    chart.options.scales = getScales4(
       chart.data.config,
       chart.data.datasets[0].data
     );
@@ -22895,7 +28871,7 @@ var gsmViz = (() => {
     checkInputs4(_results_, _config_, _thresholds_);
     const config = configure6(_config_, _results_, _thresholds_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData4(_results_, config);
+    const datasets = structureData5(_results_, config);
     const options = {
       animation: false,
       layout: {
@@ -22904,8 +28880,8 @@ var gsmViz = (() => {
         }
       },
       maintainAspectRatio: config.maintainAspectRatio,
-      plugins: getPlugins3(config, datasets[0].data),
-      scales: getScales3(config, datasets[0].data)
+      plugins: getPlugins4(config, datasets[0].data),
+      scales: getScales4(config, datasets[0].data)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -22924,7 +28900,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig3,
-      updateData: updateData3,
+      updateData: updateData4,
       updateOption
     };
     return chart;
@@ -22969,39 +28945,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults3 = {};
-    defaults3.resultTooltipKeys = [
+    const defaults5 = {};
+    defaults5.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults3.GroupLevel = "Site";
-    defaults3.groupLabelKey = "InvestigatorLastName";
-    defaults3.groupParticipantCountKey = "ParticipantCount";
-    defaults3.groupTooltipKeys = null;
-    defaults3.dataType = "continuous";
-    defaults3.discreteUnit = null;
-    defaults3.distributionDisplay = "boxplot";
-    defaults3.x = "SnapshotDate";
-    defaults3.xType = "category";
-    defaults3.y = "Score";
-    defaults3.yType = "linear";
-    defaults3.color = "Flag";
-    defaults3.hoverCallback = (datum2) => {
+    defaults5.GroupLevel = "Site";
+    defaults5.groupLabelKey = "InvestigatorLastName";
+    defaults5.groupParticipantCountKey = "ParticipantCount";
+    defaults5.groupTooltipKeys = null;
+    defaults5.dataType = "continuous";
+    defaults5.discreteUnit = null;
+    defaults5.distributionDisplay = "boxplot";
+    defaults5.x = "SnapshotDate";
+    defaults5.xType = "category";
+    defaults5.y = "Score";
+    defaults5.yType = "linear";
+    defaults5.color = "Flag";
+    defaults5.hoverCallback = (datum2) => {
     };
-    defaults3.clickCallback = (datum2) => {
+    defaults5.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults3.aggregateLabel = "Study";
-    defaults3.annotateThreshold = _thresholds_ !== null;
-    defaults3.displayTitle = false;
-    defaults3.maintainAspectRatio = false;
+    defaults5.aggregateLabel = "Study";
+    defaults5.annotateThreshold = _thresholds_ !== null;
+    defaults5.displayTitle = false;
+    defaults5.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults3, _config_, {
+    const config = configure2(defaults5, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -23014,7 +28990,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults3.dataType === "discrete")
+    if (defaults5.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -23422,7 +29398,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/structureData.js
-  function structureData5(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function structureData6(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const { results, labels, thresholds: thresholds2, intervals } = mutate4(
       _results_,
@@ -23717,7 +29693,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/getPlugins.js
-  function getPlugins4(config) {
+  function getPlugins5(config) {
     return {
       annotation: {
         annotations: annotations4(config)
@@ -23729,7 +29705,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/getScales.js
-  function getScales4(config) {
+  function getScales5(config) {
     const scales2 = getDefaultScales();
     scales2.x.title.text = config.xLabel;
     scales2.x.type = config.xType;
@@ -23739,9 +29715,9 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/updateData.js
-  function updateData4(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function updateData5(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _thresholds_,
@@ -23758,8 +29734,8 @@ var gsmViz = (() => {
       _intervals_,
       _groupMetadata_
     };
-    chart.options.scales = getScales4(config);
-    chart.options.plugins = getPlugins4(config);
+    chart.options.scales = getScales5(config);
+    chart.options.plugins = getPlugins5(config);
     chart.update();
   }
 
@@ -23774,7 +29750,7 @@ var gsmViz = (() => {
       this.data.config.selectedGroupIDs
     );
     this.canvas.riskSignalSelected.data = this.data.config.selectedGroupDatum;
-    this.data.datasets = structureData5(
+    this.data.datasets = structureData6(
       this.data._results_,
       this.data.config,
       this.data._thresholds_,
@@ -23795,7 +29771,7 @@ var gsmViz = (() => {
     );
     const config = configure7(_config_, _results_, _thresholds_, _intervals_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _thresholds_,
@@ -23807,9 +29783,9 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins4(config),
+      plugins: getPlugins5(config),
       responsive: true,
-      scales: getScales4(config, _results_)
+      scales: getScales5(config, _results_)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -23830,7 +29806,7 @@ var gsmViz = (() => {
     });
     canvas.chart = chart;
     chart.helpers = {
-      updateData: updateData4.bind(chart),
+      updateData: updateData5.bind(chart),
       updateSelectedGroupIDs: updateSelectedGroupIDs.bind(chart)
     };
     return chart;
@@ -23844,10 +29820,13 @@ var gsmViz = (() => {
     CategoryScale,
     LinearScale,
     Violin,
-    ViolinController
+    ViolinController,
+    plugin
   );
   var gsmViz = {
     barChart,
+    bars,
+    facetBars,
     groupOverview,
     scatterPlot,
     sparkline,
@@ -23858,7 +29837,16 @@ var gsmViz = (() => {
 })();
 /*! Bundled license information:
 
+hammerjs/hammer.js:
+  (*! Hammer.JS - v2.0.7 - 2016-04-22
+   * http://hammerjs.github.io/
+   *
+   * Copyright (c) 2016 Jorik Tangelder;
+   * Licensed under the MIT license *)
+
 chart.js/dist/chunks/helpers.segment.mjs:
+chart.js/dist/chart.mjs:
+chart.js/dist/helpers.mjs:
   (*!
    * Chart.js v3.9.1
    * https://www.chartjs.org
@@ -23874,33 +29862,25 @@ chart.js/dist/chunks/helpers.segment.mjs:
    * Released under the MIT License
    *)
 
-chart.js/dist/chart.mjs:
-  (*!
-   * Chart.js v3.9.1
-   * https://www.chartjs.org
-   * (c) 2022 Chart.js Contributors
-   * Released under the MIT License
-   *)
-
-chart.js/dist/helpers.mjs:
-  (*!
-   * Chart.js v3.9.1
-   * https://www.chartjs.org
-   * (c) 2022 Chart.js Contributors
-   * Released under the MIT License
-   *)
-
 chartjs-plugin-annotation/dist/chartjs-plugin-annotation.esm.js:
   (*!
-  * chartjs-plugin-annotation v2.0.1
+  * chartjs-plugin-annotation v2.2.1
   * https://www.chartjs.org/chartjs-plugin-annotation/index
-   * (c) 2022 chartjs-plugin-annotation Contributors
+   * (c) 2023 chartjs-plugin-annotation Contributors
+   * Released under the MIT License
+   *)
+
+chartjs-plugin-zoom/dist/chartjs-plugin-zoom.esm.js:
+  (*!
+  * chartjs-plugin-zoom v2.2.0
+  * https://www.chartjs.org/chartjs-plugin-zoom/2.2.0/
+   * (c) 2016-2024 chartjs-plugin-zoom Contributors
    * Released under the MIT License
    *)
 
 chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js:
   (*!
-   * chartjs-plugin-datalabels v2.1.0
+   * chartjs-plugin-datalabels v2.2.0
    * https://chartjs-plugin-datalabels.netlify.app
    * (c) 2017-2022 chartjs-plugin-datalabels contributors
    * Released under the MIT license
