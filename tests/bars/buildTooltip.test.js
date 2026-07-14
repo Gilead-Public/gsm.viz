@@ -1,0 +1,540 @@
+import buildTooltip from '../../src/bars/getPlugins/buildTooltip.js';
+
+// Minimal Chart.js tooltip context factory.
+// Simulates a stacked bar with two fill groups (A=2, B=4) in a single category.
+function makeContext({ datasetIndex = 0, datasets, indexAxis = 'x' } = {}) {
+    const defaultDatasets = [
+        {
+            label: 'A',
+            data: [
+                {
+                    x: 'cat1',
+                    y: 2,
+                    _fill: 'A',
+                    _datum: { x: 'cat1', fill: 'A', y: 2 },
+                },
+            ],
+        },
+        {
+            label: 'B',
+            data: [
+                {
+                    x: 'cat1',
+                    y: 4,
+                    _fill: 'B',
+                    _datum: { x: 'cat1', fill: 'B', y: 4 },
+                },
+            ],
+        },
+    ];
+    const ds = datasets || defaultDatasets;
+    const chart = {
+        options: { indexAxis },
+        data: { datasets: ds },
+        isDatasetVisible: () => true,
+    };
+    return {
+        chart,
+        dataset: ds[datasetIndex],
+        dataIndex: 0,
+        parsed: { x: 'cat1', y: ds[datasetIndex].data[0].y },
+    };
+}
+
+describe('bars/getPlugins/buildTooltip', () => {
+    describe('existing pass-through behavior', () => {
+        test('enabled is true by default', () => {
+            const result = buildTooltip({}, 'stack');
+            expect(result.enabled).toBe(true);
+        });
+
+        test('passes through arbitrary Chart.js tooltip options', () => {
+            const result = buildTooltip(
+                { mode: 'index', intersect: false },
+                'stack'
+            );
+            expect(result.mode).toBe('index');
+            expect(result.intersect).toBe(false);
+        });
+
+        test('preserves caller-provided callbacks.label for any position', () => {
+            const customLabel = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { callbacks: { label: customLabel } },
+                'fill'
+            );
+            expect(result.callbacks.label).toBe(customLabel);
+        });
+
+        test('injects fillLabelCallback for position fill when no label callback is set', () => {
+            const result = buildTooltip({}, 'fill');
+            expect(typeof result.callbacks?.label).toBe('function');
+            // The fill callback returns a percentage string
+            const ctx = makeContext();
+            const label = result.callbacks.label(ctx);
+            expect(label).toMatch(/%/);
+        });
+
+        test('no label callback injected for non-fill position without format/formatter', () => {
+            const result = buildTooltip({}, 'stack');
+            expect(result.callbacks?.label).toBeUndefined();
+        });
+
+        test('no label callback injected for layer position without format/formatter', () => {
+            const result = buildTooltip({}, 'layer');
+            expect(result.callbacks?.label).toBeUndefined();
+        });
+    });
+
+    describe('tooltip.format', () => {
+        test('format: count injects a label callback', () => {
+            const result = buildTooltip({ format: 'count' }, 'stack');
+            expect(typeof result.callbacks?.label).toBe('function');
+        });
+
+        test('format: count returns count with dataset label prefix', () => {
+            const result = buildTooltip({ format: 'count' }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A: 2
+            expect(result.callbacks.label(ctx)).toBe('A: 2');
+        });
+
+        test('format: count — no prefix when dataset has no label', () => {
+            const result = buildTooltip({ format: 'count' }, 'stack');
+            const datasets = [{ data: [{ x: 'cat1', y: 5 }] }];
+            const ctx = makeContext({ datasetIndex: 0, datasets });
+            expect(result.callbacks.label(ctx)).toBe('5');
+        });
+
+        test('format: percent returns percentage of category total', () => {
+            const result = buildTooltip({ format: 'percent' }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6 → 33.3%
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 33.3%');
+        });
+
+        test('format: count+percent returns count and percentage', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6 → 33.3%
+            expect(result.callbacks.label(ctx)).toBe('A: 2 (33.3%)');
+        });
+
+        test('format: percent+count returns percentage and count', () => {
+            const result = buildTooltip({ format: 'percent+count' }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6 → 33.3%
+            expect(result.callbacks.label(ctx)).toBe('A: 33.3% (2)');
+        });
+
+        test('format works for second dataset', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContext({ datasetIndex: 1 }); // B=4, total=6 → 66.7%
+            expect(result.callbacks.label(ctx)).toBe('B: 4 (66.7%)');
+        });
+
+        test('format works for horizontal bars (indexAxis y)', () => {
+            const datasets = [
+                { label: 'A', data: [{ y: 'cat1', x: 2, _fill: 'A' }] },
+                { label: 'B', data: [{ y: 'cat1', x: 4, _fill: 'B' }] },
+            ];
+            const ctx = {
+                chart: {
+                    options: { indexAxis: 'y' },
+                    data: { datasets },
+                    isDatasetVisible: () => true,
+                },
+                dataset: datasets[0],
+                dataIndex: 0,
+                parsed: { y: 'cat1', x: 2 },
+            };
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            expect(result.callbacks.label(ctx)).toBe('A: 2 (33.3%)');
+        });
+
+        test('format: count+percent uses _rawY for fill-normalized bars', () => {
+            // Simulate a fill-normalized bar: rendered y=33.33, _rawY=2
+            const datasets = [
+                {
+                    label: 'A',
+                    data: [{ x: 'cat1', y: 33.33, _rawY: 2, _fill: 'A' }],
+                },
+                {
+                    label: 'B',
+                    data: [{ x: 'cat1', y: 66.67, _rawY: 4, _fill: 'B' }],
+                },
+            ];
+            const ctx = {
+                chart: {
+                    options: { indexAxis: 'x' },
+                    data: { datasets },
+                    isDatasetVisible: () => true,
+                },
+                dataset: datasets[0],
+                dataIndex: 0,
+                parsed: { x: 'cat1', y: 33.33 },
+            };
+            const result = buildTooltip({ format: 'count+percent' }, 'fill');
+            // Should use _rawY=2, total=6 → 33.3%
+            expect(result.callbacks.label(ctx)).toBe('A: 2 (33.3%)');
+        });
+
+        test('format strips format key from forwarded Chart.js options', () => {
+            const result = buildTooltip(
+                { format: 'count', mode: 'index' },
+                'stack'
+            );
+            expect(result.format).toBeUndefined();
+            expect(result.mode).toBe('index');
+        });
+
+        test('callbacks.label takes precedence over format', () => {
+            const customLabel = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { format: 'count', callbacks: { label: customLabel } },
+                'stack'
+            );
+            expect(result.callbacks.label).toBe(customLabel);
+        });
+    });
+
+    describe('tooltip.formatter', () => {
+        test('formatter injects a label callback', () => {
+            const formatter = jest.fn((count) => `count=${count}`);
+            const result = buildTooltip({ formatter }, 'stack');
+            expect(typeof result.callbacks?.label).toBe('function');
+        });
+
+        test('formatter callback receives count as first argument', () => {
+            let capturedCount;
+            const formatter = (count) => {
+                capturedCount = count;
+                return '';
+            };
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2
+            result.callbacks.label(ctx);
+            expect(capturedCount).toBe(2);
+        });
+
+        test('formatter callback receives context as second argument', () => {
+            let capturedCtx;
+            const formatter = (_count, ctx) => {
+                capturedCtx = ctx;
+                return '';
+            };
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 });
+            result.callbacks.label(ctx);
+            expect(capturedCtx).toBe(ctx);
+        });
+
+        test('formatter callback receives details with percent, total, fill, datum', () => {
+            let capturedDetails;
+            const formatter = (_count, _ctx, details) => {
+                capturedDetails = details;
+                return '';
+            };
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6
+            result.callbacks.label(ctx);
+            expect(capturedDetails.percent).toBeCloseTo(33.33, 1);
+            expect(capturedDetails.total).toBe(6);
+            expect(capturedDetails.fill).toBe('A');
+            expect(capturedDetails.datum).toEqual({
+                x: 'cat1',
+                fill: 'A',
+                y: 2,
+            });
+        });
+
+        test('formatter return value is used as the label', () => {
+            const formatter = (count, _ctx, { percent }) =>
+                `${count} subjects — ${percent.toFixed(0)}% of site`;
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContext({ datasetIndex: 0 }); // A=2, total=6
+            expect(result.callbacks.label(ctx)).toBe(
+                '2 subjects — 33% of site'
+            );
+        });
+
+        test('formatter takes precedence over format', () => {
+            let formatterCalled = false;
+            const formatter = () => {
+                formatterCalled = true;
+                return 'fmt';
+            };
+            const result = buildTooltip(
+                { format: 'count', formatter },
+                'stack'
+            );
+            const ctx = makeContext();
+            result.callbacks.label(ctx);
+            expect(formatterCalled).toBe(true);
+        });
+
+        test('callbacks.label takes precedence over formatter', () => {
+            const customLabel = jest.fn(() => 'custom');
+            const formatter = jest.fn(() => 'fmt');
+            const result = buildTooltip(
+                { formatter, callbacks: { label: customLabel } },
+                'stack'
+            );
+            expect(result.callbacks.label).toBe(customLabel);
+        });
+
+        test('formatter strips formatter key from forwarded Chart.js options', () => {
+            const formatter = jest.fn();
+            const result = buildTooltip({ formatter, mode: 'index' }, 'stack');
+            expect(result.formatter).toBeUndefined();
+            expect(result.mode).toBe('index');
+        });
+    });
+
+    describe('stable percentages when legend items are hidden', () => {
+        // When dataset B is toggled off via the legend, the percentage for A
+        // must still be computed against the full category total (A=2, B=4 → total=6),
+        // not just the visible subset (A=2 → total=2).
+        function makeContextWithHiddenDataset({ datasetIndex = 0 } = {}) {
+            const datasets = [
+                {
+                    label: 'A',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 2,
+                            _fill: 'A',
+                            _datum: { x: 'cat1', fill: 'A', y: 2 },
+                        },
+                    ],
+                },
+                {
+                    label: 'B',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 4,
+                            _fill: 'B',
+                            _datum: { x: 'cat1', fill: 'B', y: 4 },
+                        },
+                    ],
+                },
+            ];
+            const chart = {
+                options: { indexAxis: 'x' },
+                data: { datasets },
+                // Dataset B (index 1) is hidden via legend toggle
+                isDatasetVisible: (i) => i !== 1,
+            };
+            return {
+                chart,
+                dataset: datasets[datasetIndex],
+                dataIndex: 0,
+                parsed: { x: 'cat1', y: datasets[datasetIndex].data[0].y },
+            };
+        }
+
+        test('format: percent — hidden dataset does not change percentage', () => {
+            const result = buildTooltip({ format: 'percent' }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 }); // A=2, total should be 6 (not 2)
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 33.3%'); // 2/6 = 33.3%, not 2/2 = 100%
+        });
+
+        test('format: count+percent — hidden dataset does not change percentage', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 });
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 2 (33.3%)'); // total=6, not total=2
+        });
+
+        test('formatter — hidden dataset does not change total or percent', () => {
+            const formatter = jest.fn(
+                (_count, _ctx, { percent, total }) =>
+                    `${total} / ${percent.toFixed(1)}%`
+            );
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContextWithHiddenDataset({ datasetIndex: 0 });
+            result.callbacks.label(ctx);
+            expect(formatter).toHaveBeenCalledWith(
+                2,
+                expect.anything(),
+                expect.objectContaining({
+                    total: 6,
+                    percent: expect.closeTo(33.3, 0),
+                })
+            );
+        });
+    });
+
+    describe('stable percentages when dynamic category axis clears dataset data', () => {
+        // When dynamicCategoryLegendOnClick hides a dataset, it sets dataset.data = []
+        // and stores the original points in dataset._backup_. getRawTotal must read
+        // _backup_ (not the empty data array) to include the hidden group in the total.
+        function makeContextWithBackupDataset({ datasetIndex = 0 } = {}) {
+            const backupPointB = {
+                x: 'cat1',
+                y: 4,
+                _fill: 'B',
+                _datum: { x: 'cat1', fill: 'B', y: 4 },
+            };
+            const datasets = [
+                {
+                    label: 'A',
+                    data: [
+                        {
+                            x: 'cat1',
+                            y: 2,
+                            _fill: 'A',
+                            _datum: { x: 'cat1', fill: 'A', y: 2 },
+                        },
+                    ],
+                },
+                {
+                    label: 'B',
+                    // data cleared by dynamicCategoryLegendOnClick
+                    data: [],
+                    // original data stored as _backup_
+                    _backup_: [backupPointB],
+                },
+            ];
+            const chart = {
+                options: { indexAxis: 'x' },
+                data: { datasets },
+                isDatasetVisible: (i) => i !== 1,
+            };
+            return {
+                chart,
+                dataset: datasets[datasetIndex],
+                dataIndex: 0,
+                parsed: {
+                    x: 'cat1',
+                    y: datasets[datasetIndex].data[0]?.y ?? 0,
+                },
+            };
+        }
+
+        test('format: count+percent — _backup_ data counts toward total', () => {
+            const result = buildTooltip({ format: 'count+percent' }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 }); // A=2, B backup=4 → total=6
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 2 (33.3%)'); // 2/6, not 2/2 = 100%
+        });
+
+        test('format: percent — _backup_ data counts toward total', () => {
+            const result = buildTooltip({ format: 'percent' }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 });
+            const label = result.callbacks.label(ctx);
+            expect(label).toBe('A: 33.3%');
+        });
+
+        test('formatter — _backup_ data included in total and percent', () => {
+            const formatter = jest.fn(
+                (_count, _ctx, { percent, total }) =>
+                    `${total} / ${percent.toFixed(1)}%`
+            );
+            const result = buildTooltip({ formatter }, 'stack');
+            const ctx = makeContextWithBackupDataset({ datasetIndex: 0 });
+            result.callbacks.label(ctx);
+            expect(formatter).toHaveBeenCalledWith(
+                2,
+                expect.anything(),
+                expect.objectContaining({
+                    total: 6,
+                    percent: expect.closeTo(33.3, 0),
+                })
+            );
+        });
+    });
+
+    describe('stat-based fill label injection', () => {
+        test('injects fillLabelCallback when stat is percent (not just position fill)', () => {
+            const result = buildTooltip({}, 'dodge', 'percent');
+            expect(typeof result.callbacks?.label).toBe('function');
+            const ctx = makeContext();
+            const label = result.callbacks.label(ctx);
+            expect(label).toMatch(/%/);
+        });
+
+        test('no fill label injected when stat is count', () => {
+            const result = buildTooltip({}, 'dodge', 'count');
+            expect(result.callbacks?.label).toBeUndefined();
+        });
+
+        test('stat percent with position stack injects fill label', () => {
+            const result = buildTooltip({}, 'stack', 'percent');
+            expect(typeof result.callbacks?.label).toBe('function');
+        });
+
+        test('callbacks.label still takes precedence over stat percent', () => {
+            const customLabel = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { callbacks: { label: customLabel } },
+                'dodge',
+                'percent'
+            );
+            expect(result.callbacks.label).toBe(customLabel);
+        });
+    });
+
+    describe('tooltip title injection for truncation', () => {
+        test('injects callbacks.title when ticks.maxLength is set', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            expect(typeof result.callbacks?.title).toBe('function');
+        });
+
+        test('title callback returns item.label (full category label)', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            const items = [{ label: 'Full Category Label' }];
+            expect(result.callbacks.title(items)).toBe('Full Category Label');
+        });
+
+        test('title callback returns empty string for empty items array', () => {
+            const result = buildTooltip({}, 'stack', 'count', {
+                maxLength: 10,
+            });
+            expect(result.callbacks.title([])).toBe('');
+        });
+
+        test('does not inject title when maxLength is not set', () => {
+            const result = buildTooltip({}, 'stack', 'count', {});
+            expect(result.callbacks?.title).toBeUndefined();
+        });
+
+        test('does not inject title when ticks is undefined', () => {
+            const result = buildTooltip({}, 'stack', 'count', undefined);
+            expect(result.callbacks?.title).toBeUndefined();
+        });
+
+        test('does not override user-supplied callbacks.title', () => {
+            const customTitle = jest.fn(() => 'custom');
+            const result = buildTooltip(
+                { callbacks: { title: customTitle } },
+                'stack',
+                'count',
+                { maxLength: 10 }
+            );
+            expect(result.callbacks.title).toBe(customTitle);
+        });
+
+        test('title callback coexists with format label callback', () => {
+            const result = buildTooltip(
+                { format: 'count' },
+                'stack',
+                'count',
+                { maxLength: 10 }
+            );
+            expect(typeof result.callbacks.title).toBe('function');
+            expect(typeof result.callbacks.label).toBe('function');
+        });
+
+        test('title callback coexists with fill label callback', () => {
+            const result = buildTooltip({}, 'fill', 'percent', {
+                maxLength: 5,
+            });
+            expect(typeof result.callbacks.title).toBe('function');
+            expect(typeof result.callbacks.label).toBe('function');
+        });
+    });
+});

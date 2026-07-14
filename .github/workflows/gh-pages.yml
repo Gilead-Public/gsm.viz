@@ -1,10 +1,29 @@
-# This workflow will build and push a new version of the site to the gh-pages branch
-# after a new version of the site is built and pushed to the master branch.
-# Main/dev pushes deploy to root, PRs to dev deploy to /pr-{number} subdirectories.
-# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-html-sites
+# =============================================================================
+# Build and Deploy — GitHub Pages
+# =============================================================================
+#
+# Deploys the `examples/` directory to the `gh-pages` branch. Three deployment
+# targets exist depending on the trigger:
+#
+#   1. Root (/)          — production; updated on push/merge to `main`
+#   2. /dev              — dev staging; updated on push/merge to `dev`
+#   3. /pr-{number}      — ephemeral PR previews for PRs targeting `dev`
+#
+# PR preview lifecycle:
+#   - Created/updated when a PR targeting `dev` is opened or pushed to
+#   - A comment with the preview URL is posted on the first deploy and
+#     updated in-place on subsequent pushes (no duplicate comments)
+#   - Cleaned up (folder deleted from gh-pages) when the PR is closed
+#
+# =============================================================================
 
 name: Build and Deploy
 
+# ---------------------------------------------------------------------------
+# Triggers
+# ---------------------------------------------------------------------------
+# - pull_request: fires on PR open/update/reopen/close against dev or main
+# - push: fires on direct pushes (including merged PRs) to dev or main
 on:
   pull_request:
     branches:
@@ -15,8 +34,14 @@ on:
     branches:
       - main
       - dev
-    # This will only trigger if someone has direct push access (admins/maintainers)
 
+# ---------------------------------------------------------------------------
+# Permissions
+# ---------------------------------------------------------------------------
+# - contents:write       — push to gh-pages branch
+# - pages:write          — GitHub Pages deployment metadata
+# - id-token:write       — OIDC token for Pages (required by newer Pages)
+# - pull-requests:write  — post/update PR comments with preview URLs
 permissions:
   contents: write
   pages: write
@@ -25,30 +50,91 @@ permissions:
 
 jobs:
   build-and-deploy:
+    # Skip builds for pull requests originating from forks. Fork PRs have
+    # downgraded tokens and cannot deploy to gh-pages, so running the full
+    # build just executes untrusted code for no benefit.
+    if: >-
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    # Concurrency key prevents parallel deploys to the same ref, which would
+    # race on the gh-pages branch and potentially corrupt it.
     concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
 
     steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout source code
+      # -----------------------------------------------------------------------
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
+      # -----------------------------------------------------------------------
+      # 2. Set up Node.js with npm caching for faster installs
+      # -----------------------------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
+      # -----------------------------------------------------------------------
+      # 3. Install dependencies and run the full build pipeline
+      #    (bundle → format → test → link-bundles)
+      # -----------------------------------------------------------------------
       - name: Install and Build 🔧
         run: |
           npm ci
           npm run build
 
+      # -----------------------------------------------------------------------
+      # 4. Stamp the deployment timestamp into examples/index.html
+      #    The HTML contains a DEPLOYMENT_TIMESTAMP_PLACEHOLDER string that
+      #    gets replaced with the current ISO timestamp so users can see
+      #    when the site was last deployed.
+      # -----------------------------------------------------------------------
       - name: Update deployment timestamp
         run: |
-          # Update the timestamp in index.html
-          node -e "const fs=require('fs'); const html=fs.readFileSync('examples/index.html','utf8'); fs.writeFileSync('examples/index.html', html.replace('DEPLOYMENT_TIMESTAMP_PLACEHOLDER', new Date().toISOString()));"
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('examples/index.html', 'utf8');
+            fs.writeFileSync(
+              'examples/index.html',
+              html.replace('DEPLOYMENT_TIMESTAMP_PLACEHOLDER', new Date().toISOString())
+            );
+          "
 
-      - name: Deploy to main branch (root) 🚀
+      # -----------------------------------------------------------------------
+      # 5. Ensure .nojekyll lives at the gh-pages ROOT so Jekyll never strips
+      #    underscore-prefixed files (e.g. Docsify's _sidebar.md).
+      #
+      #    The main-branch deploy already lands examples/.nojekyll at the repo
+      #    root, but dev and PR-preview deploys target subdirectories and leave
+      #    the root untouched.  We fix that by deploying a single-file folder
+      #    containing only .nojekyll to the root on every non-cleanup run.
+      # -----------------------------------------------------------------------
+      - name: Prepare .nojekyll root folder
+        if: github.event.action != 'closed'
+        run: mkdir gh-root && touch gh-root/.nojekyll
+
+      - name: Plant .nojekyll at gh-pages root 🔒
+        if: github.event.action != 'closed'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: gh-root
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
+
+      # -----------------------------------------------------------------------
+      # 6. PRODUCTION DEPLOY — push/merge to main → deploy to root (/)
+      #
+      #    Triggers on:
+      #      a) A PR merged into main (pull_request.closed + merged == true)
+      #      b) A direct push to main
+      #
+      #    clean:false preserves other deployments (/dev, /pr-*) that live
+      #    alongside the root content on the gh-pages branch.
+      # -----------------------------------------------------------------------
+      - name: Deploy to main (root /) 🚀
         if: |
           (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main') ||
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
@@ -58,7 +144,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
 
-      - name: Deploy to dev branch deployment 🚀
+      # -----------------------------------------------------------------------
+      # 7. DEV STAGING DEPLOY — push/merge to dev → deploy to /dev
+      #
+      #    Same logic as production but targets the /dev subdirectory.
+      #    This gives a stable preview of the dev branch at:
+      #      https://<owner>.github.io/<repo>/dev/
+      # -----------------------------------------------------------------------
+      - name: Deploy to dev (/dev) 🚀
         if: |
           (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev') ||
           (github.event_name == 'push' && github.ref == 'refs/heads/dev')
@@ -69,8 +162,21 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
 
-      - name: Deploy to PR subdirectory (open PRs to dev) 🚀
-        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.action != 'closed'
+      # -----------------------------------------------------------------------
+      # 8. PR PREVIEW DEPLOY — open/updated PRs to dev → deploy to /pr-{number}
+      #
+      #    Every PR targeting dev gets its own subdirectory so reviewers can
+      #    preview changes at:
+      #      https://<owner>.github.io/<repo>/pr-{number}/
+      #
+      #    Runs on opened, synchronize (new push), and reopened events.
+      #    Does NOT run on 'closed' — that's handled by the cleanup step below.
+      # -----------------------------------------------------------------------
+      - name: Deploy PR preview (/pr-${{ github.event.number }}) 🚀
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.base.ref == 'dev' &&
+          github.event.action != 'closed'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: examples
@@ -78,35 +184,100 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           clean: false
 
-      - name: Comment PR with deployment URL
-        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.action != 'closed'
+      # -----------------------------------------------------------------------
+      # 9. POST/UPDATE PR COMMENT with the preview URL
+      #
+      #    Uses a find-and-update pattern: on the first deploy it creates a
+      #    comment; on subsequent pushes it finds the existing comment (by
+      #    matching a hidden marker) and updates it instead of creating
+      #    duplicates. The comment includes the deployment timestamp so
+      #    reviewers can tell when it was last refreshed.
+      # -----------------------------------------------------------------------
+      - name: Comment PR with deployment URL 💬
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.base.ref == 'dev' &&
+          github.event.action != 'closed'
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
             const prNumber = context.payload.number;
             const deploymentUrl = `https://${owner}.github.io/${repo}/pr-${prNumber}/`;
-            
-            github.rest.issues.createComment({
+            const timestamp = new Date().toISOString();
+
+            // Hidden HTML marker used to identify our comment on future runs.
+            const marker = '<!-- gh-pages-preview-comment -->';
+
+            const body = [
+              marker,
+              `🚀 **Preview Deployment Ready!**`,
+              ``,
+              `Your changes have been deployed to: ${deploymentUrl}`,
+              ``,
+              `_Last updated: ${timestamp}_`,
+            ].join('\n');
+
+            // Search for an existing preview comment on this PR.
+            const { data: comments } = await github.rest.issues.listComments({
               owner,
               repo,
               issue_number: prNumber,
-              body: `🚀 **Preview Deployment Ready!**\n\nYour changes have been deployed to: ${deploymentUrl}\n\n_This preview will be updated automatically with each new commit to this PR._`
             });
+            const existing = comments.find(c => c.body.includes(marker));
 
-      - name: Clean up PR deployment on close 🧹
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.base.ref == 'dev'
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: examples
-          target-folder: pr-${{ github.event.number }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          clean: true
-          clean-exclude: |
-            dev/
-            index.html
-            *.js
-            *.css
-            *.map
-          # This will remove the pr-{number} folder entirely
+            if (existing) {
+              // Update the existing comment in place (no duplicates).
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              // First deploy — create a new comment.
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
 
+      # -----------------------------------------------------------------------
+      # 10. CLEAN UP PR PREVIEW on close
+      #
+      #    When a PR targeting dev is closed (merged or not), we delete the
+      #    /pr-{number} directory from the gh-pages branch.
+      #
+      #    Strategy: check out the gh-pages branch, remove the directory,
+      #    and force-push. The deploy action can't do this — it deploys
+      #    content *to* a folder but can't remove one entirely.
+      # -----------------------------------------------------------------------
+      - name: Clean up PR preview on close 🧹
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.base.ref == 'dev'
+        run: |
+          PR_FOLDER="pr-${{ github.event.number }}"
+
+          # Clone only the gh-pages branch (shallow for speed).
+          git clone --depth 1 --single-branch --branch gh-pages \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            gh-pages-cleanup
+
+          cd gh-pages-cleanup
+
+          # If the PR folder doesn't exist, nothing to do.
+          if [ ! -d "$PR_FOLDER" ]; then
+            echo "No $PR_FOLDER directory found on gh-pages — nothing to clean up."
+            exit 0
+          fi
+
+          # Remove the PR preview directory and commit the deletion.
+          git rm -rf "$PR_FOLDER"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: remove preview for PR #${{ github.event.number }}"
+          git push origin gh-pages

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bars</title>
+    <meta charset="utf-8" />
+
+    <link rel="stylesheet" href="../examples.css" />
+    <style>
+      .tab-nav {
+        display: flex;
+        gap: 4px;
+        padding: 8px 16px 0;
+        border-bottom: 2px solid #ccc;
+      }
+      .tab-nav button {
+        padding: 6px 16px;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        background: #f5f5f5;
+        cursor: pointer;
+        border-radius: 4px 4px 0 0;
+        font-size: 14px;
+      }
+      .tab-nav button.active {
+        background: #fff;
+        border-bottom: 2px solid #fff;
+        margin-bottom: -2px;
+        font-weight: bold;
+      }
+      .tab-panel {
+        display: none;
+      }
+      .tab-panel.active {
+        display: block;
+      }
+      #kri-output {
+        display: flex;
+        gap: 0;
+        margin-top: 12px;
+        border-top: 1px solid #e0e0e0;
+      }
+      #kri-hover-table-panel,
+      #kri-scatter-panel {
+        padding: 10px 16px;
+      }
+      #kri-hover-table-panel {
+        flex: 1 1 33.33%;
+        border-right: 1px solid #e0e0e0;
+        min-width: 0;
+      }
+      #kri-scatter-panel {
+        flex: 2 1 66.67%;
+        min-width: 0;
+      }
+      .kri-panel-label {
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #888;
+        margin: 0 0 8px;
+      }
+      #kri-hover-table {
+        font-size: 13px;
+      }
+      #kri-hover-table table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      #kri-hover-table th,
+      #kri-hover-table td {
+        border: 1px solid #ddd;
+        padding: 4px 8px;
+        text-align: left;
+      }
+      #kri-hover-table th {
+        background: #f0f0f0;
+        font-weight: bold;
+      }
+      #kri-hover-table tr:nth-child(even) {
+        background: #fafafa;
+      }
+      #kri-scatter-container {
+        height: 400px;
+      }
+    </style>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="../index.js"></script>
+
+    <script src="../data/helpers/filterOnMetricID.js"></script>
+    <script src="../data/helpers/selectMetricID.js"></script>
+    <script src="../groupTooltipKeys.js"></script>
+  </head>
+
+  <body>
+    <nav class="tab-nav">
+      <button class="active" data-tab="retention">Grouped</button>
+      <button data-tab="gini">Continuous</button>
+      <button data-tab="kri-facet">Faceted</button>
+      <button data-tab="ae-prevalence">Layered</button>
+      <button data-tab="kri-site">Reference Lines</button>
+      <button data-tab="kri">Callbacks</button>
+    </nav>
+
+    <!-- Retention tab -->
+    <div id="retention" class="tab-panel active gsm-viz--example">
+      <div id="retention-controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="retention-orientation">
+            <option value="vertical">Vertical</option>
+            <option value="horizontal" selected>Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dynamic Sizing</legend>
+          <select id="retention-dynamic-sizing">
+            <option value="no">No</option>
+            <option value="yes" selected>Yes</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dynamic Category Axis</legend>
+          <select id="retention-dynamic-category-axis">
+            <option value="no">No</option>
+            <option value="yes" selected>Yes</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Annotations</legend>
+          <select id="retention-annotations">
+            <option value="none">None</option>
+            <option value="total-outside" selected>Total (outside)</option>
+            <option value="total-inside">Total (inside)</option>
+            <option value="segment-outside">Segment (outside)</option>
+            <option value="segment-inside">Segment (inside)</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Top N Categories</legend>
+          <input
+            type="number"
+            id="retention-n-categories"
+            min="1"
+            step="1"
+            placeholder="All"
+          />
+        </fieldset>
+
+        <fieldset>
+          <legend>Bar Label</legend>
+          <select id="retention-bar-label">
+            <option value="none">None</option>
+            <option value="count">Count</option>
+            <option value="percent">Percent</option>
+            <option value="fill">Fill</option>
+            <option value="category">Category</option>
+            <option value="custom">Custom</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Select Category</legend>
+          <select id="retention-select-category">
+            <option value="">— None —</option>
+          </select>
+        </fieldset>
+
+        <button
+          id="retention-export-btn"
+          class="export-btn"
+          type="button"
+          title="Export PNG"
+          aria-label="Export PNG"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+            <path d="M14 14H2v-2h12v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="retention-container"></div>
+    </div>
+
+    <!-- KRI tab -->
+    <div id="kri" class="tab-panel gsm-viz--example">
+      <div id="controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="orientation">
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dynamic Sizing</legend>
+          <select id="dynamic-sizing">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dynamic Category Axis</legend>
+          <select id="dynamic-category-axis">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Annotations</legend>
+          <select id="kri-annotations">
+            <option value="none">None</option>
+            <option value="total-outside" selected>Total (outside)</option>
+            <option value="total-inside">Total (inside)</option>
+            <option value="segment-outside">Segment (outside)</option>
+            <option value="segment-inside">Segment (inside)</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Top N Categories</legend>
+          <input
+            type="number"
+            id="kri-n-categories"
+            min="1"
+            step="1"
+            placeholder="All"
+          />
+        </fieldset>
+
+        <fieldset>
+          <legend>Fill</legend>
+          <select id="fill">
+            <option value="">None</option>
+            <option value="Flag" selected>Flag</option>
+          </select>
+        </fieldset>
+
+        <button
+          id="kri-export-btn"
+          class="export-btn"
+          type="button"
+          title="Export PNG"
+          aria-label="Export PNG"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+            <path d="M14 14H2v-2h12v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="kri-container">
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div id="kri-output">
+        <div id="kri-hover-table-panel">
+          <p class="kri-panel-label">Hover for Data</p>
+          <div id="kri-hover-table"></div>
+        </div>
+        <div id="kri-scatter-panel">
+          <p class="kri-panel-label">Click for Scatter Plot</p>
+          <div id="kri-scatter-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- World Gini Index tab -->
+    <div id="gini" class="tab-panel gsm-viz--example">
+      <div id="gini-controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="gini-orientation">
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dynamic Sizing</legend>
+          <select id="gini-dynamic-sizing">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Annotations</legend>
+          <select id="gini-annotations">
+            <option value="none">None</option>
+            <option value="total-outside" selected>Total (outside)</option>
+            <option value="total-inside">Total (inside)</option>
+            <option value="segment-outside">Segment (outside)</option>
+            <option value="segment-inside">Segment (inside)</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Top N Categories</legend>
+          <input
+            type="number"
+            id="gini-n-categories"
+            min="1"
+            step="1"
+            placeholder="All"
+          />
+        </fieldset>
+
+        <fieldset>
+          <legend>Year</legend>
+          <select id="gini-year"></select>
+        </fieldset>
+
+        <button
+          id="gini-export-btn"
+          class="export-btn"
+          type="button"
+          title="Export PNG"
+          aria-label="Export PNG"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+            <path d="M14 14H2v-2h12v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="gini-container"></div>
+    </div>
+
+    <!-- KRI by Site tab -->
+    <div id="kri-site" class="tab-panel gsm-viz--example">
+      <div id="kri-site-controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="kri-site-orientation">
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Metric</legend>
+          <select id="kri-site-metric"></select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Y-axis</legend>
+          <select id="kri-site-y-axis">
+            <option value="Score" selected>Score</option>
+            <option value="Numerator">Numerator</option>
+            <option value="Metric">Metric</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Threshold</legend>
+          <input
+            type="checkbox"
+            id="kri-site-threshold"
+            name="Threshold"
+            checked
+          />
+        </fieldset>
+
+        <button
+          id="kri-site-export-btn"
+          class="export-btn"
+          type="button"
+          title="Export PNG"
+          aria-label="Export PNG"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+            <path d="M14 14H2v-2h12v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="kri-site-container"></div>
+    </div>
+
+    <!-- KRI Facet tab -->
+    <div id="kri-facet" class="tab-panel gsm-viz--example">
+      <div id="kri-facet-controls">
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="kri-facet-orientation">
+            <option value="vertical" selected>Vertical</option>
+            <option value="horizontal">Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Site</legend>
+          <select id="kri-facet-site">
+            <option value="">All Sites</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>X-axis Scale</legend>
+          <select id="kri-facet-x-scale">
+            <option value="constant">Constant</option>
+            <option value="free" selected>Free</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Y-axis Scale</legend>
+          <select id="kri-facet-y-scale">
+            <option value="constant" selected>Constant</option>
+            <option value="free">Free</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Y-axis</legend>
+          <select id="kri-facet-y-axis">
+            <option value="Score" selected>Score</option>
+            <option value="Numerator">Numerator</option>
+            <option value="Metric">Metric</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Threshold</legend>
+          <input
+            type="checkbox"
+            id="kri-facet-threshold"
+            name="Threshold"
+            checked
+          />
+        </fieldset>
+
+        <fieldset>
+          <legend>Flag Filter</legend>
+          <select id="kri-facet-flag-filter" multiple size="5">
+            <option value="-2" selected>-2</option>
+            <option value="-1" selected>-1</option>
+            <option value="0" selected>0</option>
+            <option value="1" selected>1</option>
+            <option value="2" selected>2</option>
+          </select>
+        </fieldset>
+      </div>
+
+      <div
+        id="kri-facet-status"
+        style="
+          font-size: 13px;
+          color: #555;
+          min-height: 20px;
+          padding: 4px 0 4px 2px;
+        "
+      ></div>
+      <div id="kri-facet-container"></div>
+    </div>
+
+    <!-- AE Prevalence (Layered) tab -->
+    <div id="ae-prevalence" class="tab-panel gsm-viz--example">
+      <div id="ae-controls">
+        <fieldset>
+          <legend>Variable</legend>
+          <select id="ae-variable">
+            <option value="AEDECOD" selected>Dictionary-Derived Term</option>
+            <option value="AEBODSYS">Body System or Organ Class</option>
+            <option value="AESEV">Severity/Intensity</option>
+            <option value="AESER">Serious Event</option>
+            <option value="AEREL">Causality</option>
+            <option value="AEOUT">Outcome of Adverse Event</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Site</legend>
+          <select id="ae-site">
+            <option value="" selected>All</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Subject</legend>
+          <select id="ae-subject">
+            <option value="" selected>All</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Levels</legend>
+          <label
+            ><input type="checkbox" id="ae-level-study" checked /> Study</label
+          >
+          <label
+            ><input type="checkbox" id="ae-level-site" checked /> Site</label
+          >
+          <label
+            ><input type="checkbox" id="ae-level-subject" checked />
+            Subject</label
+          >
+        </fieldset>
+
+        <fieldset>
+          <legend>Orientation</legend>
+          <select id="ae-orientation">
+            <option value="vertical">Vertical</option>
+            <option value="horizontal" selected>Horizontal</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Sort</legend>
+          <select id="ae-sort">
+            <option value="total" selected>Total (descending)</option>
+            <option value="alphanumeric">Alphanumeric</option>
+          </select>
+        </fieldset>
+
+        <fieldset>
+          <legend>Top N Categories</legend>
+          <input
+            type="number"
+            id="ae-n-categories"
+            min="1"
+            step="1"
+            placeholder="All"
+            value="10"
+          />
+        </fieldset>
+
+        <button
+          id="ae-export-btn"
+          class="export-btn"
+          type="button"
+          title="Export PNG"
+          aria-label="Export PNG"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path d="M8 12L3 7h3V1h4v6h3L8 12z" />
+            <path d="M14 14H2v-2h12v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="ae-container"></div>
+    </div>
+
+    <script>
+      // Tab switching
+      const tabButtons = document.querySelectorAll(".tab-nav button");
+      const tabPanels = document.querySelectorAll(".tab-panel");
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach((b) => b.classList.remove("active"));
+          tabPanels.forEach((p) => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+    </script>
+
+    <script src="controls.js"></script>
+    <script src="retentionChart.js"></script>
+    <script src="kriChart.js"></script>
+    <script src="giniChart.js"></script>
+    <script src="kriSiteChart.js"></script>
+    <script src="kriFacetChart.js"></script>
+    <script src="aePrevalenceChart.js"></script>
+    <script src="../nav.js"></script>
+  </body>
+</html>

@@ -38,6 +38,7 @@ export default function configure(_config_, _results_, _thresholds_) {
 
     // miscellaneous
     defaults.displayTitle = false;
+    defaults.dynamicSizing = false;
     defaults.maintainAspectRatio = false;
 
     const config = configureAll(defaults, _config_ || {}, {

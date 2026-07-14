@@ -108,3 +108,4 @@ dist
 rbm-viz.Rproj
 
 .DS_Store
+.claude/

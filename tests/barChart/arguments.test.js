@@ -18,6 +18,22 @@ const thresholds = metricMetadatum.Threshold.split(',').map((d) => +d);
 describe('bar chart is generated', () => {
     const container = document.createElement('div');
 
+    test('dynamicSizing sets canvas width proportional to category count', () => {
+        const instance = barChart(container, resultsSubset, {
+            ...metricMetadatum,
+            dynamicSizing: true,
+        });
+        const numCategories = resultsSubset.length;
+        expect(container.style.width).toBe(`${numCategories * 30}px`);
+    });
+
+    test('dynamicSizing false does not set canvas width', () => {
+        const container2 = document.createElement('div');
+        barChart(container2, resultsSubset, metricMetadatum);
+        const numCategories = resultsSubset.length;
+        expect(container2.style.width).not.toBe(`${numCategories * 30}px`);
+    });
+
     test('bar chart is generated with all arguments', () => {
         const instance = barChart(
             container,

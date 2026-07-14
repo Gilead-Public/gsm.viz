@@ -97,6 +97,20 @@ export default function barChart(
     // Attach chart to canvas element.
     canvas.chart = chart;
 
+    // Reset any previously applied dynamic sizing, then re-apply if enabled.
+    // Two-pass: measure Chart.js overhead from the initial render and correct
+    // the container width so the chart area is exactly numCategories × 30px.
+    canvas.parentNode.style.width = '';
+    if (config.dynamicSizing) {
+        const numCategories = datasets[0].data.length;
+        const pxPerCategory = 30;
+        const area = chart.chartArea;
+        const chartAreaWidth = area ? area.right - area.left : 0;
+        const overhead = chartAreaWidth > 0 ? chart.width - chartAreaWidth : 0;
+        canvas.parentNode.style.width =
+            numCategories * pxPerCategory + overhead + 'px';
+    }
+
     // Attach update methods to chart.
     chart.helpers = {
         updateConfig,
