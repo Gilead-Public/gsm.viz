@@ -24900,14 +24900,6 @@ var gsmViz = (() => {
           total: {
             ...labelModes.total,
             ...userLabels.total
-          },
-          inside: {
-            ...labelModes.inside,
-            ...userLabels.inside
-          },
-          outside: {
-            ...labelModes.outside,
-            ...userLabels.outside
           }
         }
       },
@@ -25285,7 +25277,10 @@ var gsmViz = (() => {
       ...specScales.y.min !== void 0 ? { min: specScales.y.min } : { beginAtZero: true },
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
-      ...percent ? { max: 100, ticks: percentageTicks } : {}
+      ...percent ? {
+        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ticks: percentageTicks
+      } : {}
     };
     return {
       x: horizontal ? valueScale : categoryScale,
@@ -25853,7 +25848,7 @@ var gsmViz = (() => {
       const container = chart.canvas?.parentElement;
       if (container) {
         const numCategories = chart.data.labels.length;
-        const pxPerCategory = 30;
+        const pxPerCategory = chart.data._spec_?.theme?.pxPerCategory || 30;
         const horizontal = chart.data._spec_?.orientation === "horizontal";
         if (horizontal) {
           const area = chart.chartArea;
@@ -26281,51 +26276,30 @@ var gsmViz = (() => {
     }
   }
 
+  // src/util/merge.js
+  function mergeDeep(...objects) {
+    const isObject2 = (obj) => obj && typeof obj === "object";
+    return objects.reduce((prev, obj) => {
+      Object.keys(obj).forEach((key) => {
+        const pVal = prev[key];
+        const oVal = obj[key];
+        if (Array.isArray(pVal) && Array.isArray(oVal)) {
+          prev[key] = oVal;
+        } else if (isObject2(pVal) && isObject2(oVal)) {
+          prev[key] = mergeDeep(pVal, oVal);
+        } else {
+          prev[key] = oVal;
+        }
+      });
+      return prev;
+    }, {});
+  }
+
   // src/bars/updateSpec.js
   function updateSpec(chart, spec) {
     const existing = chart.data._spec_;
     delete chart.data._selectionState_;
-    const combined = {
-      ...existing,
-      ...spec,
-      mapping: { ...existing.mapping, ...spec.mapping },
-      scales: {
-        x: {
-          ...existing.scales?.x,
-          ...spec.scales?.x,
-          ticks: {
-            ...existing.scales?.x?.ticks,
-            ...spec.scales?.x?.ticks
-          }
-        },
-        y: { ...existing.scales?.y, ...spec.scales?.y },
-        fill: { ...existing.scales?.fill, ...spec.scales?.fill }
-      },
-      labels: { ...existing.labels, ...spec.labels },
-      annotations: {
-        ...existing.annotations,
-        ...spec.annotations,
-        labels: {
-          segment: {
-            ...existing.annotations?.labels?.segment,
-            ...spec.annotations?.labels?.segment
-          },
-          total: {
-            ...existing.annotations?.labels?.total,
-            ...spec.annotations?.labels?.total
-          },
-          inside: {
-            ...existing.annotations?.labels?.inside,
-            ...spec.annotations?.labels?.inside
-          },
-          outside: {
-            ...existing.annotations?.labels?.outside,
-            ...spec.annotations?.labels?.outside
-          }
-        }
-      },
-      theme: { ...existing.theme, ...spec.theme }
-    };
+    const combined = mergeDeep(existing, spec);
     const merged = mergeSpec(existing.data, combined);
     if (existing._originalNCategories) {
       merged._originalNCategories = existing._originalNCategories;
@@ -26462,12 +26436,14 @@ var gsmViz = (() => {
     if (!selectionState || selectionState.type === null) return true;
     const category = getCategoryValue(point, orientation);
     if (selectionState.type === "category") {
-      return selectionState.values.includes(category);
+      return selectionState.values.some(
+        (v) => String(v) === String(category)
+      );
     }
     if (selectionState.type === "segment") {
       const fill2 = point._fill;
       return selectionState.values.some(
-        (seg) => seg.category === category && (seg.fill === void 0 || seg.fill === fill2)
+        (seg) => String(seg.category) === String(category) && (seg.fill === void 0 || String(seg.fill) === String(fill2))
       );
     }
     return true;
@@ -26716,7 +26692,7 @@ var gsmViz = (() => {
     el.style.width = "";
     if (merged.theme.dynamicSizing) {
       const numCategories = labels.length;
-      const pxPerCategory = 30;
+      const pxPerCategory = merged.theme.pxPerCategory;
       if (merged.orientation === "horizontal") {
         const area = chart.chartArea;
         const chartAreaHeight = area ? area.bottom - area.top : 0;
@@ -26902,7 +26878,8 @@ var gsmViz = (() => {
         position,
         stat: spec.stat,
         scales: resolvedScales,
-        nCategories: spec.nCategories
+        nCategories: spec.nCategories,
+        theme: spec.theme
       };
       const { datasets, labels } = structureData2(subSpec);
       if (stacked) {
@@ -27024,9 +27001,12 @@ var gsmViz = (() => {
       tooltip: tooltip5,
       theme,
       legend: legend5,
+      selection: mergedSpec.selection,
+      zoom: mergedSpec.zoom,
       callbacks: {
         onClick: callbacks.onClick ? (point, event) => callbacks.onClick(point, facetValue, event) : null,
-        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null
+        onHover: callbacks.onHover ? (point, event) => callbacks.onHover(point, facetValue, event) : null,
+        onSelect: callbacks.onSelect ? (selection2, event) => callbacks.onSelect(selection2, facetValue, event) : null
       }
     };
   }
@@ -27243,11 +27223,15 @@ var gsmViz = (() => {
         charts.forEach((sibling) => {
           if (sibling === chartInstance) return;
           if (sel.type === null) {
-            clearSelection(sibling);
+            clearSelection(sibling, void 0, { _silent: true });
           } else if (sel.type === "category") {
-            selectCategory(sibling, sel.values);
+            selectCategory(sibling, sel.values, void 0, {
+              _silent: true
+            });
           } else if (sel.type === "segment") {
-            selectSegment(sibling, sel.values);
+            selectSegment(sibling, sel.values, void 0, {
+              _silent: true
+            });
           }
         });
       };
@@ -28360,9 +28344,11 @@ var gsmViz = (() => {
     const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
-    const analysisType = config?.AnalysisType === "rate" ? "rate" : "binary";
+    const rawType = String(config?.AnalysisType ?? "").trim().toLowerCase();
+    if (rawType === "identity") return [];
+    const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {
-      const variance = analysisType === "rate" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
+      const variance = analysisType === "poisson" ? vMu / d.Denominator : vMu * (1 - vMu) / d.Denominator;
       if (variance <= 0) return Number.NaN;
       const score = (d.Metric - vMu) / Math.sqrt(variance);
       return score * score;
@@ -28373,7 +28359,7 @@ var gsmViz = (() => {
     const bounds = [];
     thresholds2.forEach((threshold) => {
       denominatorRange.forEach((denominator) => {
-        const variance = analysisType === "rate" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
+        const variance = analysisType === "poisson" ? phi * vMu / denominator : phi * vMu * (1 - vMu) / denominator;
         if (variance < 0) return;
         const Metric = vMu + threshold * Math.sqrt(variance);
         const Numerator = Metric * denominator;
