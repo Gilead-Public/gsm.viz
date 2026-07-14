@@ -4,7 +4,7 @@
 
 ### New: `bars` Module
 
-A brand-new ggplot2-aligned declarative bar chart module (`bars`) replaces the legacy `barChart` for new development (#502, #482). Highlights include:
+A brand-new ggplot2-aligned declarative bar chart module (`bars`) that reproduces disparate bar chart implementations across the `gsm` ecosystem, including most functionality in the existing, KRI-specific `barChart` module (#502, #482). Highlights include:
 
 - **Spec-driven API** — define charts with a declarative `spec` object (fill, position, scales, labels, theme, tooltip, etc.)
 - **Position modes** — `stack` (default), `fill` (within-category percentage normalization), `dodge` (side-by-side), and layered positioning
