@@ -138,9 +138,7 @@ function applySelection(chart) {
                 state.selection,
                 orientation
             );
-            const pointBg = Array.isArray(origBg)
-                ? origBg[ptIndex]
-                : origBg;
+            const pointBg = Array.isArray(origBg) ? origBg[ptIndex] : origBg;
             return selected ? pointBg : toRgba(pointBg, opacity);
         });
 

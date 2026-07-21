@@ -25,15 +25,21 @@ function makeChart(labels, datasets) {
         update: jest.fn(),
         helpers: {
             selectCategory: jest.fn((chart, values) => {
-                const { selectCategory } = require('../../src/bars/selection.js');
+                const {
+                    selectCategory,
+                } = require('../../src/bars/selection.js');
                 selectCategory(chart, values);
             }),
             selectSegment: jest.fn((chart, values) => {
-                const { selectSegment } = require('../../src/bars/selection.js');
+                const {
+                    selectSegment,
+                } = require('../../src/bars/selection.js');
                 selectSegment(chart, values);
             }),
             clearSelection: jest.fn((chart) => {
-                const { clearSelection } = require('../../src/bars/selection.js');
+                const {
+                    clearSelection,
+                } = require('../../src/bars/selection.js');
                 clearSelection(chart);
             }),
         },
@@ -44,11 +50,21 @@ describe('facetBars/syncSelection', () => {
     test('selectCategory on one chart propagates to siblings', () => {
         const chart1 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]
+            [
+                [
+                    { x: 'A', y: 10 },
+                    { x: 'B', y: 20 },
+                ],
+            ]
         );
         const chart2 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 15 }, { x: 'B', y: 25 }]]
+            [
+                [
+                    { x: 'A', y: 15 },
+                    { x: 'B', y: 25 },
+                ],
+            ]
         );
         syncSelection([chart1, chart2]);
 
@@ -62,11 +78,21 @@ describe('facetBars/syncSelection', () => {
     test('clearSelection on one chart propagates to siblings', () => {
         const chart1 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]
+            [
+                [
+                    { x: 'A', y: 10 },
+                    { x: 'B', y: 20 },
+                ],
+            ]
         );
         const chart2 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 15 }, { x: 'B', y: 25 }]]
+            [
+                [
+                    { x: 'A', y: 15 },
+                    { x: 'B', y: 25 },
+                ],
+            ]
         );
         syncSelection([chart1, chart2]);
 
@@ -81,11 +107,21 @@ describe('facetBars/syncSelection', () => {
         const onSelect = jest.fn();
         const chart1 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 10 }, { x: 'B', y: 20 }]]
+            [
+                [
+                    { x: 'A', y: 10 },
+                    { x: 'B', y: 20 },
+                ],
+            ]
         );
         const chart2 = makeChart(
             ['A', 'B'],
-            [[{ x: 'A', y: 15 }, { x: 'B', y: 25 }]]
+            [
+                [
+                    { x: 'A', y: 15 },
+                    { x: 'B', y: 25 },
+                ],
+            ]
         );
         // Enable selection and attach onSelect to both charts.
         chart1.data._spec_.selection.enabled = true;

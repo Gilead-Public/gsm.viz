@@ -1673,9 +1673,7 @@ describe('bars/structureData – scales.x.sortDir', () => {
             expect(xDs.barPercentage).toBeCloseTo(0.9);
             expect(zDs.barPercentage).toBeCloseTo(0.3);
             // X should be at the end (drawn first/behind by Chart.js)
-            expect(result.datasets[result.datasets.length - 1].label).toBe(
-                'X'
-            );
+            expect(result.datasets[result.datasets.length - 1].label).toBe('X');
             expect(result.datasets[0].label).toBe('Z');
         });
 
