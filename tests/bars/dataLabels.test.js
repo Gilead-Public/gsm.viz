@@ -276,4 +276,106 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
             expect(config.labels.total.display(context)).toBe(false);
         });
     });
+
+    describe('code review follow-ups', () => {
+        test('segment: a formatter returning a falsy value (0) is still measured, not treated as "no label"', () => {
+            const spec = {
+                annotations: {
+                    labels: {
+                        segment: {
+                            display: true,
+                            formatter: () => 0,
+                        },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            // "0" measures to width 1 (mock measureText: width = text.length),
+            // which does not fit a 0px-thick bar.
+            const context = makeContext({ element: { width: 0, height: 30 } });
+
+            expect(config.labels.segment.display(context)).toBe(false);
+        });
+
+        test('total: a formatter returning a falsy value (empty string) does not throw and is treated as fitting', () => {
+            const spec = {
+                annotations: {
+                    labels: {
+                        total: {
+                            display: true,
+                            formatter: () => '',
+                        },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            const context = makeContext({ element: { width: 30, height: 30 } });
+
+            expect(config.labels.total.display(context)).toBe(true);
+        });
+
+        test('segment: does not invoke a custom formatter twice for one label render', () => {
+            const formatter = jest.fn(() => 'a very long label that will not fit');
+            const spec = {
+                annotations: {
+                    labels: {
+                        segment: { display: true, formatter },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            const context = makeContext({ element: { width: 5, height: 30 } });
+
+            // Mirrors how chartjs-plugin-datalabels drives a single label
+            // render: display() is checked first, then formatter() is
+            // called to produce the rendered text for the same context.
+            config.labels.segment.display(context);
+            config.labels.segment.formatter(context.dataset.data[0], context);
+
+            expect(formatter).toHaveBeenCalledTimes(1);
+        });
+
+        test('total: does not invoke a custom formatter twice for one label render', () => {
+            const formatter = jest.fn(() => 'a very long label that will not fit');
+            const spec = {
+                annotations: {
+                    labels: {
+                        total: { display: true, formatter },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            const context = makeContext({ element: { width: 5, height: 30 } });
+
+            config.labels.total.display(context);
+            config.labels.total.formatter(context.dataset.data[0], context);
+
+            expect(formatter).toHaveBeenCalledTimes(1);
+        });
+
+        test('segment: measures text under options.font when provided', () => {
+            const spec = {
+                annotations: {
+                    labels: {
+                        segment: {
+                            display: true,
+                            formatter: () => 'x',
+                            font: { size: 20, family: 'Arial' },
+                        },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            let fontDuringMeasure;
+            const context = makeContext({ element: { width: 5, height: 30 } });
+            context.chart.ctx.measureText = jest.fn((text) => {
+                fontDuringMeasure = context.chart.ctx.font;
+                return { width: text.length };
+            });
+
+            config.labels.segment.display(context);
+
+            expect(fontDuringMeasure).toEqual(expect.stringContaining('Arial'));
+        });
+    });
 });

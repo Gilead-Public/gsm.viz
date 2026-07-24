@@ -25630,6 +25630,25 @@ var gsmViz = (() => {
   function getCategoryThickness(context, element) {
     return context.chart.options?.indexAxis === "y" ? element.height : element.width;
   }
+  function resolveFontString(font) {
+    if (!font) return void 0;
+    if (typeof font === "string") return font;
+    const size = font.size ?? 12;
+    const family = font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
+    const style = font.style ? `${font.style} ` : "";
+    const weight = font.weight ? `${font.weight} ` : "";
+    return `${style}${weight}${size}px ${family}`;
+  }
+  function resolveLabelText(context, options, mode, spec) {
+    const cacheKey = `_${mode}LabelText`;
+    if (Object.prototype.hasOwnProperty.call(context, cacheKey)) {
+      return context[cacheKey];
+    }
+    const point = getPoint3(context);
+    const text = formatLabel(point, context, options, mode, spec);
+    context[cacheKey] = text;
+    return text;
+  }
   function fitsCategoryAxis(context, options, mode, spec) {
     if (options.avoidCategoryOverlap === false) return true;
     const ctx = context.chart.ctx;
@@ -25638,10 +25657,17 @@ var gsmViz = (() => {
     if (!element) return true;
     const thickness = getCategoryThickness(context, element);
     if (thickness === void 0) return true;
-    const point = getPoint3(context);
-    const text = formatLabel(point, context, options, mode, spec);
-    if (!text) return true;
+    const text = resolveLabelText(context, options, mode, spec);
+    if (text === void 0 || text === null) return true;
+    const font = resolveFontString(options.font);
+    const previousFont = font !== void 0 ? ctx.font : void 0;
+    if (font !== void 0) {
+      ctx.font = font;
+    }
     const { width: textWidth } = ctx.measureText(String(text));
+    if (font !== void 0) {
+      ctx.font = previousFont;
+    }
     return textWidth <= thickness;
   }
   function isLargeEnoughForSegment(context, options, spec) {
@@ -25662,7 +25688,7 @@ var gsmViz = (() => {
     const isEnd = placement === "end";
     const config = {
       display: (context) => isLargeEnoughForSegment(context, options, spec),
-      formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
+      formatter: (value, context) => resolveLabelText(context, options, "segment", spec),
       anchor: () => "end",
       align: isEnd ? (context) => context.chart.options?.indexAxis === "y" ? "right" : "end" : () => "center"
     };
@@ -25687,7 +25713,7 @@ var gsmViz = (() => {
     return withStyle(
       {
         display: (context) => isLargeEnoughForTotal(context, options, spec),
-        formatter: (value, context) => formatLabel(value, context, options, "total", spec),
+        formatter: (value, context) => resolveLabelText(context, options, "total", spec),
         anchor: () => "end",
         align,
         offset: 4
