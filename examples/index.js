@@ -24817,6 +24817,7 @@ var gsmViz = (() => {
           format: void 0,
           formatter: void 0,
           minSize: 16,
+          avoidCategoryOverlap: true,
           color: void 0,
           font: void 0
         },
@@ -24825,6 +24826,7 @@ var gsmViz = (() => {
           placement: "outside",
           format: void 0,
           formatter: void 0,
+          avoidCategoryOverlap: true,
           color: void 0,
           font: void 0
         }
@@ -25614,13 +25616,39 @@ var gsmViz = (() => {
     }
     return false;
   }
-  function isLargeEnoughForSegment(context, options) {
+  function getElement(context) {
+    return context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[context.dataIndex];
+  }
+  function isLargeEnoughForValueAxis(context, options) {
     const minSize = options.minSize ?? 0;
     if (!minSize) return true;
-    const element = context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[context.dataIndex];
+    const element = getElement(context);
     if (!element) return true;
     const size = context.chart.options?.indexAxis === "y" ? element.width : element.height;
     return size === void 0 || size >= minSize;
+  }
+  function getCategoryThickness(context, element) {
+    return context.chart.options?.indexAxis === "y" ? element.height : element.width;
+  }
+  function fitsCategoryAxis(context, options, mode, spec) {
+    if (options.avoidCategoryOverlap === false) return true;
+    const ctx = context.chart.ctx;
+    if (!ctx || typeof ctx.measureText !== "function") return true;
+    const element = getElement(context);
+    if (!element) return true;
+    const thickness = getCategoryThickness(context, element);
+    if (thickness === void 0) return true;
+    const point = getPoint3(context);
+    const text = formatLabel(point, context, options, mode, spec);
+    if (!text) return true;
+    const { width: textWidth } = ctx.measureText(String(text));
+    return textWidth <= thickness;
+  }
+  function isLargeEnoughForSegment(context, options, spec) {
+    return isLargeEnoughForValueAxis(context, options) && fitsCategoryAxis(context, options, "segment", spec);
+  }
+  function isLargeEnoughForTotal(context, options, spec) {
+    return isLastVisibleDatasetForCategory(context) && fitsCategoryAxis(context, options, "total", spec);
   }
   function withStyle(config, options) {
     return {
@@ -25633,7 +25661,7 @@ var gsmViz = (() => {
     const placement = options.placement ?? "center";
     const isEnd = placement === "end";
     const config = {
-      display: (context) => isLargeEnoughForSegment(context, options),
+      display: (context) => isLargeEnoughForSegment(context, options, spec),
       formatter: (value, context) => formatLabel(value, context, options, "segment", spec),
       anchor: () => "end",
       align: isEnd ? (context) => context.chart.options?.indexAxis === "y" ? "right" : "end" : () => "center"
@@ -25658,7 +25686,7 @@ var gsmViz = (() => {
     const align = placement === "inside" ? () => "start" : () => "end";
     return withStyle(
       {
-        display: (context) => isLastVisibleDatasetForCategory(context),
+        display: (context) => isLargeEnoughForTotal(context, options, spec),
         formatter: (value, context) => formatLabel(value, context, options, "total", spec),
         anchor: () => "end",
         align,
@@ -28344,7 +28372,7 @@ var gsmViz = (() => {
     const denominatorSum = rows.reduce((sum, d) => sum + d.Denominator, 0);
     if (denominatorSum <= 0) return [];
     const vMu = numeratorSum / denominatorSum;
-    const rawType = (config?.AnalysisType ?? "").toLowerCase();
+    const rawType = String(config?.AnalysisType ?? "").trim().toLowerCase();
     if (rawType === "identity") return [];
     const analysisType = rawType === "poisson" ? "poisson" : "binary";
     const phiTerms = rows.map((d) => {

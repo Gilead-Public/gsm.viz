@@ -222,13 +222,17 @@ function isLastVisibleDatasetForCategory(context) {
     return false;
 }
 
-function isLargeEnoughForSegment(context, options) {
+function getElement(context) {
+    return context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[
+        context.dataIndex
+    ];
+}
+
+function isLargeEnoughForValueAxis(context, options) {
     const minSize = options.minSize ?? 0;
     if (!minSize) return true;
 
-    const element = context.chart.getDatasetMeta?.(context.datasetIndex)
-        ?.data?.[context.dataIndex];
-
+    const element = getElement(context);
     if (!element) return true;
 
     const size =
@@ -237,6 +241,53 @@ function isLargeEnoughForSegment(context, options) {
             : element.height;
 
     return size === undefined || size >= minSize;
+}
+
+// The bar's extent along the category axis (its thickness), the opposite
+// dimension from the one measured by `minSize`.
+function getCategoryThickness(context, element) {
+    return context.chart.options?.indexAxis === 'y'
+        ? element.height
+        : element.width;
+}
+
+// Guards against a label being wider than the bar itself along the category
+// axis (see #547). Measures the resolved label text with the canvas so no
+// per-chart tuning is required. Opt out via `options.avoidCategoryOverlap =
+// false`. Falls back to "fits" (no-op) whenever the heuristic can't be
+// evaluated, so it never hides a label it isn't confident about.
+function fitsCategoryAxis(context, options, mode, spec) {
+    if (options.avoidCategoryOverlap === false) return true;
+
+    const ctx = context.chart.ctx;
+    if (!ctx || typeof ctx.measureText !== 'function') return true;
+
+    const element = getElement(context);
+    if (!element) return true;
+
+    const thickness = getCategoryThickness(context, element);
+    if (thickness === undefined) return true;
+
+    const point = getPoint(context);
+    const text = formatLabel(point, context, options, mode, spec);
+    if (!text) return true;
+
+    const { width: textWidth } = ctx.measureText(String(text));
+    return textWidth <= thickness;
+}
+
+function isLargeEnoughForSegment(context, options, spec) {
+    return (
+        isLargeEnoughForValueAxis(context, options) &&
+        fitsCategoryAxis(context, options, 'segment', spec)
+    );
+}
+
+function isLargeEnoughForTotal(context, options, spec) {
+    return (
+        isLastVisibleDatasetForCategory(context) &&
+        fitsCategoryAxis(context, options, 'total', spec)
+    );
 }
 
 function withStyle(config, options) {
@@ -252,7 +303,8 @@ function buildSegmentLabel(options, spec) {
     const isEnd = placement === 'end';
 
     const config = {
-        display: (context) => isLargeEnoughForSegment(context, options),
+        display: (context) =>
+            isLargeEnoughForSegment(context, options, spec),
         formatter: (value, context) =>
             formatLabel(value, context, options, 'segment', spec),
         anchor: () => 'end',
@@ -288,7 +340,7 @@ function buildTotalLabel(options, spec) {
 
     return withStyle(
         {
-            display: (context) => isLastVisibleDatasetForCategory(context),
+            display: (context) => isLargeEnoughForTotal(context, options, spec),
             formatter: (value, context) =>
                 formatLabel(value, context, options, 'total', spec),
             anchor: () => 'end',
