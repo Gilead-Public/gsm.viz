@@ -4,7 +4,7 @@
 [Chart.js](https://www.chartjs.org/) that features charts adapted for
 [risk-based monitoring](https://www.fda.gov/media/121479/download) in clinical trials.
 
-[![GitHub](https://img.shields.io/badge/GitHub-Gilead--BioStats%2Fgsm.viz-blue?logo=github)](https://github.com/Gilead-BioStats/gsm.viz)
+[![GitHub](https://img.shields.io/badge/GitHub-Gilead--BioStats%2Fgsm.viz-blue?logo=github)](https://github.com/Gilead-Public/gsm.viz)
 
 ---
 
@@ -42,7 +42,7 @@
 `gsm.viz` is hosted on GitHub and accessible with `npm`:
 
 ```bash
-npm install git+https://github.com/Gilead-BioStats/gsm.viz.git
+npm install git+https://github.com/Gilead-Public/gsm.viz.git
 ```
 
 ---
@@ -80,5 +80,5 @@ the sidebar for full parameter and config documentation.
 
 ## Contributing
 
-See the [repository README](https://github.com/Gilead-BioStats/gsm.viz#readme)
+See the [repository README](https://github.com/Gilead-Public/gsm.viz#readme)
 for contributor guidelines, development setup, and version-control conventions.

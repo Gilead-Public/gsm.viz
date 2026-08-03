@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Gilead-BioStats/gsm.viz.git"
+    "url": "git+https://github.com/Gilead-Public/gsm.viz.git"
   },
   "keywords": [
     "rbqm",
@@ -38,9 +38,9 @@
   "author": "Gilead Sciences",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Gilead-BioStats/gsm.viz/issues"
+    "url": "https://github.com/Gilead-Public/gsm.viz/issues"
   },
-  "homepage": "https://github.com/Gilead-BioStats/gsm.viz#readme",
+  "homepage": "https://github.com/Gilead-Public/gsm.viz#readme",
   "dependencies": {
     "@sgratzl/chartjs-chart-boxplot": "^3.10.0",
     "chart.js": "^3.9.1",
