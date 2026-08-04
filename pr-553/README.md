@@ -4,7 +4,7 @@
 [Chart.js](https://www.chartjs.org/) that features charts adapted for
 [risk-based monitoring](https://www.fda.gov/media/121479/download) in clinical trials.
 
-[![GitHub](https://img.shields.io/badge/GitHub-Gilead--BioStats%2Fgsm.viz-blue?logo=github)](https://github.com/Gilead-Public/gsm.viz)
+[![GitHub](https://img.shields.io/badge/GitHub-Gilead--Public%2Fgsm.viz-blue?logo=github)](https://github.com/Gilead-Public/gsm.viz)
 
 ---
 
