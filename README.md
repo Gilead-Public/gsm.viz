@@ -1,31 +1,31 @@
 # gsm.viz
-[gsm.viz](https://github.com/Gilead-BioStats/gsm.viz/) is a data visualization library built with
+[gsm.viz](https://github.com/Gilead-Public/gsm.viz/) is a data visualization library built with
 [Chart.js](https://www.chartjs.org/) that features charts adapted for
 [risk-based monitoring](https://www.fda.gov/media/121479/download) in clinical trials.
 
 ## Examples
-Production examples of `gsm.viz` modules are accessible [here](https://gilead-biostats.github.io/gsm.viz/)
-and development examples [here](https://gilead-biostats.github.io/gsm.viz/dev/).
+Production examples of `gsm.viz` modules are accessible [here](https://gilead-public.github.io/gsm.viz/)
+and development examples [here](https://gilead-public.github.io/gsm.viz/dev/).
 
 **Generics**
-- [bar chart](https://gilead-biostats.github.io/gsm.viz/bars/)
-- [bar chart builder](https://gilead-biostats.github.io/gsm.viz/bars/builder.html)
+- [bar chart](https://gilead-public.github.io/gsm.viz/bars/)
+- [bar chart builder](https://gilead-public.github.io/gsm.viz/bars/builder.html)
 
 **Metrics**
-- [bar chart](https://gilead-biostats.github.io/gsm.viz/barChart/)
-- [group overview — country](https://gilead-biostats.github.io/gsm.viz/groupOverview/country/)
-- [group overview — site](https://gilead-biostats.github.io/gsm.viz/groupOverview/site/)
-- [scatter plot](https://gilead-biostats.github.io/gsm.viz/scatterPlot/)
-- [sparkline](https://gilead-biostats.github.io/gsm.viz/sparkline/)
-- [time series](https://gilead-biostats.github.io/gsm.viz/timeSeriesContinuous/)
-- [time series (with CI)](https://gilead-biostats.github.io/gsm.viz/timeSeriesWithCI/)
+- [bar chart](https://gilead-public.github.io/gsm.viz/barChart/)
+- [group overview — country](https://gilead-public.github.io/gsm.viz/groupOverview/country/)
+- [group overview — site](https://gilead-public.github.io/gsm.viz/groupOverview/site/)
+- [scatter plot](https://gilead-public.github.io/gsm.viz/scatterPlot/)
+- [sparkline](https://gilead-public.github.io/gsm.viz/sparkline/)
+- [time series](https://gilead-public.github.io/gsm.viz/timeSeriesContinuous/)
+- [time series (with CI)](https://gilead-public.github.io/gsm.viz/timeSeriesWithCI/)
 
 ## Installation
 
 `gsm.viz` is hosted on GitHub and accessible with `npm`:
 
 ```
-npm install git+https://github.com/Gilead-BioStats/gsm.viz.git
+npm install git+https://github.com/Gilead-Public/gsm.viz.git
 ```
 
 ## Contributor Guidelines
@@ -35,7 +35,7 @@ npm install git+https://github.com/Gilead-BioStats/gsm.viz.git
 Clone `gsm.viz` with `git` and install its dependencies:
 
 ```
-git clone https://github.com/Gilead-BioStats/gsm.viz.git
+git clone https://github.com/Gilead-Public/gsm.viz.git
 cd gsm.viz
 npm install
 ```
@@ -67,7 +67,7 @@ git commit -a -m 'fix #123'
 git push -u origin fix-123
 ```
 
-On GitHub, open a [pull request](https://github.com/Gilead-BioStats/gsm.viz/pulls) with `fix-123` as
+On GitHub, open a [pull request](https://github.com/Gilead-Public/gsm.viz/pulls) with `fix-123` as
 the source and `dev` as the target.  The pull request requires a code review prior to merging.
 
 ## Update Example Data

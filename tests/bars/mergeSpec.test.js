@@ -154,8 +154,32 @@ describe('bars/mergeSpec', () => {
             expect(merged.annotations.labels.segment.value).toBe('auto');
             expect(merged.annotations.labels.segment.minSize).toBe(16);
             expect(merged.annotations.labels.segment.placement).toBe('center');
+            expect(merged.annotations.labels.segment.avoidCategoryOverlap).toBe(
+                true
+            );
             expect(merged.annotations.labels.total.display).toBe(false);
             expect(merged.annotations.labels.total.placement).toBe('outside');
+            expect(merged.annotations.labels.total.avoidCategoryOverlap).toBe(
+                true
+            );
+        });
+
+        test('allows disabling avoidCategoryOverlap per label mode', () => {
+            const merged = mergeSpec(data, {
+                ...minimalSpec,
+                annotations: {
+                    labels: {
+                        segment: { avoidCategoryOverlap: false },
+                        total: { avoidCategoryOverlap: false },
+                    },
+                },
+            });
+            expect(merged.annotations.labels.segment.avoidCategoryOverlap).toBe(
+                false
+            );
+            expect(merged.annotations.labels.total.avoidCategoryOverlap).toBe(
+                false
+            );
         });
 
         test('deep merges user label modes with defaults', () => {

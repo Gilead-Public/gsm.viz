@@ -222,13 +222,17 @@ function isLastVisibleDatasetForCategory(context) {
     return false;
 }
 
-function isLargeEnoughForSegment(context, options) {
+function getElement(context) {
+    return context.chart.getDatasetMeta?.(context.datasetIndex)?.data?.[
+        context.dataIndex
+    ];
+}
+
+function isLargeEnoughForValueAxis(context, options) {
     const minSize = options.minSize ?? 0;
     if (!minSize) return true;
 
-    const element = context.chart.getDatasetMeta?.(context.datasetIndex)
-        ?.data?.[context.dataIndex];
-
+    const element = getElement(context);
     if (!element) return true;
 
     const size =
@@ -237,6 +241,96 @@ function isLargeEnoughForSegment(context, options) {
             : element.height;
 
     return size === undefined || size >= minSize;
+}
+
+// The bar's extent along the category axis (its thickness), the opposite
+// dimension from the one measured by `minSize`.
+function getCategoryThickness(context, element) {
+    return context.chart.options?.indexAxis === 'y'
+        ? element.height
+        : element.width;
+}
+
+// Resolves `options.font` (a CSS font string or a Chart.js-style font object
+// with size/family/weight/style) into a canvas `ctx.font` string, mirroring
+// how chartjs-plugin-datalabels/Chart.js resolve fonts. Returns undefined
+// when there's nothing to resolve, in which case the canvas's current font
+// is used as a best-effort approximation.
+function resolveFontString(font) {
+    if (!font) return undefined;
+    if (typeof font === 'string') return font;
+
+    const size = font.size ?? 12;
+    const family =
+        font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
+    const style = font.style ? `${font.style} ` : '';
+    const weight = font.weight ? `${font.weight} ` : '';
+
+    return `${style}${weight}${size}px ${family}`;
+}
+
+// Resolves and caches the label text for a given render context so that the
+// same text isn't computed twice (once by the category-overlap check, once
+// by the datalabels plugin's own `formatter`) for the same label render.
+function resolveLabelText(context, options, mode, spec) {
+    const cacheKey = `_${mode}LabelText`;
+    if (Object.prototype.hasOwnProperty.call(context, cacheKey)) {
+        return context[cacheKey];
+    }
+
+    const point = getPoint(context);
+    const text = formatLabel(point, context, options, mode, spec);
+    context[cacheKey] = text;
+    return text;
+}
+
+// Guards against a label being wider than the bar itself along the category
+// axis (see #547). Measures the resolved label text with the canvas so no
+// per-chart tuning is required. Opt out via `options.avoidCategoryOverlap =
+// false`. Falls back to "fits" (no-op) whenever the heuristic can't be
+// evaluated, so it never hides a label it isn't confident about.
+function fitsCategoryAxis(context, options, mode, spec) {
+    if (options.avoidCategoryOverlap === false) return true;
+
+    const ctx = context.chart.ctx;
+    if (!ctx || typeof ctx.measureText !== 'function') return true;
+
+    const element = getElement(context);
+    if (!element) return true;
+
+    const thickness = getCategoryThickness(context, element);
+    if (thickness === undefined) return true;
+
+    const text = resolveLabelText(context, options, mode, spec);
+    if (text === undefined || text === null) return true;
+
+    const font = resolveFontString(options.font);
+    const previousFont = font !== undefined ? ctx.font : undefined;
+    if (font !== undefined) {
+        ctx.font = font;
+    }
+
+    const { width: textWidth } = ctx.measureText(String(text));
+
+    if (font !== undefined) {
+        ctx.font = previousFont;
+    }
+
+    return textWidth <= thickness;
+}
+
+function isLargeEnoughForSegment(context, options, spec) {
+    return (
+        isLargeEnoughForValueAxis(context, options) &&
+        fitsCategoryAxis(context, options, 'segment', spec)
+    );
+}
+
+function isLargeEnoughForTotal(context, options, spec) {
+    return (
+        isLastVisibleDatasetForCategory(context) &&
+        fitsCategoryAxis(context, options, 'total', spec)
+    );
 }
 
 function withStyle(config, options) {
@@ -252,9 +346,9 @@ function buildSegmentLabel(options, spec) {
     const isEnd = placement === 'end';
 
     const config = {
-        display: (context) => isLargeEnoughForSegment(context, options),
+        display: (context) => isLargeEnoughForSegment(context, options, spec),
         formatter: (value, context) =>
-            formatLabel(value, context, options, 'segment', spec),
+            resolveLabelText(context, options, 'segment', spec),
         anchor: () => 'end',
         align: isEnd
             ? (context) =>
@@ -288,9 +382,9 @@ function buildTotalLabel(options, spec) {
 
     return withStyle(
         {
-            display: (context) => isLastVisibleDatasetForCategory(context),
+            display: (context) => isLargeEnoughForTotal(context, options, spec),
             formatter: (value, context) =>
-                formatLabel(value, context, options, 'total', spec),
+                resolveLabelText(context, options, 'total', spec),
             anchor: () => 'end',
             align,
             offset: 4,

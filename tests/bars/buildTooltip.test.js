@@ -519,12 +519,9 @@ describe('bars/getPlugins/buildTooltip', () => {
         });
 
         test('title callback coexists with format label callback', () => {
-            const result = buildTooltip(
-                { format: 'count' },
-                'stack',
-                'count',
-                { maxLength: 10 }
-            );
+            const result = buildTooltip({ format: 'count' }, 'stack', 'count', {
+                maxLength: 10,
+            });
             expect(typeof result.callbacks.title).toBe('function');
             expect(typeof result.callbacks.label).toBe('function');
         });

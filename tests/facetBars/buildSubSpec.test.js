@@ -185,7 +185,13 @@ describe('facetBars/buildSubSpec', () => {
 
     test('forwards zoom unchanged', () => {
         const merged = makeMergedSpec({
-            zoom: { enabled: true, mode: 'xy', pan: false, wheel: true, pinch: false },
+            zoom: {
+                enabled: true,
+                mode: 'xy',
+                pan: false,
+                wheel: true,
+                pinch: false,
+            },
         });
         const result = buildSubSpec('US', merged);
         expect(result.zoom).toEqual({
