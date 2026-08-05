@@ -30,7 +30,11 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
                 // `width = text.length`, so this mirrors real behavior
                 // while remaining deterministic in a plain unit test.
                 ...(withCtx
-                    ? { ctx: { measureText: (text) => ({ width: text.length }) } }
+                    ? {
+                          ctx: {
+                              measureText: (text) => ({ width: text.length }),
+                          },
+                      }
                     : {}),
             },
         };
@@ -249,10 +253,7 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
 
         test('still respects isLastVisibleDatasetForCategory, independent of category overlap', () => {
             const point = { x: 'A', y: 10 };
-            const datasets = [
-                { data: [point] },
-                { data: [{ x: 'A', y: 20 }] },
-            ];
+            const datasets = [{ data: [point] }, { data: [{ x: 'A', y: 20 }] }];
             const spec = {
                 annotations: {
                     labels: {
@@ -315,7 +316,9 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
         });
 
         test('segment: does not invoke a custom formatter twice for one label render', () => {
-            const formatter = jest.fn(() => 'a very long label that will not fit');
+            const formatter = jest.fn(
+                () => 'a very long label that will not fit'
+            );
             const spec = {
                 annotations: {
                     labels: {
@@ -336,7 +339,9 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
         });
 
         test('total: does not invoke a custom formatter twice for one label render', () => {
-            const formatter = jest.fn(() => 'a very long label that will not fit');
+            const formatter = jest.fn(
+                () => 'a very long label that will not fit'
+            );
             const spec = {
                 annotations: {
                     labels: {

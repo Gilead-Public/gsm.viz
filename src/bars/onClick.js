@@ -1,8 +1,4 @@
-import {
-    selectCategory,
-    clearSelection,
-    getSelection,
-} from './selection.js';
+import { selectCategory, clearSelection, getSelection } from './selection.js';
 
 /**
  * Chart.js onClick handler for the bars module.
@@ -40,8 +36,7 @@ export default function onClick(event, activeElements, chart) {
     // Handle click-to-select when enabled.
     if (spec.selection?.enabled) {
         const orientation = spec.orientation;
-        const category =
-            orientation === 'horizontal' ? point.y : point.x;
+        const category = orientation === 'horizontal' ? point.y : point.x;
 
         const current = getSelection(chart);
         const multiple = spec.selection.multiple;
@@ -49,9 +44,7 @@ export default function onClick(event, activeElements, chart) {
         if (current.type === 'category' && current.values.includes(category)) {
             // Clicking an already-selected category — toggle it off.
             if (multiple) {
-                const remaining = current.values.filter(
-                    (v) => v !== category
-                );
+                const remaining = current.values.filter((v) => v !== category);
                 if (remaining.length === 0) {
                     clearSelection(chart, event);
                 } else {

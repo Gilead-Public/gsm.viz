@@ -261,7 +261,8 @@ function resolveFontString(font) {
     if (typeof font === 'string') return font;
 
     const size = font.size ?? 12;
-    const family = font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
+    const family =
+        font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
     const style = font.style ? `${font.style} ` : '';
     const weight = font.weight ? `${font.weight} ` : '';
 
@@ -345,8 +346,7 @@ function buildSegmentLabel(options, spec) {
     const isEnd = placement === 'end';
 
     const config = {
-        display: (context) =>
-            isLargeEnoughForSegment(context, options, spec),
+        display: (context) => isLargeEnoughForSegment(context, options, spec),
         formatter: (value, context) =>
             resolveLabelText(context, options, 'segment', spec),
         anchor: () => 'end',

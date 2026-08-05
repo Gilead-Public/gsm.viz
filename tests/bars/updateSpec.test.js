@@ -487,7 +487,10 @@ describe('bars/updateSpec', () => {
         };
 
         test('updateData clears selection state', () => {
-            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
+            const {
+                selectCategory,
+                getSelection,
+            } = require('../../src/bars/selection.js');
             const chart = bars(container, fillData, fillSpec);
             selectCategory(chart, 'A');
             expect(getSelection(chart).type).toBe('category');
@@ -497,7 +500,10 @@ describe('bars/updateSpec', () => {
         });
 
         test('updateSpec clears selection state (datasets are rebuilt with fresh colors)', () => {
-            const { selectCategory, getSelection } = require('../../src/bars/selection.js');
+            const {
+                selectCategory,
+                getSelection,
+            } = require('../../src/bars/selection.js');
             const chart = bars(container, fillData, fillSpec);
             selectCategory(chart, 'A');
 
@@ -553,7 +559,13 @@ describe('bars/updateSpec', () => {
         test('partial zoom update preserves existing zoom keys', () => {
             const chart = bars(container, data, {
                 ...spec,
-                zoom: { enabled: true, mode: 'x', pan: true, wheel: true, pinch: true },
+                zoom: {
+                    enabled: true,
+                    mode: 'x',
+                    pan: true,
+                    wheel: true,
+                    pinch: true,
+                },
             });
 
             updateSpec(chart, { zoom: { mode: 'xy' } });
