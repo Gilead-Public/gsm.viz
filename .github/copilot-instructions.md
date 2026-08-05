@@ -273,8 +273,8 @@ These apply at all times, across all tasks:
 
 ### Opening a PR
 
-- **Target branch:** Always target `dev` (the default branch). Never open PRs against `main`.
-- Use `gh pr create --base dev` or set the base branch explicitly in the GitHub UI.
+- **Target branch:** Normal feature and fix PRs target `dev` (the default branch). Release PRs target the release commit on `main`.
+- Use `gh pr create --base dev` for normal development work or `gh pr create --base main` for a release PR; set the base branch explicitly in the GitHub UI when needed.
 
 ### PR Description Structure
 
@@ -308,7 +308,7 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 | Violation | Why |
 |---|---|
 | Direct edit to `index.js` | Generated file — changes will be overwritten by the next build |
-| PR targets `main` instead of `dev` | All PRs must target the `dev` branch |
+| Normal feature or fix PR targets `main` instead of `dev` | Development changes must target the `dev` branch; release PRs are the intentional exception |
 | New `npm` dependency added without discussion | Requires team approval; check for prior issue/comment |
 | Implementation change with no test | Violates the mandatory TDD rule |
 | Failing test removed or permanently skipped | Masks regressions |
@@ -351,4 +351,4 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 - Remove failing tests without approval
 - Skip TDD for any code change
 - Push to `main` without review
-- Open PRs targeting `main` directly (always use `dev`)
+- Open normal feature or fix PRs targeting `main` directly (release PRs intentionally target `main`)
