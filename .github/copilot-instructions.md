@@ -4,7 +4,7 @@ This file provides guidance to AI agents (GitHub Copilot CLI, coding agent, and 
 
 ## Project Overview
 
-**gsm.viz** (v2.4.1) is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on **Chart.js 3** and **D3 7**.
+**gsm.viz** is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on **Chart.js 3** and **D3 7**.
 
 | Layer | Technology |
 |---|---|
