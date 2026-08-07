@@ -382,5 +382,31 @@ describe('bars/getPlugins/dataLabels — category-axis overlap heuristic', () =>
 
             expect(fontDuringMeasure).toEqual(expect.stringContaining('Arial'));
         });
+
+        test('segment: uses the canvas font for scriptable font options', () => {
+            const spec = {
+                annotations: {
+                    labels: {
+                        segment: {
+                            display: true,
+                            formatter: () => 'x',
+                            font: () => ({ size: 20, family: 'Arial' }),
+                        },
+                    },
+                },
+            };
+            const config = dataLabels(spec);
+            let fontDuringMeasure;
+            const context = makeContext({ element: { width: 5, height: 30 } });
+            context.chart.ctx.font = '16px Custom';
+            context.chart.ctx.measureText = jest.fn((text) => {
+                fontDuringMeasure = context.chart.ctx.font;
+                return { width: text.length };
+            });
+
+            config.labels.segment.display(context);
+
+            expect(fontDuringMeasure).toBe('16px Custom');
+        });
     });
 });
