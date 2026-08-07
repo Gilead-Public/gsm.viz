@@ -49,9 +49,7 @@ export default function validateSpec(data, spec) {
         spec.stat !== 'identity' &&
         spec.stat !== 'percent'
     ) {
-        throw new Error(
-            "spec.stat must be 'count', 'identity', or 'percent'"
-        );
+        throw new Error("spec.stat must be 'count', 'identity', or 'percent'");
     }
 
     if (

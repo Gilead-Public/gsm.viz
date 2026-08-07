@@ -75,6 +75,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 format: undefined, // optional d3-format string, e.g. ',.0f'
                 formatter: undefined,  // string template (e.g. '{fill}: {value} ({percent})') or (value, context, details) => string
                 minSize: 16,       // hide if the segment is smaller than this many px
+                avoidCategoryOverlap: true, // hide if the label text is wider than the bar's thickness
                 color: undefined,
                 font: undefined,
             },
@@ -83,6 +84,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
                 placement: 'outside', // 'outside' (beyond bar end) | 'inside' (within bar end)
                 format: undefined,
                 formatter: undefined,  // string template or (value, context, details) => string
+                avoidCategoryOverlap: true, // hide if the label text is wider than the bar's thickness
                 color: undefined,
                 font: undefined,
             },
@@ -126,47 +128,48 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 
 ### Defaults
 
-| Key                                    | Default                                                       |
-| -------------------------------------- | ------------------------------------------------------------- |
-| `interactive`                          | `true`                                                        |
-| `orientation`                          | `'vertical'`                                                  |
-| `position`                             | `'stack'`                                                     |
-| `stat`                                 | `'count'`                                                     |
-| `nCategories`                          | `undefined` (all categories)                                  |
-| `scales.x.type`                        | `'category'`                                                  |
-| `scales.x.sort`                        | `undefined` (defaults to `'total'` when `nCategories` is set) |
-| `scales.x.sortDir`                     | `undefined` (`total`→desc, `alphanumeric`→asc)                |
-| `scales.x.ticks.maxLength`             | `undefined` (no truncation)                                   |
-| `scales.x.ticks.rotation`              | `undefined` (Chart.js auto-rotation)                          |
-| `scales.y.type`                        | `'linear'`                                                    |
-| `scales.fill.palette`                  | Tableau-10 categorical palette                                |
-| `annotations.labels.*.display`         | `false`                                                       |
-| `annotations.labels.segment.value`     | `'auto'`                                                      |
-| `annotations.labels.segment.placement` | `'center'`                                                    |
-| `annotations.labels.segment.minSize`   | `16`                                                          |
-| `annotations.labels.total.placement`   | `'outside'`                                                   |
-| `annotations.referenceLines`           | `[]` (no reference lines)                                     |
-| `theme.maintainAspectRatio`            | `false`                                                       |
-| `theme.animation`                      | `false`                                                       |
-| `theme.dynamicSizing`                  | `false`                                                       |
-| `theme.dynamicCategoryAxis`            | `false`                                                       |
-| `theme.pxPerCategory`                  | `30`                                                          |
-| `tooltip.format`                       | `undefined`                                                   |
-| `tooltip.formatter`                    | `undefined`                                                   |
-| `callbacks.onClick`                    | `null`                                                        |
-| `callbacks.onHover`                    | `null`                                                        |
-| `callbacks.onSelect`                   | `null`                                                        |
-| `selection.enabled`                    | `false`                                                       |
-| `selection.opacity`                    | `0.2`                                                         |
-| `selection.multiple`                   | `false`                                                       |
-| `labels.captions`                      | `undefined`                                                   |
-| `labels.captionsOptions`               | `undefined`                                                   |
-| `zoom.enabled`                         | `false`                                                       |
-| `zoom.mode`                            | `'x'`                                                         |
-| `zoom.pan`                             | `true`                                                        |
-| `zoom.wheel`                           | `true`                                                        |
-| `zoom.pinch`                           | `true`                                                        |
-| `legend.dense`                         | `false`                                                       |
+| Key                                         | Default                                                       |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `interactive`                               | `true`                                                        |
+| `orientation`                               | `'vertical'`                                                  |
+| `position`                                  | `'stack'`                                                     |
+| `stat`                                      | `'count'`                                                     |
+| `nCategories`                               | `undefined` (all categories)                                  |
+| `scales.x.type`                             | `'category'`                                                  |
+| `scales.x.sort`                             | `undefined` (defaults to `'total'` when `nCategories` is set) |
+| `scales.x.sortDir`                          | `undefined` (`total`→desc, `alphanumeric`→asc)                |
+| `scales.x.ticks.maxLength`                  | `undefined` (no truncation)                                   |
+| `scales.x.ticks.rotation`                   | `undefined` (Chart.js auto-rotation)                          |
+| `scales.y.type`                             | `'linear'`                                                    |
+| `scales.fill.palette`                       | Tableau-10 categorical palette                                |
+| `annotations.labels.*.display`              | `false`                                                       |
+| `annotations.labels.segment.value`          | `'auto'`                                                      |
+| `annotations.labels.segment.placement`      | `'center'`                                                    |
+| `annotations.labels.segment.minSize`        | `16`                                                          |
+| `annotations.labels.*.avoidCategoryOverlap` | `true`                                                        |
+| `annotations.labels.total.placement`        | `'outside'`                                                   |
+| `annotations.referenceLines`                | `[]` (no reference lines)                                     |
+| `theme.maintainAspectRatio`                 | `false`                                                       |
+| `theme.animation`                           | `false`                                                       |
+| `theme.dynamicSizing`                       | `false`                                                       |
+| `theme.dynamicCategoryAxis`                 | `false`                                                       |
+| `theme.pxPerCategory`                       | `30`                                                          |
+| `tooltip.format`                            | `undefined`                                                   |
+| `tooltip.formatter`                         | `undefined`                                                   |
+| `callbacks.onClick`                         | `null`                                                        |
+| `callbacks.onHover`                         | `null`                                                        |
+| `callbacks.onSelect`                        | `null`                                                        |
+| `selection.enabled`                         | `false`                                                       |
+| `selection.opacity`                         | `0.2`                                                         |
+| `selection.multiple`                        | `false`                                                       |
+| `labels.captions`                           | `undefined`                                                   |
+| `labels.captionsOptions`                    | `undefined`                                                   |
+| `zoom.enabled`                              | `false`                                                       |
+| `zoom.mode`                                 | `'x'`                                                         |
+| `zoom.pan`                                  | `true`                                                        |
+| `zoom.wheel`                                | `true`                                                        |
+| `zoom.pinch`                                | `true`                                                        |
+| `legend.dense`                              | `false`                                                       |
 
 ### Mapping modes
 
@@ -178,23 +181,23 @@ number of rows in each `x` category, optionally split by `fill`.
 
 ### Position
 
-| Value        | Behaviour                                                   |
-| ------------ | ----------------------------------------------------------- |
-| `'stack'`    | Stack fill groups within each category; this is the default |
-| `'dodge'`    | Render fill groups side by side                             |
-| `'fill'`     | Shorthand for `position: 'stack'` + `stat: 'percent'`       |
-| `'identity'` | Render datasets without stacked scale configuration         |
+| Value        | Behaviour                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------- |
+| `'stack'`    | Stack fill groups within each category; this is the default                                       |
+| `'dodge'`    | Render fill groups side by side                                                                   |
+| `'fill'`     | Shorthand for `position: 'stack'` + `stat: 'percent'`                                             |
+| `'identity'` | Render datasets without stacked scale configuration                                               |
 | `'layer'`    | Overlay fill groups at the same position with tapered widths — widest in back, narrowest in front |
 
 ### Stat
 
 `stat` controls how bar values are computed, independently of layout (`position`).
 
-| Value        | Behaviour                                                                                |
-| ------------ | ---------------------------------------------------------------------------------------- |
+| Value        | Behaviour                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------- |
 | `'count'`    | Default. When `mapping.y` is omitted, counts rows. When `mapping.y` is set, uses raw values. |
-| `'identity'` | Equivalent to `'count'` — uses raw/count values as-is (explicit naming).                 |
-| `'percent'`  | Normalize each category's values to percentages summing to 100 across fill groups.       |
+| `'identity'` | Equivalent to `'count'` — uses raw/count values as-is (explicit naming).                     |
+| `'percent'`  | Normalize each category's values to percentages summing to 100 across fill groups.           |
 
 `stat` is orthogonal to `position`. For example:
 
@@ -307,6 +310,15 @@ Unknown `{tokens}` are left unchanged in the output string.
 
 Inside segment labels automatically hide when the rendered segment is smaller
 than `segment.minSize` pixels. Set `minSize: 0` to disable this rule.
+
+Both `segment` and `total` labels also hide automatically when the resolved
+label text is wider than the bar's thickness along the **category** axis —
+useful on charts with many categories, where bars become too thin to hold
+their label without overlapping neighbouring bars. The label text is measured
+with the canvas (`chart.ctx.measureText`) against the bar's rendered
+thickness, so no manual tuning is required; this is a best-effort heuristic
+against the currently active canvas font. Set `avoidCategoryOverlap: false`
+on `segment` or `total` to disable it for that label mode.
 
 ```js
 // Inside-segment counts
@@ -627,18 +639,18 @@ bars(container, data, {
     scales: {
         x: {
             ticks: {
-                maxLength: 15,  // truncate labels longer than 15 characters
-                rotation: 45,   // rotate labels 45 degrees
+                maxLength: 15, // truncate labels longer than 15 characters
+                rotation: 45, // rotate labels 45 degrees
             },
         },
     },
 });
 ```
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `scales.x.ticks.maxLength` | positive integer | Truncates category labels exceeding this character count, appending `…`. The full label is shown in the tooltip on hover. |
-| `scales.x.ticks.rotation` | number (0–90) | Fixes the tick label rotation angle in degrees. `0` = horizontal, `90` = vertical. When omitted, Chart.js applies its default auto-rotation. |
+| Option                     | Type             | Description                                                                                                                                  |
+| -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scales.x.ticks.maxLength` | positive integer | Truncates category labels exceeding this character count, appending `…`. The full label is shown in the tooltip on hover.                    |
+| `scales.x.ticks.rotation`  | number (0–90)    | Fixes the tick label rotation angle in degrees. `0` = horizontal, `90` = vertical. When omitted, Chart.js applies its default auto-rotation. |
 
 Both options can be combined and work in both vertical and horizontal
 orientations. When `orientation: 'horizontal'`, the ticks configuration applies
@@ -907,9 +919,9 @@ Enable `selection.enabled: true` to allow users to click bars to select them:
 const chart = gsmViz.default.bars(el, data, {
     mapping: { x: 'site', y: 'value', fill: 'status' },
     selection: {
-        enabled: true,      // clicks auto-select
-        opacity: 0.2,       // dim non-selected bars to 20% opacity
-        multiple: false,    // single-select (click replaces); true for multi-toggle
+        enabled: true, // clicks auto-select
+        opacity: 0.2, // dim non-selected bars to 20% opacity
+        multiple: false, // single-select (click replaces); true for multi-toggle
     },
     callbacks: {
         onSelect: (selection) => {
@@ -920,17 +932,17 @@ const chart = gsmViz.default.bars(el, data, {
 });
 ```
 
-- Clicking a bar selects its category; non-selected bars are dimmed
-- Clicking an already-selected bar deselects it
-- Clicking empty space clears the selection
-- `callbacks.onClick` still fires alongside selection
-- `callbacks.onSelect` fires on every selection change (click or programmatic)
+-   Clicking a bar selects its category; non-selected bars are dimmed
+-   Clicking an already-selected bar deselects it
+-   Clicking empty space clears the selection
+-   `callbacks.onClick` still fires alongside selection
+-   `callbacks.onSelect` fires on every selection change (click or programmatic)
 
 #### Visual behaviour
 
-| State         | Selected bars | Non-selected bars       |
-| ------------- | ------------- | ----------------------- |
-| No selection  | Full opacity  | Full opacity            |
+| State         | Selected bars | Non-selected bars             |
+| ------------- | ------------- | ----------------------------- |
+| No selection  | Full opacity  | Full opacity                  |
 | Selection set | Full opacity  | Dimmed to `selection.opacity` |
 
 #### facetBars integration

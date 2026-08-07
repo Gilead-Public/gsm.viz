@@ -22,10 +22,10 @@ fetch('data/retention.csv')
             return null;
         }
 
-        function buildAnnotations(mode, barLabelMode) {
+        function buildAnnotations(mode, barLabelMode, avoidCategoryOverlap) {
             const overrides = buildSegmentOverrides(barLabelMode);
             const segmentLabel = overrides
-                ? { display: true, ...overrides }
+                ? { display: true, avoidCategoryOverlap, ...overrides }
                 : null;
 
             if (mode === 'none') {
@@ -36,14 +36,22 @@ fetch('data/retention.csv')
             if (mode === 'total-outside')
                 return {
                     labels: {
-                        total: { display: true, placement: 'outside' },
+                        total: {
+                            display: true,
+                            placement: 'outside',
+                            avoidCategoryOverlap,
+                        },
                         ...(segmentLabel ? { segment: segmentLabel } : {}),
                     },
                 };
             if (mode === 'total-inside')
                 return {
                     labels: {
-                        total: { display: true, placement: 'inside' },
+                        total: {
+                            display: true,
+                            placement: 'inside',
+                            avoidCategoryOverlap,
+                        },
                         ...(segmentLabel ? { segment: segmentLabel } : {}),
                     },
                 };
@@ -53,6 +61,7 @@ fetch('data/retention.csv')
                         segment: {
                             display: true,
                             placement: 'end',
+                            avoidCategoryOverlap,
                             ...overrides,
                         },
                     },
@@ -63,6 +72,7 @@ fetch('data/retention.csv')
                         segment: {
                             display: true,
                             placement: 'center',
+                            avoidCategoryOverlap,
                             ...overrides,
                         },
                     },
@@ -76,7 +86,8 @@ fetch('data/retention.csv')
             dynamicCategoryAxis,
             annotationsMode,
             nCategories,
-            barLabelMode
+            barLabelMode,
+            avoidCategoryOverlap
         ) {
             return {
                 mapping: {
@@ -117,7 +128,11 @@ fetch('data/retention.csv')
                     dynamicSizing,
                     dynamicCategoryAxis,
                 },
-                annotations: buildAnnotations(annotationsMode, barLabelMode),
+                annotations: buildAnnotations(
+                    annotationsMode,
+                    barLabelMode,
+                    avoidCategoryOverlap
+                ),
                 tooltip: {
                     format: 'count+percent',
                     callbacks: {
@@ -143,7 +158,8 @@ fetch('data/retention.csv')
                 getBoolean('retention-dynamic-category-axis'),
                 getValue('retention-annotations'),
                 getNCategories('retention-n-categories'),
-                getValue('retention-bar-label')
+                getValue('retention-bar-label'),
+                getBoolean('retention-avoid-category-overlap')
             )
         );
 
@@ -186,7 +202,8 @@ fetch('data/retention.csv')
                     getBoolean('retention-dynamic-category-axis'),
                     getValue('retention-annotations'),
                     getNCategories('retention-n-categories'),
-                    getValue('retention-bar-label')
+                    getValue('retention-bar-label'),
+                    getBoolean('retention-avoid-category-overlap')
                 )
             );
         }
@@ -199,6 +216,7 @@ fetch('data/retention.csv')
                 'retention-annotations',
                 'retention-n-categories',
                 'retention-bar-label',
+                'retention-avoid-category-overlap',
             ],
             rerender
         );

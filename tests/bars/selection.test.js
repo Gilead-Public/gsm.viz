@@ -286,9 +286,7 @@ describe('bars/selection', () => {
             // Non-selected bars should use default 0.2 opacity
             const ds = chart.data.datasets[0];
             const colors = ds.backgroundColor;
-            const nonSelectedColor = Array.isArray(colors)
-                ? colors[1]
-                : colors;
+            const nonSelectedColor = Array.isArray(colors) ? colors[1] : colors;
             expect(nonSelectedColor).toMatch(/0\.2\)/);
         });
 
@@ -298,9 +296,7 @@ describe('bars/selection', () => {
 
             const ds = chart.data.datasets[0];
             const colors = ds.backgroundColor;
-            const nonSelectedColor = Array.isArray(colors)
-                ? colors[1]
-                : colors;
+            const nonSelectedColor = Array.isArray(colors) ? colors[1] : colors;
             expect(nonSelectedColor).toMatch(/0\.5\)/);
         });
     });
@@ -308,9 +304,7 @@ describe('bars/selection', () => {
     describe('legend preservation', () => {
         test('selectionLegendPlugin is registered on the chart', () => {
             const chart = makeChart();
-            const pluginIds = chart.config._config.plugins.map(
-                (p) => p.id
-            );
+            const pluginIds = chart.config._config.plugins.map((p) => p.id);
             expect(pluginIds).toContain('selectionLegend');
         });
 

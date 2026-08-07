@@ -1090,9 +1090,7 @@ describe('bars/validateSpec', () => {
                     mapping: { x: 'a', y: 'b' },
                     stat: 'average',
                 })
-            ).toThrow(
-                "spec.stat must be 'count', 'identity', or 'percent'"
-            );
+            ).toThrow("spec.stat must be 'count', 'identity', or 'percent'");
         });
 
         test('does not throw when stat is combined with any position', () => {
