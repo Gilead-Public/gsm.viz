@@ -51,6 +51,7 @@ describe('points/mergeSpec', () => {
         expect(merged.annotations).toEqual({
             referenceLines: [],
             lines: [],
+            labels: { point: null },
         });
         expect(merged.tooltip).toEqual({
             format: undefined,
@@ -240,6 +241,7 @@ describe('points/mergeSpec', () => {
         first.scales.shape.order.push('Changed');
         first.annotations.referenceLines.push({ axis: 'x', value: 1 });
         first.annotations.lines.push({ data: [], mapping: {} });
+        first.annotations.labels.point = { field: 'changed' };
         first.labels.title = 'Changed';
         first.selection.enabled = true;
 
@@ -255,6 +257,7 @@ describe('points/mergeSpec', () => {
         expect(second.scales.shape.order).toEqual([]);
         expect(second.annotations.referenceLines).toEqual([]);
         expect(second.annotations.lines).toEqual([]);
+        expect(second.annotations.labels.point).toBeNull();
         expect(second.labels.title).toBeUndefined();
         expect(second.selection.enabled).toBe(false);
     });
@@ -374,12 +377,19 @@ describe('points/mergeSpec', () => {
                         dash: lineDash,
                     }),
                 ]),
+                labels: Object.freeze({
+                    point: Object.freeze({
+                        field: 'id',
+                        font: Object.freeze({ size: 12 }),
+                    }),
+                }),
             }),
         });
 
         const merged = mergeSpec(data, spec);
         const [reference] = merged.annotations.referenceLines;
         const [line] = merged.annotations.lines;
+        const pointLabel = merged.annotations.labels.point;
 
         expect(merged.annotations).not.toBe(spec.annotations);
         expect(merged.annotations.referenceLines).not.toBe(
@@ -395,5 +405,8 @@ describe('points/mergeSpec', () => {
         expect(line.colors).not.toBe(colors);
         expect(line.palette).not.toBe(palette);
         expect(line.dash).not.toBe(lineDash);
+        expect(pointLabel).not.toBe(spec.annotations.labels.point);
+        expect(pointLabel.font).not.toBe(spec.annotations.labels.point.font);
+        expect(pointLabel).toEqual({ field: 'id', font: { size: 12 } });
     });
 });
