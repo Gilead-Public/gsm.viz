@@ -14214,9 +14214,9 @@ var gsmViz = (() => {
     return y;
   }
   function drawPointLabels(scale, labelCount) {
-    const { ctx, options: { pointLabels } } = scale;
+    const { ctx, options: { pointLabels: pointLabels2 } } = scale;
     for (let i = labelCount - 1; i >= 0; i--) {
-      const optsAtIndex = pointLabels.setContext(scale.getPointLabelContext(i));
+      const optsAtIndex = pointLabels2.setContext(scale.getPointLabelContext(i));
       const plFont = toFont(optsAtIndex.font);
       const { x, y, textAlign, left, top, right, bottom } = scale._pointLabelItems[i];
       const { backdropColor } = optsAtIndex;
@@ -14363,9 +14363,9 @@ var gsmViz = (() => {
       return this.options.reverse ? this.max - scaledDistance : this.min + scaledDistance;
     }
     getPointLabelContext(index3) {
-      const pointLabels = this._pointLabels || [];
-      if (index3 >= 0 && index3 < pointLabels.length) {
-        const pointLabel = pointLabels[index3];
+      const pointLabels2 = this._pointLabels || [];
+      if (index3 >= 0 && index3 < pointLabels2.length) {
+        const pointLabel = pointLabels2[index3];
         return createPointLabelContext(this.getContext(), index3, pointLabel);
       }
     }
@@ -28216,7 +28216,18 @@ var gsmViz = (() => {
     continuousAestheticScale: ["range"],
     shapeScale: ["values", "order", "label"],
     labels: ["title", "caption", "description"],
-    annotations: ["referenceLines", "lines"],
+    annotations: ["referenceLines", "lines", "labels"],
+    annotationLabels: ["point"],
+    pointLabel: [
+      "field",
+      "display",
+      "formatter",
+      "offset",
+      "align",
+      "color",
+      "font"
+    ],
+    pointLabelFont: ["family", "size", "style", "weight", "lineHeight"],
     referenceLine: [
       "axis",
       "value",
@@ -28499,6 +28510,81 @@ var gsmViz = (() => {
       );
     }
   }
+  function validatePointLabelFont(font, path) {
+    if (font === void 0) return;
+    validatePlainObject(font, path);
+    validateSupportedFields(font, supportedFields.pointLabelFont, path);
+    ["family", "style"].forEach((field) => {
+      if (font[field] !== void 0) {
+        validateNonEmptyString(font[field], `${path}.${field}`);
+      }
+    });
+    if (font.size !== void 0 && (!Number.isFinite(font.size) || font.size <= 0)) {
+      throw new Error(`${path}.size must be a positive finite number`);
+    }
+    if (font.weight !== void 0 && (typeof font.weight !== "string" || font.weight.trim().length === 0) && (typeof font.weight !== "number" || !Number.isFinite(font.weight))) {
+      throw new Error(
+        `${path}.weight must be a non-empty string or finite number`
+      );
+    }
+    if (font.lineHeight !== void 0 && (typeof font.lineHeight !== "string" || font.lineHeight.trim().length === 0) && (typeof font.lineHeight !== "number" || !Number.isFinite(font.lineHeight) || font.lineHeight <= 0)) {
+      throw new Error(
+        `${path}.lineHeight must be a positive finite number or non-empty string`
+      );
+    }
+  }
+  function validatePointLabels(labels, data) {
+    if (labels === void 0) return;
+    const labelsPath = "spec.annotations.labels";
+    validatePlainObject(labels, labelsPath);
+    validateSupportedFields(
+      labels,
+      supportedFields.annotationLabels,
+      labelsPath
+    );
+    const point = labels.point;
+    if (point === void 0 || point === null || point === false) return;
+    const path = `${labelsPath}.point`;
+    validatePlainObject(point, path);
+    validateSupportedFields(point, supportedFields.pointLabel, path);
+    validateNonEmptyString(point.field, `${path}.field`);
+    if (point.display !== void 0 && typeof point.display !== "boolean" && typeof point.display !== "function" && (typeof point.display !== "string" || point.display.trim().length === 0)) {
+      throw new Error(
+        `${path}.display must be a boolean, non-empty string, or function`
+      );
+    }
+    if (point.formatter !== void 0 && point.formatter !== null && typeof point.formatter !== "function") {
+      throw new Error(`${path}.formatter must be a function or null`);
+    }
+    if (point.offset !== void 0 && (!Number.isFinite(point.offset) || point.offset < 0)) {
+      throw new Error(`${path}.offset must be a non-negative finite number`);
+    }
+    const alignments = [
+      "center",
+      "start",
+      "end",
+      "right",
+      "bottom",
+      "left",
+      "top"
+    ];
+    if (point.align !== void 0 && !alignments.includes(point.align)) {
+      throw new Error(
+        `${path}.align must be 'center', 'start', 'end', 'right', 'bottom', 'left', or 'top'`
+      );
+    }
+    validateColor(point.color, `${path}.color`);
+    validatePointLabelFont(point.font, `${path}.font`);
+    data.forEach((row, index3) => {
+      const value = row?.[point.field];
+      const valid = typeof value === "string" && value.trim().length > 0 || typeof value === "number" && Number.isFinite(value);
+      if (!valid) {
+        throw new Error(
+          `data[${index3}].${point.field} mapped by ${path}.field must be a non-empty string or finite number`
+        );
+      }
+    });
+  }
   function validateAnnotations(annotations5, spec) {
     if (annotations5 === void 0) return;
     validatePlainObject(annotations5, "spec.annotations");
@@ -28508,6 +28594,7 @@ var gsmViz = (() => {
       "spec.annotations"
     );
     validateReferenceLines(annotations5.referenceLines, spec);
+    validatePointLabels(annotations5.labels, spec.data ?? []);
     if (annotations5.lines !== void 0) {
       if (!Array.isArray(annotations5.lines)) {
         throw new Error("spec.annotations.lines must be an array");
@@ -28765,7 +28852,7 @@ var gsmViz = (() => {
         validateOptionalString(spec.labels[field], `spec.labels.${field}`);
       });
     }
-    validateAnnotations(spec.annotations, spec);
+    validateAnnotations(spec.annotations, { ...spec, data });
     if (spec.tooltip !== void 0) {
       validatePlainObject(spec.tooltip, "spec.tooltip");
       validateSupportedFields(
@@ -28876,7 +28963,10 @@ var gsmViz = (() => {
     },
     annotations: {
       referenceLines: [],
-      lines: []
+      lines: [],
+      labels: {
+        point: null
+      }
     },
     tooltip: {
       format: void 0,
@@ -28917,6 +29007,7 @@ var gsmViz = (() => {
   function mergeAnnotations(annotations5 = {}) {
     const referenceLines3 = annotations5.referenceLines === void 0 ? defaults_default3.annotations.referenceLines : annotations5.referenceLines;
     const lines = annotations5.lines === void 0 ? defaults_default3.annotations.lines : annotations5.lines;
+    const pointLabel = annotations5.labels?.point === void 0 ? defaults_default3.annotations.labels.point : annotations5.labels.point;
     return {
       referenceLines: referenceLines3.map((line) => ({
         ...line,
@@ -28930,7 +29021,13 @@ var gsmViz = (() => {
         ...line.colors ? { colors: { ...line.colors } } : {},
         ...line.palette ? { palette: [...line.palette] } : {},
         ...line.dash ? { dash: [...line.dash] } : {}
-      }))
+      })),
+      labels: {
+        point: pointLabel === null || pointLabel === false ? pointLabel : {
+          ...pointLabel,
+          ...pointLabel.font ? { font: { ...pointLabel.font } } : {}
+        }
+      }
     };
   }
   function mergeSpec3(data, spec) {
@@ -29552,6 +29649,39 @@ var gsmViz = (() => {
     return mode;
   }
 
+  // src/points/pointLabels.js
+  function getPoint5(context, value) {
+    return value?._datum ? value : context.dataset?.data?.[context.dataIndex];
+  }
+  function pointLabels(spec) {
+    const config = spec.annotations?.labels?.point;
+    if (!config) return { display: false };
+    const display = config.display === false ? false : (context) => {
+      if (context.dataset?._annotation) return false;
+      const point = getPoint5(context);
+      if (!point) return false;
+      if (typeof config.display === "function") {
+        return !!config.display(point, context);
+      }
+      if (typeof config.display === "string") {
+        return !!point._datum?.[config.display];
+      }
+      return true;
+    };
+    return {
+      align: config.align ?? "top",
+      color: config.color ?? "#333333",
+      offset: config.offset ?? 4,
+      font: { ...config.font || {} },
+      display,
+      formatter: (value, context) => {
+        const point = getPoint5(context, value);
+        if (!point || context.dataset?._annotation) return null;
+        return typeof config.formatter === "function" ? config.formatter(point, context) : point._datum[config.field];
+      }
+    };
+  }
+
   // src/points/referenceLines.js
   function referenceLines2(spec) {
     const lines = spec.annotations?.referenceLines;
@@ -29627,6 +29757,7 @@ var gsmViz = (() => {
       };
     }
     const lines = referenceLines2(spec);
+    const labels = spec.annotations?.labels?.point;
     if ((hasColor || hasShape) && spec.mapping.opacity) {
       legend5.labels = {
         generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
@@ -29648,6 +29779,7 @@ var gsmViz = (() => {
       },
       legend: legend5,
       tooltip: tooltip5,
+      ...labels ? { datalabels: pointLabels(spec) } : {},
       ...lines ? {
         annotation: {
           annotations: lines,
@@ -29790,7 +29922,10 @@ var gsmViz = (() => {
         plugins: getPlugins3(merged),
         scales: scales2
       },
-      plugins: [displayWhiteBackground()]
+      plugins: [
+        ...merged.annotations.labels.point ? [plugin2] : [],
+        displayWhiteBackground()
+      ]
     });
     canvas.chart = chart;
     return chart;

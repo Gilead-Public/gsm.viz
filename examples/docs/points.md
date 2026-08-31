@@ -34,6 +34,7 @@ const data = [
         participants: 12,
         completeness: 0.72,
         status: 'Review',
+        flagged: true,
     },
     {
         exposure: 12,
@@ -43,6 +44,7 @@ const data = [
         participants: 35,
         completeness: 0.94,
         status: 'On target',
+        flagged: false,
     },
     {
         exposure: 25,
@@ -52,6 +54,7 @@ const data = [
         participants: 48,
         completeness: 0.83,
         status: 'Review',
+        flagged: true,
     },
 ];
 
@@ -138,6 +141,14 @@ const chart = gsmViz.default.points(element, data, {
                 showInLegend: true,
             },
         ],
+        labels: {
+            point: {
+                field: 'site',
+                display: 'flagged',
+                align: 'top',
+                offset: 6,
+            },
+        },
     },
     tooltip: {
         format: '{site}: {events} events at {exposure} exposure ({color})',
@@ -206,6 +217,9 @@ const chart = gsmViz.default.points(element, data, {
     annotations: {
         referenceLines: [],
         lines: [],
+        labels: {
+            point: null,
+        },
     },
     tooltip: {
         format: undefined,
@@ -355,6 +369,46 @@ Line geometry participates in automatic x/y domains, while explicit ranges still
 win. Auxiliary lines are excluded from tooltips, pointer callbacks, and point
 encoding descriptions. `showInLegend` opts a line into the legend; an ungrouped
 line then requires a non-empty `label`.
+
+## Selective point labels
+
+Configure `annotations.labels.point` to draw source-row text next to selected
+points:
+
+```js
+annotations: {
+    labels: {
+        point: {
+            field: 'site',
+            display: 'flagged',
+            formatter: (point, context) => point._datum.site,
+            align: 'top',
+            offset: 4,
+            color: '#333333',
+            font: {
+                family: 'Arial',
+                size: 12,
+                style: 'normal',
+                weight: 400,
+                lineHeight: 1.2,
+            },
+        },
+    },
+}
+```
+
+`field` is required and must resolve to a non-empty string or finite number on
+every point row. By default all points are labeled. Set `display` to a boolean,
+a source-field name whose truthiness selects rows, or
+`(point, context) => boolean`. A custom `formatter(point, context)` receives the
+structured point and its original row at `point._datum`; otherwise the mapped
+field value is rendered.
+
+`align` accepts `center`, `start`, `end`, `right`, `bottom`, `left`, or `top`.
+`offset` must be non-negative. Labels never apply to auxiliary line datasets or
+empty ordered legend groups. Missing label values and errors thrown by display
+predicates or formatters are surfaced rather than ignored. Set `point` to `null`
+or `false` to disable labels.
 
 ## Tooltips
 
