@@ -21,6 +21,7 @@ describe('points/getPlugins', () => {
                 text: '',
             },
             legend: { display: false },
+            tooltip: {},
         });
     });
 
@@ -43,6 +44,7 @@ describe('points/getPlugins', () => {
                 text: 'Source: simulated data',
             },
             legend: { display: false },
+            tooltip: {},
         });
     });
 
@@ -87,6 +89,41 @@ describe('points/getPlugins', () => {
                 display: true,
                 text: 'Treatment arm',
             });
+        });
+
+        test('builds the tooltip plugin from the merged spec', () => {
+            const formatter = jest.fn(() => 'Custom');
+            const plugins = getPlugins({
+                ...spec,
+                tooltip: {
+                    formatter,
+                    format: '{x}',
+                    mode: 'nearest',
+                    intersect: false,
+                },
+            });
+            const point = {
+                x: 1,
+                y: 2,
+                _key: 0,
+                _datum: { xValue: 1, yValue: 2 },
+            };
+            const context = { raw: point };
+
+            expect(plugins.tooltip.mode).toBe('nearest');
+            expect(plugins.tooltip.intersect).toBe(false);
+            expect(plugins.tooltip.format).toBeUndefined();
+            expect(plugins.tooltip.callbacks.label(context)).toBe('Custom');
+            expect(formatter).toHaveBeenCalledWith(
+                point,
+                context,
+                expect.objectContaining({
+                    x: 1,
+                    y: 2,
+                    key: 0,
+                    datum: point._datum,
+                })
+            );
         });
     });
 });
