@@ -199,6 +199,53 @@ describe('points entry point', () => {
         expect(chart.isDatasetVisible(1)).toBe(true);
     });
 
+    test('keeps explicit logarithmic ranges fixed as groups are hidden', () => {
+        const chart = points(
+            container,
+            [
+                { xValue: 1, yValue: 2, group: 'A' },
+                { xValue: 100, yValue: 4, group: 'B' },
+            ],
+            {
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    color: 'group',
+                },
+                scales: {
+                    x: {
+                        type: 'log',
+                        range: [1, 100],
+                        breaks: [1, 10, 100],
+                        labels: ['1', '10', '100'],
+                    },
+                },
+            }
+        );
+
+        expect(chart.options.scales.x.type).toBe('logarithmic');
+        expect(chart.options.scales.x.min).toBe(1);
+        expect(chart.options.scales.x.max).toBe(100);
+
+        chart.hide(1);
+        chart.update('none');
+
+        expect(chart.options.scales.x.min).toBe(1);
+        expect(chart.options.scales.x.max).toBe(100);
+    });
+
+    test('rejects non-positive log coordinates before rendering', () => {
+        expect(() =>
+            points(container, [{ xValue: 0, yValue: 2 }], {
+                mapping: { x: 'xValue', y: 'yValue' },
+                scales: { x: { type: 'log' } },
+            })
+        ).toThrow(
+            'data[0].xValue mapped by spec.mapping.x must be greater than zero for a log scale'
+        );
+        expect(container.querySelector('canvas')).toBeNull();
+    });
+
     test('surfaces strict coordinate errors before rendering', () => {
         expect(() =>
             points(container, [{ xValue: '1', yValue: 2 }], {
