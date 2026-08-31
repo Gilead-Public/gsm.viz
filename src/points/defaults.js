@@ -28,10 +28,18 @@ const defaults = {
         x: {
             type: 'linear',
             label: undefined,
+            range: undefined,
+            beginAtZero: false,
+            breaks: [],
+            labels: [],
         },
         y: {
             type: 'linear',
             label: undefined,
+            range: undefined,
+            beginAtZero: false,
+            breaks: [],
+            labels: [],
         },
         color: {
             colors: {},

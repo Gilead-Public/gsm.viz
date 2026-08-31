@@ -150,9 +150,9 @@ describe('points/validateSpec', () => {
                 expect(() =>
                     validateSpec(data, {
                         ...minimalSpec,
-                        scales: { [axis]: { type: 'log' } },
+                        scales: { [axis]: { type: 'category' } },
                     })
-                ).toThrow(`spec.scales.${axis}.type must be 'linear'`);
+                ).toThrow(`spec.scales.${axis}.type must be 'linear' or 'log'`);
 
                 expect(() =>
                     validateSpec(data, {
@@ -162,6 +162,90 @@ describe('points/validateSpec', () => {
                 ).toThrow(`spec.scales.${axis}.label must be a string`);
             }
         );
+
+        test.each(['x', 'y'])(
+            'accepts complete numeric options for the %s scale',
+            (axis) => {
+                expect(() =>
+                    validateSpec(data, {
+                        ...minimalSpec,
+                        scales: {
+                            [axis]: {
+                                type: 'log',
+                                label: 'Axis',
+                                range: [1, 100],
+                                beginAtZero: false,
+                                breaks: [1, 10, 100],
+                                labels: ['One', 'Ten', 'One hundred'],
+                            },
+                        },
+                    })
+                ).not.toThrow();
+            }
+        );
+
+        test.each([
+            [{ range: [] }, 'range must contain two finite numbers'],
+            [{ range: [0] }, 'range must contain two finite numbers'],
+            [{ range: [0, Infinity] }, 'range must contain two finite numbers'],
+            [{ range: [2, 1] }, 'range values must be strictly increasing'],
+            [{ beginAtZero: 'yes' }, 'beginAtZero must be a boolean'],
+            [{ breaks: '1,2' }, 'breaks must be an array'],
+            [{ labels: 'One,Two' }, 'labels must be an array'],
+            [
+                { breaks: [1, Infinity], labels: ['One', 'Infinity'] },
+                'breaks[1] must be a finite number',
+            ],
+            [
+                { breaks: [2, 1], labels: ['Two', 'One'] },
+                'breaks must be strictly increasing',
+            ],
+            [
+                { breaks: [1, 1], labels: ['One', 'One again'] },
+                'breaks must be strictly increasing',
+            ],
+            [
+                { breaks: [1], labels: [null] },
+                'labels[0] must be a string or finite number',
+            ],
+            [
+                { breaks: [1], labels: [] },
+                'breaks and labels must have the same length',
+            ],
+        ])('rejects invalid numeric axis option %#', (axisSpec, suffix) => {
+            expect(() =>
+                validateSpec(data, {
+                    ...minimalSpec,
+                    scales: { x: axisSpec },
+                })
+            ).toThrow(`spec.scales.x.${suffix}`);
+        });
+
+        test.each([
+            [
+                { type: 'log', beginAtZero: true },
+                'beginAtZero cannot be true for a log scale',
+            ],
+            [
+                { type: 'log', range: [0, 100] },
+                'range values must be greater than zero for a log scale',
+            ],
+            [
+                {
+                    type: 'log',
+                    breaks: [0, 1],
+                    labels: ['Zero', 'One'],
+                },
+                'breaks[0] must be greater than zero for a log scale',
+            ],
+        ])('rejects incompatible log option %#', (axisSpec, suffix) => {
+            expect(() =>
+                validateSpec(data, {
+                    ...minimalSpec,
+                    scales: { x: axisSpec },
+                })
+            ).toThrow(`spec.scales.x.${suffix}`);
+        });
     });
 
     describe('categorical color', () => {
@@ -412,10 +496,6 @@ describe('points/validateSpec', () => {
         [
             { ...minimalSpec, unsupported: true },
             'spec.unsupported is not supported',
-        ],
-        [
-            { ...minimalSpec, scales: { x: { range: [0, 1] } } },
-            'spec.scales.x.range is not supported',
         ],
         [
             { ...minimalSpec, labels: { captions: [] } },
