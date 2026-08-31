@@ -13,6 +13,12 @@
                 max-width: 960px;
                 width: 90%;
             }
+
+            .selection-controls {
+                margin: 1rem auto;
+                max-width: 960px;
+                width: 90%;
+            }
         </style>
 
         <script src="../index.js"></script>
@@ -20,6 +26,16 @@
 
     <body>
         <main class="gsm-viz--example">
+            <div class="selection-controls">
+                <p>
+                    Click points or focus the chart and use the arrow keys plus
+                    Enter to select multiple sites.
+                </p>
+                <button id="select-europe" type="button">Select Europe</button>
+                <button id="clear-selection" type="button">
+                    Clear selection
+                </button>
+            </div>
             <div id="points-container"></div>
         </main>
 
