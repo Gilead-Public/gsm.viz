@@ -1,7 +1,17 @@
 import structureData from '../../src/points/structureData.js';
 
 function makeSpec(data, mapping = { x: 'xValue', y: 'yValue' }) {
-    return { data, mapping };
+    return {
+        data,
+        mapping,
+        scales: {
+            color: {
+                colors: {},
+                palette: ['#4e79a7', '#f28e2b', '#e15759'],
+                order: [],
+            },
+        },
+    };
 }
 
 describe('points/structureData', () => {
@@ -201,6 +211,203 @@ describe('points/structureData', () => {
             x: 'xValue',
             y: 'yValue',
             key: 'id',
+        });
+    });
+
+    describe('categorical color', () => {
+        const colorData = [
+            { xValue: 1, yValue: 2, id: 'A', group: 'Treatment' },
+            { xValue: 3, yValue: 4, id: 'B', group: 'Control' },
+            { xValue: 5, yValue: 6, id: 'C', group: 'Treatment' },
+        ];
+
+        function makeColorSpec(data = colorData, colorScale = {}) {
+            const spec = makeSpec(data, {
+                x: 'xValue',
+                y: 'yValue',
+                key: 'id',
+                color: 'group',
+            });
+            spec.scales.color = {
+                ...spec.scales.color,
+                ...colorScale,
+            };
+            return spec;
+        }
+
+        test('creates one dataset per first-seen color level', () => {
+            const result = structureData(makeColorSpec());
+
+            expect(result.datasets.map((dataset) => dataset.label)).toEqual([
+                'Treatment',
+                'Control',
+            ]);
+            expect(result.datasets[0].data.map((point) => point._key)).toEqual([
+                'A',
+                'C',
+            ]);
+            expect(result.datasets[1].data.map((point) => point._key)).toEqual([
+                'B',
+            ]);
+            expect(result.datasets[0].data[0]._datum).toBe(colorData[0]);
+            expect(result.datasets[0].data[0]._color).toBe('Treatment');
+        });
+
+        test('uses named colors before deterministic palette fallbacks', () => {
+            const result = structureData(
+                makeColorSpec(colorData, {
+                    colors: { Treatment: '#123456' },
+                    palette: ['#abcdef', '#fedcba'],
+                })
+            );
+
+            expect(
+                result.datasets.map((dataset) => dataset.backgroundColor)
+            ).toEqual(['#123456', '#fedcba']);
+            expect(
+                result.datasets.map((dataset) => dataset.borderColor)
+            ).toEqual(['#123456', '#fedcba']);
+        });
+
+        test('honors explicit order, appends new levels, and retains absent groups', () => {
+            const scale = {
+                order: ['Control', 'Placebo', 'Treatment'],
+                palette: ['#111111', '#222222', '#333333', '#444444'],
+            };
+            const withExtra = [
+                ...colorData,
+                { xValue: 7, yValue: 8, id: 'D', group: 'Other' },
+            ];
+            const datasets = structureData(
+                makeColorSpec(withExtra, scale)
+            ).datasets;
+
+            expect(datasets.map((dataset) => dataset.label)).toEqual([
+                'Control',
+                'Placebo',
+                'Treatment',
+                'Other',
+            ]);
+            expect(datasets[1].data).toEqual([]);
+            expect(datasets.map((dataset) => dataset.backgroundColor)).toEqual([
+                '#111111',
+                '#222222',
+                '#333333',
+                '#444444',
+            ]);
+        });
+
+        test('keeps ordered group colors stable when a group is absent', () => {
+            const scale = {
+                order: ['Control', 'Treatment'],
+                palette: ['#111111', '#222222'],
+            };
+            const complete = structureData(
+                makeColorSpec(colorData, scale)
+            ).datasets;
+            const controlOnly = structureData(
+                makeColorSpec([colorData[1]], scale)
+            ).datasets;
+
+            expect(
+                complete.map(({ label, backgroundColor }) => ({
+                    label,
+                    backgroundColor,
+                }))
+            ).toEqual(
+                controlOnly.map(({ label, backgroundColor }) => ({
+                    label,
+                    backgroundColor,
+                }))
+            );
+            expect(controlOnly[1].data).toEqual([]);
+        });
+
+        test.each([
+            ['missing field', {}],
+            ['undefined', { group: undefined }],
+            ['null', { group: null }],
+            ['empty string', { group: '' }],
+            ['NaN', { group: NaN }],
+        ])('uses a neutral Missing level for %s', (_case, colorValue) => {
+            const row = { xValue: 1, yValue: 2, id: 'A', ...colorValue };
+            const [dataset] = structureData(makeColorSpec([row])).datasets;
+
+            expect(dataset.label).toBe('(Missing)');
+            expect(dataset.backgroundColor).toBe('#bdbdbd');
+            expect(dataset.data[0]._color).toBe('(Missing)');
+        });
+
+        test('keeps a literal Missing category separate from absent values', () => {
+            const rows = [
+                {
+                    xValue: 1,
+                    yValue: 2,
+                    id: 'literal',
+                    group: '(Missing)',
+                },
+                { xValue: 3, yValue: 4, id: 'absent', group: null },
+            ];
+            const datasets = structureData(
+                makeColorSpec(rows, {
+                    colors: { '(Missing)': '#ff0000' },
+                })
+            ).datasets;
+
+            expect(datasets).toHaveLength(2);
+            expect(datasets[0].backgroundColor).toBe('#ff0000');
+            expect(datasets[0].data.map((point) => point._key)).toEqual([
+                'literal',
+            ]);
+            expect(datasets[1].backgroundColor).toBe('#bdbdbd');
+            expect(datasets[1].data.map((point) => point._key)).toEqual([
+                'absent',
+            ]);
+        });
+
+        test.each([
+            ['boolean', true],
+            ['infinite number', Infinity],
+            ['object', {}],
+        ])('rejects an invalid %s mapped color value', (_case, group) => {
+            expect(() =>
+                structureData(
+                    makeColorSpec([{ xValue: 1, yValue: 2, id: 'A', group }])
+                )
+            ).toThrow(
+                'data[0].group mapped by spec.mapping.color must be a string, finite number, or missing'
+            );
+        });
+
+        test('does not mutate frozen color data or scale configuration', () => {
+            const row = Object.freeze({
+                xValue: 1,
+                yValue: 2,
+                group: 'A',
+            });
+            const data = Object.freeze([row]);
+            const color = Object.freeze({
+                colors: Object.freeze({ A: '#112233' }),
+                palette: Object.freeze(['#445566']),
+                order: Object.freeze(['A']),
+            });
+            const spec = Object.freeze({
+                data,
+                mapping: Object.freeze({
+                    x: 'xValue',
+                    y: 'yValue',
+                    color: 'group',
+                }),
+                scales: Object.freeze({ color }),
+            });
+
+            expect(() => structureData(spec)).not.toThrow();
+            expect(row).toEqual({ xValue: 1, yValue: 2, group: 'A' });
+            expect(color).toEqual({
+                colors: { A: '#112233' },
+                palette: ['#445566'],
+                order: ['A'],
+            });
         });
     });
 });

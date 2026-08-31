@@ -2,10 +2,15 @@ import defaults from './defaults.js';
 
 function mergeDefaults(defaultValues, userValues = {}) {
     return Object.keys(defaultValues).reduce((merged, field) => {
-        merged[field] =
+        const value =
             userValues[field] === undefined
                 ? defaultValues[field]
                 : userValues[field];
+        merged[field] = Array.isArray(value)
+            ? [...value]
+            : value !== null && typeof value === 'object'
+            ? { ...value }
+            : value;
         return merged;
     }, {});
 }
@@ -24,6 +29,7 @@ export default function mergeSpec(data, spec) {
         scales: {
             x: mergeDefaults(defaults.scales.x, spec.scales?.x),
             y: mergeDefaults(defaults.scales.y, spec.scales?.y),
+            color: mergeDefaults(defaults.scales.color, spec.scales?.color),
         },
         labels: mergeDefaults(defaults.labels, spec.labels),
         tooltip: mergeDefaults(defaults.tooltip, spec.tooltip),
