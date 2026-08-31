@@ -1,14 +1,19 @@
 import Chart from 'chart.js/auto';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 import validateSpec from './points/validateSpec.js';
 import mergeSpec from './points/mergeSpec.js';
 import structureData from './points/structureData.js';
+import structureLines from './points/structureLines.js';
 import getScales from './points/getScales.js';
 import getPlugins from './points/getPlugins.js';
 import onClick from './points/onClick.js';
 import onHover from './points/onHover.js';
+import getPointInteractionMode from './points/pointInteractionMode.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
+
+Chart.register(annotationPlugin);
 
 function asSentence(value) {
     const text = value?.trim();
@@ -26,7 +31,7 @@ function getEncodingLabel(spec, chartData, aesthetic) {
     const levels = [];
     const seen = new Set();
     chartData.datasets
-        .filter((dataset) => dataset.data.length > 0)
+        .filter((dataset) => !dataset._annotation && dataset.data.length > 0)
         .forEach((dataset) => {
             const value = dataset[`_${aesthetic}`];
             const missing = dataset[`_${aesthetic}Missing`];
@@ -96,6 +101,7 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
 
     const merged = mergeSpec(data, spec);
     const chartData = structureData(merged);
+    chartData.datasets.push(...structureLines(merged));
     const scales = getScales(merged);
 
     el._gsmVizPointsHoverCallbackWrapper ??= () => {};
@@ -118,6 +124,13 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         },
         options: {
             animation: merged.theme.animation,
+            ...(merged.annotations.lines.length
+                ? {
+                      interaction: {
+                          mode: getPointInteractionMode('point'),
+                      },
+                  }
+                : {}),
             maintainAspectRatio: merged.theme.maintainAspectRatio,
             onClick,
             onHover,

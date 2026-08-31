@@ -24686,12 +24686,12 @@ var gsmViz = (() => {
       spec.annotations?.labels?.total?.formatter,
       "spec.annotations.labels.total.formatter"
     );
-    const referenceLines2 = spec.annotations?.referenceLines;
-    if (referenceLines2 !== void 0) {
-      if (!Array.isArray(referenceLines2)) {
+    const referenceLines3 = spec.annotations?.referenceLines;
+    if (referenceLines3 !== void 0) {
+      if (!Array.isArray(referenceLines3)) {
         throw new Error("spec.annotations.referenceLines must be an array");
       }
-      referenceLines2.forEach((line, i) => {
+      referenceLines3.forEach((line, i) => {
         const prefix = `spec.annotations.referenceLines[${i}]`;
         if (line === null || typeof line !== "object" || Array.isArray(line) || Object.getPrototypeOf(line) !== Object.prototype && Object.getPrototypeOf(line) !== null) {
           throw new Error(`${prefix} must be a plain object`);
@@ -28197,6 +28197,7 @@ var gsmViz = (() => {
       "mapping",
       "scales",
       "labels",
+      "annotations",
       "tooltip",
       "callbacks",
       "selection",
@@ -28209,6 +28210,31 @@ var gsmViz = (() => {
     continuousAestheticScale: ["range"],
     shapeScale: ["values", "order", "label"],
     labels: ["title", "caption", "description"],
+    annotations: ["referenceLines", "lines"],
+    referenceLine: [
+      "axis",
+      "value",
+      "label",
+      "color",
+      "width",
+      "dash",
+      "labelPosition"
+    ],
+    annotationLine: [
+      "data",
+      "mapping",
+      "order",
+      "label",
+      "color",
+      "colors",
+      "palette",
+      "width",
+      "dash",
+      "tension",
+      "stepped",
+      "showInLegend"
+    ],
+    annotationLineMapping: ["x", "y", "group"],
     tooltip: [
       "format",
       "formatter",
@@ -28333,6 +28359,26 @@ var gsmViz = (() => {
       throw new Error(`${path}.${unsupported} is not supported`);
     }
   }
+  function validateNonEmptyString(value, path) {
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new Error(`${path} must be a non-empty string`);
+    }
+  }
+  function validateColor(value, path) {
+    if (value !== void 0) {
+      validateRequiredColor(value, path);
+    }
+  }
+  function validateRequiredColor(value, path) {
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new Error(`${path} must be a non-empty string`);
+    }
+  }
+  function validateDash(value, path) {
+    if (value !== void 0 && (!Array.isArray(value) || !value.every((segment) => Number.isFinite(segment) && segment >= 0))) {
+      throw new Error(`${path} must contain non-negative finite numbers`);
+    }
+  }
   function validateRequiredMapping(mapping, field) {
     const value = mapping[field];
     if (value === void 0) {
@@ -28340,6 +28386,126 @@ var gsmViz = (() => {
     }
     if (typeof value !== "string" || value.trim().length === 0) {
       throw new Error(`spec.mapping.${field} must be a non-empty string`);
+    }
+  }
+  function validateReferenceLines(referenceLines3, spec) {
+    if (referenceLines3 === void 0) return;
+    if (!Array.isArray(referenceLines3)) {
+      throw new Error("spec.annotations.referenceLines must be an array");
+    }
+    referenceLines3.forEach((line, index3) => {
+      const path = `spec.annotations.referenceLines[${index3}]`;
+      validatePlainObject(line, path);
+      validateSupportedFields(line, supportedFields.referenceLine, path);
+      if (!["x", "y"].includes(line.axis)) {
+        throw new Error(`${path}.axis must be 'x' or 'y'`);
+      }
+      if (!Number.isFinite(line.value)) {
+        throw new Error(`${path}.value must be a finite number`);
+      }
+      if (spec.scales?.[line.axis]?.type === "log" && line.value <= 0) {
+        throw new Error(
+          `${path}.value must be greater than zero for a log scale`
+        );
+      }
+      if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+        throw new Error(`${path}.label must be a string or null`);
+      }
+      validateColor(line.color, `${path}.color`);
+      if (line.width !== void 0 && (!Number.isFinite(line.width) || line.width <= 0)) {
+        throw new Error(`${path}.width must be a positive finite number`);
+      }
+      validateDash(line.dash, `${path}.dash`);
+      if (line.labelPosition !== void 0 && !["start", "center", "end"].includes(line.labelPosition)) {
+        throw new Error(
+          `${path}.labelPosition must be 'start', 'center', or 'end'`
+        );
+      }
+    });
+  }
+  function validateAnnotationLine(line, index3) {
+    const path = `spec.annotations.lines[${index3}]`;
+    validatePlainObject(line, path);
+    validateSupportedFields(line, supportedFields.annotationLine, path);
+    if (!Array.isArray(line.data)) {
+      throw new Error(`${path}.data must be an array`);
+    }
+    validatePlainObject(line.mapping, `${path}.mapping`);
+    validateSupportedFields(
+      line.mapping,
+      supportedFields.annotationLineMapping,
+      `${path}.mapping`
+    );
+    ["x", "y"].forEach(
+      (axis) => validateNonEmptyString(line.mapping[axis], `${path}.mapping.${axis}`)
+    );
+    if (line.mapping.group !== void 0) {
+      validateNonEmptyString(line.mapping.group, `${path}.mapping.group`);
+    }
+    if (line.order !== void 0) {
+      validateDiscreteOrder(line.order, `${path}.order`);
+      if (line.mapping.group === void 0) {
+        throw new Error(`${path}.order requires mapping.group`);
+      }
+    }
+    if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
+    validateColor(line.color, `${path}.color`);
+    if (line.colors !== void 0) {
+      validatePlainObject(line.colors, `${path}.colors`);
+      Object.entries(line.colors).forEach(
+        ([level, color3]) => validateRequiredColor(color3, `${path}.colors.${level}`)
+      );
+      if (line.mapping.group === void 0) {
+        throw new Error(`${path}.colors requires mapping.group`);
+      }
+    }
+    if (line.palette !== void 0) {
+      if (!Array.isArray(line.palette) || line.palette.length === 0) {
+        throw new Error(`${path}.palette must be a non-empty array`);
+      }
+      line.palette.forEach(
+        (color3, colorIndex) => validateRequiredColor(color3, `${path}.palette[${colorIndex}]`)
+      );
+    }
+    if (line.width !== void 0 && (!Number.isFinite(line.width) || line.width <= 0)) {
+      throw new Error(`${path}.width must be a positive finite number`);
+    }
+    validateDash(line.dash, `${path}.dash`);
+    if (line.tension !== void 0 && (!Number.isFinite(line.tension) || line.tension < 0 || line.tension > 1)) {
+      throw new Error(
+        `${path}.tension must be a finite number between 0 and 1`
+      );
+    }
+    if (line.stepped !== void 0 && typeof line.stepped !== "boolean" && !["before", "after", "middle"].includes(line.stepped)) {
+      throw new Error(
+        `${path}.stepped must be a boolean, 'before', 'after', or 'middle'`
+      );
+    }
+    if (line.showInLegend !== void 0 && typeof line.showInLegend !== "boolean") {
+      throw new Error(`${path}.showInLegend must be a boolean`);
+    }
+    if (line.showInLegend === true && line.mapping.group === void 0 && (typeof line.label !== "string" || line.label.trim().length === 0)) {
+      throw new Error(
+        `${path}.label must be a non-empty string when showInLegend is true without mapping.group`
+      );
+    }
+  }
+  function validateAnnotations(annotations5, spec) {
+    if (annotations5 === void 0) return;
+    validatePlainObject(annotations5, "spec.annotations");
+    validateSupportedFields(
+      annotations5,
+      supportedFields.annotations,
+      "spec.annotations"
+    );
+    validateReferenceLines(annotations5.referenceLines, spec);
+    if (annotations5.lines !== void 0) {
+      if (!Array.isArray(annotations5.lines)) {
+        throw new Error("spec.annotations.lines must be an array");
+      }
+      annotations5.lines.forEach(validateAnnotationLine);
     }
   }
   function validateOptionalString(value, path) {
@@ -28589,6 +28755,7 @@ var gsmViz = (() => {
         validateOptionalString(spec.labels[field], `spec.labels.${field}`);
       });
     }
+    validateAnnotations(spec.annotations, spec);
     if (spec.tooltip !== void 0) {
       validatePlainObject(spec.tooltip, "spec.tooltip");
       validateSupportedFields(
@@ -28697,6 +28864,10 @@ var gsmViz = (() => {
       caption: void 0,
       description: void 0
     },
+    annotations: {
+      referenceLines: [],
+      lines: []
+    },
     tooltip: {
       format: void 0,
       formatter: void 0
@@ -28733,6 +28904,25 @@ var gsmViz = (() => {
       ...tooltip5.callbacks ? { callbacks: { ...tooltip5.callbacks } } : {}
     };
   }
+  function mergeAnnotations(annotations5 = {}) {
+    const referenceLines3 = annotations5.referenceLines === void 0 ? defaults_default3.annotations.referenceLines : annotations5.referenceLines;
+    const lines = annotations5.lines === void 0 ? defaults_default3.annotations.lines : annotations5.lines;
+    return {
+      referenceLines: referenceLines3.map((line) => ({
+        ...line,
+        ...line.dash ? { dash: [...line.dash] } : {}
+      })),
+      lines: lines.map((line) => ({
+        ...line,
+        data: [...line.data],
+        mapping: { ...line.mapping },
+        ...line.order ? { order: [...line.order] } : {},
+        ...line.colors ? { colors: { ...line.colors } } : {},
+        ...line.palette ? { palette: [...line.palette] } : {},
+        ...line.dash ? { dash: [...line.dash] } : {}
+      }))
+    };
+  }
   function mergeSpec3(data, spec) {
     return {
       data,
@@ -28749,6 +28939,7 @@ var gsmViz = (() => {
         shape: mergeDefaults(defaults_default3.scales.shape, spec.scales?.shape)
       },
       labels: mergeDefaults(defaults_default3.labels, spec.labels),
+      annotations: mergeAnnotations(spec.annotations),
       tooltip: mergeTooltip(spec.tooltip),
       callbacks: mergeDefaults(defaults_default3.callbacks, spec.callbacks),
       selection: mergeDefaults(defaults_default3.selection, spec.selection),
@@ -29094,6 +29285,146 @@ var gsmViz = (() => {
     };
   }
 
+  // src/points/structureLines.js
+  var MISSING_LABEL = "(Missing)";
+  var MISSING_COLOR2 = "#bdbdbd";
+  var DEFAULT_COLOR = "#666666";
+  function getCoordinate2(row, field, axis, layerIndex, rowIndex, scale) {
+    const value = row?.[field];
+    const path = `spec.annotations.lines[${layerIndex}].data[${rowIndex}].${field} mapped by mapping.${axis}`;
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`${path} must be a finite number`);
+    }
+    if (scale.type === "log" && value <= 0) {
+      throw new Error(`${path} must be greater than zero for a log scale`);
+    }
+    return value;
+  }
+  function getGroupLevel(row, field, layerIndex, rowIndex) {
+    const value = row?.[field];
+    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
+      return { value: MISSING_LABEL, missing: true };
+    }
+    if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+      throw new Error(
+        `spec.annotations.lines[${layerIndex}].data[${rowIndex}].${field} mapped by mapping.group must be a string, finite number, or missing`
+      );
+    }
+    return { value, missing: false };
+  }
+  function getLevelKey2(level) {
+    return level.missing ? "missing" : JSON.stringify([typeof level.value, level.value]);
+  }
+  function getOrderedLevel2(value) {
+    return value === null ? { value: MISSING_LABEL, missing: true } : { value, missing: false };
+  }
+  function getLevelLabel2(level) {
+    return !level.missing && level.value === MISSING_LABEL ? JSON.stringify(level.value) : String(level.value);
+  }
+  function resolveLevels2(records, order = []) {
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    const add = (level) => {
+      const key = getLevelKey2(level);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push(level);
+      }
+    };
+    order.map(getOrderedLevel2).forEach(add);
+    records.forEach(({ group: group2 }) => add(group2));
+    return levels;
+  }
+  function getColor2(level, index3, line, defaultPalette) {
+    if (level?.missing) return MISSING_COLOR2;
+    const namedLevel = String(level?.value);
+    if (level && Object.prototype.hasOwnProperty.call(line.colors || {}, namedLevel)) {
+      return line.colors[namedLevel];
+    }
+    if (line.color !== void 0) return line.color;
+    const palette = line.palette || defaultPalette;
+    return level ? palette[index3 % palette.length] : line.color ?? DEFAULT_COLOR;
+  }
+  function makeDataset(line, data, color3, label) {
+    return {
+      type: "line",
+      label,
+      data,
+      borderColor: color3,
+      backgroundColor: color3,
+      borderWidth: line.width ?? 2,
+      borderDash: line.dash ? [...line.dash] : [],
+      tension: line.tension ?? 0,
+      stepped: line.stepped ?? false,
+      fill: false,
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      pointHitRadius: 0,
+      pointStyle: "line",
+      order: 1,
+      _annotation: true,
+      _showInLegend: line.showInLegend ?? false
+    };
+  }
+  function structureLine(line, layerIndex, spec) {
+    const records = line.data.map((row, rowIndex) => ({
+      point: {
+        x: getCoordinate2(
+          row,
+          line.mapping.x,
+          "x",
+          layerIndex,
+          rowIndex,
+          spec.scales.x
+        ),
+        y: getCoordinate2(
+          row,
+          line.mapping.y,
+          "y",
+          layerIndex,
+          rowIndex,
+          spec.scales.y
+        ),
+        _datum: row
+      },
+      group: line.mapping.group ? getGroupLevel(row, line.mapping.group, layerIndex, rowIndex) : void 0
+    }));
+    if (!line.mapping.group) {
+      return [
+        makeDataset(
+          line,
+          records.map(({ point }) => point),
+          line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
+          line.label ?? ""
+        )
+      ];
+    }
+    const groups2 = /* @__PURE__ */ new Map();
+    records.forEach((record) => {
+      const key = getLevelKey2(record.group);
+      if (!groups2.has(key)) groups2.set(key, []);
+      groups2.get(key).push(record.point);
+    });
+    return resolveLevels2(records, line.order).map((level, index3) => {
+      const levelLabel = getLevelLabel2(level);
+      const label = line.label ? `${line.label}: ${levelLabel}` : levelLabel;
+      const dataset = makeDataset(
+        line,
+        groups2.get(getLevelKey2(level)) || [],
+        getColor2(level, index3, line, spec.scales.color.palette),
+        label
+      );
+      dataset._annotationGroup = level.value;
+      dataset._annotationGroupMissing = level.missing;
+      return dataset;
+    });
+  }
+  function structureLines(spec) {
+    return spec.annotations.lines.flatMap(
+      (line, index3) => structureLine(line, index3, spec)
+    );
+  }
+
   // src/points/getScales.js
   function getAxisScale(scale, mapping) {
     const label = scale.label !== void 0 ? scale.label : mapping;
@@ -29174,11 +29505,71 @@ var gsmViz = (() => {
     return config;
   }
 
+  // src/points/pointInteractionMode.js
+  var MODE_PREFIX = "gsmPoints";
+  function getPointInteractionMode(baseMode) {
+    const evaluate = Interaction.modes[baseMode];
+    if (typeof evaluate !== "function") return baseMode;
+    const mode = `${MODE_PREFIX}:${baseMode}`;
+    if (Interaction.modes[mode]) return mode;
+    Interaction.modes[mode] = (chart, event, options, useFinalPosition) => {
+      const metadata = chart.data.datasets.map(
+        (dataset, index3) => dataset._annotation ? chart.getDatasetMeta(index3) : null
+      ).filter(Boolean);
+      const visibility = metadata.map(({ visible }) => visible);
+      metadata.forEach((meta) => {
+        meta.visible = false;
+      });
+      try {
+        return evaluate(chart, event, options, useFinalPosition);
+      } finally {
+        metadata.forEach((meta, index3) => {
+          meta.visible = visibility[index3];
+        });
+      }
+    };
+    return mode;
+  }
+
+  // src/points/referenceLines.js
+  function referenceLines2(spec) {
+    const lines = spec.annotations?.referenceLines;
+    if (!lines?.length) return null;
+    return lines.map((line) => {
+      const color3 = line.color ?? "#666666";
+      const annotation2 = {
+        type: "line",
+        adjustScaleRange: true,
+        borderColor: color3,
+        borderWidth: line.width ?? 1,
+        borderDash: line.dash ? [...line.dash] : [],
+        [`${line.axis}Min`]: line.value,
+        [`${line.axis}Max`]: line.value
+      };
+      if (line.label) {
+        annotation2.label = {
+          display: true,
+          content: line.label,
+          color: color3,
+          backgroundColor: "white",
+          position: line.labelPosition ?? "end",
+          rotation: "auto",
+          font: { size: 12 },
+          padding: 2
+        };
+      }
+      return annotation2;
+    });
+  }
+
   // src/points/getPlugins.js
   function getPlugins3(spec) {
     const { title: title4, caption } = spec.labels;
     const hasColor = !!spec.mapping.color;
     const hasShape = !!spec.mapping.shape;
+    const lineLayers = spec.annotations?.lines || [];
+    const hasLines = lineLayers.length > 0;
+    const hasLineLegend = lineLayers.some((line) => line.showInLegend);
     const getScaleLabel = (aesthetic) => spec.scales[aesthetic].label !== void 0 ? spec.scales[aesthetic].label : spec.mapping[aesthetic];
     const colorLabel = hasColor ? getScaleLabel("color") : void 0;
     const shapeLabel = hasShape ? getScaleLabel("shape") : void 0;
@@ -29186,7 +29577,7 @@ var gsmViz = (() => {
     const getSharedLabel = () => spec.scales.color.label !== void 0 ? spec.scales.color.label : spec.scales.shape.label !== void 0 ? spec.scales.shape.label : spec.mapping.color;
     const legendTitle = (hasSharedLevel ? getSharedLabel() : [colorLabel, shapeLabel].filter(Boolean).join(" / ")) || "";
     const legend5 = {
-      display: hasColor || hasShape
+      display: hasColor || hasShape || hasLineLegend
     };
     if (legend5.display) {
       legend5.title = {
@@ -29197,6 +29588,24 @@ var gsmViz = (() => {
     if (hasShape) {
       legend5.labels = { usePointStyle: true };
     }
+    if (hasLines) {
+      legend5.labels = {
+        ...legend5.labels,
+        filter: (item, data) => {
+          const dataset = data.datasets[item.datasetIndex];
+          return dataset?._annotation ? dataset._showInLegend : hasColor || hasShape;
+        }
+      };
+    }
+    const tooltip5 = buildTooltip2(spec.tooltip);
+    if (hasLines) {
+      const userFilter = tooltip5.filter;
+      tooltip5.mode = getPointInteractionMode(tooltip5.mode || "point");
+      tooltip5.filter = function(item, ...args) {
+        return !item.dataset?._annotation && (!userFilter || userFilter.call(this, item, ...args));
+      };
+    }
+    const lines = referenceLines2(spec);
     return {
       title: {
         display: !!title4,
@@ -29209,7 +29618,13 @@ var gsmViz = (() => {
         text: caption || ""
       },
       legend: legend5,
-      tooltip: buildTooltip2(spec.tooltip)
+      tooltip: tooltip5,
+      ...lines ? {
+        annotation: {
+          annotations: lines,
+          clip: false
+        }
+      } : {}
     };
   }
 
@@ -29217,7 +29632,9 @@ var gsmViz = (() => {
   function onClick3(event, activeElements, chart) {
     if (!activeElements.length) return;
     const { datasetIndex, index: index3 } = activeElements[0];
-    const point = chart.data.datasets[datasetIndex]?.data[index3];
+    const dataset = chart.data.datasets[datasetIndex];
+    if (dataset?._annotation) return;
+    const point = dataset?.data[index3];
     if (point && chart.data._spec_.callbacks.onClick) {
       chart.data._spec_.callbacks.onClick(point, event);
     }
@@ -29238,15 +29655,21 @@ var gsmViz = (() => {
       if (target) target.style.cursor = "default";
       return;
     }
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const dataset = chart.data.datasets[datasetIndex];
+    if (dataset?._annotation) {
+      if (target) target.style.cursor = "default";
+      return;
+    }
     if (target) target.style.cursor = "pointer";
     if (callbacks.onHover) {
-      const { datasetIndex, index: index3 } = activeElements[0];
-      const point = chart.data.datasets[datasetIndex]?.data[index3];
+      const point = dataset?.data[index3];
       if (point) callbacks.onHover(point, event);
     }
   }
 
   // src/points.js
+  auto_default.register(annotation);
   function asSentence(value) {
     const text = value?.trim();
     if (!text) {
@@ -29258,7 +29681,7 @@ var gsmViz = (() => {
     if (!spec.mapping[aesthetic]) return "";
     const levels = [];
     const seen = /* @__PURE__ */ new Set();
-    chartData.datasets.filter((dataset) => dataset.data.length > 0).forEach((dataset) => {
+    chartData.datasets.filter((dataset) => !dataset._annotation && dataset.data.length > 0).forEach((dataset) => {
       const value = dataset[`_${aesthetic}`];
       const missing = dataset[`_${aesthetic}Missing`];
       const key = missing ? "missing" : JSON.stringify([typeof value, value]);
@@ -29303,6 +29726,7 @@ var gsmViz = (() => {
     }
     const merged = mergeSpec3(data, spec);
     const chartData = structureData4(merged);
+    chartData.datasets.push(...structureLines(merged));
     const scales2 = getScales3(merged);
     el._gsmVizPointsHoverCallbackWrapper ??= () => {
     };
@@ -29325,6 +29749,11 @@ var gsmViz = (() => {
       },
       options: {
         animation: merged.theme.animation,
+        ...merged.annotations.lines.length ? {
+          interaction: {
+            mode: getPointInteractionMode("point")
+          }
+        } : {},
         maintainAspectRatio: merged.theme.maintainAspectRatio,
         onClick: onClick3,
         onHover: onHover3,
