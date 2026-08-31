@@ -1,5 +1,6 @@
 import buildTooltip from './buildTooltip.js';
 import getPointInteractionMode from './pointInteractionMode.js';
+import pointLabels from './pointLabels.js';
 import referenceLines from './referenceLines.js';
 
 /**
@@ -70,6 +71,7 @@ export default function getPlugins(spec) {
         };
     }
     const lines = referenceLines(spec);
+    const labels = spec.annotations?.labels?.point;
 
     return {
         title: {
@@ -84,6 +86,7 @@ export default function getPlugins(spec) {
         },
         legend,
         tooltip,
+        ...(labels ? { datalabels: pointLabels(spec) } : {}),
         ...(lines
             ? {
                   annotation: {
