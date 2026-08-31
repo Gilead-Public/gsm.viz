@@ -92,7 +92,7 @@ function getColor(level, index, line, defaultPalette) {
         : line.color ?? DEFAULT_COLOR;
 }
 
-function makeDataset(line, data, color, label) {
+function makeDataset(line, data, color, label, layerIndex) {
     return {
         type: 'line',
         label,
@@ -110,6 +110,7 @@ function makeDataset(line, data, color, label) {
         pointStyle: 'line',
         order: 1,
         _annotation: true,
+        _annotationLayer: layerIndex,
         _showInLegend: line.showInLegend ?? false,
     };
 }
@@ -146,7 +147,8 @@ function structureLine(line, layerIndex, spec) {
                 line,
                 records.map(({ point }) => point),
                 line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
-                line.label ?? ''
+                line.label ?? '',
+                layerIndex
             ),
         ];
     }
@@ -165,7 +167,8 @@ function structureLine(line, layerIndex, spec) {
             line,
             groups.get(getLevelKey(level)) || [],
             getColor(level, index, line, spec.scales.color.palette),
-            label
+            label,
+            layerIndex
         );
         dataset._annotationGroup = level.value;
         dataset._annotationGroupMissing = level.missing;
