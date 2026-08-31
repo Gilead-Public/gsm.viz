@@ -124,6 +124,72 @@ describe('facetPoints/buildSubSpec', () => {
         });
     });
 
+    test('filters facet-aware line rows and repeats global line rows', () => {
+        const facetedRows = [
+            { region: 'North', x: 1, y: 2 },
+            { region: 'South', x: 3, y: 4 },
+        ];
+        const globalRows = [
+            { x: 0, y: 1 },
+            { x: 5, y: 6 },
+        ];
+        const merged = makeMerged({
+            annotations: {
+                lines: [
+                    {
+                        data: facetedRows,
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                    {
+                        data: globalRows,
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+
+        const result = buildSubSpec(
+            'North',
+            merged,
+            {},
+            { colorOrder: [], shapeOrder: [] }
+        );
+
+        expect(result.annotations.lines[0].data).toEqual([facetedRows[0]]);
+        expect(result.annotations.lines[1].data).toEqual(globalRows);
+        expect(result.annotations.lines[1].data).not.toBe(globalRows);
+    });
+
+    test('uses typed and canonical missing identity for faceted lines', () => {
+        const rows = [
+            { region: 1, x: 1, y: 1 },
+            { region: '1', x: 2, y: 2 },
+            { region: null, x: 3, y: 3 },
+            { region: '', x: 4, y: 4 },
+        ];
+        const merged = makeMerged({
+            annotations: {
+                lines: [
+                    {
+                        data: rows,
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+        const styles = { colorOrder: [], shapeOrder: [] };
+
+        expect(
+            buildSubSpec(1, merged, {}, styles).annotations.lines[0].data
+        ).toEqual([rows[0]]);
+        expect(
+            buildSubSpec('1', merged, {}, styles).annotations.lines[0].data
+        ).toEqual([rows[1]]);
+        expect(
+            buildSubSpec(null, merged, {}, styles).annotations.lines[0].data
+        ).toEqual([rows[2], rows[3]]);
+    });
+
     test('returns independent range and order arrays', () => {
         const globalScales = { xMin: 0, xMax: 10 };
         const styles = { colorOrder: ['A'], shapeOrder: [] };

@@ -62,6 +62,7 @@ describe('points auxiliary line data', () => {
                 pointHitRadius: 0,
                 order: 1,
                 _annotation: true,
+                _annotationLayer: 0,
                 _showInLegend: true,
             })
         );

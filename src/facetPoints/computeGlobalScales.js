@@ -1,5 +1,6 @@
 import structureData from '../points/structureData.js';
 import structureLines from '../points/structureLines.js';
+import getFacetLines, { validateFacetLines } from './facetLines.js';
 
 function collectDatasetValues(domains, datasets) {
     datasets.forEach((dataset) => {
@@ -100,11 +101,25 @@ function addDomain(result, axis, values, spec) {
 export default function computeGlobalScales(facetDataMap, spec) {
     const domains = { x: [], y: [] };
 
-    facetDataMap.forEach((facetData) => {
+    validateFacetLines(spec.annotations.lines, spec.facet.field);
+    structureLines(spec);
+
+    facetDataMap.forEach((facetData, facetValue) => {
         const pointData = structureData({ ...spec, data: facetData });
         collectDatasetValues(domains, pointData.datasets);
+        const lines = getFacetLines(
+            spec.annotations.lines,
+            spec.facet.field,
+            facetValue
+        );
+        collectDatasetValues(
+            domains,
+            structureLines({
+                ...spec,
+                annotations: { ...spec.annotations, lines },
+            })
+        );
     });
-    collectDatasetValues(domains, structureLines(spec));
     collectReferenceValues(domains, spec);
 
     const result = {};
