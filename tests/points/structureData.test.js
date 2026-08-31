@@ -424,4 +424,178 @@ describe('points/structureData', () => {
             });
         });
     });
+
+    describe('continuous size and opacity', () => {
+        function makeAestheticSpec(data, mapping, scales = {}) {
+            const spec = makeSpec(data, {
+                x: 'xValue',
+                y: 'yValue',
+                ...mapping,
+            });
+            spec.scales = {
+                ...spec.scales,
+                size: { range: [2, 10] },
+                opacity: { range: [0.2, 0.8] },
+                ...scales,
+            };
+            return spec;
+        }
+
+        test('adds per-point radius and visible hover radius arrays', () => {
+            const datasets = structureData(
+                makeAestheticSpec(
+                    [
+                        { xValue: 1, yValue: 2, magnitude: 0 },
+                        { xValue: 3, yValue: 4, magnitude: 50 },
+                        { xValue: 5, yValue: 6, magnitude: 100 },
+                    ],
+                    { size: 'magnitude' }
+                )
+            ).datasets;
+            const [dataset] = datasets;
+
+            expect(dataset.pointRadius[0]).toBe(2);
+            expect(dataset.pointRadius[1]).toBeCloseTo(Math.sqrt(52));
+            expect(dataset.pointRadius[2]).toBe(10);
+            expect(dataset.pointHoverRadius).toEqual(
+                dataset.pointRadius.map((radius) => radius + 2)
+            );
+            expect(dataset.data.map((point) => point._size)).toEqual([
+                0, 50, 100,
+            ]);
+        });
+
+        test('uses stable midpoint styling for equal domains', () => {
+            const [dataset] = structureData(
+                makeAestheticSpec(
+                    [
+                        { xValue: 1, yValue: 2, size: 5, alpha: 7 },
+                        { xValue: 3, yValue: 4, size: 5, alpha: 7 },
+                    ],
+                    { size: 'size', opacity: 'alpha' }
+                )
+            ).datasets;
+
+            expect(dataset.pointRadius).toEqual([6, 6]);
+            expect(dataset.data.map((point) => point._opacity)).toEqual([7, 7]);
+            expect(dataset.backgroundColor).toEqual([
+                'rgba(78, 121, 167, 0.5)',
+                'rgba(78, 121, 167, 0.5)',
+            ]);
+        });
+
+        test('aligns opacity styles with points across color datasets', () => {
+            const datasets = structureData(
+                makeAestheticSpec(
+                    [
+                        {
+                            xValue: 1,
+                            yValue: 2,
+                            group: 'A',
+                            alpha: 0,
+                        },
+                        {
+                            xValue: 3,
+                            yValue: 4,
+                            group: 'B',
+                            alpha: 5,
+                        },
+                        {
+                            xValue: 5,
+                            yValue: 6,
+                            group: 'A',
+                            alpha: 10,
+                        },
+                    ],
+                    { color: 'group', opacity: 'alpha' },
+                    {
+                        color: {
+                            colors: { A: '#ff0000', B: '#0000ff' },
+                            palette: ['#111111'],
+                            order: ['A', 'B'],
+                        },
+                        size: { range: [2, 10] },
+                        opacity: { range: [0.2, 0.8] },
+                    }
+                )
+            ).datasets;
+
+            expect(datasets[0].data.map((point) => point._opacity)).toEqual([
+                0, 10,
+            ]);
+            expect(datasets[0].backgroundColor).toEqual([
+                'rgba(255, 0, 0, 0.2)',
+                'rgba(255, 0, 0, 0.8)',
+            ]);
+            expect(datasets[1].backgroundColor).toEqual([
+                'rgba(0, 0, 255, 0.5)',
+            ]);
+        });
+
+        test.each([
+            ['size', 'size', -1, 'a finite non-negative number'],
+            ['size', 'size', '5', 'a finite non-negative number'],
+            ['size', 'size', Infinity, 'a finite non-negative number'],
+            ['opacity', 'opacity', NaN, 'a finite number'],
+            ['opacity', 'opacity', '0.5', 'a finite number'],
+            ['opacity', 'opacity', Infinity, 'a finite number'],
+        ])(
+            'rejects invalid mapped %s value %#',
+            (aesthetic, field, value, requirement) => {
+                expect(() =>
+                    structureData(
+                        makeAestheticSpec(
+                            [{ xValue: 1, yValue: 2, [field]: value }],
+                            { [aesthetic]: field }
+                        )
+                    )
+                ).toThrow(
+                    `data[0].${field} mapped by spec.mapping.${aesthetic} must be ${requirement}`
+                );
+            }
+        );
+
+        test('does not mutate source rows or aesthetic ranges', () => {
+            const row = Object.freeze({
+                xValue: 1,
+                yValue: 2,
+                size: 5,
+                opacity: 0.5,
+            });
+            const size = Object.freeze({
+                range: Object.freeze([2, 10]),
+            });
+            const opacity = Object.freeze({
+                range: Object.freeze([0.2, 0.8]),
+            });
+            const spec = Object.freeze({
+                data: Object.freeze([row]),
+                mapping: Object.freeze({
+                    x: 'xValue',
+                    y: 'yValue',
+                    size: 'size',
+                    opacity: 'opacity',
+                }),
+                scales: Object.freeze({
+                    color: Object.freeze({
+                        colors: Object.freeze({}),
+                        palette: Object.freeze(['#4e79a7']),
+                        order: Object.freeze([]),
+                    }),
+                    size,
+                    opacity,
+                }),
+            });
+
+            expect(() => structureData(spec)).not.toThrow();
+            expect(row).toEqual({
+                xValue: 1,
+                yValue: 2,
+                size: 5,
+                opacity: 0.5,
+            });
+            expect(size.range).toEqual([2, 10]);
+            expect(opacity.range).toEqual([0.2, 0.8]);
+        });
+    });
 });
