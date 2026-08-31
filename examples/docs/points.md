@@ -522,6 +522,44 @@ instructions in its accessible label. One initially quiet, visually hidden live
 status announces active-point and selection changes; no per-point DOM nodes are
 created.
 
+## Reactive updates
+
+Every chart also exposes two in-place lifecycle helpers:
+
+```js
+chart.helpers.updateData(chart, nextData);
+chart.helpers.updateData(chart, nextData, replacementSpec);
+chart.helpers.updateSpec(chart, {
+    labels: { title: 'Updated title' },
+    scales: { x: { label: 'Updated x label' } },
+});
+```
+
+Both helpers return the same Chart.js instance and rerun strict validation, data
+structuring, auxiliary lines, scales, plugin options, and the accessible
+summary. They do not replace the canvas or attach duplicate event handlers.
+
+`updateData(chart, data)` retains the chart's current complete spec. Supplying
+the third argument replaces that spec and therefore requires the normal
+`mapping.x` and `mapping.y` fields. `updateSpec(chart, partialSpec)` deep-merges
+the partial object over the current spec: nested sibling fields and callbacks
+remain intact, while supplied arrays replace existing arrays.
+
+Hidden point datasets are restored by typed color/shape identity when that same
+mapping and combination still exists. Positional indexes, display labels, and
+string coercion are not used, so reordered datasets and numeric/string levels
+remain stable. Stale indexes become visible when a group disappears or an
+aesthetic mapping changes. Auxiliary line visibility is rebuilt from the new
+spec.
+
+Because rebuilt points and styles invalidate selection indexes, either update
+clears point/group selection and active tooltip state without calling
+`callbacks.onSelect`. Selection can be applied again after the helper returns.
+Fixed ranges, current callbacks, keyboard behavior, and hidden groups otherwise
+remain configured. Enabling or disabling point labels and keyboard selection
+through `updateSpec` registers or cleans up their plugins, status element, and
+listeners in place.
+
 ## Data rules
 
 -   Values mapped to x and y must already be finite JavaScript numbers and must be

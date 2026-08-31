@@ -13,6 +13,7 @@
 - Add x/y reference lines and strict external auxiliary line layers with grouped styling, automatic-domain participation, and interaction-safe legend controls (#575).
 - Add selective point labels with source-field text, static/field/predicate filtering, formatter payloads, and configurable positioning and typography (#576).
 - Add keyed point and color-group selection with click/multiple modes, programmatic helpers, persistent tooltip identity, undimmed legends, and keyboard/live-status accessibility (#577).
+- Add in-place `updateData` and deep partial `updateSpec` helpers with full-pipeline rebuilds, typed hidden-group restoration, dynamic plugin/keyboard lifecycle handling, and deliberate stale-selection cleanup (#578).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 
