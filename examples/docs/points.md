@@ -33,6 +33,7 @@ const data = [
         arm: 'Control',
         participants: 12,
         completeness: 0.72,
+        status: 'Review',
     },
     {
         exposure: 12,
@@ -41,14 +42,16 @@ const data = [
         arm: 'Treatment',
         participants: 35,
         completeness: 0.94,
+        status: 'On target',
     },
     {
         exposure: 25,
         events: 6,
         site: 'Site 03',
-        arm: 'Treatment',
+        arm: null,
         participants: 48,
         completeness: 0.83,
+        status: 'Review',
     },
 ];
 
@@ -60,6 +63,7 @@ const chart = gsmViz.default.points(element, data, {
         color: 'arm',
         size: 'participants',
         opacity: 'completeness',
+        shape: 'status',
     },
     scales: {
         x: {
@@ -78,11 +82,19 @@ const chart = gsmViz.default.points(element, data, {
                 Control: '#4e79a7',
                 Treatment: '#f28e2b',
             },
-            order: ['Control', 'Treatment'],
+            order: ['Control', 'Treatment', null],
             label: 'Treatment arm',
         },
         size: { range: [4, 12] },
         opacity: { range: [0.35, 1] },
+        shape: {
+            values: {
+                'On target': 'circle',
+                Review: 'triangle',
+            },
+            order: ['On target', 'Review'],
+            label: 'Monitoring status',
+        },
     },
     labels: {
         title: 'Events by exposure',
@@ -112,6 +124,7 @@ const chart = gsmViz.default.points(element, data, {
         color: 'groupField', // optional categorical grouping
         size: 'sizeField',    // optional non-negative numeric field
         opacity: 'alphaField', // optional finite numeric field
+        shape: 'shapeField',   // optional categorical grouping
     },
     scales: {
         x: {
@@ -133,7 +146,7 @@ const chart = gsmViz.default.points(element, data, {
         color: {
             colors: {},       // level-to-CSS-color map
             palette: [/* default categorical colors */],
-            order: [],        // explicit legend/domain order
+            order: [],        // explicit order; null places missing values
             label: undefined, // defaults to mapping.color
         },
         size: {
@@ -141,6 +154,11 @@ const chart = gsmViz.default.points(element, data, {
         },
         opacity: {
             range: [0.25, 1], // minimum and maximum alpha
+        },
+        shape: {
+            values: {},       // level-to-point-style map
+            order: [],        // explicit order; null places missing values
+            label: undefined, // defaults to mapping.shape
         },
     },
     labels: {
@@ -163,9 +181,10 @@ const chart = gsmViz.default.points(element, data, {
 }
 ```
 
-The renderer supports ungrouped points or a categorical color mapping on linear
-or logarithmic x/y axes. Additional aesthetics, annotations, and interactions are
-added as separate reviewable features.
+The renderer supports ungrouped points; categorical color and shape mappings;
+continuous size and opacity mappings; and linear or logarithmic x/y axes.
+Annotations and additional interactions are added as separate reviewable
+features.
 
 ## Numeric axes
 
@@ -176,11 +195,9 @@ automatic linear domain to zero.
 
 Set `breaks` and `labels` together to replace generated ticks. Breaks must be
 finite, strictly increasing values, and each break must have a string or numeric
-label. With an automatic range, outer breaks extend the suggested domain;
-with a fixed range, every break must fall within it. Log-scale coordinates,
-ranges, and breaks must all be greater than zero; `beginAtZero: true` is
-therefore invalid on a log scale. Invalid settings and coordinates throw before
-Chart.js renders.
+label. Log-scale coordinates, ranges, and breaks must all be greater than zero;
+`beginAtZero: true` is therefore invalid on a log scale. Invalid settings and
+coordinates throw before Chart.js renders.
 
 ## Categorical color
 
@@ -192,9 +209,10 @@ palette positions stay stable as data changes; new observed levels are appended.
 `scales.color.colors` maps level names to CSS colors. Levels without a named
 color use the default palette, or the non-empty `scales.color.palette` supplied by
 the caller. Set `scales.color.label` to customize the legend title; `null` or `''`
-hides the title. Valid color levels are strings or finite numbers, and are
-normalized to strings, so `1` and `"1"` identify the same category. Null,
-undefined, and `NaN` color values are invalid.
+hides the title. Null, undefined, blank, and `NaN` color values share a neutral
+gray `"(Missing)"` level rather than dropping rows. Add `null` to
+`scales.color.order` to position this level explicitly. The literal string
+`"(Missing)"` remains a separate categorical value and is quoted in the legend.
 
 ## Continuous size and opacity
 
@@ -209,6 +227,28 @@ applied to each point's resolved color, including color-mapped datasets. Numeric
 strings, missing values, infinities, and negative size values throw rather than
 being coerced or dropped.
 
+## Discrete shape
+
+`mapping.shape` creates one dataset per shape level. Use `scales.shape.values` to
+map levels to `circle`, `triangle`, `rect`, `rectRot`, `cross`, `crossRot`,
+`star`, `line`, `dash`, or `rectRounded`; otherwise shapes are assigned in a
+deterministic first-seen or explicit `order`. Missing values use a neutral
+`"(Missing)"` cross that is reserved from automatic fallback assignment.
+
+When color and shape map the same field, each level receives both styles in one
+legend entry. The shared domain starts with `scales.color.order`, appends any
+additional `scales.shape.order` levels, and then appends observed levels. When
+color and shape map different fields, the legend contains only observed
+color/shape combinations, ordered by their respective scale domains. String
+components are quoted in composite labels so combinations remain unambiguous.
+Add `null` to `scales.shape.order` to position missing values; the literal string
+`"(Missing)"` remains distinct and is quoted in the legend. Set
+`scales.shape.label` to customize the legend title; `null` or `''` hides that
+title component.
+For a shared color/shape field, an explicit color label takes precedence over an
+explicit shape label; otherwise either explicit label takes precedence over the
+field name.
+
 ## Tooltips
 
 Use `tooltip.format` for field templates:
@@ -220,14 +260,16 @@ tooltip: {
 ```
 
 `{x}`, `{y}`, and `{key}` resolve structured point values; `{color}` is available
-when `mapping.color` is set. Unqualified placeholders such as `{site}` resolve
-fields on the original source row. Prefix a field with `datum.` or `_datum.` for
-an explicit source-row lookup; nested paths such as `{datum.participant.id}` are
-supported. Every requested source field must exist on every non-empty input row,
-and unresolved placeholders throw descriptive errors.
+when `mapping.color` is set.
+Unqualified placeholders such as `{site}` resolve fields on the original source
+row. Prefix a field with `datum.` or `_datum.` for an explicit source-row lookup;
+nested paths such as `{datum.participant.id}` are supported. Every requested
+source field must exist on every non-empty input row, and unresolved placeholders
+throw descriptive errors.
 
-For complete control, provide `tooltip.formatter(point, context, details)`.
-`details` contains `{ x, y, color, key, datum }`. Label precedence is:
+For complete control, provide
+`tooltip.formatter(point, context, details)`. `details` contains
+`{ x, y, color, key, datum }`. Label precedence is:
 
 1. `tooltip.callbacks.label` using the standard Chart.js signature
 2. `tooltip.formatter`
@@ -237,8 +279,6 @@ For complete control, provide `tooltip.formatter(point, context, details)`.
 The gsm.viz-only `format` and `formatter` keys are removed before tooltip options
 are passed to Chart.js. Standard options such as `enabled`, `mode`, `intersect`,
 `position`, styling, and tooltip callbacks can be configured in the same object.
-Null-valued callback entries are omitted so Chart.js continues to use its
-defaults.
 
 ## Pointer callbacks
 
@@ -259,14 +299,14 @@ removed.
     for every row. Without it, the original row index is the local point key.
 -   Each rendered point retains its original source row as `_datum`.
 -   Color-mapped points retain their resolved categorical value as `_color`.
--   Color-mapped values must be strings or finite numbers; null, undefined,
-    and `NaN` values throw an error.
 -   Size- and opacity-mapped points retain their source values as `_size` and
     `_opacity`.
+-   Shape-mapped points retain their resolved categorical value as `_shape`.
 -   An empty data array renders a valid empty chart.
 
 ## Accessibility and responsive behavior
 
 The canvas receives an image role and text alternative derived from the title,
-description, axis mappings, and point count. `theme.maintainAspectRatio` controls
-whether Chart.js preserves its aspect ratio as the container resizes.
+description, axis mappings, point count, and encoded color/shape values.
+`theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
+as the container resizes.

@@ -1,5 +1,3 @@
-import { validateTooltipFormat } from './tooltipFormat.js';
-
 const supportedFields = {
     spec: [
         'mapping',
@@ -10,12 +8,74 @@ const supportedFields = {
         'selection',
         'theme',
     ],
-    mapping: ['x', 'y', 'key', 'color', 'size', 'opacity'],
-    scales: ['x', 'y', 'color', 'size', 'opacity'],
+    mapping: ['x', 'y', 'key', 'color', 'size', 'opacity', 'shape'],
+    scales: ['x', 'y', 'color', 'size', 'opacity', 'shape'],
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
     continuousAestheticScale: ['range'],
+    shapeScale: ['values', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
+    tooltip: [
+        'format',
+        'formatter',
+        'enabled',
+        'external',
+        'position',
+        'mode',
+        'intersect',
+        'itemSort',
+        'filter',
+        'backgroundColor',
+        'titleColor',
+        'titleFont',
+        'titleAlign',
+        'titleSpacing',
+        'titleMarginBottom',
+        'bodyColor',
+        'bodyFont',
+        'bodyAlign',
+        'bodySpacing',
+        'footerColor',
+        'footerFont',
+        'footerAlign',
+        'footerSpacing',
+        'footerMarginTop',
+        'padding',
+        'caretPadding',
+        'caretSize',
+        'cornerRadius',
+        'multiKeyBackground',
+        'displayColors',
+        'boxWidth',
+        'boxHeight',
+        'boxPadding',
+        'usePointStyle',
+        'borderColor',
+        'borderWidth',
+        'rtl',
+        'textDirection',
+        'xAlign',
+        'yAlign',
+        'callbacks',
+        'animation',
+        'animations',
+    ],
+    tooltipCallbacks: [
+        'beforeTitle',
+        'title',
+        'afterTitle',
+        'beforeBody',
+        'beforeLabel',
+        'label',
+        'labelColor',
+        'labelTextColor',
+        'labelPointStyle',
+        'afterLabel',
+        'afterBody',
+        'beforeFooter',
+        'footer',
+        'afterFooter',
+    ],
     callbacks: ['onClick', 'onHover', 'onSelect'],
     selection: ['enabled', 'opacity', 'multiple'],
     theme: ['maintainAspectRatio', 'animation'],
@@ -28,6 +88,60 @@ function isPlainObject(value) {
 
     const prototype = Object.getPrototypeOf(value);
     return prototype === Object.prototype || prototype === null;
+}
+
+function validateDiscreteOrder(order, path) {
+    if (!Array.isArray(order)) {
+        throw new Error(`${path} must be an array`);
+    }
+
+    const levels = new Set();
+    order.forEach((level, index) => {
+        if (
+            level !== null &&
+            (typeof level !== 'string' || level.trim().length === 0) &&
+            (typeof level !== 'number' || !Number.isFinite(level))
+        ) {
+            throw new Error(
+                `${path}[${index}] must be a string, finite number, or null`
+            );
+        }
+        if (levels.has(level)) {
+            throw new Error(`${path} must contain unique values`);
+        }
+        levels.add(level);
+    });
+}
+
+function validateShapeScale(scale) {
+    if (scale === undefined) return;
+
+    const path = 'spec.scales.shape';
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.shapeScale, path);
+
+    if (scale.values !== undefined) {
+        validatePlainObject(scale.values, `${path}.values`);
+        Object.entries(scale.values).forEach(([level, pointStyle]) => {
+            if (!POINT_STYLES.includes(pointStyle)) {
+                throw new Error(
+                    `${path}.values.${level} must be a supported point style`
+                );
+            }
+        });
+    }
+
+    if (scale.order !== undefined) {
+        validateDiscreteOrder(scale.order, `${path}.order`);
+    }
+
+    if (
+        scale.label !== undefined &&
+        scale.label !== null &&
+        typeof scale.label !== 'string'
+    ) {
+        throw new Error(`${path}.label must be a string or null`);
+    }
 }
 
 function validatePlainObject(value, path) {
@@ -134,13 +248,6 @@ function validateScale(scale, axis) {
         throw new Error(`${path}.breaks and labels must have the same length`);
     }
 
-    if (
-        scale.range !== undefined &&
-        breaks.some((value) => value < scale.range[0] || value > scale.range[1])
-    ) {
-        throw new Error(`${path}.breaks must fall within ${path}.range`);
-    }
-
     if (scale.type === 'log') {
         if (scale.beginAtZero === true) {
             throw new Error(
@@ -198,27 +305,7 @@ function validateColorScale(scale) {
     }
 
     if (scale.order !== undefined) {
-        if (!Array.isArray(scale.order)) {
-            throw new Error(`${path}.order must be an array`);
-        }
-
-        const levels = new Set();
-        scale.order.forEach((level, index) => {
-            if (
-                (typeof level !== 'string' || level.trim().length === 0) &&
-                (typeof level !== 'number' || !Number.isFinite(level))
-            ) {
-                throw new Error(
-                    `${path}.order[${index}] must be a string or finite number`
-                );
-            }
-
-            const normalizedLevel = String(level);
-            if (levels.has(normalizedLevel)) {
-                throw new Error(`${path}.order must contain unique values`);
-            }
-            levels.add(normalizedLevel);
-        });
+        validateDiscreteOrder(scale.order, `${path}.order`);
     }
 
     if (
@@ -244,8 +331,7 @@ function validateContinuousAestheticScale(scale, aesthetic) {
     if (
         !Array.isArray(scale.range) ||
         scale.range.length !== 2 ||
-        !Number.isFinite(scale.range[0]) ||
-        !Number.isFinite(scale.range[1])
+        !scale.range.every(Number.isFinite)
     ) {
         throw new Error(`${path}.range must contain two finite numbers`);
     }
@@ -395,7 +481,7 @@ export default function validateSpec(data, spec) {
         }
     }
 
-    ['size', 'opacity'].forEach((aesthetic) => {
+    ['size', 'opacity', 'shape'].forEach((aesthetic) => {
         if (
             spec.mapping[aesthetic] !== undefined &&
             (typeof spec.mapping[aesthetic] !== 'string' ||
@@ -419,6 +505,7 @@ export default function validateSpec(data, spec) {
         validateColorScale(spec.scales.color);
         validateContinuousAestheticScale(spec.scales.size, 'size');
         validateContinuousAestheticScale(spec.scales.opacity, 'opacity');
+        validateShapeScale(spec.scales.shape);
     }
 
     if (spec.labels !== undefined) {
@@ -436,7 +523,15 @@ export default function validateSpec(data, spec) {
 
     if (spec.tooltip !== undefined) {
         validatePlainObject(spec.tooltip, 'spec.tooltip');
+        validateSupportedFields(
+            spec.tooltip,
+            supportedFields.tooltip,
+            'spec.tooltip'
+        );
         validateOptionalString(spec.tooltip.format, 'spec.tooltip.format');
+        if (spec.tooltip.format) {
+            validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
+        }
 
         if (
             spec.tooltip.formatter !== undefined &&
@@ -448,10 +543,36 @@ export default function validateSpec(data, spec) {
             );
         }
 
-        validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
+        if (spec.tooltip.callbacks !== undefined) {
+            validatePlainObject(
+                spec.tooltip.callbacks,
+                'spec.tooltip.callbacks'
+            );
+            validateSupportedFields(
+                spec.tooltip.callbacks,
+                supportedFields.tooltipCallbacks,
+                'spec.tooltip.callbacks'
+            );
+
+            Object.entries(spec.tooltip.callbacks).forEach(
+                ([field, callback]) => {
+                    if (
+                        callback !== undefined &&
+                        callback !== null &&
+                        typeof callback !== 'function'
+                    ) {
+                        throw new Error(
+                            `spec.tooltip.callbacks.${field} must be a function or null`
+                        );
+                    }
+                }
+            );
+        }
     }
 
     validateCallbacks(spec.callbacks);
     validateSelection(spec.selection);
     validateTheme(spec.theme);
 }
+import { validateTooltipFormat } from './tooltipFormat.js';
+import { POINT_STYLES } from './pointStyles.js';
