@@ -328,4 +328,31 @@ describe('points/getPlugins', () => {
             expect(plugins.tooltip.mode).toBe('gsmPoints:point');
         });
     });
+
+    describe('point labels', () => {
+        test('configures datalabels only when point labels are enabled', () => {
+            const enabled = getPlugins({
+                ...spec,
+                annotations: {
+                    labels: {
+                        point: { field: 'id' },
+                    },
+                },
+            });
+            const disabled = getPlugins({
+                ...spec,
+                annotations: {
+                    labels: { point: null },
+                },
+            });
+
+            expect(enabled.datalabels).toEqual(
+                expect.objectContaining({
+                    align: 'top',
+                    offset: 4,
+                })
+            );
+            expect(disabled.datalabels).toBeUndefined();
+        });
+    });
 });
