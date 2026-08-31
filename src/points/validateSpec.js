@@ -3,6 +3,7 @@ const supportedFields = {
         'mapping',
         'scales',
         'labels',
+        'annotations',
         'tooltip',
         'callbacks',
         'selection',
@@ -15,6 +16,31 @@ const supportedFields = {
     continuousAestheticScale: ['range'],
     shapeScale: ['values', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
+    annotations: ['referenceLines', 'lines'],
+    referenceLine: [
+        'axis',
+        'value',
+        'label',
+        'color',
+        'width',
+        'dash',
+        'labelPosition',
+    ],
+    annotationLine: [
+        'data',
+        'mapping',
+        'order',
+        'label',
+        'color',
+        'colors',
+        'palette',
+        'width',
+        'dash',
+        'tension',
+        'stepped',
+        'showInLegend',
+    ],
+    annotationLineMapping: ['x', 'y', 'group'],
     tooltip: [
         'format',
         'formatter',
@@ -160,6 +186,34 @@ function validateSupportedFields(value, fields, path) {
     }
 }
 
+function validateNonEmptyString(value, path) {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        throw new Error(`${path} must be a non-empty string`);
+    }
+}
+
+function validateColor(value, path) {
+    if (value !== undefined) {
+        validateRequiredColor(value, path);
+    }
+}
+
+function validateRequiredColor(value, path) {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        throw new Error(`${path} must be a non-empty string`);
+    }
+}
+
+function validateDash(value, path) {
+    if (
+        value !== undefined &&
+        (!Array.isArray(value) ||
+            !value.every((segment) => Number.isFinite(segment) && segment >= 0))
+    ) {
+        throw new Error(`${path} must contain non-negative finite numbers`);
+    }
+}
+
 function validateRequiredMapping(mapping, field) {
     const value = mapping[field];
 
@@ -169,6 +223,168 @@ function validateRequiredMapping(mapping, field) {
 
     if (typeof value !== 'string' || value.trim().length === 0) {
         throw new Error(`spec.mapping.${field} must be a non-empty string`);
+    }
+}
+
+function validateReferenceLines(referenceLines, spec) {
+    if (referenceLines === undefined) return;
+    if (!Array.isArray(referenceLines)) {
+        throw new Error('spec.annotations.referenceLines must be an array');
+    }
+
+    referenceLines.forEach((line, index) => {
+        const path = `spec.annotations.referenceLines[${index}]`;
+        validatePlainObject(line, path);
+        validateSupportedFields(line, supportedFields.referenceLine, path);
+
+        if (!['x', 'y'].includes(line.axis)) {
+            throw new Error(`${path}.axis must be 'x' or 'y'`);
+        }
+        if (!Number.isFinite(line.value)) {
+            throw new Error(`${path}.value must be a finite number`);
+        }
+        if (spec.scales?.[line.axis]?.type === 'log' && line.value <= 0) {
+            throw new Error(
+                `${path}.value must be greater than zero for a log scale`
+            );
+        }
+        if (
+            line.label !== undefined &&
+            line.label !== null &&
+            typeof line.label !== 'string'
+        ) {
+            throw new Error(`${path}.label must be a string or null`);
+        }
+        validateColor(line.color, `${path}.color`);
+        if (
+            line.width !== undefined &&
+            (!Number.isFinite(line.width) || line.width <= 0)
+        ) {
+            throw new Error(`${path}.width must be a positive finite number`);
+        }
+        validateDash(line.dash, `${path}.dash`);
+        if (
+            line.labelPosition !== undefined &&
+            !['start', 'center', 'end'].includes(line.labelPosition)
+        ) {
+            throw new Error(
+                `${path}.labelPosition must be 'start', 'center', or 'end'`
+            );
+        }
+    });
+}
+
+function validateAnnotationLine(line, index) {
+    const path = `spec.annotations.lines[${index}]`;
+    validatePlainObject(line, path);
+    validateSupportedFields(line, supportedFields.annotationLine, path);
+
+    if (!Array.isArray(line.data)) {
+        throw new Error(`${path}.data must be an array`);
+    }
+
+    validatePlainObject(line.mapping, `${path}.mapping`);
+    validateSupportedFields(
+        line.mapping,
+        supportedFields.annotationLineMapping,
+        `${path}.mapping`
+    );
+    ['x', 'y'].forEach((axis) =>
+        validateNonEmptyString(line.mapping[axis], `${path}.mapping.${axis}`)
+    );
+    if (line.mapping.group !== undefined) {
+        validateNonEmptyString(line.mapping.group, `${path}.mapping.group`);
+    }
+
+    if (line.order !== undefined) {
+        validateDiscreteOrder(line.order, `${path}.order`);
+        if (line.mapping.group === undefined) {
+            throw new Error(`${path}.order requires mapping.group`);
+        }
+    }
+    if (
+        line.label !== undefined &&
+        line.label !== null &&
+        typeof line.label !== 'string'
+    ) {
+        throw new Error(`${path}.label must be a string or null`);
+    }
+    validateColor(line.color, `${path}.color`);
+
+    if (line.colors !== undefined) {
+        validatePlainObject(line.colors, `${path}.colors`);
+        Object.entries(line.colors).forEach(([level, color]) =>
+            validateRequiredColor(color, `${path}.colors.${level}`)
+        );
+        if (line.mapping.group === undefined) {
+            throw new Error(`${path}.colors requires mapping.group`);
+        }
+    }
+    if (line.palette !== undefined) {
+        if (!Array.isArray(line.palette) || line.palette.length === 0) {
+            throw new Error(`${path}.palette must be a non-empty array`);
+        }
+        line.palette.forEach((color, colorIndex) =>
+            validateRequiredColor(color, `${path}.palette[${colorIndex}]`)
+        );
+    }
+    if (
+        line.width !== undefined &&
+        (!Number.isFinite(line.width) || line.width <= 0)
+    ) {
+        throw new Error(`${path}.width must be a positive finite number`);
+    }
+    validateDash(line.dash, `${path}.dash`);
+    if (
+        line.tension !== undefined &&
+        (!Number.isFinite(line.tension) || line.tension < 0 || line.tension > 1)
+    ) {
+        throw new Error(
+            `${path}.tension must be a finite number between 0 and 1`
+        );
+    }
+    if (
+        line.stepped !== undefined &&
+        typeof line.stepped !== 'boolean' &&
+        !['before', 'after', 'middle'].includes(line.stepped)
+    ) {
+        throw new Error(
+            `${path}.stepped must be a boolean, 'before', 'after', or 'middle'`
+        );
+    }
+    if (
+        line.showInLegend !== undefined &&
+        typeof line.showInLegend !== 'boolean'
+    ) {
+        throw new Error(`${path}.showInLegend must be a boolean`);
+    }
+    if (
+        line.showInLegend === true &&
+        line.mapping.group === undefined &&
+        (typeof line.label !== 'string' || line.label.trim().length === 0)
+    ) {
+        throw new Error(
+            `${path}.label must be a non-empty string when showInLegend is true without mapping.group`
+        );
+    }
+}
+
+function validateAnnotations(annotations, spec) {
+    if (annotations === undefined) return;
+
+    validatePlainObject(annotations, 'spec.annotations');
+    validateSupportedFields(
+        annotations,
+        supportedFields.annotations,
+        'spec.annotations'
+    );
+    validateReferenceLines(annotations.referenceLines, spec);
+
+    if (annotations.lines !== undefined) {
+        if (!Array.isArray(annotations.lines)) {
+            throw new Error('spec.annotations.lines must be an array');
+        }
+        annotations.lines.forEach(validateAnnotationLine);
     }
 }
 
@@ -520,6 +736,8 @@ export default function validateSpec(data, spec) {
             validateOptionalString(spec.labels[field], `spec.labels.${field}`);
         });
     }
+
+    validateAnnotations(spec.annotations, spec);
 
     if (spec.tooltip !== undefined) {
         validatePlainObject(spec.tooltip, 'spec.tooltip');
