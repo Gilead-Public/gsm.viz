@@ -8,11 +8,12 @@ const supportedFields = {
         'selection',
         'theme',
     ],
-    mapping: ['x', 'y', 'key', 'color', 'size', 'opacity'],
-    scales: ['x', 'y', 'color', 'size', 'opacity'],
+    mapping: ['x', 'y', 'key', 'color', 'size', 'opacity', 'shape'],
+    scales: ['x', 'y', 'color', 'size', 'opacity', 'shape'],
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
     continuousAestheticScale: ['range'],
+    shapeScale: ['values', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
     tooltip: [
         'format',
@@ -87,6 +88,60 @@ function isPlainObject(value) {
 
     const prototype = Object.getPrototypeOf(value);
     return prototype === Object.prototype || prototype === null;
+}
+
+function validateDiscreteOrder(order, path) {
+    if (!Array.isArray(order)) {
+        throw new Error(`${path} must be an array`);
+    }
+
+    const levels = new Set();
+    order.forEach((level, index) => {
+        if (
+            level !== null &&
+            (typeof level !== 'string' || level.trim().length === 0) &&
+            (typeof level !== 'number' || !Number.isFinite(level))
+        ) {
+            throw new Error(
+                `${path}[${index}] must be a string, finite number, or null`
+            );
+        }
+        if (levels.has(level)) {
+            throw new Error(`${path} must contain unique values`);
+        }
+        levels.add(level);
+    });
+}
+
+function validateShapeScale(scale) {
+    if (scale === undefined) return;
+
+    const path = 'spec.scales.shape';
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.shapeScale, path);
+
+    if (scale.values !== undefined) {
+        validatePlainObject(scale.values, `${path}.values`);
+        Object.entries(scale.values).forEach(([level, pointStyle]) => {
+            if (!POINT_STYLES.includes(pointStyle)) {
+                throw new Error(
+                    `${path}.values.${level} must be a supported point style`
+                );
+            }
+        });
+    }
+
+    if (scale.order !== undefined) {
+        validateDiscreteOrder(scale.order, `${path}.order`);
+    }
+
+    if (
+        scale.label !== undefined &&
+        scale.label !== null &&
+        typeof scale.label !== 'string'
+    ) {
+        throw new Error(`${path}.label must be a string or null`);
+    }
 }
 
 function validatePlainObject(value, path) {
@@ -250,26 +305,7 @@ function validateColorScale(scale) {
     }
 
     if (scale.order !== undefined) {
-        if (!Array.isArray(scale.order)) {
-            throw new Error(`${path}.order must be an array`);
-        }
-
-        const levels = new Set();
-        scale.order.forEach((level, index) => {
-            if (
-                (typeof level !== 'string' || level.trim().length === 0) &&
-                (typeof level !== 'number' || !Number.isFinite(level))
-            ) {
-                throw new Error(
-                    `${path}.order[${index}] must be a string or finite number`
-                );
-            }
-
-            if (levels.has(level)) {
-                throw new Error(`${path}.order must contain unique values`);
-            }
-            levels.add(level);
-        });
+        validateDiscreteOrder(scale.order, `${path}.order`);
     }
 
     if (
@@ -445,7 +481,7 @@ export default function validateSpec(data, spec) {
         }
     }
 
-    ['size', 'opacity'].forEach((aesthetic) => {
+    ['size', 'opacity', 'shape'].forEach((aesthetic) => {
         if (
             spec.mapping[aesthetic] !== undefined &&
             (typeof spec.mapping[aesthetic] !== 'string' ||
@@ -469,6 +505,7 @@ export default function validateSpec(data, spec) {
         validateColorScale(spec.scales.color);
         validateContinuousAestheticScale(spec.scales.size, 'size');
         validateContinuousAestheticScale(spec.scales.opacity, 'opacity');
+        validateShapeScale(spec.scales.shape);
     }
 
     if (spec.labels !== undefined) {
@@ -538,3 +575,4 @@ export default function validateSpec(data, spec) {
     validateTheme(spec.theme);
 }
 import { validateTooltipFormat } from './tooltipFormat.js';
+import { POINT_STYLES } from './pointStyles.js';

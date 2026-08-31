@@ -125,5 +125,104 @@ describe('points/getPlugins', () => {
                 })
             );
         });
+
+        describe('shape and composite legends', () => {
+            test('shows a point-style legend for shape-only charts', () => {
+                const plugins = getPlugins({
+                    ...spec,
+                    mapping: { ...spec.mapping, shape: 'marker' },
+                    scales: {
+                        ...spec.scales,
+                        shape: { label: undefined },
+                    },
+                });
+
+                expect(plugins.legend.display).toBe(true);
+                expect(plugins.legend.title).toEqual({
+                    display: true,
+                    text: 'marker',
+                });
+                expect(plugins.legend.labels.usePointStyle).toBe(true);
+            });
+
+            test('describes different color and shape mappings together', () => {
+                const plugins = getPlugins({
+                    ...spec,
+                    mapping: {
+                        ...spec.mapping,
+                        color: 'arm',
+                        shape: 'status',
+                    },
+                    scales: {
+                        color: { label: 'Treatment' },
+                        shape: { label: 'Visit status' },
+                    },
+                });
+
+                expect(plugins.legend.title.text).toBe(
+                    'Treatment / Visit status'
+                );
+            });
+
+            test('uses one title when color and shape map the same field', () => {
+                const plugins = getPlugins({
+                    ...spec,
+                    mapping: {
+                        ...spec.mapping,
+                        color: 'group',
+                        shape: 'group',
+                    },
+                    scales: {
+                        color: { label: undefined },
+                        shape: { label: undefined },
+                    },
+                });
+
+                expect(plugins.legend.title.text).toBe('group');
+            });
+
+            test('honors an explicit shape title for a shared field', () => {
+                const plugins = getPlugins({
+                    ...spec,
+                    mapping: {
+                        ...spec.mapping,
+                        color: 'group',
+                        shape: 'group',
+                    },
+                    scales: {
+                        color: { label: undefined },
+                        shape: { label: 'Status' },
+                    },
+                });
+
+                expect(plugins.legend.title).toEqual({
+                    display: true,
+                    text: 'Status',
+                });
+            });
+
+            test.each([null, ''])(
+                'honors an explicit shared color title value of %p',
+                (label) => {
+                    const plugins = getPlugins({
+                        ...spec,
+                        mapping: {
+                            ...spec.mapping,
+                            color: 'group',
+                            shape: 'group',
+                        },
+                        scales: {
+                            color: { label },
+                            shape: { label: 'Status' },
+                        },
+                    });
+
+                    expect(plugins.legend.title).toEqual({
+                        display: false,
+                        text: '',
+                    });
+                }
+            );
+        });
     });
 });

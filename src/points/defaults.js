@@ -53,6 +53,11 @@ const defaults = {
         opacity: {
             range: [0.25, 1],
         },
+        shape: {
+            values: {},
+            order: [],
+            label: undefined,
+        },
     },
     labels: {
         title: undefined,
