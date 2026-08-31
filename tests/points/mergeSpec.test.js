@@ -12,8 +12,22 @@ describe('points/mergeSpec', () => {
         expect(merged.data).toBe(data);
         expect(merged.mapping).toEqual(minimalSpec.mapping);
         expect(merged.scales).toEqual({
-            x: { type: 'linear', label: undefined },
-            y: { type: 'linear', label: undefined },
+            x: {
+                type: 'linear',
+                label: undefined,
+                range: undefined,
+                beginAtZero: false,
+                breaks: [],
+                labels: [],
+            },
+            y: {
+                type: 'linear',
+                label: undefined,
+                range: undefined,
+                beginAtZero: false,
+                breaks: [],
+                labels: [],
+            },
             color: {
                 colors: {},
                 palette: expect.any(Array),
@@ -53,8 +67,14 @@ describe('points/mergeSpec', () => {
         const spec = {
             mapping: { x: 'xValue', y: 'yValue', key: 'id' },
             scales: {
-                x: { label: 'Horizontal' },
-                y: { label: 'Vertical' },
+                x: {
+                    type: 'log',
+                    label: 'Horizontal',
+                    range: [1, 100],
+                    breaks: [1, 10, 100],
+                    labels: ['1', '10', '100'],
+                },
+                y: { label: 'Vertical', beginAtZero: true },
                 color: {
                     colors: { Control: '#112233' },
                     palette: ['#445566'],
@@ -76,12 +96,20 @@ describe('points/mergeSpec', () => {
 
         expect(merged.mapping).toEqual(spec.mapping);
         expect(merged.scales.x).toEqual({
-            type: 'linear',
+            type: 'log',
             label: 'Horizontal',
+            range: [1, 100],
+            beginAtZero: false,
+            breaks: [1, 10, 100],
+            labels: ['1', '10', '100'],
         });
         expect(merged.scales.y).toEqual({
             type: 'linear',
             label: 'Vertical',
+            range: undefined,
+            beginAtZero: true,
+            breaks: [],
+            labels: [],
         });
         expect(merged.scales.color).toEqual({
             colors: { Control: '#112233' },
@@ -176,6 +204,8 @@ describe('points/mergeSpec', () => {
         const second = mergeSpec(data, minimalSpec);
 
         first.scales.x.label = 'Changed';
+        first.scales.x.breaks.push(42);
+        first.scales.x.labels.push('Forty-two');
         first.scales.color.colors.Changed = '#000000';
         first.scales.color.palette.push('#000000');
         first.scales.color.order.push('Changed');
@@ -183,6 +213,8 @@ describe('points/mergeSpec', () => {
         first.selection.enabled = true;
 
         expect(second.scales.x.label).toBeUndefined();
+        expect(second.scales.x.breaks).toEqual([]);
+        expect(second.scales.x.labels).toEqual([]);
         expect(second.scales.color.colors).toEqual({});
         expect(second.scales.color.palette).not.toContain('#000000');
         expect(second.scales.color.order).toEqual([]);
@@ -209,5 +241,26 @@ describe('points/mergeSpec', () => {
         expect(merged.scales.color.colors).toEqual(colors);
         expect(merged.scales.color.palette).toEqual(palette);
         expect(merged.scales.color.order).toEqual(order);
+    });
+
+    test('copies caller-owned axis arrays', () => {
+        const range = Object.freeze([1, 100]);
+        const breaks = Object.freeze([1, 10, 100]);
+        const labels = Object.freeze(['1', '10', '100']);
+        const spec = Object.freeze({
+            ...minimalSpec,
+            scales: Object.freeze({
+                x: Object.freeze({ range, breaks, labels }),
+            }),
+        });
+
+        const merged = mergeSpec(data, spec);
+
+        expect(merged.scales.x.range).not.toBe(range);
+        expect(merged.scales.x.breaks).not.toBe(breaks);
+        expect(merged.scales.x.labels).not.toBe(labels);
+        expect(merged.scales.x.range).toEqual(range);
+        expect(merged.scales.x.breaks).toEqual(breaks);
+        expect(merged.scales.x.labels).toEqual(labels);
     });
 });

@@ -17,8 +17,17 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
         color: 'region',
     },
     scales: {
-        x: { label: 'Participant exposure' },
-        y: { label: 'Reported events' },
+        x: {
+            type: 'log',
+            label: 'Participant exposure',
+            range: [1, 100],
+            breaks: [1, 10, 100],
+            labels: ['1', '10', '100'],
+        },
+        y: {
+            label: 'Reported events',
+            beginAtZero: true,
+        },
         color: {
             colors: {
                 Americas: '#4e79a7',

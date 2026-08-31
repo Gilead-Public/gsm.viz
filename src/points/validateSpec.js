@@ -10,7 +10,7 @@ const supportedFields = {
     ],
     mapping: ['x', 'y', 'key', 'color'],
     scales: ['x', 'y', 'color'],
-    scale: ['type', 'label'],
+    scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
     tooltip: ['format', 'formatter'],
@@ -71,11 +71,87 @@ function validateScale(scale, axis) {
     validatePlainObject(scale, path);
     validateSupportedFields(scale, supportedFields.scale, path);
 
-    if (scale.type !== undefined && scale.type !== 'linear') {
-        throw new Error(`${path}.type must be 'linear'`);
+    if (scale.type !== undefined && !['linear', 'log'].includes(scale.type)) {
+        throw new Error(`${path}.type must be 'linear' or 'log'`);
     }
 
     validateOptionalString(scale.label, `${path}.label`);
+
+    if (scale.range !== undefined) {
+        if (
+            !Array.isArray(scale.range) ||
+            scale.range.length !== 2 ||
+            !scale.range.every(Number.isFinite)
+        ) {
+            throw new Error(`${path}.range must contain two finite numbers`);
+        }
+
+        if (scale.range[0] >= scale.range[1]) {
+            throw new Error(`${path}.range values must be strictly increasing`);
+        }
+    }
+
+    if (
+        scale.beginAtZero !== undefined &&
+        typeof scale.beginAtZero !== 'boolean'
+    ) {
+        throw new Error(`${path}.beginAtZero must be a boolean`);
+    }
+
+    if (scale.breaks !== undefined && !Array.isArray(scale.breaks)) {
+        throw new Error(`${path}.breaks must be an array`);
+    }
+    if (scale.labels !== undefined && !Array.isArray(scale.labels)) {
+        throw new Error(`${path}.labels must be an array`);
+    }
+
+    const breaks = scale.breaks || [];
+    const labels = scale.labels || [];
+
+    breaks.forEach((value, index) => {
+        if (!Number.isFinite(value)) {
+            throw new Error(`${path}.breaks[${index}] must be a finite number`);
+        }
+        if (index > 0 && value <= breaks[index - 1]) {
+            throw new Error(`${path}.breaks must be strictly increasing`);
+        }
+    });
+
+    labels.forEach((value, index) => {
+        if (
+            typeof value !== 'string' &&
+            (typeof value !== 'number' || !Number.isFinite(value))
+        ) {
+            throw new Error(
+                `${path}.labels[${index}] must be a string or finite number`
+            );
+        }
+    });
+
+    if (breaks.length !== labels.length) {
+        throw new Error(`${path}.breaks and labels must have the same length`);
+    }
+
+    if (scale.type === 'log') {
+        if (scale.beginAtZero === true) {
+            throw new Error(
+                `${path}.beginAtZero cannot be true for a log scale`
+            );
+        }
+
+        if (scale.range?.some((value) => value <= 0)) {
+            throw new Error(
+                `${path}.range values must be greater than zero for a log scale`
+            );
+        }
+
+        const invalidBreak = breaks.findIndex((value) => value <= 0);
+        if (invalidBreak !== -1) {
+            throw new Error(
+                `${path}.breaks[${invalidBreak}] must be greater than zero for a log scale`
+            );
+        }
+    }
 }
 
 function validateColorScale(scale) {
