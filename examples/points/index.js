@@ -90,7 +90,8 @@ const thresholds = [
     { exposure: 100, events: 16, threshold: 'Alert threshold' },
 ];
 
-gsmViz.default.points(document.getElementById('points-container'), data, {
+const container = document.getElementById('points-container');
+const chart = gsmViz.default.points(container, data, {
     mapping: {
         x: 'exposure',
         y: 'events',
@@ -180,7 +181,22 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
     },
     callbacks: {
         onClick: (point) => {
-            console.log('Selected source row:', point._datum);
+            console.log('Clicked source row:', point._datum);
+        },
+        onSelect: (selection) => {
+            console.log('Selection:', selection);
         },
     },
+    selection: {
+        enabled: true,
+        multiple: true,
+        opacity: 0.2,
+    },
+});
+
+document.getElementById('select-europe').addEventListener('click', () => {
+    chart.helpers.selectGroup(chart, 'Europe');
+});
+document.getElementById('clear-selection').addEventListener('click', () => {
+    chart.helpers.clearSelection(chart);
 });
