@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Country Overview</title>
+
+        <link rel="stylesheet" href="../../examples.css" />
+        <link rel="stylesheet" href="../../groupOverview.css" />
+
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <!--script src="https://unpkg.com/@tanstack/table-core@8.5.2"></script-->
+        <script src="../../index.js"></script>
+        <script src="../../groupTooltipKeys.js"></script>
+        <script src="../../controls/addEventListener.js"></script>
+        <script src="../controls/getGroups.js"></script>
+    </head>
+
+    <body>
+        <div class="gsm-viz--example">
+            <div id="controls">
+                <fieldset>
+                    <legend>Country Subset</legend>
+                    <select id="group-subset">
+                        <option value="all">all</option>
+                        <option value="red-or-amber">red/amber</option>
+                        <option value="red">red</option>
+                        <option value="amber">amber</option>
+                    </select>
+                </fieldset>
+            </div>
+
+            <div id="container"></div>
+        </div>
+    </body>
+
+    <script src="index.js"></script>
+    <script src="../../nav.js"></script>
+</html>
