@@ -23,6 +23,33 @@ function mergeTooltip(tooltip = {}) {
     };
 }
 
+function mergeAnnotations(annotations = {}) {
+    const referenceLines =
+        annotations.referenceLines === undefined
+            ? defaults.annotations.referenceLines
+            : annotations.referenceLines;
+    const lines =
+        annotations.lines === undefined
+            ? defaults.annotations.lines
+            : annotations.lines;
+
+    return {
+        referenceLines: referenceLines.map((line) => ({
+            ...line,
+            ...(line.dash ? { dash: [...line.dash] } : {}),
+        })),
+        lines: lines.map((line) => ({
+            ...line,
+            data: [...line.data],
+            mapping: { ...line.mapping },
+            ...(line.order ? { order: [...line.order] } : {}),
+            ...(line.colors ? { colors: { ...line.colors } } : {}),
+            ...(line.palette ? { palette: [...line.palette] } : {}),
+            ...(line.dash ? { dash: [...line.dash] } : {}),
+        })),
+    };
+}
+
 /**
  * Merge a validated points spec with module defaults without mutating inputs.
  *
@@ -46,6 +73,7 @@ export default function mergeSpec(data, spec) {
             shape: mergeDefaults(defaults.scales.shape, spec.scales?.shape),
         },
         labels: mergeDefaults(defaults.labels, spec.labels),
+        annotations: mergeAnnotations(spec.annotations),
         tooltip: mergeTooltip(spec.tooltip),
         callbacks: mergeDefaults(defaults.callbacks, spec.callbacks),
         selection: mergeDefaults(defaults.selection, spec.selection),
