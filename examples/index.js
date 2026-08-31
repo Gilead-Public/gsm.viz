@@ -351,7 +351,7 @@ var gsmViz = (() => {
           input.overallVelocityX = overallVelocity.x;
           input.overallVelocityY = overallVelocity.y;
           input.overallVelocity = abs2(overallVelocity.x) > abs2(overallVelocity.y) ? overallVelocity.x : overallVelocity.y;
-          input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+          input.scale = firstMultiple ? getScale2(firstMultiple.pointers, pointers) : 1;
           input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
           input.maxPointers = !session.prevInput ? input.pointers.length : input.pointers.length > session.prevInput.maxPointers ? input.pointers.length : session.prevInput.maxPointers;
           computeIntervalInputData(session, input);
@@ -470,7 +470,7 @@ var gsmViz = (() => {
         function getRotation(start2, end) {
           return getAngle(end[1], end[0], PROPS_CLIENT_XY) + getAngle(start2[1], start2[0], PROPS_CLIENT_XY);
         }
-        function getScale(start2, end) {
+        function getScale2(start2, end) {
           return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start2[0], start2[1], PROPS_CLIENT_XY);
         }
         var MOUSE_INPUT_MAP = {
@@ -3546,8 +3546,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults6 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults6.scriptable, _indexable = defaults6.indexable, _allKeys = defaults6.allKeys } = proxy;
+  function _descriptors(proxy, defaults7 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults7.scriptable, _indexable = defaults7.indexable, _allKeys = defaults7.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -23713,10 +23713,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults6, _config_, customSettings = null) {
+  function configure2(defaults7, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults6) {
-      config[key] = coalesce(config[key], defaults6[key]);
+    for (const key in defaults7) {
+      config[key] = coalesce(config[key], defaults7[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -23837,31 +23837,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.x = "GroupID";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.x = "GroupID";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.displayTitle = false;
-    defaults6.dynamicSizing = false;
-    defaults6.maintainAspectRatio = false;
-    const config = configure2(defaults6, _config_ || {}, {
+    defaults7.displayTitle = false;
+    defaults7.dynamicSizing = false;
+    defaults7.maintainAspectRatio = false;
+    const config = configure2(defaults7, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -27429,26 +27429,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = null;
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults6.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults6.groupClickCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = null;
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults7.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults7.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.metricClickCallback = (datum2) => {
+    defaults7.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults6, _config_);
+    const config = configure2(defaults7, _config_);
     return config;
   }
 
@@ -30520,7 +30520,7 @@ var gsmViz = (() => {
     };
   }
 
-  // src/points/rebuildChart.js
+  // src/points/datasetIdentity.js
   function encodeLevel(value, missing) {
     return missing ? ["missing"] : ["value", typeof value, String(value)];
   }
@@ -30538,6 +30538,8 @@ var gsmViz = (() => {
       ] : null
     ]);
   }
+
+  // src/points/rebuildChart.js
   function getHiddenDatasetIdentities(chart) {
     const identities = /* @__PURE__ */ new Set();
     chart.data.datasets.forEach((dataset, index3) => {
@@ -30736,34 +30738,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.x = "Denominator";
-    defaults6[defaults6.x] = defaults6.x;
-    defaults6.xType = "logarithmic";
-    defaults6.y = "Numerator";
-    defaults6[defaults6.y] = defaults6.y;
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.x = "Denominator";
+    defaults7[defaults7.x] = defaults7.x;
+    defaults7.xType = "logarithmic";
+    defaults7.y = "Numerator";
+    defaults7[defaults7.y] = defaults7.y;
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.displayTitle = false;
-    defaults6.displayLegend = true;
-    defaults6.displayTrendLine = false;
-    defaults6.maintainAspectRatio = false;
-    const config = configure2(defaults6, _config_, {
+    defaults7.displayTitle = false;
+    defaults7.displayLegend = true;
+    defaults7.displayTrendLine = false;
+    defaults7.maintainAspectRatio = false;
+    const config = configure2(defaults7, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -31265,21 +31267,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults6 = {};
-    defaults6.x = "SnapshotDate";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    const defaults7 = {};
+    defaults7.x = "SnapshotDate";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.maintainAspectRatio = false;
-    defaults6.nSnapshots = 5;
-    defaults6.displayThresholds = false;
-    const config = configure2(defaults6, _config_, {
+    defaults7.maintainAspectRatio = false;
+    defaults7.nSnapshots = 5;
+    defaults7.displayThresholds = false;
+    const config = configure2(defaults7, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -31587,39 +31589,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.dataType = "continuous";
-    defaults6.discreteUnit = null;
-    defaults6.distributionDisplay = "boxplot";
-    defaults6.x = "SnapshotDate";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.dataType = "continuous";
+    defaults7.discreteUnit = null;
+    defaults7.distributionDisplay = "boxplot";
+    defaults7.x = "SnapshotDate";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.aggregateLabel = "Study";
-    defaults6.annotateThreshold = _thresholds_ !== null;
-    defaults6.displayTitle = false;
-    defaults6.maintainAspectRatio = false;
+    defaults7.aggregateLabel = "Study";
+    defaults7.annotateThreshold = _thresholds_ !== null;
+    defaults7.displayTitle = false;
+    defaults7.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults6, _config_, {
+    const config = configure2(defaults7, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -31632,7 +31634,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults6.dataType === "discrete")
+    if (defaults7.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -32454,6 +32456,741 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/facetPoints/buildSubSpec.js
+  function getScale(scale) {
+    return {
+      ...scale,
+      ...scale.range ? { range: [...scale.range] } : {},
+      ...scale.breaks ? { breaks: [...scale.breaks] } : {},
+      ...scale.labels ? { labels: [...scale.labels] } : {},
+      ...scale.order ? { order: [...scale.order] } : {},
+      ...scale.palette ? { palette: [...scale.palette] } : {},
+      ...scale.colors ? { colors: { ...scale.colors } } : {},
+      ...scale.values ? { values: { ...scale.values } } : {}
+    };
+  }
+  function wrapCallback(callback2, facetValue) {
+    return callback2 ? (value, event) => callback2(value, facetValue, event) : null;
+  }
+  function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles) {
+    const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
+    const scales2 = Object.fromEntries(
+      Object.entries(mergedSpec.scales).map(([name, scale]) => [
+        name,
+        getScale(scale)
+      ])
+    );
+    if (globalScales.xMin !== void 0) {
+      scales2.x.range = [globalScales.xMin, globalScales.xMax];
+    }
+    if (globalScales.yMin !== void 0) {
+      scales2.y.range = [globalScales.yMin, globalScales.yMax];
+    }
+    scales2.color.order = [...globalStyles.colorOrder];
+    scales2.shape.order = [...globalStyles.shapeOrder];
+    return {
+      ...pointsSpec,
+      scales: scales2,
+      callbacks: {
+        onClick: wrapCallback(callbacks.onClick, facetValue),
+        onHover: wrapCallback(callbacks.onHover, facetValue),
+        onSelect: wrapCallback(callbacks.onSelect, facetValue)
+      }
+    };
+  }
+
+  // src/facetPoints/computeGlobalScales.js
+  function collectDatasetValues(domains, datasets) {
+    datasets.forEach((dataset) => {
+      dataset.data.forEach(({ x, y }) => {
+        domains.x.push(x);
+        domains.y.push(y);
+      });
+    });
+  }
+  function collectReferenceValues(domains, spec) {
+    spec.annotations.referenceLines.forEach((line, index3) => {
+      if (!Number.isFinite(line.value)) {
+        throw new Error(
+          `spec.annotations.referenceLines[${index3}].value must be a finite number`
+        );
+      }
+      if (spec.scales[line.axis].type === "log" && line.value <= 0) {
+        throw new Error(
+          `spec.annotations.referenceLines[${index3}].value must be greater than zero for a log scale`
+        );
+      }
+      domains[line.axis].push(line.value);
+    });
+  }
+  function expandEqualDomain(value, scale) {
+    if (scale.type === "log") {
+      const factor = Math.sqrt(10);
+      const lower2 = value / factor;
+      const upper = value * factor;
+      const min4 = Number.isFinite(lower2) && lower2 > 0 && lower2 < value ? lower2 : value;
+      const max4 = Number.isFinite(upper) && upper > value ? upper : value;
+      if (min4 < max4) return [min4, max4];
+      throw new Error(`unable to derive a positive domain around ${value}`);
+    }
+    if (scale.beginAtZero && value === 0) {
+      return [0, 1];
+    }
+    const offset = Math.abs(value * 0.05) || 1;
+    const min3 = value - offset;
+    const max3 = value + offset;
+    if (Number.isFinite(min3) && Number.isFinite(max3) && min3 < max3) {
+      return [min3, max3];
+    }
+    const inner = value / 1.05;
+    if (value > 0 && inner < value) return [inner, value];
+    if (value < 0 && inner > value) return [value, inner];
+    throw new Error(`unable to derive a finite domain around ${value}`);
+  }
+  function getDomain2(values, scale) {
+    if (scale.range !== void 0) {
+      return [...scale.range];
+    }
+    if (values.length === 0) {
+      return void 0;
+    }
+    let min3 = Infinity;
+    let max3 = -Infinity;
+    values.forEach((value) => {
+      min3 = Math.min(min3, value);
+      max3 = Math.max(max3, value);
+    });
+    if (scale.type === "linear" && scale.beginAtZero) {
+      min3 = Math.min(0, min3);
+      max3 = Math.max(0, max3);
+    }
+    return min3 === max3 ? expandEqualDomain(min3, scale) : [min3, max3];
+  }
+  function addDomain(result, axis, values, spec) {
+    if (spec.facet.scales[axis].free) return;
+    const domain = getDomain2(values, spec.scales[axis]);
+    if (domain !== void 0) {
+      result[`${axis}Min`] = domain[0];
+      result[`${axis}Max`] = domain[1];
+    }
+  }
+  function computeGlobalScales2(facetDataMap, spec) {
+    const domains = { x: [], y: [] };
+    facetDataMap.forEach((facetData) => {
+      const pointData = structureData4({ ...spec, data: facetData });
+      collectDatasetValues(domains, pointData.datasets);
+    });
+    collectDatasetValues(domains, structureLines(spec));
+    collectReferenceValues(domains, spec);
+    const result = {};
+    addDomain(result, "x", domains.x, spec);
+    addDomain(result, "y", domains.y, spec);
+    return result;
+  }
+
+  // src/facetPoints/splitData.js
+  var MISSING_LABEL2 = "(Missing)";
+  function normalizeFacetValue(value) {
+    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
+  }
+  function formatFacetValue(value) {
+    if (value === null) return MISSING_LABEL2;
+    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
+  }
+  function splitData2(data, field, order) {
+    const facets = /* @__PURE__ */ new Map();
+    const ordered = order !== void 0;
+    if (ordered) {
+      order.forEach((value) => {
+        facets.set(normalizeFacetValue(value), []);
+      });
+    }
+    data.forEach((row) => {
+      const value = normalizeFacetValue(row?.[field]);
+      if (ordered && !facets.has(value)) return;
+      if (!facets.has(value)) facets.set(value, []);
+      facets.get(value).push(row);
+    });
+    return facets;
+  }
+
+  // src/facetPoints/globalStyles.js
+  function getRenderedRows(facets, spec) {
+    return spec.data.filter(
+      (row) => facets.has(normalizeFacetValue(row?.[spec.facet.field]))
+    );
+  }
+  function getValue(dataset, aesthetic) {
+    if (!Object.prototype.hasOwnProperty.call(dataset, `_${aesthetic}`)) {
+      return void 0;
+    }
+    return dataset[`_${aesthetic}Missing`] ? null : dataset[`_${aesthetic}`];
+  }
+  function getKey2(value) {
+    return value === null ? "missing" : JSON.stringify([typeof value, value]);
+  }
+  function resolveOrder(order, templates, aesthetic) {
+    const result = [];
+    const seen = /* @__PURE__ */ new Set();
+    const add = (value) => {
+      if (value === void 0) return;
+      const key = getKey2(value);
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(value);
+      }
+    };
+    order.forEach(add);
+    templates.forEach((dataset) => add(getValue(dataset, aesthetic)));
+    return result;
+  }
+  function makeTemplate(dataset) {
+    return Object.entries(dataset).reduce((template, [key, value]) => {
+      template[key] = key === "data" ? [] : Array.isArray(value) ? [...value] : value;
+      return template;
+    }, {});
+  }
+  function getGlobalStyles(facets, spec) {
+    const mapping = { ...spec.mapping, key: void 0 };
+    const datasets = structureData4({
+      ...spec,
+      data: getRenderedRows(facets, spec),
+      mapping
+    }).datasets;
+    const templates = datasets.map(makeTemplate);
+    return {
+      templates,
+      colorOrder: resolveOrder(spec.scales.color.order, templates, "color"),
+      shapeOrder: resolveOrder(spec.scales.shape.order, templates, "shape")
+    };
+  }
+  function cloneGhost(template) {
+    return Object.entries(template).reduce(
+      (dataset, [key, value]) => {
+        dataset[key] = key === "data" ? [] : Array.isArray(value) ? [...value] : value;
+        return dataset;
+      },
+      { _facetGhost: true }
+    );
+  }
+  function applyGlobalStyles(chart, templates, hiddenIdentities = /* @__PURE__ */ new Set()) {
+    const pointDatasets = chart.data.datasets.filter(
+      (dataset) => !dataset._annotation
+    );
+    const annotationDatasets = chart.data.datasets.filter(
+      (dataset) => dataset._annotation
+    );
+    const byIdentity = /* @__PURE__ */ new Map();
+    pointDatasets.forEach((dataset) => {
+      const identity4 = getDatasetIdentity(dataset, chart.data._spec_);
+      if (byIdentity.has(identity4)) {
+        throw new Error(
+          `facetPoints found duplicate point dataset identity ${identity4}`
+        );
+      }
+      byIdentity.set(identity4, dataset);
+    });
+    const templateIdentities = new Set(
+      templates.map(
+        (template) => getDatasetIdentity(template, chart.data._spec_)
+      )
+    );
+    const unexpected = [...byIdentity.keys()].find(
+      (identity4) => !templateIdentities.has(identity4)
+    );
+    if (unexpected !== void 0) {
+      throw new Error(
+        `facetPoints could not resolve point dataset identity ${unexpected}`
+      );
+    }
+    const orderedPointDatasets = templates.map((template) => {
+      const identity4 = getDatasetIdentity(template, chart.data._spec_);
+      return byIdentity.get(identity4) || cloneGhost(template);
+    });
+    chart.data.datasets = [...orderedPointDatasets, ...annotationDatasets];
+    orderedPointDatasets.forEach((dataset, index3) => {
+      chart.setDatasetVisibility(
+        index3,
+        !hiddenIdentities.has(
+          getDatasetIdentity(dataset, chart.data._spec_)
+        )
+      );
+    });
+    chart.update("none");
+  }
+
+  // src/facetPoints/defaults.js
+  var defaults6 = {
+    facet: {
+      field: void 0,
+      order: void 0,
+      nCol: void 0,
+      chartHeight: void 0,
+      label: {
+        position: "top",
+        font: void 0
+      },
+      scales: {
+        x: { free: false },
+        y: { free: false }
+      },
+      legend: {
+        display: true,
+        sync: true
+      }
+    }
+  };
+  var defaults_default4 = defaults6;
+
+  // src/facetPoints/mergeSpec.js
+  function mergeSpec4(data, spec) {
+    const { facet: userFacet, ...pointsSpec } = spec;
+    const points = mergeSpec3(data, pointsSpec);
+    return {
+      ...points,
+      facet: {
+        field: userFacet.field,
+        order: userFacet.order === void 0 ? void 0 : [...userFacet.order],
+        nCol: userFacet.nCol,
+        chartHeight: userFacet.chartHeight,
+        label: {
+          ...defaults_default4.facet.label,
+          ...userFacet.label || {}
+        },
+        scales: {
+          x: {
+            ...defaults_default4.facet.scales.x,
+            ...userFacet.scales?.x || {}
+          },
+          y: {
+            ...defaults_default4.facet.scales.y,
+            ...userFacet.scales?.y || {}
+          }
+        },
+        legend: {
+          ...defaults_default4.facet.legend,
+          ...userFacet.legend || {}
+        }
+      }
+    };
+  }
+
+  // src/facetPoints/renderGrid.js
+  function removeExistingGrids(parentElement) {
+    [...parentElement.children].filter((element) => element.classList.contains("gsm-facet-grid")).forEach((grid) => {
+      grid.querySelectorAll("canvas").forEach((canvas) => {
+        Chart.getChart(canvas)?.destroy();
+      });
+      grid.remove();
+    });
+  }
+  function renderGrid2(parentElement, facetValues, spec) {
+    removeExistingGrids(parentElement);
+    const nCol = spec.facet.nCol ?? Math.max(1, Math.min(facetValues.length, 3));
+    const grid = document.createElement("div");
+    grid.className = "gsm-facet-grid";
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = `repeat(${nCol}, 1fr)`;
+    grid.style.gap = "8px";
+    const containers = /* @__PURE__ */ new Map();
+    facetValues.forEach((facetValue) => {
+      const cell = document.createElement("div");
+      cell.className = "gsm-facet-cell";
+      const label = document.createElement("div");
+      label.className = "gsm-facet-label";
+      label.textContent = formatFacetValue(facetValue);
+      if (spec.facet.label.font) {
+        label.style.font = spec.facet.label.font;
+      }
+      const container = document.createElement("div");
+      container.className = "gsm-facet-canvas";
+      if (spec.facet.chartHeight !== void 0) {
+        container.style.height = `${spec.facet.chartHeight}px`;
+      }
+      if (spec.facet.label.position === "bottom") {
+        cell.append(container, label);
+      } else {
+        cell.append(label, container);
+      }
+      grid.appendChild(cell);
+      containers.set(facetValue, container);
+    });
+    parentElement.appendChild(grid);
+    return { containers, grid };
+  }
+
+  // src/facetPoints/syncHover.js
+  function findPoint2(chart, key) {
+    for (let datasetIndex = 0; datasetIndex < chart.data.datasets.length; datasetIndex += 1) {
+      const dataset = chart.data.datasets[datasetIndex];
+      if (dataset._annotation || !chart.isDatasetVisible(datasetIndex)) {
+        continue;
+      }
+      const index3 = dataset.data.findIndex((point) => point._key === key);
+      const element = chart.getDatasetMeta(datasetIndex).data[index3];
+      if (index3 !== -1 && element) {
+        return { datasetIndex, index: index3 };
+      }
+    }
+    return void 0;
+  }
+  function synchronizeHover(charts, origin, key) {
+    charts.forEach((sibling) => {
+      if (sibling === origin) return;
+      const active = key !== void 0 && sibling.data._spec_.mapping.key ? findPoint2(sibling, key) : void 0;
+      sibling.setActiveElements(active ? [active] : []);
+      sibling.update("none");
+    });
+  }
+  function syncHover(charts) {
+    charts.forEach((chart) => {
+      const current = chart.options.onHover;
+      const original = current === chart._facetPointsHoverSyncWrapper ? chart._facetPointsHoverOriginal : current;
+      const wrapper = function(event, activeElements, chartInstance) {
+        original?.call(this, event, activeElements, chartInstance);
+        const active = activeElements[0];
+        const dataset = active ? chartInstance.data.datasets[active.datasetIndex] : void 0;
+        const point = dataset && !dataset._annotation ? dataset.data[active.index] : void 0;
+        const key = chartInstance.data._spec_.mapping.key ? point?._key : void 0;
+        synchronizeHover(charts, chartInstance, key);
+      };
+      chart._facetPointsHoverOriginal = original;
+      chart._facetPointsHoverSyncWrapper = wrapper;
+      chart.options.onHover = wrapper;
+    });
+  }
+
+  // src/facetPoints/syncLegendClicks.js
+  function getAnnotationOrdinal(datasets, index3) {
+    return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
+  }
+  function getIdentity(chart, index3) {
+    const dataset = chart.data.datasets[index3];
+    const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
+    return pointIdentity === void 0 ? JSON.stringify([
+      "annotation",
+      getAnnotationOrdinal(chart.data.datasets, index3)
+    ]) : pointIdentity;
+  }
+  function syncLegendClicks2(charts, { sync = true } = {}) {
+    charts.forEach((chart) => {
+      const current = chart.options.plugins.legend.onClick;
+      const original = current === chart._facetPointsLegendSyncWrapper ? chart._facetPointsLegendOriginal : current ?? Chart.defaults.plugins.legend.onClick;
+      const wrapper = function(event, legendItem, legend5) {
+        const identity4 = getIdentity(chart, legendItem.datasetIndex);
+        original.call(this, event, legendItem, legend5);
+        if (!sync) return;
+        const visible = chart.isDatasetVisible(legendItem.datasetIndex);
+        charts.forEach((sibling) => {
+          if (sibling === chart) return;
+          const index3 = sibling.data.datasets.findIndex(
+            (_dataset, datasetIndex) => getIdentity(sibling, datasetIndex) === identity4
+          );
+          if (index3 === -1) return;
+          sibling.setDatasetVisibility(index3, visible);
+          sibling.update("none");
+        });
+      };
+      chart._facetPointsLegendOriginal = original;
+      chart._facetPointsLegendSyncWrapper = wrapper;
+      chart.options.plugins.legend.onClick = wrapper;
+    });
+  }
+
+  // src/facetPoints/syncSelection.js
+  function getPointKeys(chart) {
+    return new Set(
+      chart.data.datasets.filter((dataset) => !dataset._annotation).flatMap((dataset) => dataset.data).map((point) => point._key)
+    );
+  }
+  function getGroupValues2(chart) {
+    return new Set(
+      chart.data.datasets.filter(
+        (dataset) => !dataset._annotation && Object.prototype.hasOwnProperty.call(dataset, "_color")
+      ).map((dataset) => dataset._colorMissing ? null : dataset._color)
+    );
+  }
+  function clearSibling(sibling) {
+    clearSelection2(sibling, void 0, { _silent: true });
+  }
+  function synchronizeSelection(charts, origin, selection2) {
+    charts.forEach((sibling) => {
+      if (sibling === origin) return;
+      if (selection2.type === null) {
+        clearSibling(sibling);
+        return;
+      }
+      if (selection2.type === "point") {
+        if (!origin.data._spec_.mapping.key || !sibling.data._spec_.mapping.key) {
+          clearSibling(sibling);
+          return;
+        }
+        const known = getPointKeys(sibling);
+        const values = selection2.values.filter((value) => known.has(value));
+        if (values.length) {
+          selectPoint(sibling, values, void 0, { _silent: true });
+        } else {
+          clearSibling(sibling);
+        }
+        return;
+      }
+      if (selection2.type === "group") {
+        if (!sibling.data._spec_.mapping.color) {
+          clearSibling(sibling);
+          return;
+        }
+        const known = getGroupValues2(sibling);
+        const values = selection2.values.filter((value) => known.has(value));
+        if (values.length) {
+          selectGroup(sibling, values, void 0, { _silent: true });
+        } else {
+          clearSibling(sibling);
+        }
+        return;
+      }
+      throw new Error(
+        `facetPoints cannot synchronize selection type ${selection2.type}`
+      );
+    });
+  }
+  function syncSelection2(charts) {
+    charts.forEach((chart) => {
+      const current = chart.data._spec_.callbacks.onSelect;
+      const callback2 = current === chart._facetPointsSelectionSyncWrapper ? chart._facetPointsSelectionOriginal : current;
+      const wrapper = (selection2, event) => {
+        synchronizeSelection(charts, chart, selection2);
+        callback2?.(selection2, event);
+      };
+      chart._facetPointsSelectionOriginal = callback2;
+      chart._facetPointsSelectionSyncWrapper = wrapper;
+      chart.data._spec_.callbacks.onSelect = wrapper;
+    });
+  }
+
+  // src/facetPoints/syncUpdates.js
+  function getHiddenIdentities(chart) {
+    const hidden = /* @__PURE__ */ new Set();
+    chart.data.datasets.forEach((dataset, index3) => {
+      if (dataset._annotation || chart.isDatasetVisible(index3)) return;
+      const identity4 = getDatasetIdentity(dataset, chart.data._spec_);
+      if (identity4 !== void 0) hidden.add(identity4);
+    });
+    return hidden;
+  }
+  function decorateChart(chart, charts, templates, legend5, hidden) {
+    chart.options.plugins.legend.display = legend5.display && chart.options.plugins.legend.display;
+    applyGlobalStyles(chart, templates, hidden);
+    syncHover(charts);
+    syncSelection2(charts);
+    syncLegendClicks2(charts, { sync: legend5.sync });
+  }
+  function syncUpdates(charts, templates, legend5) {
+    charts.forEach((chart) => {
+      ["updateData", "updateSpec"].forEach((name) => {
+        const update = chart.helpers[name];
+        chart.helpers[name] = function(chartInstance, ...args) {
+          const hidden = getHiddenIdentities(chartInstance);
+          const result = update.call(this, chartInstance, ...args);
+          decorateChart(chartInstance, charts, templates, legend5, hidden);
+          return result;
+        };
+      });
+    });
+  }
+
+  // src/facetPoints/validateSpec.js
+  var supportedFields2 = {
+    facet: [
+      "field",
+      "order",
+      "nCol",
+      "chartHeight",
+      "label",
+      "scales",
+      "legend"
+    ],
+    label: ["position", "font"],
+    scales: ["x", "y"],
+    axis: ["free"],
+    legend: ["display", "sync"]
+  };
+  function isPlainObject3(value) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function validatePlainObject2(value, path) {
+    if (!isPlainObject3(value)) {
+      throw new Error(`${path} must be a plain object`);
+    }
+  }
+  function validateSupportedFields2(value, fields, path) {
+    const unsupported = Object.keys(value).find(
+      (field) => !fields.includes(field)
+    );
+    if (unsupported !== void 0) {
+      throw new Error(`${path}.${unsupported} is not supported`);
+    }
+  }
+  function isMissingValue(value) {
+    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value);
+  }
+  function isFacetValue(value) {
+    return isMissingValue(value) || typeof value === "string" || typeof value === "number" && Number.isFinite(value);
+  }
+  function getOrderKey(value) {
+    return value === null ? "missing" : JSON.stringify([typeof value, value]);
+  }
+  function validateOrder(order) {
+    if (order === void 0) return;
+    if (!Array.isArray(order)) {
+      throw new Error("spec.facet.order must be an array");
+    }
+    const seen = /* @__PURE__ */ new Set();
+    order.forEach((value, index3) => {
+      const valid = value === null || typeof value === "string" && value.trim().length > 0 || typeof value === "number" && Number.isFinite(value);
+      if (!valid) {
+        throw new Error(
+          `spec.facet.order[${index3}] must be a non-empty string, finite number, or null`
+        );
+      }
+      const key = getOrderKey(value);
+      if (seen.has(key)) {
+        throw new Error("spec.facet.order must contain unique values");
+      }
+      seen.add(key);
+    });
+  }
+  function validateLabel(label) {
+    if (label === void 0) return;
+    validatePlainObject2(label, "spec.facet.label");
+    validateSupportedFields2(label, supportedFields2.label, "spec.facet.label");
+    if (label.position !== void 0 && !["top", "bottom"].includes(label.position)) {
+      throw new Error("spec.facet.label.position must be 'top' or 'bottom'");
+    }
+    if (label.font !== void 0 && (typeof label.font !== "string" || label.font.trim().length === 0)) {
+      throw new Error("spec.facet.label.font must be a non-empty string");
+    }
+  }
+  function validateScales(scales2) {
+    if (scales2 === void 0) return;
+    validatePlainObject2(scales2, "spec.facet.scales");
+    validateSupportedFields2(
+      scales2,
+      supportedFields2.scales,
+      "spec.facet.scales"
+    );
+    ["x", "y"].forEach((axis) => {
+      if (scales2[axis] === void 0) return;
+      const path = `spec.facet.scales.${axis}`;
+      validatePlainObject2(scales2[axis], path);
+      validateSupportedFields2(scales2[axis], supportedFields2.axis, path);
+      if (scales2[axis].free !== void 0 && typeof scales2[axis].free !== "boolean") {
+        throw new Error(`${path}.free must be a boolean`);
+      }
+    });
+  }
+  function validateLegend(legend5) {
+    if (legend5 === void 0) return;
+    validatePlainObject2(legend5, "spec.facet.legend");
+    validateSupportedFields2(
+      legend5,
+      supportedFields2.legend,
+      "spec.facet.legend"
+    );
+    supportedFields2.legend.forEach((field) => {
+      if (legend5[field] !== void 0 && typeof legend5[field] !== "boolean") {
+        throw new Error(`spec.facet.legend.${field} must be a boolean`);
+      }
+    });
+  }
+  function validateFacetData(data, field) {
+    data.forEach((row, index3) => {
+      const value = row?.[field];
+      if (!isFacetValue(value)) {
+        throw new Error(
+          `data[${index3}].${field} mapped by spec.facet.field must be a string, finite number, or missing`
+        );
+      }
+    });
+  }
+  function validateSpec4(data, spec) {
+    if (!isPlainObject3(spec)) {
+      validateSpec3(data, spec);
+      return;
+    }
+    const { facet, ...pointsSpec } = spec;
+    validateSpec3(data, pointsSpec);
+    if (facet === void 0) {
+      throw new Error("spec.facet is required");
+    }
+    validatePlainObject2(facet, "spec.facet");
+    validateSupportedFields2(facet, supportedFields2.facet, "spec.facet");
+    if (facet.field === void 0) {
+      throw new Error("spec.facet.field is required");
+    }
+    if (typeof facet.field !== "string" || facet.field.trim().length === 0) {
+      throw new Error("spec.facet.field must be a non-empty string");
+    }
+    validateOrder(facet.order);
+    if (facet.nCol !== void 0 && (!Number.isInteger(facet.nCol) || facet.nCol < 1)) {
+      throw new Error("spec.facet.nCol must be a positive integer");
+    }
+    if (facet.chartHeight !== void 0 && (!Number.isFinite(facet.chartHeight) || facet.chartHeight <= 0)) {
+      throw new Error(
+        "spec.facet.chartHeight must be a positive finite number"
+      );
+    }
+    validateLabel(facet.label);
+    validateScales(facet.scales);
+    validateLegend(facet.legend);
+    validateFacetData(data, facet.field);
+  }
+
+  // src/facetPoints.js
+  function facetPoints(element = "body", data = [], spec = {}) {
+    validateSpec4(data, spec);
+    let parent = element;
+    if (typeof parent === "string") {
+      parent = document.querySelector(parent);
+      if (!parent) {
+        throw new Error(
+          `facetPoints: could not find element matching "${element}"`
+        );
+      }
+    }
+    const merged = mergeSpec4(data, spec);
+    const facets = splitData2(data, merged.facet.field, merged.facet.order);
+    const globalScales = computeGlobalScales2(facets, merged);
+    const globalStyles = getGlobalStyles(facets, merged);
+    const facetValues = [...facets.keys()];
+    const { containers, grid } = renderGrid2(parent, facetValues, merged);
+    const charts = [];
+    try {
+      facetValues.forEach((facetValue) => {
+        const chart = renderPoints(
+          containers.get(facetValue),
+          facets.get(facetValue),
+          buildSubSpec2(facetValue, merged, globalScales, globalStyles)
+        );
+        charts.push(chart);
+        chart.options.plugins.legend.display = merged.facet.legend.display && chart.options.plugins.legend.display;
+        applyGlobalStyles(chart, globalStyles.templates);
+      });
+      syncHover(charts);
+      syncSelection2(charts);
+      syncLegendClicks2(charts, { sync: merged.facet.legend.sync });
+      syncUpdates(charts, globalStyles.templates, merged.facet.legend);
+    } catch (error) {
+      charts.forEach((chart) => chart.destroy());
+      grid.remove();
+      throw error;
+    }
+    return { charts, container: grid };
+  }
+
   // src/main.js
   Chart.register(
     annotation,
@@ -32469,6 +33206,7 @@ var gsmViz = (() => {
     barChart,
     bars,
     facetBars,
+    facetPoints,
     groupOverview,
     points: renderPoints,
     scatterPlot,
