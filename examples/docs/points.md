@@ -26,9 +26,30 @@ Returns a Chart.js chart instance.
 
 ```js
 const data = [
-    { exposure: 5, events: 1, site: 'Site 01', arm: 'Control' },
-    { exposure: 12, events: 3, site: 'Site 02', arm: 'Treatment' },
-    { exposure: 25, events: 6, site: 'Site 03', arm: 'Treatment' },
+    {
+        exposure: 5,
+        events: 1,
+        site: 'Site 01',
+        arm: 'Control',
+        participants: 12,
+        completeness: 0.72,
+    },
+    {
+        exposure: 12,
+        events: 3,
+        site: 'Site 02',
+        arm: 'Treatment',
+        participants: 35,
+        completeness: 0.94,
+    },
+    {
+        exposure: 25,
+        events: 6,
+        site: 'Site 03',
+        arm: 'Treatment',
+        participants: 48,
+        completeness: 0.83,
+    },
 ];
 
 const chart = gsmViz.default.points(element, data, {
@@ -37,6 +58,8 @@ const chart = gsmViz.default.points(element, data, {
         y: 'events',
         key: 'site',
         color: 'arm',
+        size: 'participants',
+        opacity: 'completeness',
     },
     scales: {
         x: {
@@ -58,6 +81,8 @@ const chart = gsmViz.default.points(element, data, {
             order: ['Control', 'Treatment'],
             label: 'Treatment arm',
         },
+        size: { range: [4, 12] },
+        opacity: { range: [0.35, 1] },
     },
     labels: {
         title: 'Events by exposure',
@@ -85,6 +110,8 @@ const chart = gsmViz.default.points(element, data, {
         y: 'yField',       // required
         key: 'idField',    // optional stable point identity
         color: 'groupField', // optional categorical grouping
+        size: 'sizeField',    // optional non-negative numeric field
+        opacity: 'alphaField', // optional finite numeric field
     },
     scales: {
         x: {
@@ -108,6 +135,12 @@ const chart = gsmViz.default.points(element, data, {
             palette: [/* default categorical colors */],
             order: [],        // explicit legend/domain order
             label: undefined, // defaults to mapping.color
+        },
+        size: {
+            range: [3, 12],   // positive minimum and maximum radius
+        },
+        opacity: {
+            range: [0.25, 1], // minimum and maximum alpha
         },
     },
     labels: {
@@ -163,6 +196,19 @@ hides the title. Valid color levels are strings or finite numbers, and are
 normalized to strings, so `1` and `"1"` identify the same category. Null,
 undefined, and `NaN` color values are invalid.
 
+## Continuous size and opacity
+
+`mapping.size` maps finite, non-negative values into `scales.size.range`. The
+scale interpolates point **area**, avoiding the visual exaggeration caused by
+linear radius scaling. Equal input values use the midpoint radius. Hover radius
+is always two pixels larger than the rendered radius.
+
+`mapping.opacity` maps finite values into the clamped
+`scales.opacity.range`. Equal input values use the midpoint alpha. Opacity is
+applied to each point's resolved color, including color-mapped datasets. Numeric
+strings, missing values, infinities, and negative size values throw rather than
+being coerced or dropped.
+
 ## Tooltips
 
 Use `tooltip.format` for field templates:
@@ -215,6 +261,8 @@ removed.
 -   Color-mapped points retain their resolved categorical value as `_color`.
 -   Color-mapped values must be strings or finite numbers; null, undefined,
     and `NaN` values throw an error.
+-   Size- and opacity-mapped points retain their source values as `_size` and
+    `_opacity`.
 -   An empty data array renders a valid empty chart.
 
 ## Accessibility and responsive behavior

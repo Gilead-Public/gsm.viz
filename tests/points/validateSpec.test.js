@@ -18,6 +18,8 @@ describe('points/validateSpec', () => {
                     y: 'yValue',
                     key: 'id',
                     color: 'group',
+                    size: 'participants',
+                    opacity: 'intensity',
                 },
                 scales: {
                     x: { type: 'linear', label: 'X axis' },
@@ -28,6 +30,8 @@ describe('points/validateSpec', () => {
                         order: ['Control', 'Treatment'],
                         label: 'Arm',
                     },
+                    size: { range: [3, 12] },
+                    opacity: { range: [0.25, 1] },
                 },
                 labels: {
                     title: 'Example',
