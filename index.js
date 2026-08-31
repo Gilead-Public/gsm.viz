@@ -28201,6 +28201,7 @@ var gsmViz = (() => {
       "tooltip",
       "callbacks",
       "selection",
+      "zoom",
       "theme"
     ],
     mapping: ["x", "y", "key", "color", "size", "opacity", "shape"],
@@ -28309,6 +28310,7 @@ var gsmViz = (() => {
     ],
     callbacks: ["onClick", "onHover", "onSelect"],
     selection: ["enabled", "opacity", "multiple"],
+    zoom: ["enabled", "mode", "pan", "wheel", "pinch"],
     theme: ["maintainAspectRatio", "animation"]
   };
   function isPlainObject(value) {
@@ -28777,6 +28779,21 @@ var gsmViz = (() => {
       }
     });
   }
+  function validateZoom(zoom2) {
+    if (zoom2 === void 0) {
+      return;
+    }
+    validatePlainObject(zoom2, "spec.zoom");
+    validateSupportedFields(zoom2, supportedFields.zoom, "spec.zoom");
+    ["enabled", "pan", "wheel", "pinch"].forEach((field) => {
+      if (zoom2[field] !== void 0 && typeof zoom2[field] !== "boolean") {
+        throw new Error(`spec.zoom.${field} must be a boolean`);
+      }
+    });
+    if (zoom2.mode !== void 0 && !["x", "y", "xy"].includes(zoom2.mode)) {
+      throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
+    }
+  }
   function validateSpec3(data, spec) {
     if (data === void 0 || data === null) {
       throw new Error("data is required");
@@ -28882,6 +28899,7 @@ var gsmViz = (() => {
     }
     validateCallbacks(spec.callbacks);
     validateSelection(spec.selection);
+    validateZoom(spec.zoom);
     validateTheme(spec.theme);
   }
 
@@ -28972,6 +28990,13 @@ var gsmViz = (() => {
       opacity: 0.2,
       multiple: false
     },
+    zoom: {
+      enabled: false,
+      mode: "xy",
+      pan: false,
+      wheel: true,
+      pinch: true
+    },
     theme: {
       maintainAspectRatio: false,
       animation: false
@@ -29040,6 +29065,7 @@ var gsmViz = (() => {
       tooltip: mergeTooltip(spec.tooltip),
       callbacks: mergeDefaults(defaults_default3.callbacks, spec.callbacks),
       selection: mergeDefaults(defaults_default3.selection, spec.selection),
+      zoom: mergeDefaults(defaults_default3.zoom, spec.zoom),
       theme: mergeDefaults(defaults_default3.theme, spec.theme)
     };
   }
@@ -29613,6 +29639,28 @@ var gsmViz = (() => {
     return config;
   }
 
+  // src/points/buildZoom.js
+  function buildZoom2(zoom2) {
+    if (!zoom2?.enabled) {
+      return void 0;
+    }
+    return {
+      pan: {
+        enabled: zoom2.pan,
+        mode: zoom2.mode
+      },
+      zoom: {
+        mode: zoom2.mode,
+        wheel: {
+          enabled: zoom2.wheel
+        },
+        pinch: {
+          enabled: zoom2.pinch
+        }
+      }
+    };
+  }
+
   // src/points/pointInteractionMode.js
   var MODE_PREFIX = "gsmPoints";
   function getPointInteractionMode(baseMode) {
@@ -29748,6 +29796,7 @@ var gsmViz = (() => {
     }
     const lines = referenceLines2(spec);
     const labels = spec.annotations?.labels?.point;
+    const zoom2 = buildZoom2(spec.zoom);
     return {
       title: {
         display: !!title4,
@@ -29761,6 +29810,7 @@ var gsmViz = (() => {
       },
       legend: legend5,
       tooltip: tooltip5,
+      ...zoom2 ? { zoom: zoom2 } : {},
       ...labels ? { datalabels: pointLabels(spec) } : {},
       ...lines ? {
         annotation: {
@@ -29839,6 +29889,43 @@ var gsmViz = (() => {
       interaction: merged.annotations.lines.length ? { mode: getPointInteractionMode("point") } : void 0,
       accessibleLabel: getAccessibleLabel(merged, chartData, data.length)
     };
+  }
+
+  // src/points/defaultFilename.js
+  function toFilename2(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  }
+  function defaultFilename2(spec) {
+    const { labels = {}, scales: scales2 = {}, mapping = {} } = spec || {};
+    const title4 = toFilename2(labels.title);
+    if (title4) {
+      return `${title4}.png`;
+    }
+    const x = toFilename2(scales2.x?.label || mapping.x);
+    const y = toFilename2(scales2.y?.label || mapping.y);
+    return x && y ? `${y}-by-${x}.png` : "points.png";
+  }
+
+  // src/points/exportImage.js
+  function exportImage2(chart, filename) {
+    if (filename !== void 0 && (typeof filename !== "string" || filename.trim().length === 0)) {
+      throw new Error(
+        "points exportImage filename must be a non-empty string"
+      );
+    }
+    const name = filename ?? defaultFilename2(chart.data?._spec_);
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = chart.toBase64Image();
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } finally {
+      document.body.removeChild(link);
+    }
   }
 
   // src/points/selection.js
@@ -30485,9 +30572,15 @@ var gsmViz = (() => {
       delete options.interaction;
     }
   }
+  function resetZoomForUpdate(chart) {
+    if (chart.isZoomedOrPanned?.()) {
+      chart.resetZoom("none");
+    }
+  }
   function rebuildChart(chart, data, spec) {
     const state = buildState(data, spec);
     const hiddenIdentities = getHiddenDatasetIdentities(chart);
+    resetZoomForUpdate(chart);
     resetSelectionForUpdate(chart);
     chart.data.datasets = state.chartData.datasets;
     chart.data._spec_ = state.merged;
@@ -30547,7 +30640,7 @@ var gsmViz = (() => {
   }
 
   // src/points.js
-  auto_default.register(annotation);
+  auto_default.register(annotation, plugin);
   function renderPoints(element = "body", data = [], spec = {}) {
     validateSpec3(data, spec);
     let el = element;
@@ -30602,7 +30695,8 @@ var gsmViz = (() => {
       clearSelection: clearSelection2,
       getSelection: getSelection2,
       updateData: updateData3,
-      updateSpec: updateSpec2
+      updateSpec: updateSpec2,
+      exportImage: exportImage2
     };
     setupKeyboardSelection(chart);
     return chart;

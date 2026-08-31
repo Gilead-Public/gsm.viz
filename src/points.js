@@ -1,8 +1,10 @@
 import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 import buildState from './points/buildState.js';
+import exportImage from './points/exportImage.js';
 import validateSpec from './points/validateSpec.js';
 import { setAccessibleLabel } from './points/accessibility.js';
 import onClick from './points/onClick.js';
@@ -24,7 +26,7 @@ import updateSpec from './points/updateSpec.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
-Chart.register(annotationPlugin);
+Chart.register(annotationPlugin, zoomPlugin);
 
 /**
  * Render a two-dimensional point chart using a ggplot2-inspired spec.
@@ -93,6 +95,7 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         getSelection,
         updateData,
         updateSpec,
+        exportImage,
     };
     setupKeyboardSelection(chart);
 
