@@ -12,6 +12,10 @@ const defaults = {
             x: { free: false },
             y: { free: false },
         },
+        legend: {
+            display: true,
+            sync: true,
+        },
     },
 };
 
