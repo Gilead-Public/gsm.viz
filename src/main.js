@@ -14,6 +14,7 @@ import barChart from './barChart.js';
 import bars from './bars.js';
 import facetBars from './facetBars.js';
 import groupOverview from './groupOverview.js';
+import renderPoints from './points.js';
 import scatterPlot from './scatterPlot.js';
 import sparkline from './sparkline.js';
 import timeSeries from './timeSeries.js';
@@ -35,6 +36,7 @@ const gsmViz = {
     bars,
     facetBars,
     groupOverview,
+    points: renderPoints,
     scatterPlot,
     sparkline,
     timeSeries,

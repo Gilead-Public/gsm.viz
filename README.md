@@ -10,6 +10,7 @@ and development examples [here](https://gilead-public.github.io/gsm.viz/dev/).
 **Generics**
 - [bar chart](https://gilead-public.github.io/gsm.viz/bars/)
 - [bar chart builder](https://gilead-public.github.io/gsm.viz/bars/builder.html)
+- [points](https://gilead-public.github.io/gsm.viz/points/)
 
 **Metrics**
 - [bar chart](https://gilead-public.github.io/gsm.viz/barChart/)
@@ -103,5 +104,4 @@ npm run local
 The repository is now accessible via the browser.  Navigate to `./examples` to view a list of
 existing modules.  Each example contains a working instance of each `gsm.viz` module.  Open the
 appropriate example to view changes to the module in real time as you develop.
-
 
