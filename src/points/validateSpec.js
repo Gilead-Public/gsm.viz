@@ -1,0 +1,247 @@
+const supportedFields = {
+    spec: [
+        'mapping',
+        'scales',
+        'labels',
+        'tooltip',
+        'callbacks',
+        'selection',
+        'theme',
+    ],
+    mapping: ['x', 'y', 'key'],
+    scales: ['x', 'y'],
+    scale: ['type', 'label'],
+    labels: ['title', 'caption', 'description'],
+    tooltip: ['format', 'formatter'],
+    callbacks: ['onClick', 'onHover', 'onSelect'],
+    selection: ['enabled', 'opacity', 'multiple'],
+    theme: ['maintainAspectRatio', 'animation'],
+};
+
+function isPlainObject(value) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+}
+
+function validatePlainObject(value, path) {
+    if (!isPlainObject(value)) {
+        throw new Error(`${path} must be a plain object`);
+    }
+}
+
+function validateSupportedFields(value, fields, path) {
+    const unsupported = Object.keys(value).find(
+        (field) => !fields.includes(field)
+    );
+
+    if (unsupported !== undefined) {
+        throw new Error(`${path}.${unsupported} is not supported`);
+    }
+}
+
+function validateRequiredMapping(mapping, field) {
+    const value = mapping[field];
+
+    if (value === undefined) {
+        throw new Error(`spec.mapping.${field} is required`);
+    }
+
+    if (typeof value !== 'string' || value.trim().length === 0) {
+        throw new Error(`spec.mapping.${field} must be a non-empty string`);
+    }
+}
+
+function validateOptionalString(value, path) {
+    if (value !== undefined && typeof value !== 'string') {
+        throw new Error(`${path} must be a string`);
+    }
+}
+
+function validateScale(scale, axis) {
+    if (scale === undefined) {
+        return;
+    }
+
+    const path = `spec.scales.${axis}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.scale, path);
+
+    if (scale.type !== undefined && scale.type !== 'linear') {
+        throw new Error(`${path}.type must be 'linear'`);
+    }
+
+    validateOptionalString(scale.label, `${path}.label`);
+}
+
+function validateCallbacks(callbacks) {
+    if (callbacks === undefined) {
+        return;
+    }
+
+    validatePlainObject(callbacks, 'spec.callbacks');
+    validateSupportedFields(
+        callbacks,
+        supportedFields.callbacks,
+        'spec.callbacks'
+    );
+
+    supportedFields.callbacks.forEach((field) => {
+        const callback = callbacks[field];
+
+        if (
+            callback !== undefined &&
+            callback !== null &&
+            typeof callback !== 'function'
+        ) {
+            throw new Error(
+                `spec.callbacks.${field} must be a function or null`
+            );
+        }
+    });
+}
+
+function validateSelection(selection) {
+    if (selection === undefined) {
+        return;
+    }
+
+    validatePlainObject(selection, 'spec.selection');
+    validateSupportedFields(
+        selection,
+        supportedFields.selection,
+        'spec.selection'
+    );
+
+    ['enabled', 'multiple'].forEach((field) => {
+        if (
+            selection[field] !== undefined &&
+            typeof selection[field] !== 'boolean'
+        ) {
+            throw new Error(`spec.selection.${field} must be a boolean`);
+        }
+    });
+
+    if (
+        selection.opacity !== undefined &&
+        (!Number.isFinite(selection.opacity) ||
+            selection.opacity < 0 ||
+            selection.opacity > 1)
+    ) {
+        throw new Error(
+            'spec.selection.opacity must be a finite number between 0 and 1'
+        );
+    }
+}
+
+function validateTheme(theme) {
+    if (theme === undefined) {
+        return;
+    }
+
+    validatePlainObject(theme, 'spec.theme');
+    validateSupportedFields(theme, supportedFields.theme, 'spec.theme');
+
+    supportedFields.theme.forEach((field) => {
+        if (theme[field] !== undefined && typeof theme[field] !== 'boolean') {
+            throw new Error(`spec.theme.${field} must be a boolean`);
+        }
+    });
+}
+
+/**
+ * Validate data and the implemented portion of the generic points spec.
+ *
+ * @param {Array} data - Source rows.
+ * @param {Object} spec - Point chart specification.
+ * @throws {Error} If a required field is missing or an accepted field is invalid.
+ */
+export default function validateSpec(data, spec) {
+    if (data === undefined || data === null) {
+        throw new Error('data is required');
+    }
+
+    if (!Array.isArray(data)) {
+        throw new Error('data must be an array');
+    }
+
+    if (spec === undefined || spec === null) {
+        throw new Error('spec is required');
+    }
+
+    validatePlainObject(spec, 'spec');
+    validateSupportedFields(spec, supportedFields.spec, 'spec');
+
+    if (spec.mapping === undefined || spec.mapping === null) {
+        throw new Error('spec.mapping is required');
+    }
+
+    validatePlainObject(spec.mapping, 'spec.mapping');
+    validateSupportedFields(
+        spec.mapping,
+        supportedFields.mapping,
+        'spec.mapping'
+    );
+    validateRequiredMapping(spec.mapping, 'x');
+    validateRequiredMapping(spec.mapping, 'y');
+
+    if (spec.mapping.key !== undefined) {
+        if (
+            typeof spec.mapping.key !== 'string' ||
+            spec.mapping.key.trim().length === 0
+        ) {
+            throw new Error('spec.mapping.key must be a non-empty string');
+        }
+    }
+
+    if (spec.scales !== undefined) {
+        validatePlainObject(spec.scales, 'spec.scales');
+        validateSupportedFields(
+            spec.scales,
+            supportedFields.scales,
+            'spec.scales'
+        );
+        validateScale(spec.scales.x, 'x');
+        validateScale(spec.scales.y, 'y');
+    }
+
+    if (spec.labels !== undefined) {
+        validatePlainObject(spec.labels, 'spec.labels');
+        validateSupportedFields(
+            spec.labels,
+            supportedFields.labels,
+            'spec.labels'
+        );
+
+        supportedFields.labels.forEach((field) => {
+            validateOptionalString(spec.labels[field], `spec.labels.${field}`);
+        });
+    }
+
+    if (spec.tooltip !== undefined) {
+        validatePlainObject(spec.tooltip, 'spec.tooltip');
+        validateSupportedFields(
+            spec.tooltip,
+            supportedFields.tooltip,
+            'spec.tooltip'
+        );
+        validateOptionalString(spec.tooltip.format, 'spec.tooltip.format');
+
+        if (
+            spec.tooltip.formatter !== undefined &&
+            spec.tooltip.formatter !== null &&
+            typeof spec.tooltip.formatter !== 'function'
+        ) {
+            throw new Error(
+                'spec.tooltip.formatter must be a function or null'
+            );
+        }
+    }
+
+    validateCallbacks(spec.callbacks);
+    validateSelection(spec.selection);
+    validateTheme(spec.theme);
+}
