@@ -178,6 +178,36 @@ authoritative, including when that facet axis is marked free.
 When all global values on an axis are equal, `facetPoints` expands the domain to
 a finite usable range. Log domains remain positive.
 
+### Facet-aware auxiliary lines
+
+An `annotations.lines` layer is repeated in every child when none of its data
+rows contains `facet.field`. When that field is present, rows are split by the
+same typed and missing-value rules as points:
+
+```js
+facet: { field: 'snapshot' },
+annotations: {
+    lines: [
+        {
+            data: thresholdRows, // includes a snapshot field
+            mapping: {
+                x: 'denominator',
+                y: 'limit',
+                group: 'threshold',
+            },
+        },
+    ],
+}
+```
+
+Each child then receives only its matching threshold rows. Facet-aware line rows
+for values excluded by `facet.order` do not expand the shared domain. Reference
+lines remain global. All auxiliary rows are still validated before this
+allowlist filtering, so an invalid coordinate, group, log value, or facet
+identity cannot be hidden in an unrendered panel. This distinction supports both
+one common guide curve and snapshot-specific threshold curves without adding a
+separate annotation-facet option.
+
 ## Global styles and legends
 
 Color and shape levels are resolved once across the complete source data.
@@ -202,7 +232,8 @@ facet: {
 
 Set `sync: false` for local toggles or `display: false` to hide all child
 legends. Point datasets are matched by typed color/shape identity, not label or
-array index. Auxiliary lines are matched by their consistent layer order.
+array index. Auxiliary lines are matched by original layer and typed group
+identity, so a group absent from one facet cannot toggle an unrelated line.
 
 ## Linked hover, selection, and callbacks
 
@@ -274,5 +305,8 @@ The label and canvas-container order reflects `facet.label.position`. Layout can
 be customized with these classes in addition to `nCol` and `chartHeight`.
 
 Each child canvas retains the points text alternative, no-data message,
-color/shape encoding summary, and keyboard/live selection behavior. Visible
-facet labels provide the panel context without creating per-point DOM nodes.
+color/shape encoding summary, and keyboard/live selection behavior. Its
+accessible summary is prefixed with `Facet <field>: <value>.`, including after
+local child updates. Missing and literal `"(Missing)"` facet values remain
+distinct. Visible facet labels provide the same panel context without creating
+per-point DOM nodes.
