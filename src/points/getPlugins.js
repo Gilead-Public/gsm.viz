@@ -1,5 +1,7 @@
 import { Chart } from 'chart.js';
 import buildTooltip from './buildTooltip.js';
+import getPointInteractionMode from './pointInteractionMode.js';
+import referenceLines from './referenceLines.js';
 
 /**
  * Build the initial Chart.js plugin configuration for points.
@@ -11,6 +13,9 @@ export default function getPlugins(spec) {
     const { title, caption } = spec.labels;
     const hasColor = !!spec.mapping.color;
     const hasShape = !!spec.mapping.shape;
+    const lineLayers = spec.annotations?.lines || [];
+    const hasLines = lineLayers.length > 0;
+    const hasLineLegend = lineLayers.some((line) => line.showInLegend);
     const getScaleLabel = (aesthetic) =>
         spec.scales[aesthetic].label !== undefined
             ? spec.scales[aesthetic].label
@@ -30,7 +35,7 @@ export default function getPlugins(spec) {
             ? getSharedLabel()
             : [colorLabel, shapeLabel].filter(Boolean).join(' / ')) || '';
     const legend = {
-        display: hasColor || hasShape,
+        display: hasColor || hasShape || hasLineLegend,
     };
 
     if (legend.display) {
@@ -42,11 +47,20 @@ export default function getPlugins(spec) {
     if (hasShape) {
         legend.labels = { usePointStyle: true };
     }
-
-    if (hasColor && spec.mapping.opacity) {
-        // Chart.js draws each swatch from the group's first point, so use the
-        // group's base color instead of that point's opacity.
+    if (hasLines) {
         legend.labels = {
+            ...legend.labels,
+            filter: (item, data) => {
+                const dataset = data.datasets[item.datasetIndex];
+                return dataset?._annotation
+                    ? dataset._showInLegend
+                    : hasColor || hasShape;
+            },
+        };
+    }
+    if (hasColor && spec.mapping.opacity) {
+        legend.labels = {
+            ...legend.labels,
             generateLabels: (chart) =>
                 Chart.defaults.plugins.legend.labels
                     .generateLabels(chart)
@@ -61,6 +75,19 @@ export default function getPlugins(spec) {
         };
     }
 
+    const tooltip = buildTooltip(spec.tooltip);
+    if (hasLines) {
+        const userFilter = tooltip.filter;
+        tooltip.mode = getPointInteractionMode(tooltip.mode || 'point');
+        tooltip.filter = function (item, ...args) {
+            return (
+                !item.dataset?._annotation &&
+                (!userFilter || userFilter.call(this, item, ...args))
+            );
+        };
+    }
+    const lines = referenceLines(spec);
+
     return {
         title: {
             display: !!title,
@@ -73,6 +100,14 @@ export default function getPlugins(spec) {
             text: caption || '',
         },
         legend,
-        tooltip: buildTooltip(spec.tooltip),
+        tooltip,
+        ...(lines
+            ? {
+                  annotation: {
+                      annotations: lines,
+                      clip: false,
+                  },
+              }
+            : {}),
     };
 }

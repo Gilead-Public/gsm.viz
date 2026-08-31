@@ -15,7 +15,7 @@ const data = [
     { x: 3, y: 4, id: 'B', group: 'Treatment' },
 ];
 
-function makeChart(callbacks = {}) {
+function makeChart(callbacks = {}, annotations) {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const chart = points(container, data, {
@@ -26,6 +26,7 @@ function makeChart(callbacks = {}) {
             color: 'group',
         },
         callbacks,
+        ...(annotations ? { annotations } : {}),
     });
 
     return { chart, container };
@@ -41,8 +42,8 @@ describe('points pointer callbacks', () => {
         });
     });
 
-    function render(callbacks) {
-        const result = makeChart(callbacks);
+    function render(callbacks, annotations) {
+        const result = makeChart(callbacks, annotations);
         rendered.push(result);
         return result.chart;
     }
@@ -124,5 +125,41 @@ describe('points pointer callbacks', () => {
         expect(() =>
             chart.options.onHover({}, [{ datasetIndex: 0, index: 0 }], chart)
         ).not.toThrow();
+    });
+
+    test('ignores auxiliary line points for click and hover callbacks', () => {
+        const onClick = jest.fn();
+        const onHover = jest.fn();
+        const chart = render(
+            { onClick, onHover },
+            {
+                lines: [
+                    {
+                        data: [
+                            { x: 1, y: 1 },
+                            { x: 3, y: 3 },
+                        ],
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            }
+        );
+        const datasetIndex = chart.data.datasets.length - 1;
+        const target = { style: { cursor: '' } };
+
+        chart.options.onClick(
+            { type: 'click' },
+            [{ datasetIndex, index: 0 }],
+            chart
+        );
+        chart.options.onHover(
+            { native: { target } },
+            [{ datasetIndex, index: 0 }],
+            chart
+        );
+
+        expect(onClick).not.toHaveBeenCalled();
+        expect(onHover).not.toHaveBeenCalled();
+        expect(target.style.cursor).toBe('default');
     });
 });
