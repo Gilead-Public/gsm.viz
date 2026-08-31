@@ -246,6 +246,82 @@ describe('points entry point', () => {
         expect(container.querySelector('canvas')).toBeNull();
     });
 
+    test('includes encoded color and shape levels in its text alternative', () => {
+        points(
+            container,
+            [
+                {
+                    xValue: 1,
+                    yValue: 2,
+                    group: 'A',
+                    marker: 'Observed',
+                },
+                {
+                    xValue: 3,
+                    yValue: 4,
+                    group: 'B',
+                    marker: 'Expected',
+                },
+            ],
+            {
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    color: 'group',
+                    shape: 'marker',
+                },
+            }
+        );
+
+        const label = container
+            .querySelector('canvas')
+            .getAttribute('aria-label');
+        expect(label).toContain(
+            'Color group values: "A" (string), "B" (string).'
+        );
+        expect(label).toContain(
+            'Shape marker values: "Observed" (string), "Expected" (string).'
+        );
+    });
+
+    test('distinguishes typed and missing encoding values in its text alternative', () => {
+        points(
+            container,
+            [
+                {
+                    xValue: 1,
+                    yValue: 2,
+                    group: 1,
+                    marker: '(Missing)',
+                },
+                {
+                    xValue: 3,
+                    yValue: 4,
+                    group: '1',
+                    marker: null,
+                },
+            ],
+            {
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    color: 'group',
+                    shape: 'marker',
+                },
+            }
+        );
+
+        const label = container
+            .querySelector('canvas')
+            .getAttribute('aria-label');
+        expect(label).toContain(
+            'Color group values: 1 (number), "1" (string).'
+        );
+        expect(label).toContain(
+            'Shape marker values: "(Missing)" (string), (Missing) (missing value).'
+        );
+    });
+
     test('surfaces strict coordinate errors before rendering', () => {
         expect(() =>
             points(container, [{ xValue: '1', yValue: 2 }], {

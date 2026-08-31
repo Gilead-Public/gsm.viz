@@ -9,6 +9,7 @@
 - Add linear/logarithmic point axes with fixed ranges, automatic begin-at-zero behavior, explicit breaks and labels, and strict positive log-domain validation (#571).
 - Add row-aware tooltip templates and formatters, Chart.js tooltip callback precedence, and point-only click/hover callbacks with source-row payloads (#572).
 - Add continuous point size and opacity mappings with area-correct radius scaling, clamped alpha ranges, equal-domain handling, and deterministic hover radii (#573).
+- Add discrete point shapes, named and ordered shape scales, actual color/shape combination legends, neutral missing markers, and encoded-value accessibility text (#574).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 

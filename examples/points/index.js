@@ -6,6 +6,7 @@ const data = [
         region: 'Americas',
         participants: 12,
         completeness: 0.72,
+        status: 'Review',
     },
     {
         exposure: 12,
@@ -14,6 +15,7 @@ const data = [
         region: 'Europe',
         participants: 35,
         completeness: 0.94,
+        status: 'On target',
     },
     {
         exposure: 18,
@@ -22,6 +24,7 @@ const data = [
         region: 'Americas',
         participants: 24,
         completeness: 0.83,
+        status: 'On target',
     },
     {
         exposure: 25,
@@ -30,6 +33,7 @@ const data = [
         region: 'Asia Pacific',
         participants: 48,
         completeness: 0.9,
+        status: 'Review',
     },
     {
         exposure: 33,
@@ -38,6 +42,7 @@ const data = [
         region: 'Europe',
         participants: 31,
         completeness: 0.79,
+        status: 'On target',
     },
     {
         exposure: 41,
@@ -46,6 +51,7 @@ const data = [
         region: 'Asia Pacific',
         participants: 62,
         completeness: 1,
+        status: 'Review',
     },
     {
         exposure: 54,
@@ -54,6 +60,7 @@ const data = [
         region: 'Europe',
         participants: 53,
         completeness: 0.88,
+        status: 'On target',
     },
     {
         exposure: 63,
@@ -62,6 +69,7 @@ const data = [
         region: null,
         participants: 70,
         completeness: 0.65,
+        status: 'Review',
     },
 ];
 
@@ -73,6 +81,7 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
         color: 'region',
         size: 'participants',
         opacity: 'completeness',
+        shape: 'status',
     },
     scales: {
         x: {
@@ -92,11 +101,19 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
                 Europe: '#f28e2b',
                 'Asia Pacific': '#59a14f',
             },
-            order: ['Americas', 'Europe', 'Asia Pacific', '(Missing)'],
+            order: ['Americas', 'Europe', 'Asia Pacific', null],
             label: 'Region',
         },
         size: { range: [4, 12] },
         opacity: { range: [0.35, 1] },
+        shape: {
+            values: {
+                'On target': 'circle',
+                Review: 'triangle',
+            },
+            order: ['On target', 'Review'],
+            label: 'Monitoring status',
+        },
     },
     labels: {
         title: 'Events by exposure',

@@ -369,6 +369,38 @@ describe('points/structureData', () => {
             ).datasets;
 
             expect(datasets).toHaveLength(2);
+            expect(datasets.map((dataset) => dataset.label)).toEqual([
+                '"(Missing)"',
+                '(Missing)',
+            ]);
+            expect(datasets[0].backgroundColor).toBe('#ff0000');
+            expect(datasets[0].data.map((point) => point._key)).toEqual([
+                'literal',
+            ]);
+            expect(datasets[1].backgroundColor).toBe('#bdbdbd');
+            expect(datasets[1].data.map((point) => point._key)).toEqual([
+                'absent',
+            ]);
+        });
+
+        test('orders a literal Missing category without converting it to absence', () => {
+            const rows = [
+                {
+                    xValue: 1,
+                    yValue: 2,
+                    id: 'literal',
+                    group: '(Missing)',
+                },
+                { xValue: 3, yValue: 4, id: 'absent', group: null },
+            ];
+            const datasets = structureData(
+                makeColorSpec(rows, {
+                    colors: { '(Missing)': '#ff0000' },
+                    order: ['(Missing)'],
+                })
+            ).datasets;
+
+            expect(datasets).toHaveLength(2);
             expect(datasets[0].backgroundColor).toBe('#ff0000');
             expect(datasets[0].data.map((point) => point._key)).toEqual([
                 'literal',
