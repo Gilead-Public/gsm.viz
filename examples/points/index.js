@@ -192,6 +192,11 @@ const chart = gsmViz.default.points(container, data, {
         multiple: true,
         opacity: 0.2,
     },
+    zoom: {
+        enabled: true,
+        mode: 'xy',
+        pan: true,
+    },
 });
 
 document.getElementById('select-europe').addEventListener('click', () => {
@@ -214,4 +219,10 @@ document.getElementById('show-all').addEventListener('click', () => {
     chart.helpers.updateSpec(chart, {
         labels: { title: 'Events by exposure' },
     });
+});
+document.getElementById('reset-zoom').addEventListener('click', () => {
+    chart.resetZoom();
+});
+document.getElementById('export-image').addEventListener('click', () => {
+    chart.helpers.exportImage(chart);
 });
