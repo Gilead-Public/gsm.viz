@@ -1,5 +1,6 @@
 import points from './points.js';
 
+import { setFacetAccessibleLabel } from './facetPoints/accessibility.js';
 import buildSubSpec from './facetPoints/buildSubSpec.js';
 import computeGlobalScales from './facetPoints/computeGlobalScales.js';
 import {
@@ -57,6 +58,7 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
                 merged.facet.legend.display &&
                 chart.options.plugins.legend.display;
             applyGlobalStyles(chart, globalStyles.templates);
+            setFacetAccessibleLabel(chart, merged.facet.field, facetValue);
         });
 
         syncHover(charts);

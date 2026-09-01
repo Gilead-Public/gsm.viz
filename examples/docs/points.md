@@ -653,3 +653,249 @@ as the container resizes.
 
 For ordered small multiples with fixed/free numeric domains and linked
 interaction, use [`facetPoints`](facetPoints.md).
+
+## Downstream qualification
+
+The v2.5.0 API is qualified against sanitized versions of the three concrete
+scatter use cases that motivated the generic module. This table describes the
+JavaScript contract; adapting an R data frame or htmlwidget payload remains the
+consumer package's responsibility.
+
+| Consumer shape      | Required behavior                                                                                  | `points` / `facetPoints` contract                                                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status Tracker      | Continuous x/y, fixed markers, ordered named disposition colors, source-row tooltip/click          | `mapping.x/y/key/color`; an equal-valued `mapping.size` field uses the midpoint of `scales.size.range`; `scales.color.colors/order`; `tooltip.format`; `callbacks.onClick` |
+| Premature Deaths    | Ordered outcome categories, fixed study-wide ranges, country/site filtering, arbitrary row payload | Named/ordered color scale; explicit x/y `range`; `updateData`; `_datum` in callbacks; mapped subject key                                                                   |
+| `Visualize_Scatter` | Log exposure, explicit ticks, threshold curves, flagged labels, fixed-scale snapshot facets        | Raw positive x values with `type: 'log'`; `breaks/labels`; `annotations.lines`; `annotations.labels.point`; `facetPoints` fixed scales and facet-aware line rows           |
+
+Sanitized fixtures and executable integration coverage live in
+`tests/points/fixtures/downstreamUseCases.js` and
+`tests/points/downstreamQualification.test.js`.
+
+### Status Tracker migration
+
+```js
+const chart = gsmViz.default.points(element, rows, {
+    mapping: {
+        x: 'lastKnownDay',
+        y: 'daysSinceContact',
+        key: 'participantId',
+        color: 'disposition',
+        size: 'markerSize', // one equal numeric value for a fixed radius
+    },
+    scales: {
+        x: { label: 'Last Known Alive Day from Randomization' },
+        y: { label: 'Reference to Last Known Alive Day' },
+        color: {
+            colors: dispositionColors,
+            order: dispositionOrder,
+            label: 'Disposition',
+        },
+        size: { range: [3, 5] }, // equal input values resolve to radius 4
+    },
+    tooltip: {
+        format: '{siteId} - {participantId}: {disposition}; Last Known Alive Day: {lastKnownDay}; Reference to Last Known Alive Day: {daysSinceContact}',
+    },
+    callbacks: {
+        onClick: (point, event) => openParticipant(point._datum, event),
+    },
+});
+```
+
+The ordered color scale intentionally retains empty categories so palette and
+legend identity do not shift after filtering.
+
+### Premature Deaths migration
+
+```js
+const chart = gsmViz.default.points(element, subjects, {
+    mapping: {
+        x: 'eventDay',
+        y: 'followUpDay',
+        key: 'subjectId',
+        color: 'category',
+    },
+    scales: {
+        x: {
+            label: 'Days from Randomization to Event',
+            range: [0, studyXMaximum],
+        },
+        y: {
+            label: 'Days from Randomization to Snapshot',
+            range: [0, studyYMaximum],
+        },
+        color: {
+            colors: categoryColors,
+            order: categoryOrder,
+            label: 'Category',
+        },
+    },
+    tooltip: {
+        format: 'Country: {country}; Site: {siteId}; Subject: {subjectId}; Category: {category}; Days (x): {eventDay}',
+    },
+});
+
+chart.helpers.updateData(
+    chart,
+    subjects.filter((row) => row.country === selectedCountry)
+);
+```
+
+Because the data-only update retains the complete spec, fixed study-wide ranges,
+ordered categories, tooltip behavior, and hidden semantic groups survive
+country/site filtering. External filtering can read the full source row from
+`point._datum`; the chart does not own consumer-specific filters.
+
+### `Visualize_Scatter` migration
+
+Use raw positive denominators rather than precomputing `log(denominator)`.
+Chart.js performs the coordinate transform while the data, callbacks, and
+tooltips retain the original value.
+
+```js
+const result = gsmViz.default.facetPoints(element, results, {
+    mapping: {
+        x: 'denominator',
+        y: 'numerator',
+        key: 'groupId',
+        color: 'absoluteFlag',
+    },
+    scales: {
+        x: {
+            type: 'log',
+            label: 'Site Total (Denominator, log scale)',
+            breaks: [5, 10, 50, 100, 500, 1000, 5000, 10000],
+            labels: ['5', '10', '50', '100', '500', '1,000', '5,000', '10,000'],
+        },
+        y: {
+            label: 'Site Total (Numerator)',
+            beginAtZero: true,
+        },
+        color: {
+            colors: flagColors,
+            order: [0, 1, 2],
+        },
+    },
+    annotations: {
+        lines: [
+            {
+                data: bounds, // includes the same snapshot field
+                mapping: {
+                    x: 'denominator',
+                    y: 'numerator',
+                    group: 'threshold',
+                },
+                order: thresholdOrder,
+                colors: thresholdColors,
+            },
+        ],
+        labels: {
+            point: {
+                field: 'groupId',
+                display: 'flagged',
+                align: 'bottom',
+            },
+        },
+    },
+    facet: {
+        field: 'snapshot',
+        order: snapshotOrder,
+        scales: {
+            x: { free: false },
+            y: { free: false },
+        },
+        legend: { display: false },
+    },
+});
+```
+
+See [`facetPoints` facet-aware auxiliary lines](facetPoints.md#facet-aware-auxiliary-lines)
+for common versus per-snapshot threshold behavior. Rows with zero, negative,
+missing, or nonnumeric denominators must be handled explicitly before rendering;
+the strict log contract never silently drops them. Likewise, callers that want
+to omit missing flags should filter them rather than relying on ggplot2-style
+implicit row removal.
+
+## Helper reference
+
+Every `points` chart, including each child returned by `facetPoints`, exposes:
+
+| Helper          | Signature                                                           | Result                                                          |
+| --------------- | ------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Point selection | `chart.helpers.selectPoint(chart, valueOrValues, event?, options?)` | Selects known mapped keys or local row indexes                  |
+| Group selection | `chart.helpers.selectGroup(chart, valueOrValues, event?, options?)` | Selects known color values; `null` identifies the missing group |
+| Clear selection | `chart.helpers.clearSelection(chart, event?, options?)`             | Restores exact point styles and clears active state             |
+| Read selection  | `chart.helpers.getSelection(chart)`                                 | Defensive `{ type, values }` copy                               |
+| Replace data    | `chart.helpers.updateData(chart, data, replacementSpec?)`           | Returns the same chart after a validated rebuild                |
+| Merge spec      | `chart.helpers.updateSpec(chart, partialSpec)`                      | Returns the same chart after a deep-partial rebuild             |
+| Export PNG      | `chart.helpers.exportImage(chart, filename?)`                       | Downloads the current opaque canvas                             |
+| Reset zoom      | `chart.resetZoom()`                                                 | Restores the configured x/y limits                              |
+
+The internal facet synchronization option is `{ _silent: true }` as the fourth
+argument to a mutating selection helper. Application code normally omits it.
+`facetPoints` itself intentionally has no batch helper; reinvoke it to recompute
+facet membership, shared domains, and global styles.
+
+## Consolidated error behavior
+
+Validation is strict and path-specific:
+
+| Input                     | Requirement                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| Point x/y                 | Finite JavaScript numbers; positive on a log axis                                  |
+| `mapping.key`             | Unique non-null string or finite number within one chart/facet                     |
+| Color/shape values        | String, finite number, or explicit missing value                                   |
+| Size/opacity values       | Finite numbers; size is non-negative                                               |
+| Axis ranges/breaks        | Two increasing finite range values and increasing breaks; log values are positive  |
+| Tooltip templates         | Every placeholder is available on every non-empty source row                       |
+| Reference/auxiliary lines | Valid orientation/mappings and finite coordinates under the same axis rules        |
+| Facets                    | Non-empty field name, supported typed values, unique order, positive layout values |
+
+Initial renders and reactive updates validate before mutating Chart.js state.
+Invalid updates leave the existing chart data/spec intact. Facet-wide
+validation and shared-domain/style preparation happen before the previous grid
+is replaced. User callback, formatter, and predicate exceptions are surfaced
+unchanged rather than converted into successful-looking fallbacks.
+
+Rows are never silently dropped. This differs deliberately from plotting
+systems that remove invalid or log-incompatible rows with a warning; consumer
+adapters must make that preprocessing decision explicitly.
+
+## Large-data qualification
+
+`tests/points/performanceQualification.test.js` renders and updates 10,000
+grouped points, verifies the resulting point count, and asserts that the
+container contains one canvas and no per-point DOM elements. The test has no
+timing threshold, so slower CI workers do not create flaky failures.
+
+An informational Windows/Node 24.16.0 Jest/jsdom run measured:
+
+| Operation      | 10,000 points |
+| -------------- | ------------- |
+| Initial render | 42.0 ms       |
+| Data update    | 43.5 ms       |
+
+These numbers qualify transformation and mocked-canvas overhead on one
+development machine; they are not a browser rendering guarantee. Reproduce the
+informational output in PowerShell with:
+
+```powershell
+$env:GSM_VIZ_BENCHMARK = '1'
+npm test -- --runInBand tests/points/performanceQualification.test.js
+```
+
+## Deferred features
+
+The following are not accepted spec fields in v2.5.0:
+
+-   categorical or date coordinate axes
+-   jitter, dodge, hexbin, density, regression, or smoothing layers
+-   separate point fill and outline aesthetics
+-   a general ordered layer grammar or draggable annotations
+-   lasso/brush selection and module-owned cross-chart filtering
+-   synchronized facet zoom windows or top-level batch facet helpers
+-   automatic sampling/decimation and CSV/data export
+-   animation trails or motion encodings
+-   refactoring or deprecating the legacy KRI-specific `scatterPlot`
+
+These remain possible follow-up extensions. Unknown options fail validation
+rather than being accepted as no-ops.

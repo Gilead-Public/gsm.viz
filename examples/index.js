@@ -29479,7 +29479,7 @@ var gsmViz = (() => {
     const palette = line.palette || defaultPalette;
     return level ? palette[index3 % palette.length] : line.color ?? DEFAULT_COLOR;
   }
-  function makeDataset(line, data, color3, label) {
+  function makeDataset(line, data, color3, label, layerIndex) {
     return {
       type: "line",
       label,
@@ -29497,6 +29497,7 @@ var gsmViz = (() => {
       pointStyle: "line",
       order: 1,
       _annotation: true,
+      _annotationLayer: layerIndex,
       _showInLegend: line.showInLegend ?? false
     };
   }
@@ -29529,7 +29530,8 @@ var gsmViz = (() => {
           line,
           records.map(({ point }) => point),
           line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
-          line.label ?? ""
+          line.label ?? "",
+          layerIndex
         )
       ];
     }
@@ -29546,7 +29548,8 @@ var gsmViz = (() => {
         line,
         groups2.get(getLevelKey2(level)) || [],
         getColor2(level, index3, line, spec.scales.color.palette),
-        label
+        label,
+        layerIndex
       );
       dataset._annotationGroup = level.value;
       dataset._annotationGroupMissing = level.missing;
@@ -32456,6 +32459,87 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/facetPoints/splitData.js
+  var MISSING_LABEL2 = "(Missing)";
+  function normalizeFacetValue(value) {
+    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
+  }
+  function formatFacetValue(value) {
+    if (value === null) return MISSING_LABEL2;
+    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
+  }
+  function splitData2(data, field, order) {
+    const facets = /* @__PURE__ */ new Map();
+    const ordered = order !== void 0;
+    if (ordered) {
+      order.forEach((value) => {
+        facets.set(normalizeFacetValue(value), []);
+      });
+    }
+    data.forEach((row) => {
+      const value = normalizeFacetValue(row?.[field]);
+      if (ordered && !facets.has(value)) return;
+      if (!facets.has(value)) facets.set(value, []);
+      facets.get(value).push(row);
+    });
+    return facets;
+  }
+
+  // src/facetPoints/accessibility.js
+  function applyFacetContext(chart, state) {
+    const currentLabel = chart.canvas.getAttribute("aria-label") || "";
+    const baseLabel = currentLabel === state.label ? state.baseLabel : currentLabel;
+    const facetLabel = `Facet ${state.field}: ${formatFacetValue(
+      state.value
+    )}.`;
+    const label = baseLabel ? `${facetLabel} ${baseLabel}` : facetLabel;
+    setAccessibleLabel(chart.canvas, label);
+    chart._facetPointsAccessibility = {
+      ...state,
+      baseLabel,
+      label
+    };
+  }
+  function setFacetAccessibleLabel(chart, field, value) {
+    applyFacetContext(chart, { field, value });
+  }
+  function refreshFacetAccessibleLabel(chart) {
+    if (chart._facetPointsAccessibility) {
+      applyFacetContext(chart, chart._facetPointsAccessibility);
+    }
+  }
+
+  // src/facetPoints/facetLines.js
+  function isFacetAware(line, facetField) {
+    return line.data.some(
+      (row) => row !== null && row !== void 0 && Object.prototype.hasOwnProperty.call(row, facetField)
+    );
+  }
+  function getLineData(line, facetField, facetValue) {
+    return isFacetAware(line, facetField) ? line.data.filter(
+      (row) => normalizeFacetValue(row?.[facetField]) === facetValue
+    ) : [...line.data];
+  }
+  function validateFacetLines(lines, facetField) {
+    lines.forEach((line, lineIndex) => {
+      if (!isFacetAware(line, facetField)) return;
+      line.data.forEach((row, rowIndex) => {
+        const value = normalizeFacetValue(row?.[facetField]);
+        if (value !== null && typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+          throw new Error(
+            `spec.annotations.lines[${lineIndex}].data[${rowIndex}].${facetField} mapped by spec.facet.field must be a string, finite number, or missing`
+          );
+        }
+      });
+    });
+  }
+  function getFacetLines(lines, facetField, facetValue) {
+    return lines.map((line) => ({
+      ...line,
+      data: getLineData(line, facetField, facetValue)
+    }));
+  }
+
   // src/facetPoints/buildSubSpec.js
   function getScale(scale) {
     return {
@@ -32471,6 +32555,12 @@ var gsmViz = (() => {
   }
   function wrapCallback(callback2, facetValue) {
     return callback2 ? (value, event) => callback2(value, facetValue, event) : null;
+  }
+  function getAnnotations(annotations5, facetField, facetValue) {
+    return {
+      ...annotations5,
+      lines: getFacetLines(annotations5.lines, facetField, facetValue)
+    };
   }
   function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles) {
     const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
@@ -32490,6 +32580,11 @@ var gsmViz = (() => {
     scales2.shape.order = [...globalStyles.shapeOrder];
     return {
       ...pointsSpec,
+      annotations: getAnnotations(
+        pointsSpec.annotations,
+        facet.field,
+        facetValue
+      ),
       scales: scales2,
       callbacks: {
         onClick: wrapCallback(callbacks.onClick, facetValue),
@@ -32576,42 +32671,29 @@ var gsmViz = (() => {
   }
   function computeGlobalScales2(facetDataMap, spec) {
     const domains = { x: [], y: [] };
-    facetDataMap.forEach((facetData) => {
+    validateFacetLines(spec.annotations.lines, spec.facet.field);
+    structureLines(spec);
+    facetDataMap.forEach((facetData, facetValue) => {
       const pointData = structureData4({ ...spec, data: facetData });
       collectDatasetValues(domains, pointData.datasets);
+      const lines = getFacetLines(
+        spec.annotations.lines,
+        spec.facet.field,
+        facetValue
+      );
+      collectDatasetValues(
+        domains,
+        structureLines({
+          ...spec,
+          annotations: { ...spec.annotations, lines }
+        })
+      );
     });
-    collectDatasetValues(domains, structureLines(spec));
     collectReferenceValues(domains, spec);
     const result = {};
     addDomain(result, "x", domains.x, spec);
     addDomain(result, "y", domains.y, spec);
     return result;
-  }
-
-  // src/facetPoints/splitData.js
-  var MISSING_LABEL2 = "(Missing)";
-  function normalizeFacetValue(value) {
-    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
-  }
-  function formatFacetValue(value) {
-    if (value === null) return MISSING_LABEL2;
-    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
-  }
-  function splitData2(data, field, order) {
-    const facets = /* @__PURE__ */ new Map();
-    const ordered = order !== void 0;
-    if (ordered) {
-      order.forEach((value) => {
-        facets.set(normalizeFacetValue(value), []);
-      });
-    }
-    data.forEach((row) => {
-      const value = normalizeFacetValue(row?.[field]);
-      if (ordered && !facets.has(value)) return;
-      if (!facets.has(value)) facets.set(value, []);
-      facets.get(value).push(row);
-    });
-    return facets;
   }
 
   // src/facetPoints/globalStyles.js
@@ -32864,13 +32946,24 @@ var gsmViz = (() => {
   function getAnnotationOrdinal(datasets, index3) {
     return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
   }
+  function getAnnotationIdentity(dataset, datasets, index3) {
+    if (!Number.isInteger(dataset._annotationLayer)) {
+      return JSON.stringify([
+        "annotation",
+        getAnnotationOrdinal(datasets, index3)
+      ]);
+    }
+    const hasGroup = Object.prototype.hasOwnProperty.call(
+      dataset,
+      "_annotationGroup"
+    );
+    const group2 = !hasGroup ? ["ungrouped"] : dataset._annotationGroupMissing ? ["group", "missing"] : ["group", typeof dataset._annotationGroup, dataset._annotationGroup];
+    return JSON.stringify(["annotation", dataset._annotationLayer, group2]);
+  }
   function getIdentity(chart, index3) {
     const dataset = chart.data.datasets[index3];
     const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
-    return pointIdentity === void 0 ? JSON.stringify([
-      "annotation",
-      getAnnotationOrdinal(chart.data.datasets, index3)
-    ]) : pointIdentity;
+    return pointIdentity === void 0 ? getAnnotationIdentity(dataset, chart.data.datasets, index3) : pointIdentity;
   }
   function syncLegendClicks2(charts, { sync = true } = {}) {
     charts.forEach((chart) => {
@@ -32980,6 +33073,7 @@ var gsmViz = (() => {
   function decorateChart(chart, charts, templates, legend5, hidden) {
     chart.options.plugins.legend.display = legend5.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
+    refreshFacetAccessibleLabel(chart);
     syncHover(charts);
     syncSelection2(charts);
     syncLegendClicks2(charts, { sync: legend5.sync });
@@ -33178,6 +33272,7 @@ var gsmViz = (() => {
         charts.push(chart);
         chart.options.plugins.legend.display = merged.facet.legend.display && chart.options.plugins.legend.display;
         applyGlobalStyles(chart, globalStyles.templates);
+        setFacetAccessibleLabel(chart, merged.facet.field, facetValue);
       });
       syncHover(charts);
       syncSelection2(charts);

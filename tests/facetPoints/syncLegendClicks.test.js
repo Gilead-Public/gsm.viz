@@ -137,6 +137,52 @@ describe('facetPoints/syncLegendClicks', () => {
         expect(sibling.setDatasetVisibility).not.toHaveBeenCalledWith(1, false);
     });
 
+    test('matches facet-aware annotations by layer and typed group identity', () => {
+        const makeLine = (layer, group) => ({
+            _annotation: true,
+            _annotationLayer: layer,
+            _annotationGroup: group,
+            _annotationGroupMissing: false,
+            label: String(group),
+            data: [],
+        });
+        const makeUngroupedLine = (layer) => ({
+            _annotation: true,
+            _annotationLayer: layer,
+            label: `Layer ${layer}`,
+            data: [],
+        });
+        const origin = makeChart([
+            makeDataset('A', 'Circle'),
+            makeLine(0, 'Low'),
+            makeLine(0, 'High'),
+            makeUngroupedLine(1),
+        ]);
+        const sibling = makeChart([
+            makeDataset('A', 'Circle'),
+            makeLine(0, 'High'),
+            makeUngroupedLine(1),
+        ]);
+
+        syncLegendClicks([origin, sibling]);
+        origin.options.plugins.legend.onClick(
+            {},
+            { datasetIndex: 1, text: 'Low' },
+            { chart: origin }
+        );
+
+        expect(sibling.setDatasetVisibility).not.toHaveBeenCalled();
+
+        origin.options.plugins.legend.onClick(
+            {},
+            { datasetIndex: 3, text: 'Layer 1' },
+            { chart: origin }
+        );
+
+        expect(sibling.setDatasetVisibility).toHaveBeenCalledTimes(1);
+        expect(sibling.setDatasetVisibility).toHaveBeenCalledWith(2, false);
+    });
+
     test('can leave legend toggles local', () => {
         const origin = makeChart([makeDataset('A', 'Circle')]);
         const sibling = makeChart([makeDataset('A', 'Circle')]);

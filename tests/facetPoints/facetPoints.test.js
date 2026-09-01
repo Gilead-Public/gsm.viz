@@ -168,6 +168,44 @@ describe('facetPoints', () => {
         });
     });
 
+    test('includes typed facet context in each child accessible summary', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: Baseline.'
+        );
+        expect(charts[1].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: Week 4.'
+        );
+        expect(charts[0].canvas.textContent).toBe(
+            charts[0].canvas.getAttribute('aria-label')
+        );
+    });
+
+    test('keeps missing and literal facet labels distinct for assistive technology', () => {
+        const { charts } = facetPoints(
+            parent,
+            [
+                { phase: null, id: 'A', x: 1, y: 2 },
+                { phase: '(Missing)', id: 'B', x: 3, y: 4 },
+            ],
+            {
+                mapping: { x: 'x', y: 'y', key: 'id' },
+                facet: {
+                    field: 'phase',
+                    order: [null, '(Missing)'],
+                },
+            }
+        );
+
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: (Missing).'
+        );
+        expect(charts[1].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: "(Missing)".'
+        );
+    });
+
     test('applies default fixed x/y domains including annotations', () => {
         const { charts } = facetPoints(parent, data, {
             ...baseSpec,
@@ -255,6 +293,54 @@ describe('facetPoints', () => {
 
         expect(charts[0].isDatasetVisible(index)).toBe(false);
         expect(charts[1].isDatasetVisible(index)).toBe(false);
+    });
+
+    test('does not synchronize different facet-aware line groups', () => {
+        const lineData = [
+            { phase: 'Baseline', threshold: 'Low', x: 1, y: 5 },
+            { phase: 'Baseline', threshold: 'Low', x: 8, y: 15 },
+            { phase: 'Baseline', threshold: 'High', x: 1, y: 25 },
+            { phase: 'Baseline', threshold: 'High', x: 8, y: 35 },
+            { phase: 'Week 4', threshold: 'High', x: 1, y: 20 },
+            { phase: 'Week 4', threshold: 'High', x: 8, y: 40 },
+        ];
+        const { charts } = facetPoints(parent, data, {
+            ...baseSpec,
+            annotations: {
+                lines: [
+                    {
+                        data: lineData,
+                        mapping: {
+                            x: 'x',
+                            y: 'y',
+                            group: 'threshold',
+                        },
+                        showInLegend: true,
+                    },
+                ],
+            },
+        });
+        const lowIndex = charts[0].data.datasets.findIndex(
+            (dataset) =>
+                dataset._annotation && dataset._annotationGroup === 'Low'
+        );
+        const siblingHighIndex = charts[1].data.datasets.findIndex(
+            (dataset) =>
+                dataset._annotation && dataset._annotationGroup === 'High'
+        );
+        const lowItem = charts[0].legend.legendItems.find(
+            ({ datasetIndex }) => datasetIndex === lowIndex
+        );
+
+        charts[0].options.plugins.legend.onClick.call(
+            charts[0].legend,
+            {},
+            lowItem,
+            charts[0].legend
+        );
+
+        expect(charts[0].isDatasetVisible(lowIndex)).toBe(false);
+        expect(charts[1].isDatasetVisible(siblingHighIndex)).toBe(true);
     });
 
     test('can keep legend visibility local or hide every legend', () => {
@@ -355,6 +441,14 @@ describe('facetPoints', () => {
         expect(
             charts[0].data.datasets.filter((dataset) => !dataset._annotation)
         ).toHaveLength(3);
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: Baseline.'
+        );
+        expect(
+            charts[0].canvas
+                .getAttribute('aria-label')
+                .match(/Facet phase: Baseline\./g)
+        ).toHaveLength(1);
     });
 
     test('does not introduce legends into ungrouped child updates', () => {
