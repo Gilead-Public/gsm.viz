@@ -15,6 +15,7 @@
 - Add keyed point and color-group selection with click/multiple modes, programmatic helpers, persistent tooltip identity, undimmed legends, and keyboard/live-status accessibility (#577).
 - Add in-place `updateData` and deep partial `updateSpec` helpers with full-pipeline rebuilds, typed hidden-group restoration, dynamic plugin/keyboard lifecycle handling, and deliberate stale-selection cleanup (#578).
 - Add optional x/y zoom and pan controls plus an opaque PNG export helper with deterministic title- or axis-derived filenames to `points` (#579).
+- Add `facetPoints(element, data, spec)` for ordered and explicitly empty point-chart small multiples with independently fixed/free numeric axes, global composite legends, typed legend synchronization, keyed hover/selection, facet-aware callbacks, and safe full-grid rerendering (#580, #581).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 

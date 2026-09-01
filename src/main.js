@@ -18,6 +18,7 @@ import renderPoints from './points.js';
 import scatterPlot from './scatterPlot.js';
 import sparkline from './sparkline.js';
 import timeSeries from './timeSeries.js';
+import facetPoints from './facetPoints.js';
 
 Chart.register(
     annotationPlugin,
@@ -35,6 +36,7 @@ const gsmViz = {
     barChart,
     bars,
     facetBars,
+    facetPoints,
     groupOverview,
     points: renderPoints,
     scatterPlot,
