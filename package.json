@@ -1,6 +1,6 @@
 {
   "name": "gsm.viz",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "web-based data visualization for risk-based monitoring",
   "module": "src/main.js",
   "main": "index.js",

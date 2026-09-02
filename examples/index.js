@@ -25631,6 +25631,7 @@ var gsmViz = (() => {
   function resolveFontString(font) {
     if (!font) return void 0;
     if (typeof font === "string") return font;
+    if (typeof font === "function") return void 0;
     const size = font.size ?? 12;
     const family = font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
     const style = font.style ? `${font.style} ` : "";
