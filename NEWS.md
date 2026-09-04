@@ -11,6 +11,7 @@
 - Add continuous point size and opacity mappings with area-correct radius scaling, clamped alpha ranges, equal-domain handling, and deterministic hover radii (#573).
 - Add discrete point shapes, named and ordered shape scales, actual color/shape combination legends, neutral missing markers, and encoded-value accessibility text (#574).
 - Add x/y reference lines and strict external auxiliary line layers with grouped styling, automatic-domain participation, and interaction-safe legend controls (#575).
+- Add selective point labels with source-field text, static/field/predicate filtering, formatter payloads, and configurable positioning and typography (#576).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 
