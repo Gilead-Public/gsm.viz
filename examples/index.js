@@ -28123,7 +28123,7 @@ var gsmViz = (() => {
     ],
     mapping: ["x", "y", "key", "color"],
     scales: ["x", "y", "color"],
-    scale: ["type", "label"],
+    scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
     labels: ["title", "caption", "description"],
     tooltip: ["format", "formatter"],
@@ -28172,10 +28172,65 @@ var gsmViz = (() => {
     const path = `spec.scales.${axis}`;
     validatePlainObject(scale, path);
     validateSupportedFields(scale, supportedFields.scale, path);
-    if (scale.type !== void 0 && scale.type !== "linear") {
-      throw new Error(`${path}.type must be 'linear'`);
+    if (scale.type !== void 0 && !["linear", "log"].includes(scale.type)) {
+      throw new Error(`${path}.type must be 'linear' or 'log'`);
     }
     validateOptionalString(scale.label, `${path}.label`);
+    if (scale.range !== void 0) {
+      if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
+        throw new Error(`${path}.range must contain two finite numbers`);
+      }
+      if (scale.range[0] >= scale.range[1]) {
+        throw new Error(`${path}.range values must be strictly increasing`);
+      }
+    }
+    if (scale.beginAtZero !== void 0 && typeof scale.beginAtZero !== "boolean") {
+      throw new Error(`${path}.beginAtZero must be a boolean`);
+    }
+    if (scale.breaks !== void 0 && !Array.isArray(scale.breaks)) {
+      throw new Error(`${path}.breaks must be an array`);
+    }
+    if (scale.labels !== void 0 && !Array.isArray(scale.labels)) {
+      throw new Error(`${path}.labels must be an array`);
+    }
+    const breaks = scale.breaks || [];
+    const labels = scale.labels || [];
+    breaks.forEach((value, index3) => {
+      if (!Number.isFinite(value)) {
+        throw new Error(`${path}.breaks[${index3}] must be a finite number`);
+      }
+      if (index3 > 0 && value <= breaks[index3 - 1]) {
+        throw new Error(`${path}.breaks must be strictly increasing`);
+      }
+    });
+    labels.forEach((value, index3) => {
+      if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+        throw new Error(
+          `${path}.labels[${index3}] must be a string or finite number`
+        );
+      }
+    });
+    if (breaks.length !== labels.length) {
+      throw new Error(`${path}.breaks and labels must have the same length`);
+    }
+    if (scale.type === "log") {
+      if (scale.beginAtZero === true) {
+        throw new Error(
+          `${path}.beginAtZero cannot be true for a log scale`
+        );
+      }
+      if (scale.range?.some((value) => value <= 0)) {
+        throw new Error(
+          `${path}.range values must be greater than zero for a log scale`
+        );
+      }
+      const invalidBreak = breaks.findIndex((value) => value <= 0);
+      if (invalidBreak !== -1) {
+        throw new Error(
+          `${path}.breaks[${invalidBreak}] must be greater than zero for a log scale`
+        );
+      }
+    }
   }
   function validateColorScale(scale) {
     if (scale === void 0) {
@@ -28382,11 +28437,19 @@ var gsmViz = (() => {
     scales: {
       x: {
         type: "linear",
-        label: void 0
+        label: void 0,
+        range: void 0,
+        beginAtZero: false,
+        breaks: [],
+        labels: []
       },
       y: {
         type: "linear",
-        label: void 0
+        label: void 0,
+        range: void 0,
+        beginAtZero: false,
+        breaks: [],
+        labels: []
       },
       color: {
         colors: {},
@@ -28449,11 +28512,16 @@ var gsmViz = (() => {
   // src/points/structureData.js
   var MISSING_COLOR_LABEL = "(Missing)";
   var MISSING_COLOR = "#bdbdbd";
-  function getCoordinate(row, field, mapping, index3) {
+  function getCoordinate(row, field, mapping, index3, scale) {
     const value = row?.[field];
     if (typeof value !== "number" || !Number.isFinite(value)) {
       throw new Error(
         `data[${index3}].${field} mapped by spec.mapping.${mapping} must be a finite number`
+      );
+    }
+    if (scale?.type === "log" && value <= 0) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${mapping} must be greater than zero for a log scale`
       );
     }
     return value;
@@ -28506,8 +28574,8 @@ var gsmViz = (() => {
     const keys = /* @__PURE__ */ new Set();
     const records = data.map((row, index3) => {
       const point = {
-        x: getCoordinate(row, mapping.x, "x", index3),
-        y: getCoordinate(row, mapping.y, "y", index3),
+        x: getCoordinate(row, mapping.x, "x", index3, spec.scales?.x),
+        y: getCoordinate(row, mapping.y, "y", index3, spec.scales?.y),
         _key: mapping.key === void 0 ? index3 : getKey(row, mapping.key, index3, keys),
         _datum: row
       };
@@ -28562,13 +28630,31 @@ var gsmViz = (() => {
   // src/points/getScales.js
   function getAxisScale(scale, mapping) {
     const label = scale.label !== void 0 ? scale.label : mapping;
-    return {
-      type: scale.type,
+    const axis = {
+      type: scale.type === "log" ? "logarithmic" : scale.type,
       title: {
         display: !!label,
         text: label || ""
       }
     };
+    if (scale.range !== void 0) {
+      [axis.min, axis.max] = scale.range;
+    } else if (scale.type === "linear" && scale.beginAtZero) {
+      axis.beginAtZero = true;
+    }
+    if (scale.breaks?.length) {
+      const breaks = [...scale.breaks];
+      const labels = new Map(
+        breaks.map((value, index3) => [value, scale.labels[index3]])
+      );
+      axis.afterBuildTicks = (chartScale) => {
+        chartScale.ticks = breaks.map((value) => ({ value }));
+      };
+      axis.ticks = {
+        callback: (value) => labels.get(Number(value)) ?? null
+      };
+    }
+    return axis;
   }
   function getScales3(spec) {
     return {
