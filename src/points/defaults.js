@@ -1,3 +1,28 @@
+const DEFAULT_COLOR_PALETTE = [
+    '#4e79a7',
+    '#f28e2b',
+    '#e15759',
+    '#76b7b2',
+    '#59a14f',
+    '#edc948',
+    '#b07aa1',
+    '#ff9da7',
+    '#9c755f',
+    '#bab0ac',
+    '#8dd3c7',
+    '#ffffb3',
+    '#bebada',
+    '#fb8072',
+    '#80b1d3',
+    '#fdb462',
+    '#b3de69',
+    '#fccde5',
+    '#d9d9d9',
+    '#bc80bd',
+    '#ccebc5',
+    '#ffed6f',
+];
+
 const defaults = {
     scales: {
         x: {
@@ -6,6 +31,12 @@ const defaults = {
         },
         y: {
             type: 'linear',
+            label: undefined,
+        },
+        color: {
+            colors: {},
+            palette: DEFAULT_COLOR_PALETTE,
+            order: [],
             label: undefined,
         },
     },

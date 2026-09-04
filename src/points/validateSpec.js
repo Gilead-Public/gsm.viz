@@ -8,9 +8,10 @@ const supportedFields = {
         'selection',
         'theme',
     ],
-    mapping: ['x', 'y', 'key'],
-    scales: ['x', 'y'],
+    mapping: ['x', 'y', 'key', 'color'],
+    scales: ['x', 'y', 'color'],
     scale: ['type', 'label'],
+    colorScale: ['colors', 'palette', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
     tooltip: ['format', 'formatter'],
     callbacks: ['onClick', 'onHover', 'onSelect'],
@@ -75,6 +76,72 @@ function validateScale(scale, axis) {
     }
 
     validateOptionalString(scale.label, `${path}.label`);
+}
+
+function validateColorScale(scale) {
+    if (scale === undefined) {
+        return;
+    }
+
+    const path = 'spec.scales.color';
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.colorScale, path);
+
+    if (scale.colors !== undefined) {
+        validatePlainObject(scale.colors, `${path}.colors`);
+        Object.entries(scale.colors).forEach(([level, color]) => {
+            if (typeof color !== 'string' || color.trim().length === 0) {
+                throw new Error(
+                    `${path}.colors.${level} must be a non-empty string`
+                );
+            }
+        });
+    }
+
+    if (scale.palette !== undefined) {
+        if (!Array.isArray(scale.palette) || scale.palette.length === 0) {
+            throw new Error(`${path}.palette must be a non-empty array`);
+        }
+
+        scale.palette.forEach((color, index) => {
+            if (typeof color !== 'string' || color.trim().length === 0) {
+                throw new Error(
+                    `${path}.palette[${index}] must be a non-empty string`
+                );
+            }
+        });
+    }
+
+    if (scale.order !== undefined) {
+        if (!Array.isArray(scale.order)) {
+            throw new Error(`${path}.order must be an array`);
+        }
+
+        const levels = new Set();
+        scale.order.forEach((level, index) => {
+            if (
+                (typeof level !== 'string' || level.trim().length === 0) &&
+                (typeof level !== 'number' || !Number.isFinite(level))
+            ) {
+                throw new Error(
+                    `${path}.order[${index}] must be a string or finite number`
+                );
+            }
+
+            if (levels.has(level)) {
+                throw new Error(`${path}.order must contain unique values`);
+            }
+            levels.add(level);
+        });
+    }
+
+    if (
+        scale.label !== undefined &&
+        scale.label !== null &&
+        typeof scale.label !== 'string'
+    ) {
+        throw new Error(`${path}.label must be a string or null`);
+    }
 }
 
 function validateCallbacks(callbacks) {
@@ -197,6 +264,15 @@ export default function validateSpec(data, spec) {
         }
     }
 
+    if (spec.mapping.color !== undefined) {
+        if (
+            typeof spec.mapping.color !== 'string' ||
+            spec.mapping.color.trim().length === 0
+        ) {
+            throw new Error('spec.mapping.color must be a non-empty string');
+        }
+    }
+
     if (spec.scales !== undefined) {
         validatePlainObject(spec.scales, 'spec.scales');
         validateSupportedFields(
@@ -206,6 +282,7 @@ export default function validateSpec(data, spec) {
         );
         validateScale(spec.scales.x, 'x');
         validateScale(spec.scales.y, 'y');
+        validateColorScale(spec.scales.color);
     }
 
     if (spec.labels !== undefined) {
