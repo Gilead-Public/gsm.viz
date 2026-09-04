@@ -322,6 +322,126 @@ describe('points entry point', () => {
         );
     });
 
+    test('renders reference and auxiliary line annotations', () => {
+        const chart = points(container, data, {
+            ...spec,
+            annotations: {
+                referenceLines: [
+                    {
+                        axis: 'y',
+                        value: 10,
+                        label: 'Target',
+                        color: '#aa0000',
+                    },
+                ],
+                lines: [
+                    {
+                        data: [
+                            { exposure: 1, limit: 5 },
+                            { exposure: 100, limit: 8 },
+                        ],
+                        mapping: { x: 'exposure', y: 'limit' },
+                        label: 'Expected',
+                        showInLegend: true,
+                    },
+                ],
+            },
+        });
+        const line = chart.data.datasets.at(-1);
+
+        expect(line).toEqual(
+            expect.objectContaining({
+                type: 'line',
+                label: 'Expected',
+                _annotation: true,
+                _showInLegend: true,
+            })
+        );
+        expect(line.data.map(({ x, y }) => ({ x, y }))).toEqual([
+            { x: 1, y: 5 },
+            { x: 100, y: 8 },
+        ]);
+        expect(chart.options.plugins.annotation.annotations[0]).toEqual(
+            expect.objectContaining({
+                yMin: 10,
+                yMax: 10,
+                borderColor: '#aa0000',
+            })
+        );
+        expect(chart.options.plugins.legend.display).toBe(true);
+        expect(chart.options.interaction.mode).toBe('gsmPoints:point');
+        expect(chart.options.hover.mode).toBe('gsmPoints:point');
+    });
+
+    test('includes annotation geometry in automatic numeric domains', () => {
+        const chart = points(container, data, {
+            ...spec,
+            annotations: {
+                referenceLines: [{ axis: 'y', value: 50 }],
+                lines: [
+                    {
+                        data: [
+                            { x: 1, y: 1 },
+                            { x: 100, y: 40 },
+                        ],
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+
+        expect(chart.scales.x.max).toBeGreaterThanOrEqual(100);
+        expect(chart.scales.y.max).toBeGreaterThanOrEqual(50);
+    });
+
+    test('keeps fixed domains while rendering out-of-range annotations', () => {
+        const chart = points(container, data, {
+            ...spec,
+            scales: {
+                x: { range: [0, 10] },
+                y: { range: [0, 10] },
+            },
+            annotations: {
+                referenceLines: [{ axis: 'y', value: 50 }],
+                lines: [
+                    {
+                        data: [{ x: 100, y: 40 }],
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+
+        expect(chart.scales.x.min).toBe(0);
+        expect(chart.scales.x.max).toBe(10);
+        expect(chart.scales.y.min).toBe(0);
+        expect(chart.scales.y.max).toBe(10);
+    });
+
+    test('does not announce annotation data as point encodings', () => {
+        points(container, [{ xValue: 1, yValue: 2, group: 'A' }], {
+            mapping: {
+                x: 'xValue',
+                y: 'yValue',
+                color: 'group',
+            },
+            annotations: {
+                lines: [
+                    {
+                        data: [{ x: 1, y: 1 }],
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+
+        const label = container
+            .querySelector('canvas')
+            .getAttribute('aria-label');
+        expect(label).toContain('Color group values: "A" (string).');
+        expect(label).not.toContain('undefined');
+    });
+
     test('surfaces strict coordinate errors before rendering', () => {
         expect(() =>
             points(container, [{ xValue: '1', yValue: 2 }], {
