@@ -29771,6 +29771,76 @@ var gsmViz = (() => {
     };
   }
 
+  // src/points/accessibility.js
+  var POINT_SELECTION_INSTRUCTIONS = "Use arrow keys to move between points, Enter to select, and Escape to clear.";
+  function asSentence(value) {
+    const text = value?.trim();
+    if (!text) return "";
+    return /[.!?]$/.test(text) ? text : `${text}.`;
+  }
+  function getEncodingLabel(spec, chartData, aesthetic) {
+    if (!spec.mapping[aesthetic]) return "";
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    chartData.datasets.filter((dataset) => !dataset._annotation && dataset.data.length > 0).forEach((dataset) => {
+      const value = dataset[`_${aesthetic}`];
+      const missing = dataset[`_${aesthetic}Missing`];
+      const key = missing ? "missing" : JSON.stringify([typeof value, value]);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push({ value, missing });
+      }
+    });
+    const values = levels.map(({ value, missing }) => {
+      const label = String(value);
+      if (missing) return `${label} (missing value)`;
+      if (typeof value === "string") {
+        return `${JSON.stringify(value)} (string)`;
+      }
+      return `${label} (${typeof value})`;
+    });
+    return levels.length ? `${aesthetic === "color" ? "Color" : "Shape"} ${spec.mapping[aesthetic]} values: ${values.join(", ")}.` : "";
+  }
+  function getAccessibleLabel(spec, chartData, pointCount) {
+    const xLabel = spec.scales.x.label || spec.mapping.x;
+    const yLabel = spec.scales.y.label || spec.mapping.y;
+    const parts = [
+      asSentence(spec.labels.title),
+      asSentence(spec.labels.description),
+      `Point chart of ${yLabel} by ${xLabel}.`,
+      pointCount === 0 ? "No data available." : `${pointCount} ${pointCount === 1 ? "point" : "points"}.`,
+      getEncodingLabel(spec, chartData, "color"),
+      getEncodingLabel(spec, chartData, "shape"),
+      spec.selection.enabled ? POINT_SELECTION_INSTRUCTIONS : ""
+    ];
+    return parts.filter(Boolean).join(" ");
+  }
+  function setAccessibleLabel(canvas, label) {
+    canvas.setAttribute("aria-label", label);
+    const textNode = [...canvas.childNodes].find((node) => node.nodeType === 3);
+    if (textNode) {
+      textNode.nodeValue = label;
+    } else {
+      canvas.insertBefore(document.createTextNode(label), canvas.firstChild);
+    }
+  }
+
+  // src/points/buildState.js
+  function buildState(data, spec, validated = false) {
+    if (!validated) validateSpec3(data, spec);
+    const merged = mergeSpec3(data, spec);
+    const chartData = structureData4(merged);
+    chartData.datasets.push(...structureLines(merged));
+    return {
+      merged,
+      chartData,
+      scales: getScales3(merged),
+      plugins: getPlugins3(merged),
+      interaction: merged.annotations.lines.length ? { mode: getPointInteractionMode("point") } : void 0,
+      accessibleLabel: getAccessibleLabel(merged, chartData, data.length)
+    };
+  }
+
   // src/points/selection.js
   var MISSING_GROUP_VALUE = null;
   function getMainDatasets(chart) {
@@ -30081,6 +30151,24 @@ var gsmViz = (() => {
     chart.update("none");
     announce(chart, "Active point cleared.");
   }
+  function resetSelectionForUpdate(chart) {
+    const state = chart.data._selectionState_;
+    const hadSelection = state?.selection?.type !== null;
+    const hadKeyboardPoint = state?.keyboardIndex !== void 0;
+    const hadActivePoint = chart.getActiveElements().length > 0 || (chart.tooltip?.getActiveElements().length || 0) > 0;
+    chart.setActiveElements([]);
+    clearTooltip(chart);
+    if (!state) return;
+    state.selection = { type: null, values: [] };
+    delete state.originalStyles;
+    delete state.legendStyles;
+    delete state.keyboardIndex;
+    if (hadSelection) {
+      announce(chart, "Selection cleared.");
+    } else if (hadKeyboardPoint || hadActivePoint) {
+      announce(chart, "Active point cleared.");
+    }
+  }
   function selectionLegendPlugin2() {
     const restoreLegend = (chart) => {
       const state = chart.data._selectionState_;
@@ -30191,7 +30279,6 @@ var gsmViz = (() => {
 
   // src/points/keyboardSelection.js
   var statusId = 0;
-  var POINT_SELECTION_INSTRUCTIONS = "Use arrow keys to move between points, Enter to select, and Escape to clear.";
   function getPointLocations(chart) {
     return chart.data.datasets.flatMap(
       (dataset, datasetIndex) => dataset._annotation ? [] : dataset.data.map((point, index3) => ({
@@ -30329,6 +30416,14 @@ var gsmViz = (() => {
       delete state.cleanupKeyboard;
     };
   }
+  function syncKeyboardSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (chart.data._spec_.selection.enabled) {
+      if (!state?.cleanupKeyboard) setupKeyboardSelection(chart);
+    } else {
+      state?.cleanupKeyboard?.();
+    }
+  }
   function selectionAccessibilityPlugin() {
     return {
       id: "pointsSelectionAccessibility",
@@ -30338,51 +30433,121 @@ var gsmViz = (() => {
     };
   }
 
+  // src/points/rebuildChart.js
+  function encodeLevel(value, missing) {
+    return missing ? ["missing"] : ["value", typeof value, String(value)];
+  }
+  function getDatasetIdentity(dataset, spec) {
+    if (dataset._annotation) return void 0;
+    return JSON.stringify([
+      "points",
+      spec.mapping.color ? [
+        spec.mapping.color,
+        ...encodeLevel(dataset._color, dataset._colorMissing)
+      ] : null,
+      spec.mapping.shape ? [
+        spec.mapping.shape,
+        ...encodeLevel(dataset._shape, dataset._shapeMissing)
+      ] : null
+    ]);
+  }
+  function getHiddenDatasetIdentities(chart) {
+    const identities = /* @__PURE__ */ new Set();
+    chart.data.datasets.forEach((dataset, index3) => {
+      if (!chart.isDatasetVisible(index3)) {
+        const identity4 = getDatasetIdentity(dataset, chart.data._spec_);
+        if (identity4 !== void 0) identities.add(identity4);
+      }
+    });
+    return identities;
+  }
+  function syncDataLabelsPlugin(chart, enabled) {
+    const plugins2 = chart.config.plugins;
+    const index3 = plugins2.findIndex((plugin3) => plugin3.id === "datalabels");
+    if (enabled && index3 === -1) {
+      plugin2.beforeInit(chart);
+      plugins2.unshift(plugin2);
+    }
+    if (!enabled && index3 !== -1) {
+      plugins2.splice(index3, 1);
+      delete chart.$datalabels;
+    }
+  }
+  function applyOptions(chart, state) {
+    const options = chart.config.options;
+    options.animation = state.merged.theme.animation;
+    options.maintainAspectRatio = state.merged.theme.maintainAspectRatio;
+    options.plugins = state.plugins;
+    options.scales = state.scales;
+    if (state.interaction) {
+      options.interaction = state.interaction;
+    } else {
+      delete options.interaction;
+    }
+  }
+  function rebuildChart(chart, data, spec) {
+    const state = buildState(data, spec);
+    const hiddenIdentities = getHiddenDatasetIdentities(chart);
+    resetSelectionForUpdate(chart);
+    chart.data.datasets = state.chartData.datasets;
+    chart.data._spec_ = state.merged;
+    applyOptions(chart, state);
+    syncDataLabelsPlugin(chart, !!state.merged.annotations.labels.point);
+    setAccessibleLabel(chart.canvas, state.accessibleLabel);
+    state.chartData.datasets.forEach((dataset, index3) => {
+      const identity4 = getDatasetIdentity(dataset, state.merged);
+      chart.setDatasetVisibility(
+        index3,
+        identity4 === void 0 || !hiddenIdentities.has(identity4)
+      );
+    });
+    chart.update("none");
+    syncKeyboardSelection(chart);
+    return chart;
+  }
+
+  // src/points/updateData.js
+  function getStoredSpec(chart) {
+    const { data: _data, ...spec } = chart.data._spec_;
+    return spec;
+  }
+  function updateData3(chart, data, spec) {
+    return rebuildChart(
+      chart,
+      data,
+      spec === void 0 ? getStoredSpec(chart) : spec
+    );
+  }
+
+  // src/points/updateSpec.js
+  function isPlainObject2(value) {
+    if (value === null || typeof value !== "object") return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function mergePartial(existing, partial) {
+    return Object.keys(partial).reduce(
+      (merged, key) => {
+        merged[key] = isPlainObject2(existing[key]) && isPlainObject2(partial[key]) ? mergePartial(existing[key], partial[key]) : partial[key];
+        return merged;
+      },
+      { ...existing }
+    );
+  }
+  function getStoredSpec2(chart) {
+    const { data, ...spec } = chart.data._spec_;
+    return { data, spec };
+  }
+  function updateSpec2(chart, spec) {
+    if (!isPlainObject2(spec)) {
+      throw new Error("points updateSpec spec must be a plain object");
+    }
+    const stored = getStoredSpec2(chart);
+    return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
+  }
+
   // src/points.js
   auto_default.register(annotation);
-  function asSentence(value) {
-    const text = value?.trim();
-    if (!text) {
-      return "";
-    }
-    return /[.!?]$/.test(text) ? text : `${text}.`;
-  }
-  function getEncodingLabel(spec, chartData, aesthetic) {
-    if (!spec.mapping[aesthetic]) return "";
-    const levels = [];
-    const seen = /* @__PURE__ */ new Set();
-    chartData.datasets.filter((dataset) => !dataset._annotation && dataset.data.length > 0).forEach((dataset) => {
-      const value = dataset[`_${aesthetic}`];
-      const missing = dataset[`_${aesthetic}Missing`];
-      const key = missing ? "missing" : JSON.stringify([typeof value, value]);
-      if (!seen.has(key)) {
-        seen.add(key);
-        levels.push({ value, missing });
-      }
-    });
-    const values = levels.map(({ value, missing }) => {
-      const label = String(value);
-      if (missing) return `${label} (missing value)`;
-      if (typeof value === "string") {
-        return `${JSON.stringify(value)} (string)`;
-      }
-      return `${label} (${typeof value})`;
-    });
-    return levels.length ? `${aesthetic === "color" ? "Color" : "Shape"} ${spec.mapping[aesthetic]} values: ${values.join(", ")}.` : "";
-  }
-  function getAccessibleLabel(spec, chartData, pointCount) {
-    const xLabel = spec.scales.x.label || spec.mapping.x;
-    const yLabel = spec.scales.y.label || spec.mapping.y;
-    const parts = [
-      asSentence(spec.labels.title),
-      asSentence(spec.labels.description),
-      `Point chart of ${yLabel} by ${xLabel}.`,
-      pointCount === 0 ? "No data available." : `${pointCount} ${pointCount === 1 ? "point" : "points"}.`,
-      getEncodingLabel(spec, chartData, "color"),
-      getEncodingLabel(spec, chartData, "shape")
-    ];
-    return parts.filter(Boolean).join(" ");
-  }
   function renderPoints(element = "body", data = [], spec = {}) {
     validateSpec3(data, spec);
     let el = element;
@@ -30394,10 +30559,7 @@ var gsmViz = (() => {
         );
       }
     }
-    const merged = mergeSpec3(data, spec);
-    const chartData = structureData4(merged);
-    chartData.datasets.push(...structureLines(merged));
-    const scales2 = getScales3(merged);
+    const { merged, chartData, scales: scales2, plugins: plugins2, interaction: interaction2, accessibleLabel } = buildState(data, spec, true);
     el._gsmVizPointsHoverCallbackWrapper ??= () => {
     };
     el._gsmVizPointsClickCallbackWrapper ??= () => {
@@ -30407,13 +30569,8 @@ var gsmViz = (() => {
       hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
       clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper
     });
-    const accessibleLabel = [
-      getAccessibleLabel(merged, chartData, data.length),
-      merged.selection.enabled ? POINT_SELECTION_INSTRUCTIONS : ""
-    ].filter(Boolean).join(" ");
     canvas.setAttribute("role", "img");
-    canvas.setAttribute("aria-label", accessibleLabel);
-    canvas.textContent = accessibleLabel;
+    setAccessibleLabel(canvas, accessibleLabel);
     const chart = new auto_default(canvas, {
       type: "scatter",
       data: {
@@ -30422,16 +30579,12 @@ var gsmViz = (() => {
       },
       options: {
         animation: merged.theme.animation,
-        ...merged.annotations.lines.length ? {
-          interaction: {
-            mode: getPointInteractionMode("point")
-          }
-        } : {},
+        ...interaction2 ? { interaction: interaction2 } : {},
         maintainAspectRatio: merged.theme.maintainAspectRatio,
         onClick: onClick3,
         onHover: onHover3,
         responsive: true,
-        plugins: getPlugins3(merged),
+        plugins: plugins2,
         scales: scales2
       },
       plugins: [
@@ -30447,7 +30600,9 @@ var gsmViz = (() => {
       selectPoint,
       selectGroup,
       clearSelection: clearSelection2,
-      getSelection: getSelection2
+      getSelection: getSelection2,
+      updateData: updateData3,
+      updateSpec: updateSpec2
     };
     setupKeyboardSelection(chart);
     return chart;
@@ -30934,7 +31089,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/updateData.js
-  function updateData3(chart, _results_, _config_, _bounds_, _groupMetadata_) {
+  function updateData4(chart, _results_, _config_, _bounds_, _groupMetadata_) {
     const config = updateConfig2(chart, _config_, false, false);
     const datasets = structureData5(
       _results_,
@@ -30983,7 +31138,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig2,
-      updateData: updateData3,
+      updateData: updateData4,
       updateOption,
       triggerTooltip
     };
@@ -31245,7 +31400,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/updateData.js
-  function updateData4(chart, _data_, _config_) {
+  function updateData5(chart, _data_, _config_) {
     chart.data.config = updateConfig3(chart, _config_);
     chart.data.datasets = structureData6(_data_, chart.data.config);
     chart.options.plugins = getPlugins5(
@@ -31293,7 +31448,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig3,
-      updateData: updateData4,
+      updateData: updateData5,
       updateOption
     };
     return chart;
@@ -32108,7 +32263,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/updateData.js
-  function updateData5(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function updateData6(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
     const datasets = structureData7(
       _results_,
@@ -32199,7 +32354,7 @@ var gsmViz = (() => {
     });
     canvas.chart = chart;
     chart.helpers = {
-      updateData: updateData5.bind(chart),
+      updateData: updateData6.bind(chart),
       updateSelectedGroupIDs: updateSelectedGroupIDs.bind(chart)
     };
     return chart;

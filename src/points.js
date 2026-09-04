@@ -2,15 +2,11 @@ import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
+import buildState from './points/buildState.js';
 import validateSpec from './points/validateSpec.js';
-import mergeSpec from './points/mergeSpec.js';
-import structureData from './points/structureData.js';
-import structureLines from './points/structureLines.js';
-import getScales from './points/getScales.js';
-import getPlugins from './points/getPlugins.js';
+import { setAccessibleLabel } from './points/accessibility.js';
 import onClick from './points/onClick.js';
 import onHover from './points/onHover.js';
-import getPointInteractionMode from './points/pointInteractionMode.js';
 import {
     clearSelection,
     getSelection,
@@ -20,77 +16,15 @@ import {
     selectPoint,
 } from './points/selection.js';
 import {
-    POINT_SELECTION_INSTRUCTIONS,
     selectionAccessibilityPlugin,
     setupKeyboardSelection,
 } from './points/keyboardSelection.js';
+import updateData from './points/updateData.js';
+import updateSpec from './points/updateSpec.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
 Chart.register(annotationPlugin);
-
-function asSentence(value) {
-    const text = value?.trim();
-
-    if (!text) {
-        return '';
-    }
-
-    return /[.!?]$/.test(text) ? text : `${text}.`;
-}
-
-function getEncodingLabel(spec, chartData, aesthetic) {
-    if (!spec.mapping[aesthetic]) return '';
-
-    const levels = [];
-    const seen = new Set();
-    chartData.datasets
-        .filter((dataset) => !dataset._annotation && dataset.data.length > 0)
-        .forEach((dataset) => {
-            const value = dataset[`_${aesthetic}`];
-            const missing = dataset[`_${aesthetic}Missing`];
-            const key = missing
-                ? 'missing'
-                : JSON.stringify([typeof value, value]);
-
-            if (!seen.has(key)) {
-                seen.add(key);
-                levels.push({ value, missing });
-            }
-        });
-
-    const values = levels.map(({ value, missing }) => {
-        const label = String(value);
-        if (missing) return `${label} (missing value)`;
-        if (typeof value === 'string') {
-            return `${JSON.stringify(value)} (string)`;
-        }
-        return `${label} (${typeof value})`;
-    });
-
-    return levels.length
-        ? `${aesthetic === 'color' ? 'Color' : 'Shape'} ${
-              spec.mapping[aesthetic]
-          } values: ${values.join(', ')}.`
-        : '';
-}
-
-function getAccessibleLabel(spec, chartData, pointCount) {
-    const xLabel = spec.scales.x.label || spec.mapping.x;
-    const yLabel = spec.scales.y.label || spec.mapping.y;
-    const parts = [
-        asSentence(spec.labels.title),
-        asSentence(spec.labels.description),
-        `Point chart of ${yLabel} by ${xLabel}.`,
-        pointCount === 0
-            ? 'No data available.'
-            : `${pointCount} ${pointCount === 1 ? 'point' : 'points'}.`,
-        getEncodingLabel(spec, chartData, 'color'),
-        getEncodingLabel(spec, chartData, 'shape'),
-    ];
-
-    return parts.filter(Boolean).join(' ');
-}
 
 /**
  * Render a two-dimensional point chart using a ggplot2-inspired spec.
@@ -113,10 +47,8 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         }
     }
 
-    const merged = mergeSpec(data, spec);
-    const chartData = structureData(merged);
-    chartData.datasets.push(...structureLines(merged));
-    const scales = getScales(merged);
+    const { merged, chartData, scales, plugins, interaction, accessibleLabel } =
+        buildState(data, spec, true);
 
     el._gsmVizPointsHoverCallbackWrapper ??= () => {};
     el._gsmVizPointsClickCallbackWrapper ??= () => {};
@@ -125,15 +57,8 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
         clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper,
     });
-    const accessibleLabel = [
-        getAccessibleLabel(merged, chartData, data.length),
-        merged.selection.enabled ? POINT_SELECTION_INSTRUCTIONS : '',
-    ]
-        .filter(Boolean)
-        .join(' ');
     canvas.setAttribute('role', 'img');
-    canvas.setAttribute('aria-label', accessibleLabel);
-    canvas.textContent = accessibleLabel;
+    setAccessibleLabel(canvas, accessibleLabel);
 
     const chart = new Chart(canvas, {
         type: 'scatter',
@@ -143,18 +68,12 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         },
         options: {
             animation: merged.theme.animation,
-            ...(merged.annotations.lines.length
-                ? {
-                      interaction: {
-                          mode: getPointInteractionMode('point'),
-                      },
-                  }
-                : {}),
+            ...(interaction ? { interaction } : {}),
             maintainAspectRatio: merged.theme.maintainAspectRatio,
             onClick,
             onHover,
             responsive: true,
-            plugins: getPlugins(merged),
+            plugins,
             scales,
         },
         plugins: [
@@ -172,6 +91,8 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         selectGroup,
         clearSelection,
         getSelection,
+        updateData,
+        updateSpec,
     };
     setupKeyboardSelection(chart);
 

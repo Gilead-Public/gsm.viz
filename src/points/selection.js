@@ -436,6 +436,34 @@ export function dismissActivePoint(chart) {
 }
 
 /**
+ * Clear stale selection/activity before datasets are replaced in place.
+ *
+ * @param {Object} chart - Chart.js chart instance.
+ */
+export function resetSelectionForUpdate(chart) {
+    const state = chart.data._selectionState_;
+    const hadSelection = state?.selection?.type !== null;
+    const hadKeyboardPoint = state?.keyboardIndex !== undefined;
+    const hadActivePoint =
+        chart.getActiveElements().length > 0 ||
+        (chart.tooltip?.getActiveElements().length || 0) > 0;
+
+    chart.setActiveElements([]);
+    clearTooltip(chart);
+
+    if (!state) return;
+    state.selection = { type: null, values: [] };
+    delete state.originalStyles;
+    delete state.legendStyles;
+    delete state.keyboardIndex;
+    if (hadSelection) {
+        announce(chart, 'Selection cleared.');
+    } else if (hadKeyboardPoint || hadActivePoint) {
+        announce(chart, 'Active point cleared.');
+    }
+}
+
+/**
  * Preserve undimmed legend swatches while per-point selection colors are active.
  *
  * @returns {Object} Chart.js plugin.
