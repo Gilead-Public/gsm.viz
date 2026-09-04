@@ -159,6 +159,46 @@ describe('points entry point', () => {
         ).toBe(true);
     });
 
+    test('renders ordered color groups with a toggleable legend', () => {
+        const chart = points(
+            container,
+            [
+                { xValue: 1, yValue: 2, group: 'Treatment' },
+                { xValue: 3, yValue: 4, group: 'Control' },
+            ],
+            {
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    color: 'group',
+                },
+                scales: {
+                    color: {
+                        order: ['Control', 'Treatment'],
+                        colors: {
+                            Control: '#123456',
+                            Treatment: '#abcdef',
+                        },
+                        label: 'Arm',
+                    },
+                },
+            }
+        );
+
+        expect(chart.data.datasets.map((dataset) => dataset.label)).toEqual([
+            'Control',
+            'Treatment',
+        ]);
+        expect(chart.options.plugins.legend.display).toBe(true);
+        expect(chart.options.plugins.legend.title.text).toBe('Arm');
+
+        const legendItem = chart.legend.legendItems[0];
+        chart.options.plugins.legend.onClick({}, legendItem, chart.legend);
+
+        expect(chart.isDatasetVisible(0)).toBe(false);
+        expect(chart.isDatasetVisible(1)).toBe(true);
+    });
+
     test('surfaces strict coordinate errors before rendering', () => {
         expect(() =>
             points(container, [{ xValue: '1', yValue: 2 }], {

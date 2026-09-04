@@ -10,13 +10,24 @@ describe('points/validateSpec', () => {
         expect(() => validateSpec([], minimalSpec)).not.toThrow();
     });
 
-    test('accepts all fields implemented by the initial contract', () => {
+    test('accepts all implemented fields', () => {
         expect(() =>
             validateSpec(data, {
-                mapping: { x: 'xValue', y: 'yValue', key: 'id' },
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    key: 'id',
+                    color: 'group',
+                },
                 scales: {
                     x: { type: 'linear', label: 'X axis' },
                     y: { type: 'linear', label: 'Y axis' },
+                    color: {
+                        colors: { Control: '#4e79a7' },
+                        palette: ['#4e79a7', '#f28e2b'],
+                        order: ['Control', 'Treatment'],
+                        label: 'Arm',
+                    },
                 },
                 labels: {
                     title: 'Example',
@@ -151,6 +162,112 @@ describe('points/validateSpec', () => {
                 ).toThrow(`spec.scales.${axis}.label must be a string`);
             }
         );
+    });
+
+    describe('categorical color', () => {
+        test('accepts a null legend label and finite numeric order values', () => {
+            const colors = Object.assign(Object.create(null), {
+                1: '#4e79a7',
+            });
+
+            expect(() =>
+                validateSpec(data, {
+                    mapping: {
+                        x: 'xValue',
+                        y: 'yValue',
+                        color: 'group',
+                    },
+                    scales: {
+                        color: {
+                            colors,
+                            palette: ['#f28e2b'],
+                            order: [1, 'Other'],
+                            label: null,
+                        },
+                    },
+                })
+            ).not.toThrow();
+        });
+
+        test.each([null, '', 42, true])(
+            'rejects invalid mapping.color value %p',
+            (color) => {
+                expect(() =>
+                    validateSpec(data, {
+                        mapping: { x: 'xValue', y: 'yValue', color },
+                    })
+                ).toThrow('spec.mapping.color must be a non-empty string');
+            }
+        );
+
+        test.each([
+            [
+                'non-object scale',
+                [],
+                'spec.scales.color must be a plain object',
+            ],
+            [
+                'unsupported field',
+                { unknown: true },
+                'spec.scales.color.unknown is not supported',
+            ],
+            [
+                'non-object colors',
+                { colors: [] },
+                'spec.scales.color.colors must be a plain object',
+            ],
+            [
+                'invalid named color',
+                { colors: { A: '' } },
+                'spec.scales.color.colors.A must be a non-empty string',
+            ],
+            [
+                'non-array palette',
+                { palette: '#4e79a7' },
+                'spec.scales.color.palette must be a non-empty array',
+            ],
+            [
+                'empty palette',
+                { palette: [] },
+                'spec.scales.color.palette must be a non-empty array',
+            ],
+            [
+                'invalid palette color',
+                { palette: ['#4e79a7', null] },
+                'spec.scales.color.palette[1] must be a non-empty string',
+            ],
+            [
+                'non-array order',
+                { order: 'A' },
+                'spec.scales.color.order must be an array',
+            ],
+            [
+                'invalid order value',
+                { order: ['A', Infinity] },
+                'spec.scales.color.order[1] must be a string or finite number',
+            ],
+            [
+                'duplicate order value',
+                { order: ['A', 'A'] },
+                'spec.scales.color.order must contain unique values',
+            ],
+            [
+                'invalid label',
+                { label: 42 },
+                'spec.scales.color.label must be a string or null',
+            ],
+        ])('rejects %s', (_case, colorScale, message) => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: {
+                        x: 'xValue',
+                        y: 'yValue',
+                        color: 'group',
+                    },
+                    scales: { color: colorScale },
+                })
+            ).toThrow(message);
+        });
     });
 
     describe('labels and tooltip', () => {
@@ -295,19 +412,6 @@ describe('points/validateSpec', () => {
         [
             { ...minimalSpec, unsupported: true },
             'spec.unsupported is not supported',
-        ],
-        [
-            {
-                mapping: {
-                    ...minimalSpec.mapping,
-                    color: 'group',
-                },
-            },
-            'spec.mapping.color is not supported',
-        ],
-        [
-            { ...minimalSpec, scales: { color: {} } },
-            'spec.scales.color is not supported',
         ],
         [
             { ...minimalSpec, scales: { x: { range: [0, 1] } } },

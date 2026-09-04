@@ -5,6 +5,7 @@
 ### New: `points` Module
 
 - Add the generic `points(element, data, spec)` entry point with strict numeric x/y mappings, optional stable row keys, responsive Chart.js scatter rendering, linear axis labels, chart title/caption labels, and an accessible canvas text alternative (#559, #567, #568, #569).
+- Add ordered categorical color mappings, named and fallback palettes, legend titles, stable empty ordered groups, and a neutral missing-value level to `points` (#570).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 

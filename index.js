@@ -28121,9 +28121,10 @@ var gsmViz = (() => {
       "selection",
       "theme"
     ],
-    mapping: ["x", "y", "key"],
-    scales: ["x", "y"],
+    mapping: ["x", "y", "key", "color"],
+    scales: ["x", "y", "color"],
     scale: ["type", "label"],
+    colorScale: ["colors", "palette", "order", "label"],
     labels: ["title", "caption", "description"],
     tooltip: ["format", "formatter"],
     callbacks: ["onClick", "onHover", "onSelect"],
@@ -28175,6 +28176,56 @@ var gsmViz = (() => {
       throw new Error(`${path}.type must be 'linear'`);
     }
     validateOptionalString(scale.label, `${path}.label`);
+  }
+  function validateColorScale(scale) {
+    if (scale === void 0) {
+      return;
+    }
+    const path = "spec.scales.color";
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.colorScale, path);
+    if (scale.colors !== void 0) {
+      validatePlainObject(scale.colors, `${path}.colors`);
+      Object.entries(scale.colors).forEach(([level, color3]) => {
+        if (typeof color3 !== "string" || color3.trim().length === 0) {
+          throw new Error(
+            `${path}.colors.${level} must be a non-empty string`
+          );
+        }
+      });
+    }
+    if (scale.palette !== void 0) {
+      if (!Array.isArray(scale.palette) || scale.palette.length === 0) {
+        throw new Error(`${path}.palette must be a non-empty array`);
+      }
+      scale.palette.forEach((color3, index3) => {
+        if (typeof color3 !== "string" || color3.trim().length === 0) {
+          throw new Error(
+            `${path}.palette[${index3}] must be a non-empty string`
+          );
+        }
+      });
+    }
+    if (scale.order !== void 0) {
+      if (!Array.isArray(scale.order)) {
+        throw new Error(`${path}.order must be an array`);
+      }
+      const levels = /* @__PURE__ */ new Set();
+      scale.order.forEach((level, index3) => {
+        if ((typeof level !== "string" || level.trim().length === 0) && (typeof level !== "number" || !Number.isFinite(level))) {
+          throw new Error(
+            `${path}.order[${index3}] must be a string or finite number`
+          );
+        }
+        if (levels.has(level)) {
+          throw new Error(`${path}.order must contain unique values`);
+        }
+        levels.add(level);
+      });
+    }
+    if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
   }
   function validateCallbacks(callbacks) {
     if (callbacks === void 0) {
@@ -28256,6 +28307,11 @@ var gsmViz = (() => {
         throw new Error("spec.mapping.key must be a non-empty string");
       }
     }
+    if (spec.mapping.color !== void 0) {
+      if (typeof spec.mapping.color !== "string" || spec.mapping.color.trim().length === 0) {
+        throw new Error("spec.mapping.color must be a non-empty string");
+      }
+    }
     if (spec.scales !== void 0) {
       validatePlainObject(spec.scales, "spec.scales");
       validateSupportedFields(
@@ -28265,6 +28321,7 @@ var gsmViz = (() => {
       );
       validateScale(spec.scales.x, "x");
       validateScale(spec.scales.y, "y");
+      validateColorScale(spec.scales.color);
     }
     if (spec.labels !== void 0) {
       validatePlainObject(spec.labels, "spec.labels");
@@ -28297,6 +28354,30 @@ var gsmViz = (() => {
   }
 
   // src/points/defaults.js
+  var DEFAULT_COLOR_PALETTE = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac",
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f"
+  ];
   var defaults5 = {
     scales: {
       x: {
@@ -28305,6 +28386,12 @@ var gsmViz = (() => {
       },
       y: {
         type: "linear",
+        label: void 0
+      },
+      color: {
+        colors: {},
+        palette: DEFAULT_COLOR_PALETTE,
+        order: [],
         label: void 0
       }
     },
@@ -28337,7 +28424,8 @@ var gsmViz = (() => {
   // src/points/mergeSpec.js
   function mergeDefaults(defaultValues, userValues = {}) {
     return Object.keys(defaultValues).reduce((merged, field) => {
-      merged[field] = userValues[field] === void 0 ? defaultValues[field] : userValues[field];
+      const value = userValues[field] === void 0 ? defaultValues[field] : userValues[field];
+      merged[field] = Array.isArray(value) ? [...value] : value !== null && typeof value === "object" ? { ...value } : value;
       return merged;
     }, {});
   }
@@ -28347,7 +28435,8 @@ var gsmViz = (() => {
       mapping: { ...spec.mapping },
       scales: {
         x: mergeDefaults(defaults_default3.scales.x, spec.scales?.x),
-        y: mergeDefaults(defaults_default3.scales.y, spec.scales?.y)
+        y: mergeDefaults(defaults_default3.scales.y, spec.scales?.y),
+        color: mergeDefaults(defaults_default3.scales.color, spec.scales?.color)
       },
       labels: mergeDefaults(defaults_default3.labels, spec.labels),
       tooltip: mergeDefaults(defaults_default3.tooltip, spec.tooltip),
@@ -28358,6 +28447,8 @@ var gsmViz = (() => {
   }
 
   // src/points/structureData.js
+  var MISSING_COLOR_LABEL = "(Missing)";
+  var MISSING_COLOR = "#bdbdbd";
   function getCoordinate(row, field, mapping, index3) {
     const value = row?.[field];
     if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -28366,6 +28457,31 @@ var gsmViz = (() => {
       );
     }
     return value;
+  }
+  function getColorLevel(row, field, index3) {
+    const value = row?.[field];
+    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
+      return { value: MISSING_COLOR_LABEL, missing: true };
+    }
+    if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.color must be a string, finite number, or missing`
+      );
+    }
+    return { value, missing: false };
+  }
+  function getLevelKey(level) {
+    return level.missing ? "missing" : `value:${typeof level.value}:${String(level.value)}`;
+  }
+  function getColor(level, index3, colorScale) {
+    if (level.missing) {
+      return MISSING_COLOR;
+    }
+    const namedLevel = String(level.value);
+    if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
+      return colorScale.colors[namedLevel];
+    }
+    return colorScale.palette[index3 % colorScale.palette.length];
   }
   function getKey(row, field, index3, keys) {
     const value = row?.[field];
@@ -28388,12 +28504,56 @@ var gsmViz = (() => {
   function structureData4(spec) {
     const { data, mapping } = spec;
     const keys = /* @__PURE__ */ new Set();
-    const points = data.map((row, index3) => ({
-      x: getCoordinate(row, mapping.x, "x", index3),
-      y: getCoordinate(row, mapping.y, "y", index3),
-      _key: mapping.key === void 0 ? index3 : getKey(row, mapping.key, index3, keys),
-      _datum: row
-    }));
+    const records = data.map((row, index3) => {
+      const point = {
+        x: getCoordinate(row, mapping.x, "x", index3),
+        y: getCoordinate(row, mapping.y, "y", index3),
+        _key: mapping.key === void 0 ? index3 : getKey(row, mapping.key, index3, keys),
+        _datum: row
+      };
+      const colorLevel = mapping.color ? getColorLevel(row, mapping.color, index3) : void 0;
+      if (colorLevel) point._color = colorLevel.value;
+      return { point, colorLevel };
+    });
+    const points = records.map(({ point }) => point);
+    if (mapping.color) {
+      const colorScale = spec.scales.color;
+      const levels = [];
+      const groups2 = /* @__PURE__ */ new Map();
+      const seenLevels = /* @__PURE__ */ new Set();
+      const addLevel = (level) => {
+        const key = getLevelKey(level);
+        if (!seenLevels.has(key)) {
+          seenLevels.add(key);
+          levels.push(level);
+        }
+        return key;
+      };
+      colorScale.order.forEach(
+        (value) => addLevel({
+          value,
+          missing: value === MISSING_COLOR_LABEL
+        })
+      );
+      records.forEach(({ point, colorLevel }) => {
+        const key = addLevel(colorLevel);
+        if (!groups2.has(key)) {
+          groups2.set(key, []);
+        }
+        groups2.get(key).push(point);
+      });
+      return {
+        datasets: levels.map((level, index3) => {
+          const color3 = getColor(level, index3, colorScale);
+          return {
+            label: String(level.value),
+            data: groups2.get(getLevelKey(level)) || [],
+            backgroundColor: color3,
+            borderColor: color3
+          };
+        })
+      };
+    }
     return {
       datasets: [{ data: points }]
     };
@@ -28420,6 +28580,17 @@ var gsmViz = (() => {
   // src/points/getPlugins.js
   function getPlugins3(spec) {
     const { title: title4, caption } = spec.labels;
+    const hasColor = !!spec.mapping.color;
+    const colorLabel = hasColor ? spec.scales.color.label !== void 0 ? spec.scales.color.label : spec.mapping.color : void 0;
+    const legend5 = {
+      display: hasColor
+    };
+    if (hasColor) {
+      legend5.title = {
+        display: !!colorLabel,
+        text: colorLabel || ""
+      };
+    }
     return {
       title: {
         display: !!title4,
@@ -28431,9 +28602,7 @@ var gsmViz = (() => {
         align: "start",
         text: caption || ""
       },
-      legend: {
-        display: false
-      }
+      legend: legend5
     };
   }
 
