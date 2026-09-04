@@ -1,5 +1,11 @@
 # NEWS
 
+## gsm.viz 2.5.0 (Development)
+
+### New: `points` Module
+
+- Add the generic `points(element, data, spec)` entry point with strict numeric x/y mappings, optional stable row keys, responsive Chart.js scatter rendering, linear axis labels, chart title/caption labels, and an accessible canvas text alternative (#559, #567, #568, #569).
+
 ## gsm.viz 2.4.0 (Release Candidate)
 
 ### New: `bars` Module
