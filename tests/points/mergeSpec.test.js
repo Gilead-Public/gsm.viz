@@ -48,6 +48,10 @@ describe('points/mergeSpec', () => {
             caption: undefined,
             description: undefined,
         });
+        expect(merged.annotations).toEqual({
+            referenceLines: [],
+            lines: [],
+        });
         expect(merged.tooltip).toEqual({
             format: undefined,
             formatter: undefined,
@@ -234,6 +238,8 @@ describe('points/mergeSpec', () => {
         first.scales.opacity.range.push(0.5);
         first.scales.shape.values.Changed = 'star';
         first.scales.shape.order.push('Changed');
+        first.annotations.referenceLines.push({ axis: 'x', value: 1 });
+        first.annotations.lines.push({ data: [], mapping: {} });
         first.labels.title = 'Changed';
         first.selection.enabled = true;
 
@@ -247,6 +253,8 @@ describe('points/mergeSpec', () => {
         expect(second.scales.opacity.range).toEqual([0.25, 1]);
         expect(second.scales.shape.values).toEqual({});
         expect(second.scales.shape.order).toEqual([]);
+        expect(second.annotations.referenceLines).toEqual([]);
+        expect(second.annotations.lines).toEqual([]);
         expect(second.labels.title).toBeUndefined();
         expect(second.selection.enabled).toBe(false);
     });
@@ -332,5 +340,60 @@ describe('points/mergeSpec', () => {
         expect(merged.scales.opacity.range).not.toBe(opacityRange);
         expect(merged.scales.size.range).toEqual(sizeRange);
         expect(merged.scales.opacity.range).toEqual(opacityRange);
+    });
+
+    test('deep copies annotation configuration without cloning source rows', () => {
+        const annotationRow = Object.freeze({ x: 1, y: 2 });
+        const annotationData = Object.freeze([annotationRow]);
+        const referenceDash = Object.freeze([4, 2]);
+        const lineDash = Object.freeze([2, 1]);
+        const order = Object.freeze(['A', null]);
+        const colors = Object.freeze({ A: '#123456' });
+        const palette = Object.freeze(['#abcdef']);
+        const spec = Object.freeze({
+            ...minimalSpec,
+            annotations: Object.freeze({
+                referenceLines: Object.freeze([
+                    Object.freeze({
+                        axis: 'x',
+                        value: 1,
+                        dash: referenceDash,
+                    }),
+                ]),
+                lines: Object.freeze([
+                    Object.freeze({
+                        data: annotationData,
+                        mapping: Object.freeze({
+                            x: 'x',
+                            y: 'y',
+                            group: 'group',
+                        }),
+                        order,
+                        colors,
+                        palette,
+                        dash: lineDash,
+                    }),
+                ]),
+            }),
+        });
+
+        const merged = mergeSpec(data, spec);
+        const [reference] = merged.annotations.referenceLines;
+        const [line] = merged.annotations.lines;
+
+        expect(merged.annotations).not.toBe(spec.annotations);
+        expect(merged.annotations.referenceLines).not.toBe(
+            spec.annotations.referenceLines
+        );
+        expect(reference).not.toBe(spec.annotations.referenceLines[0]);
+        expect(reference.dash).not.toBe(referenceDash);
+        expect(line).not.toBe(spec.annotations.lines[0]);
+        expect(line.data).not.toBe(annotationData);
+        expect(line.data[0]).toBe(annotationRow);
+        expect(line.mapping).not.toBe(spec.annotations.lines[0].mapping);
+        expect(line.order).not.toBe(order);
+        expect(line.colors).not.toBe(colors);
+        expect(line.palette).not.toBe(palette);
+        expect(line.dash).not.toBe(lineDash);
     });
 });
