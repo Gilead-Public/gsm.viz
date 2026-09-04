@@ -5,6 +5,8 @@ import mergeSpec from './points/mergeSpec.js';
 import structureData from './points/structureData.js';
 import getScales from './points/getScales.js';
 import getPlugins from './points/getPlugins.js';
+import onClick from './points/onClick.js';
+import onHover from './points/onHover.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
@@ -79,6 +81,8 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         options: {
             animation: merged.theme.animation,
             maintainAspectRatio: merged.theme.maintainAspectRatio,
+            onClick,
+            onHover,
             responsive: true,
             plugins: getPlugins(merged),
             scales,

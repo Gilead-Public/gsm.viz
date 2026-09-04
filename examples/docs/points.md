@@ -65,6 +65,14 @@ const chart = gsmViz.default.points(element, data, {
         description:
             'Each point represents one site and compares exposure with reported events.',
     },
+    tooltip: {
+        format: '{site}: {events} events at {exposure} exposure ({color})',
+    },
+    callbacks: {
+        onClick: (point) => {
+            console.log(point._datum);
+        },
+    },
 });
 ```
 
@@ -107,6 +115,14 @@ const chart = gsmViz.default.points(element, data, {
         caption: undefined,
         description: undefined,
     },
+    tooltip: {
+        format: undefined,
+        formatter: undefined,
+    },
+    callbacks: {
+        onClick: null,
+        onHover: null,
+    },
     theme: {
         maintainAspectRatio: false,
         animation: false,
@@ -143,6 +159,45 @@ color use the default palette, or the non-empty `scales.color.palette` supplied 
 the caller. Set `scales.color.label` to customize the legend title; `null` or `''`
 hides the title. Null, undefined, blank, and `NaN` color values share a neutral
 gray `"(Missing)"` level rather than dropping rows.
+
+## Tooltips
+
+Use `tooltip.format` for field templates:
+
+```js
+tooltip: {
+    format: '{site}: ({x}, {y}), {color}, {datum.region}',
+}
+```
+
+`{x}`, `{y}`, and `{key}` resolve structured point values; `{color}` is available
+when `mapping.color` is set.
+Unqualified placeholders such as `{site}` resolve fields on the original source
+row. Prefix a field with `datum.` or `_datum.` for an explicit source-row lookup;
+nested paths such as `{datum.participant.id}` are supported. Every requested
+source field must exist on every non-empty input row, and unresolved placeholders
+throw descriptive errors.
+
+For complete control, provide
+`tooltip.formatter(point, context, details)`. `details` contains
+`{ x, y, color, key, datum }`. Label precedence is:
+
+1. `tooltip.callbacks.label` using the standard Chart.js signature
+2. `tooltip.formatter`
+3. `tooltip.format`
+4. Chart.js's default scatter label
+
+The gsm.viz-only `format` and `formatter` keys are removed before tooltip options
+are passed to Chart.js. Standard options such as `enabled`, `mode`, `intersect`,
+`position`, styling, and tooltip callbacks can be configured in the same object.
+
+## Pointer callbacks
+
+`callbacks.onClick(point, event)` and `callbacks.onHover(point, event)` run only
+when a point is hit. The structured `point` contains its coordinates, `_key`,
+optional `_color`, and original source row in `_datum`. A pointer cursor is shown
+for interactive points and reset when the pointer leaves or callbacks are
+removed.
 
 ## Data rules
 
