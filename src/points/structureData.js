@@ -1,12 +1,18 @@
 const MISSING_COLOR_LABEL = '(Missing)';
 const MISSING_COLOR = '#bdbdbd';
 
-function getCoordinate(row, field, mapping, index) {
+function getCoordinate(row, field, mapping, index, scale) {
     const value = row?.[field];
 
     if (typeof value !== 'number' || !Number.isFinite(value)) {
         throw new Error(
             `data[${index}].${field} mapped by spec.mapping.${mapping} must be a finite number`
+        );
+    }
+
+    if (scale?.type === 'log' && value <= 0) {
+        throw new Error(
+            `data[${index}].${field} mapped by spec.mapping.${mapping} must be greater than zero for a log scale`
         );
     }
 
@@ -92,8 +98,8 @@ export default function structureData(spec) {
     const keys = new Set();
     const records = data.map((row, index) => {
         const point = {
-            x: getCoordinate(row, mapping.x, 'x', index),
-            y: getCoordinate(row, mapping.y, 'y', index),
+            x: getCoordinate(row, mapping.x, 'x', index, spec.scales?.x),
+            y: getCoordinate(row, mapping.y, 'y', index, spec.scales?.y),
             _key:
                 mapping.key === undefined
                     ? index

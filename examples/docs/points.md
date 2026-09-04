@@ -39,8 +39,17 @@ const chart = gsmViz.default.points(element, data, {
         color: 'arm',
     },
     scales: {
-        x: { label: 'Participant exposure' },
-        y: { label: 'Reported events' },
+        x: {
+            type: 'log',
+            label: 'Participant exposure',
+            range: [1, 100],
+            breaks: [1, 10, 100],
+            labels: ['1', '10', '100'],
+        },
+        y: {
+            label: 'Reported events',
+            beginAtZero: true,
+        },
         color: {
             colors: {
                 Control: '#4e79a7',
@@ -71,12 +80,20 @@ const chart = gsmViz.default.points(element, data, {
     },
     scales: {
         x: {
-            type: 'linear',
+            type: 'linear',     // 'linear' or 'log'
             label: undefined, // defaults to mapping.x; '' hides the title
+            range: undefined,   // optional fixed [min, max]
+            beginAtZero: false, // automatic linear domains only
+            breaks: [],         // explicit, increasing tick values
+            labels: [],         // one label per break
         },
         y: {
             type: 'linear',
             label: undefined, // defaults to mapping.y; '' hides the title
+            range: undefined,
+            beginAtZero: false,
+            breaks: [],
+            labels: [],
         },
         color: {
             colors: {},       // level-to-CSS-color map
@@ -98,8 +115,21 @@ const chart = gsmViz.default.points(element, data, {
 ```
 
 The renderer supports ungrouped points or a categorical color mapping on linear
-x/y axes. Additional aesthetics, scales, annotations, and interactions are added
-as separate reviewable features.
+or logarithmic x/y axes. Additional aesthetics, annotations, and interactions are
+added as separate reviewable features.
+
+## Numeric axes
+
+Each axis supports `type: 'linear'` or `type: 'log'`; the public `log` spelling is
+normalized to Chart.js's `logarithmic` scale. An explicit two-number `range`
+fixes the axis minimum and maximum. Otherwise, `beginAtZero: true` extends an
+automatic linear domain to zero.
+
+Set `breaks` and `labels` together to replace generated ticks. Breaks must be
+finite, strictly increasing values, and each break must have a string or numeric
+label. Log-scale coordinates, ranges, and breaks must all be greater than zero;
+`beginAtZero: true` is therefore invalid on a log scale. Invalid settings and
+coordinates throw before Chart.js renders.
 
 ## Categorical color
 
@@ -116,7 +146,8 @@ gray `"(Missing)"` level rather than dropping rows.
 
 ## Data rules
 
--   Values mapped to x and y must already be finite JavaScript numbers.
+-   Values mapped to x and y must already be finite JavaScript numbers and must be
+    positive when their axis uses a log scale.
 -   Numeric strings are not coerced.
 -   Invalid rows throw a descriptive error; rows are never silently dropped.
 -   Duplicate coordinates remain independent points.

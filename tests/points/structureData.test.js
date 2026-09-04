@@ -190,6 +190,20 @@ describe('points/structureData', () => {
         ]);
     });
 
+    test.each([
+        ['x', { xValue: 0, yValue: 1 }],
+        ['x', { xValue: -1, yValue: 1 }],
+        ['y', { xValue: 1, yValue: 0 }],
+        ['y', { xValue: 1, yValue: -1 }],
+    ])('rejects non-positive %s coordinates on a log scale', (axis, row) => {
+        const spec = makeSpec([row]);
+        spec.scales[axis] = { type: 'log' };
+
+        expect(() => structureData(spec)).toThrow(
+            `data[0].${axis}Value mapped by spec.mapping.${axis} must be greater than zero for a log scale`
+        );
+    });
+
     test('returns one empty dataset for empty source data', () => {
         expect(structureData(makeSpec([]))).toEqual({
             datasets: [{ data: [] }],
