@@ -20,7 +20,43 @@ function asSentence(value) {
     return /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
-function getAccessibleLabel(spec, pointCount) {
+function getEncodingLabel(spec, chartData, aesthetic) {
+    if (!spec.mapping[aesthetic]) return '';
+
+    const levels = [];
+    const seen = new Set();
+    chartData.datasets
+        .filter((dataset) => dataset.data.length > 0)
+        .forEach((dataset) => {
+            const value = dataset[`_${aesthetic}`];
+            const missing = dataset[`_${aesthetic}Missing`];
+            const key = missing
+                ? 'missing'
+                : JSON.stringify([typeof value, value]);
+
+            if (!seen.has(key)) {
+                seen.add(key);
+                levels.push({ value, missing });
+            }
+        });
+
+    const values = levels.map(({ value, missing }) => {
+        const label = String(value);
+        if (missing) return `${label} (missing value)`;
+        if (typeof value === 'string') {
+            return `${JSON.stringify(value)} (string)`;
+        }
+        return `${label} (${typeof value})`;
+    });
+
+    return levels.length
+        ? `${aesthetic === 'color' ? 'Color' : 'Shape'} ${
+              spec.mapping[aesthetic]
+          } values: ${values.join(', ')}.`
+        : '';
+}
+
+function getAccessibleLabel(spec, chartData, pointCount) {
     const xLabel = spec.scales.x.label || spec.mapping.x;
     const yLabel = spec.scales.y.label || spec.mapping.y;
     const parts = [
@@ -30,6 +66,8 @@ function getAccessibleLabel(spec, pointCount) {
         pointCount === 0
             ? 'No data available.'
             : `${pointCount} ${pointCount === 1 ? 'point' : 'points'}.`,
+        getEncodingLabel(spec, chartData, 'color'),
+        getEncodingLabel(spec, chartData, 'shape'),
     ];
 
     return parts.filter(Boolean).join(' ');
@@ -67,7 +105,7 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
         clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper,
     });
-    const accessibleLabel = getAccessibleLabel(merged, data.length);
+    const accessibleLabel = getAccessibleLabel(merged, chartData, data.length);
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', accessibleLabel);
     canvas.textContent = accessibleLabel;

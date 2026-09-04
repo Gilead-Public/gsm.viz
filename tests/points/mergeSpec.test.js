@@ -36,6 +36,11 @@ describe('points/mergeSpec', () => {
             },
             size: { range: [3, 12] },
             opacity: { range: [0.25, 1] },
+            shape: {
+                values: {},
+                order: [],
+                label: undefined,
+            },
         });
         expect(merged.scales.color.palette.length).toBeGreaterThan(1);
         expect(merged.labels).toEqual({
@@ -85,6 +90,11 @@ describe('points/mergeSpec', () => {
                 },
                 size: { range: [2, 10] },
                 opacity: { range: [0.1, 0.9] },
+                shape: {
+                    values: { Control: 'circle' },
+                    order: ['Control', 'Treatment'],
+                    label: 'Marker',
+                },
             },
             labels: {
                 title: 'Example',
@@ -123,6 +133,11 @@ describe('points/mergeSpec', () => {
         });
         expect(merged.scales.size).toEqual({ range: [2, 10] });
         expect(merged.scales.opacity).toEqual({ range: [0.1, 0.9] });
+        expect(merged.scales.shape).toEqual({
+            values: { Control: 'circle' },
+            order: ['Control', 'Treatment'],
+            label: 'Marker',
+        });
         expect(merged.labels).toEqual({
             title: 'Example',
             caption: undefined,
@@ -217,6 +232,8 @@ describe('points/mergeSpec', () => {
         first.scales.color.order.push('Changed');
         first.scales.size.range.push(20);
         first.scales.opacity.range.push(0.5);
+        first.scales.shape.values.Changed = 'star';
+        first.scales.shape.order.push('Changed');
         first.labels.title = 'Changed';
         first.selection.enabled = true;
 
@@ -228,6 +245,8 @@ describe('points/mergeSpec', () => {
         expect(second.scales.color.order).toEqual([]);
         expect(second.scales.size.range).toEqual([3, 12]);
         expect(second.scales.opacity.range).toEqual([0.25, 1]);
+        expect(second.scales.shape.values).toEqual({});
+        expect(second.scales.shape.order).toEqual([]);
         expect(second.labels.title).toBeUndefined();
         expect(second.selection.enabled).toBe(false);
     });

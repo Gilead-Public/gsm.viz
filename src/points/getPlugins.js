@@ -7,20 +7,37 @@
 export default function getPlugins(spec) {
     const { title, caption } = spec.labels;
     const hasColor = !!spec.mapping.color;
-    const colorLabel = hasColor
-        ? spec.scales.color.label !== undefined
+    const hasShape = !!spec.mapping.shape;
+    const getScaleLabel = (aesthetic) =>
+        spec.scales[aesthetic].label !== undefined
+            ? spec.scales[aesthetic].label
+            : spec.mapping[aesthetic];
+    const colorLabel = hasColor ? getScaleLabel('color') : undefined;
+    const shapeLabel = hasShape ? getScaleLabel('shape') : undefined;
+    const hasSharedLevel =
+        hasColor && hasShape && spec.mapping.color === spec.mapping.shape;
+    const getSharedLabel = () =>
+        spec.scales.color.label !== undefined
             ? spec.scales.color.label
-            : spec.mapping.color
-        : undefined;
+            : spec.scales.shape.label !== undefined
+            ? spec.scales.shape.label
+            : spec.mapping.color;
+    const legendTitle =
+        (hasSharedLevel
+            ? getSharedLabel()
+            : [colorLabel, shapeLabel].filter(Boolean).join(' / ')) || '';
     const legend = {
-        display: hasColor,
+        display: hasColor || hasShape,
     };
 
-    if (hasColor) {
+    if (legend.display) {
         legend.title = {
-            display: !!colorLabel,
-            text: colorLabel || '',
+            display: !!legendTitle,
+            text: legendTitle,
         };
+    }
+    if (hasShape) {
+        legend.labels = { usePointStyle: true };
     }
 
     return {

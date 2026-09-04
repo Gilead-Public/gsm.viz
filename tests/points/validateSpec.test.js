@@ -253,7 +253,7 @@ describe('points/validateSpec', () => {
     });
 
     describe('categorical color', () => {
-        test('accepts a null legend label and finite numeric order values', () => {
+        test('accepts null labels and missing or finite order values', () => {
             const colors = Object.assign(Object.create(null), {
                 1: '#4e79a7',
             });
@@ -269,7 +269,7 @@ describe('points/validateSpec', () => {
                         color: {
                             colors,
                             palette: ['#f28e2b'],
-                            order: [1, 'Other'],
+                            order: [1, 'Other', null],
                             label: null,
                         },
                     },
@@ -332,7 +332,7 @@ describe('points/validateSpec', () => {
             [
                 'invalid order value',
                 { order: ['A', Infinity] },
-                'spec.scales.color.order[1] must be a string or finite number',
+                'spec.scales.color.order[1] must be a string, finite number, or null',
             ],
             [
                 'duplicate order value',
