@@ -38,6 +38,11 @@ export default function mergeSpec(data, spec) {
             x: mergeDefaults(defaults.scales.x, spec.scales?.x),
             y: mergeDefaults(defaults.scales.y, spec.scales?.y),
             color: mergeDefaults(defaults.scales.color, spec.scales?.color),
+            size: mergeDefaults(defaults.scales.size, spec.scales?.size),
+            opacity: mergeDefaults(
+                defaults.scales.opacity,
+                spec.scales?.opacity
+            ),
         },
         labels: mergeDefaults(defaults.labels, spec.labels),
         tooltip: mergeTooltip(spec.tooltip),
