@@ -8,6 +8,7 @@
 - Add ordered categorical color mappings, named and fallback palettes, legend titles, stable empty ordered groups, and a neutral missing-value level to `points` (#570).
 - Add linear/logarithmic point axes with fixed ranges, automatic begin-at-zero behavior, explicit breaks and labels, and strict positive log-domain validation (#571).
 - Add row-aware tooltip templates and formatters, Chart.js tooltip callback precedence, and point-only click/hover callbacks with source-row payloads (#572).
+- Add continuous point size and opacity mappings with area-correct radius scaling, clamped alpha ranges, equal-domain handling, and deterministic hover radii (#573).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 

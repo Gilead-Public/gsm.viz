@@ -8,10 +8,11 @@ const supportedFields = {
         'selection',
         'theme',
     ],
-    mapping: ['x', 'y', 'key', 'color'],
-    scales: ['x', 'y', 'color'],
+    mapping: ['x', 'y', 'key', 'color', 'size', 'opacity'],
+    scales: ['x', 'y', 'color', 'size', 'opacity'],
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
+    continuousAestheticScale: ['range'],
     labels: ['title', 'caption', 'description'],
     tooltip: [
         'format',
@@ -280,6 +281,41 @@ function validateColorScale(scale) {
     }
 }
 
+function validateContinuousAestheticScale(scale, aesthetic) {
+    if (scale === undefined) return;
+
+    const path = `spec.scales.${aesthetic}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(
+        scale,
+        supportedFields.continuousAestheticScale,
+        path
+    );
+
+    if (
+        !Array.isArray(scale.range) ||
+        scale.range.length !== 2 ||
+        !scale.range.every(Number.isFinite)
+    ) {
+        throw new Error(`${path}.range must contain two finite numbers`);
+    }
+
+    if (aesthetic === 'size' && scale.range.some((value) => value <= 0)) {
+        throw new Error(`${path}.range values must be greater than zero`);
+    }
+
+    if (
+        aesthetic === 'opacity' &&
+        scale.range.some((value) => value < 0 || value > 1)
+    ) {
+        throw new Error(`${path}.range values must be between 0 and 1`);
+    }
+
+    if (scale.range[0] >= scale.range[1]) {
+        throw new Error(`${path}.range values must be strictly increasing`);
+    }
+}
+
 function validateCallbacks(callbacks) {
     if (callbacks === undefined) {
         return;
@@ -409,6 +445,18 @@ export default function validateSpec(data, spec) {
         }
     }
 
+    ['size', 'opacity'].forEach((aesthetic) => {
+        if (
+            spec.mapping[aesthetic] !== undefined &&
+            (typeof spec.mapping[aesthetic] !== 'string' ||
+                spec.mapping[aesthetic].trim().length === 0)
+        ) {
+            throw new Error(
+                `spec.mapping.${aesthetic} must be a non-empty string`
+            );
+        }
+    });
+
     if (spec.scales !== undefined) {
         validatePlainObject(spec.scales, 'spec.scales');
         validateSupportedFields(
@@ -419,6 +467,8 @@ export default function validateSpec(data, spec) {
         validateScale(spec.scales.x, 'x');
         validateScale(spec.scales.y, 'y');
         validateColorScale(spec.scales.color);
+        validateContinuousAestheticScale(spec.scales.size, 'size');
+        validateContinuousAestheticScale(spec.scales.opacity, 'opacity');
     }
 
     if (spec.labels !== undefined) {
