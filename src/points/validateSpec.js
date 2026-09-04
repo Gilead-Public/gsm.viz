@@ -16,7 +16,18 @@ const supportedFields = {
     continuousAestheticScale: ['range'],
     shapeScale: ['values', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
-    annotations: ['referenceLines', 'lines'],
+    annotations: ['referenceLines', 'lines', 'labels'],
+    annotationLabels: ['point'],
+    pointLabel: [
+        'field',
+        'display',
+        'formatter',
+        'offset',
+        'align',
+        'color',
+        'font',
+    ],
+    pointLabelFont: ['family', 'size', 'style', 'weight', 'lineHeight'],
     referenceLine: [
         'axis',
         'value',
@@ -369,6 +380,117 @@ function validateAnnotationLine(line, index) {
     }
 }
 
+function validatePointLabelFont(font, path) {
+    if (font === undefined) return;
+    validatePlainObject(font, path);
+    validateSupportedFields(font, supportedFields.pointLabelFont, path);
+
+    ['family', 'style'].forEach((field) => {
+        if (font[field] !== undefined) {
+            validateNonEmptyString(font[field], `${path}.${field}`);
+        }
+    });
+    if (
+        font.size !== undefined &&
+        (!Number.isFinite(font.size) || font.size <= 0)
+    ) {
+        throw new Error(`${path}.size must be a positive finite number`);
+    }
+    if (
+        font.weight !== undefined &&
+        (typeof font.weight !== 'string' || font.weight.trim().length === 0) &&
+        (typeof font.weight !== 'number' || !Number.isFinite(font.weight))
+    ) {
+        throw new Error(
+            `${path}.weight must be a non-empty string or finite number`
+        );
+    }
+    if (
+        font.lineHeight !== undefined &&
+        (typeof font.lineHeight !== 'string' ||
+            font.lineHeight.trim().length === 0) &&
+        (typeof font.lineHeight !== 'number' ||
+            !Number.isFinite(font.lineHeight) ||
+            font.lineHeight <= 0)
+    ) {
+        throw new Error(
+            `${path}.lineHeight must be a positive finite number or non-empty string`
+        );
+    }
+}
+
+function validatePointLabels(labels, data) {
+    if (labels === undefined) return;
+
+    const labelsPath = 'spec.annotations.labels';
+    validatePlainObject(labels, labelsPath);
+    validateSupportedFields(
+        labels,
+        supportedFields.annotationLabels,
+        labelsPath
+    );
+
+    const point = labels.point;
+    if (point === undefined || point === null || point === false) return;
+
+    const path = `${labelsPath}.point`;
+    validatePlainObject(point, path);
+    validateSupportedFields(point, supportedFields.pointLabel, path);
+    validateNonEmptyString(point.field, `${path}.field`);
+
+    if (
+        point.display !== undefined &&
+        typeof point.display !== 'boolean' &&
+        typeof point.display !== 'function' &&
+        (typeof point.display !== 'string' || point.display.trim().length === 0)
+    ) {
+        throw new Error(
+            `${path}.display must be a boolean, non-empty string, or function`
+        );
+    }
+    if (
+        point.formatter !== undefined &&
+        point.formatter !== null &&
+        typeof point.formatter !== 'function'
+    ) {
+        throw new Error(`${path}.formatter must be a function or null`);
+    }
+    if (
+        point.offset !== undefined &&
+        (!Number.isFinite(point.offset) || point.offset < 0)
+    ) {
+        throw new Error(`${path}.offset must be a non-negative finite number`);
+    }
+    const alignments = [
+        'center',
+        'start',
+        'end',
+        'right',
+        'bottom',
+        'left',
+        'top',
+    ];
+    if (point.align !== undefined && !alignments.includes(point.align)) {
+        throw new Error(
+            `${path}.align must be 'center', 'start', 'end', 'right', 'bottom', 'left', or 'top'`
+        );
+    }
+    validateColor(point.color, `${path}.color`);
+    validatePointLabelFont(point.font, `${path}.font`);
+
+    data.forEach((row, index) => {
+        const value = row?.[point.field];
+        const valid =
+            (typeof value === 'string' && value.trim().length > 0) ||
+            (typeof value === 'number' && Number.isFinite(value));
+        if (!valid) {
+            throw new Error(
+                `data[${index}].${point.field} mapped by ${path}.field must be a non-empty string or finite number`
+            );
+        }
+    });
+}
+
 function validateAnnotations(annotations, spec) {
     if (annotations === undefined) return;
 
@@ -379,6 +501,7 @@ function validateAnnotations(annotations, spec) {
         'spec.annotations'
     );
     validateReferenceLines(annotations.referenceLines, spec);
+    validatePointLabels(annotations.labels, spec.data ?? []);
 
     if (annotations.lines !== undefined) {
         if (!Array.isArray(annotations.lines)) {
@@ -737,7 +860,7 @@ export default function validateSpec(data, spec) {
         });
     }
 
-    validateAnnotations(spec.annotations, spec);
+    validateAnnotations(spec.annotations, { ...spec, data });
 
     if (spec.tooltip !== undefined) {
         validatePlainObject(spec.tooltip, 'spec.tooltip');

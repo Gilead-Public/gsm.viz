@@ -442,6 +442,59 @@ describe('points entry point', () => {
         expect(label).not.toContain('undefined');
     });
 
+    test('registers selective point labels without labeling line datasets', () => {
+        const formatter = jest.fn((point) => `Site ${point._datum.id}`);
+        const chart = points(
+            container,
+            [
+                { xValue: 1, yValue: 2, id: 'A', flagged: true },
+                { xValue: 3, yValue: 4, id: 'B', flagged: false },
+            ],
+            {
+                mapping: {
+                    x: 'xValue',
+                    y: 'yValue',
+                    key: 'id',
+                },
+                annotations: {
+                    labels: {
+                        point: {
+                            field: 'id',
+                            display: 'flagged',
+                            formatter,
+                        },
+                    },
+                    lines: [
+                        {
+                            data: [{ x: 1, y: 1 }],
+                            mapping: { x: 'x', y: 'y' },
+                        },
+                    ],
+                },
+            }
+        );
+        expect(
+            chart.config.plugins.some((plugin) => plugin.id === 'datalabels')
+        ).toBe(true);
+        expect(chart.options.plugins.datalabels).toBeDefined();
+        expect(formatter).toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'A' }),
+            expect.objectContaining({ dataIndex: 0 })
+        );
+        expect(formatter).not.toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'B' }),
+            expect.anything()
+        );
+    });
+
+    test('does not register datalabels when point labels are disabled', () => {
+        const chart = points(container, data, spec);
+
+        expect(
+            chart.config.plugins.some((plugin) => plugin.id === 'datalabels')
+        ).toBe(false);
+    });
+
     test('surfaces strict coordinate errors before rendering', () => {
         expect(() =>
             points(container, [{ xValue: '1', yValue: 2 }], {

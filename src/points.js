@@ -1,5 +1,6 @@
 import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import validateSpec from './points/validateSpec.js';
 import mergeSpec from './points/mergeSpec.js';
@@ -138,7 +139,10 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
             plugins: getPlugins(merged),
             scales,
         },
-        plugins: [displayWhiteBackground()],
+        plugins: [
+            ...(merged.annotations.labels.point ? [ChartDataLabels] : []),
+            displayWhiteBackground(),
+        ],
     });
 
     canvas.chart = chart;
