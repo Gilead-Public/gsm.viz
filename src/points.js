@@ -11,6 +11,19 @@ import getPlugins from './points/getPlugins.js';
 import onClick from './points/onClick.js';
 import onHover from './points/onHover.js';
 import getPointInteractionMode from './points/pointInteractionMode.js';
+import {
+    clearSelection,
+    getSelection,
+    selectGroup,
+    selectionInteractionPlugin,
+    selectionLegendPlugin,
+    selectPoint,
+} from './points/selection.js';
+import {
+    POINT_SELECTION_INSTRUCTIONS,
+    selectionAccessibilityPlugin,
+    setupKeyboardSelection,
+} from './points/keyboardSelection.js';
 import addCanvas from './util/addCanvas.js';
 import displayWhiteBackground from './util/displayWhiteBackground.js';
 
@@ -112,7 +125,12 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
         clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper,
     });
-    const accessibleLabel = getAccessibleLabel(merged, chartData, data.length);
+    const accessibleLabel = [
+        getAccessibleLabel(merged, chartData, data.length),
+        merged.selection.enabled ? POINT_SELECTION_INSTRUCTIONS : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', accessibleLabel);
     canvas.textContent = accessibleLabel;
@@ -142,10 +160,20 @@ export default function renderPoints(element = 'body', data = [], spec = {}) {
         plugins: [
             ...(merged.annotations.labels.point ? [ChartDataLabels] : []),
             displayWhiteBackground(),
+            selectionLegendPlugin(),
+            selectionInteractionPlugin(),
+            selectionAccessibilityPlugin(),
         ],
     });
 
     canvas.chart = chart;
+    chart.helpers = {
+        selectPoint,
+        selectGroup,
+        clearSelection,
+        getSelection,
+    };
+    setupKeyboardSelection(chart);
 
     return chart;
 }

@@ -344,6 +344,7 @@ export default function structureData(spec) {
         const point = {
             x: getCoordinate(row, mapping.x, 'x', index, spec.scales?.x),
             y: getCoordinate(row, mapping.y, 'y', index, spec.scales?.y),
+            _index: index,
             _key:
                 mapping.key === undefined
                     ? index

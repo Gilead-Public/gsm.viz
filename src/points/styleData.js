@@ -47,6 +47,19 @@ export function withOpacity(color, opacity) {
     return parsed.formatRgb();
 }
 
+export function withOpacityFactor(color, factor) {
+    const parsed = parseColor(color);
+
+    if (!parsed) {
+        throw new Error(
+            `points could not apply opacity to color ${JSON.stringify(color)}`
+        );
+    }
+
+    parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
+    return parsed.formatRgb();
+}
+
 function getDomain(points, field) {
     let minimum = Infinity;
     let maximum = -Infinity;
