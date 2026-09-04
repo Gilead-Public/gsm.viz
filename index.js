@@ -28173,6 +28173,24 @@ var gsmViz = (() => {
     });
   }
 
+  // src/points/pointStyles.js
+  var POINT_STYLES = [
+    "circle",
+    "triangle",
+    "rect",
+    "rectRot",
+    "cross",
+    "crossRot",
+    "star",
+    "line",
+    "dash",
+    "rectRounded"
+  ];
+  var MISSING_POINT_STYLE = "cross";
+  var FALLBACK_POINT_STYLES = POINT_STYLES.filter(
+    (pointStyle) => pointStyle !== MISSING_POINT_STYLE
+  );
+
   // src/points/validateSpec.js
   var supportedFields = {
     spec: [
@@ -28184,11 +28202,12 @@ var gsmViz = (() => {
       "selection",
       "theme"
     ],
-    mapping: ["x", "y", "key", "color", "size", "opacity"],
-    scales: ["x", "y", "color", "size", "opacity"],
+    mapping: ["x", "y", "key", "color", "size", "opacity", "shape"],
+    scales: ["x", "y", "color", "size", "opacity", "shape"],
     scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
     continuousAestheticScale: ["range"],
+    shapeScale: ["values", "order", "label"],
     labels: ["title", "caption", "description"],
     tooltip: [
       "format",
@@ -28261,6 +28280,45 @@ var gsmViz = (() => {
     }
     const prototype = Object.getPrototypeOf(value);
     return prototype === Object.prototype || prototype === null;
+  }
+  function validateDiscreteOrder(order, path) {
+    if (!Array.isArray(order)) {
+      throw new Error(`${path} must be an array`);
+    }
+    const levels = /* @__PURE__ */ new Set();
+    order.forEach((level, index3) => {
+      if (level !== null && (typeof level !== "string" || level.trim().length === 0) && (typeof level !== "number" || !Number.isFinite(level))) {
+        throw new Error(
+          `${path}[${index3}] must be a string, finite number, or null`
+        );
+      }
+      if (levels.has(level)) {
+        throw new Error(`${path} must contain unique values`);
+      }
+      levels.add(level);
+    });
+  }
+  function validateShapeScale(scale) {
+    if (scale === void 0) return;
+    const path = "spec.scales.shape";
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.shapeScale, path);
+    if (scale.values !== void 0) {
+      validatePlainObject(scale.values, `${path}.values`);
+      Object.entries(scale.values).forEach(([level, pointStyle]) => {
+        if (!POINT_STYLES.includes(pointStyle)) {
+          throw new Error(
+            `${path}.values.${level} must be a supported point style`
+          );
+        }
+      });
+    }
+    if (scale.order !== void 0) {
+      validateDiscreteOrder(scale.order, `${path}.order`);
+    }
+    if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
   }
   function validatePlainObject(value, path) {
     if (!isPlainObject(value)) {
@@ -28386,21 +28444,7 @@ var gsmViz = (() => {
       });
     }
     if (scale.order !== void 0) {
-      if (!Array.isArray(scale.order)) {
-        throw new Error(`${path}.order must be an array`);
-      }
-      const levels = /* @__PURE__ */ new Set();
-      scale.order.forEach((level, index3) => {
-        if ((typeof level !== "string" || level.trim().length === 0) && (typeof level !== "number" || !Number.isFinite(level))) {
-          throw new Error(
-            `${path}.order[${index3}] must be a string or finite number`
-          );
-        }
-        if (levels.has(level)) {
-          throw new Error(`${path}.order must contain unique values`);
-        }
-        levels.add(level);
-      });
+      validateDiscreteOrder(scale.order, `${path}.order`);
     }
     if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
       throw new Error(`${path}.label must be a string or null`);
@@ -28513,7 +28557,7 @@ var gsmViz = (() => {
         throw new Error("spec.mapping.color must be a non-empty string");
       }
     }
-    ["size", "opacity"].forEach((aesthetic) => {
+    ["size", "opacity", "shape"].forEach((aesthetic) => {
       if (spec.mapping[aesthetic] !== void 0 && (typeof spec.mapping[aesthetic] !== "string" || spec.mapping[aesthetic].trim().length === 0)) {
         throw new Error(
           `spec.mapping.${aesthetic} must be a non-empty string`
@@ -28532,6 +28576,7 @@ var gsmViz = (() => {
       validateColorScale(spec.scales.color);
       validateContinuousAestheticScale(spec.scales.size, "size");
       validateContinuousAestheticScale(spec.scales.opacity, "opacity");
+      validateShapeScale(spec.scales.shape);
     }
     if (spec.labels !== void 0) {
       validatePlainObject(spec.labels, "spec.labels");
@@ -28640,6 +28685,11 @@ var gsmViz = (() => {
       },
       opacity: {
         range: [0.25, 1]
+      },
+      shape: {
+        values: {},
+        order: [],
+        label: void 0
       }
     },
     labels: {
@@ -28695,7 +28745,8 @@ var gsmViz = (() => {
         opacity: mergeDefaults(
           defaults_default3.scales.opacity,
           spec.scales?.opacity
-        )
+        ),
+        shape: mergeDefaults(defaults_default3.scales.shape, spec.scales?.shape)
       },
       labels: mergeDefaults(defaults_default3.labels, spec.labels),
       tooltip: mergeTooltip(spec.tooltip),
@@ -28786,7 +28837,7 @@ var gsmViz = (() => {
   }
 
   // src/points/structureData.js
-  var MISSING_COLOR_LABEL = "(Missing)";
+  var MISSING_LEVEL_LABEL = "(Missing)";
   var MISSING_COLOR = "#bdbdbd";
   function getCoordinate(row, field, mapping, index3, scale) {
     const value = row?.[field];
@@ -28802,14 +28853,14 @@ var gsmViz = (() => {
     }
     return value;
   }
-  function getColorLevel(row, field, index3) {
+  function getDiscreteLevel(row, field, aesthetic, index3) {
     const value = row?.[field];
     if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
-      return { value: MISSING_COLOR_LABEL, missing: true };
+      return { value: MISSING_LEVEL_LABEL, missing: true };
     }
     if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
       throw new Error(
-        `data[${index3}].${field} mapped by spec.mapping.color must be a string, finite number, or missing`
+        `data[${index3}].${field} mapped by spec.mapping.${aesthetic} must be a string, finite number, or missing`
       );
     }
     return { value, missing: false };
@@ -28828,15 +28879,49 @@ var gsmViz = (() => {
   function getLevelKey(level) {
     return level.missing ? "missing" : `value:${typeof level.value}:${String(level.value)}`;
   }
+  function getOrderedLevel(value) {
+    return value === null ? { value: MISSING_LEVEL_LABEL, missing: true } : { value, missing: false };
+  }
+  function resolveLevels(records, field, order = []) {
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    const observed = records.map((record) => record[field]);
+    const add = (level) => {
+      const key = getLevelKey(level);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push(level);
+      }
+    };
+    order.map(getOrderedLevel).forEach(add);
+    observed.forEach(add);
+    return levels;
+  }
+  function getLevelRanks(levels) {
+    return new Map(levels.map((level, index3) => [getLevelKey(level), index3]));
+  }
   function getColor(level, index3, colorScale) {
-    if (level.missing) {
-      return MISSING_COLOR;
-    }
+    if (level.missing) return MISSING_COLOR;
     const namedLevel = String(level.value);
     if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
       return colorScale.colors[namedLevel];
     }
     return colorScale.palette[index3 % colorScale.palette.length];
+  }
+  function getShape(level, index3, shapeScale) {
+    if (level.missing) return MISSING_POINT_STYLE;
+    const namedLevel = String(level.value);
+    if (Object.prototype.hasOwnProperty.call(shapeScale.values, namedLevel)) {
+      return shapeScale.values[namedLevel];
+    }
+    return FALLBACK_POINT_STYLES[index3 % FALLBACK_POINT_STYLES.length];
+  }
+  function getCompositeLabel(level) {
+    if (level.missing) return `${MISSING_LEVEL_LABEL} (missing value)`;
+    return typeof level.value === "string" ? JSON.stringify(level.value) : String(level.value);
+  }
+  function getLevelLabel(level) {
+    return !level.missing && level.value === MISSING_LEVEL_LABEL ? JSON.stringify(level.value) : String(level.value);
   }
   function getKey(row, field, index3, keys) {
     const value = row?.[field];
@@ -28856,6 +28941,127 @@ var gsmViz = (() => {
     keys.add(value);
     return value;
   }
+  function groupRecords(records, getGroup) {
+    const groups2 = /* @__PURE__ */ new Map();
+    records.forEach((record) => {
+      const group2 = getGroup(record);
+      if (!groups2.has(group2.key)) {
+        groups2.set(group2.key, { ...group2, records: [] });
+      }
+      groups2.get(group2.key).records.push(record);
+    });
+    return [...groups2.values()];
+  }
+  function buildDatasets(records, spec) {
+    const { mapping, scales: scales2 } = spec;
+    const hasColor = !!mapping.color;
+    const hasShape = !!mapping.shape;
+    if (!hasColor && !hasShape) {
+      return [{ data: records.map(({ point }) => point) }];
+    }
+    const hasSharedLevel = hasColor && hasShape && mapping.color === mapping.shape;
+    const sharedLevels = hasSharedLevel ? resolveLevels(records, "colorLevel", [
+      ...scales2.color.order,
+      ...scales2.shape.order
+    ]) : [];
+    const colorLevels = hasSharedLevel ? sharedLevels : hasColor ? resolveLevels(records, "colorLevel", scales2.color.order) : [];
+    const shapeLevels = hasSharedLevel ? sharedLevels : hasShape ? resolveLevels(records, "shapeLevel", scales2.shape.order) : [];
+    const colorRanks = getLevelRanks(colorLevels);
+    const shapeRanks = getLevelRanks(shapeLevels);
+    let groups2;
+    if (hasColor && !hasShape) {
+      const byColor = new Map(
+        groupRecords(records, ({ colorLevel }) => ({
+          key: getLevelKey(colorLevel),
+          colorLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = colorLevels.map((colorLevel) => {
+        const key = getLevelKey(colorLevel);
+        return byColor.get(key) || {
+          key,
+          colorLevel,
+          records: []
+        };
+      });
+    } else if (!hasColor && hasShape) {
+      const byShape = new Map(
+        groupRecords(records, ({ shapeLevel }) => ({
+          key: getLevelKey(shapeLevel),
+          shapeLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = shapeLevels.map((shapeLevel) => {
+        const key = getLevelKey(shapeLevel);
+        return byShape.get(key) || {
+          key,
+          shapeLevel,
+          records: []
+        };
+      });
+    } else if (hasSharedLevel) {
+      const byLevel = new Map(
+        groupRecords(records, ({ colorLevel, shapeLevel }) => ({
+          key: getLevelKey(colorLevel),
+          colorLevel,
+          shapeLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = sharedLevels.map((level) => {
+        const key = getLevelKey(level);
+        return byLevel.get(key) || {
+          key,
+          colorLevel: level,
+          shapeLevel: level,
+          records: []
+        };
+      });
+    } else {
+      groups2 = groupRecords(records, ({ colorLevel, shapeLevel }) => ({
+        key: JSON.stringify([
+          getLevelKey(colorLevel),
+          getLevelKey(shapeLevel)
+        ]),
+        colorLevel,
+        shapeLevel
+      })).sort((a, b) => {
+        const colorDifference = colorRanks.get(getLevelKey(a.colorLevel)) - colorRanks.get(getLevelKey(b.colorLevel));
+        return colorDifference || shapeRanks.get(getLevelKey(a.shapeLevel)) - shapeRanks.get(getLevelKey(b.shapeLevel));
+      });
+    }
+    return groups2.map((group2, groupIndex) => {
+      const colorIndex = hasColor ? colorRanks.get(getLevelKey(group2.colorLevel)) ?? groupIndex : 0;
+      const shapeIndex = hasShape ? shapeRanks.get(getLevelKey(group2.shapeLevel)) ?? groupIndex : 0;
+      const color3 = hasColor ? getColor(group2.colorLevel, colorIndex, scales2.color) : scales2.color.palette[0];
+      const colorLabel = hasColor ? getLevelLabel(group2.colorLevel) : void 0;
+      const shapeLabel = hasShape ? getLevelLabel(group2.shapeLevel) : void 0;
+      const label = hasColor && hasShape && mapping.color !== mapping.shape ? `${getCompositeLabel(group2.colorLevel)} / ${getCompositeLabel(
+        group2.shapeLevel
+      )}` : colorLabel || shapeLabel;
+      const dataset = {
+        label,
+        data: group2.records.map(({ point }) => point),
+        backgroundColor: color3,
+        borderColor: color3
+      };
+      if (hasShape) {
+        dataset.pointStyle = getShape(
+          group2.shapeLevel,
+          shapeIndex,
+          scales2.shape
+        );
+      }
+      if (hasColor) {
+        dataset._color = group2.colorLevel.value;
+        dataset._colorMissing = group2.colorLevel.missing;
+      }
+      if (hasShape) {
+        dataset._shape = group2.shapeLevel.value;
+        dataset._shapeMissing = group2.shapeLevel.missing;
+      }
+      return dataset;
+    });
+  }
   function structureData4(spec) {
     const { data, mapping } = spec;
     const keys = /* @__PURE__ */ new Set();
@@ -28866,8 +29072,10 @@ var gsmViz = (() => {
         _key: mapping.key === void 0 ? index3 : getKey(row, mapping.key, index3, keys),
         _datum: row
       };
-      const colorLevel = mapping.color ? getColorLevel(row, mapping.color, index3) : void 0;
+      const colorLevel = mapping.color ? getDiscreteLevel(row, mapping.color, "color", index3) : void 0;
+      const shapeLevel = mapping.shape ? getDiscreteLevel(row, mapping.shape, "shape", index3) : void 0;
       if (colorLevel) point._color = colorLevel.value;
+      if (shapeLevel) point._shape = shapeLevel.value;
       if (mapping.size) {
         point._size = getNumericAesthetic(row, mapping.size, "size", index3);
       }
@@ -28879,48 +29087,10 @@ var gsmViz = (() => {
           index3
         );
       }
-      return { point, colorLevel };
+      return { point, colorLevel, shapeLevel };
     });
-    const points = records.map(({ point }) => point);
-    if (mapping.color) {
-      const colorScale = spec.scales.color;
-      const levels = [];
-      const groups2 = /* @__PURE__ */ new Map();
-      const seenLevels = /* @__PURE__ */ new Set();
-      const addLevel = (level) => {
-        const key = getLevelKey(level);
-        if (!seenLevels.has(key)) {
-          seenLevels.add(key);
-          levels.push(level);
-        }
-        return key;
-      };
-      colorScale.order.forEach(
-        (value) => addLevel({
-          value,
-          missing: value === MISSING_COLOR_LABEL
-        })
-      );
-      records.forEach(({ point, colorLevel }) => {
-        const key = addLevel(colorLevel);
-        if (!groups2.has(key)) {
-          groups2.set(key, []);
-        }
-        groups2.get(key).push(point);
-      });
-      const datasets = levels.map((level, index3) => {
-        const color3 = getColor(level, index3, colorScale);
-        return {
-          label: String(level.value),
-          data: groups2.get(getLevelKey(level)) || [],
-          backgroundColor: color3,
-          borderColor: color3
-        };
-      });
-      return { datasets: styleData(datasets, spec) };
-    }
     return {
-      datasets: styleData([{ data: points }], spec)
+      datasets: styleData(buildDatasets(records, spec), spec)
     };
   }
 
@@ -29008,15 +29178,24 @@ var gsmViz = (() => {
   function getPlugins3(spec) {
     const { title: title4, caption } = spec.labels;
     const hasColor = !!spec.mapping.color;
-    const colorLabel = hasColor ? spec.scales.color.label !== void 0 ? spec.scales.color.label : spec.mapping.color : void 0;
+    const hasShape = !!spec.mapping.shape;
+    const getScaleLabel = (aesthetic) => spec.scales[aesthetic].label !== void 0 ? spec.scales[aesthetic].label : spec.mapping[aesthetic];
+    const colorLabel = hasColor ? getScaleLabel("color") : void 0;
+    const shapeLabel = hasShape ? getScaleLabel("shape") : void 0;
+    const hasSharedLevel = hasColor && hasShape && spec.mapping.color === spec.mapping.shape;
+    const getSharedLabel = () => spec.scales.color.label !== void 0 ? spec.scales.color.label : spec.scales.shape.label !== void 0 ? spec.scales.shape.label : spec.mapping.color;
+    const legendTitle = (hasSharedLevel ? getSharedLabel() : [colorLabel, shapeLabel].filter(Boolean).join(" / ")) || "";
     const legend5 = {
-      display: hasColor
+      display: hasColor || hasShape
     };
-    if (hasColor) {
+    if (legend5.display) {
       legend5.title = {
-        display: !!colorLabel,
-        text: colorLabel || ""
+        display: !!legendTitle,
+        text: legendTitle
       };
+    }
+    if (hasShape) {
+      legend5.labels = { usePointStyle: true };
     }
     return {
       title: {
@@ -29075,14 +29254,39 @@ var gsmViz = (() => {
     }
     return /[.!?]$/.test(text) ? text : `${text}.`;
   }
-  function getAccessibleLabel(spec, pointCount) {
+  function getEncodingLabel(spec, chartData, aesthetic) {
+    if (!spec.mapping[aesthetic]) return "";
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    chartData.datasets.filter((dataset) => dataset.data.length > 0).forEach((dataset) => {
+      const value = dataset[`_${aesthetic}`];
+      const missing = dataset[`_${aesthetic}Missing`];
+      const key = missing ? "missing" : JSON.stringify([typeof value, value]);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push({ value, missing });
+      }
+    });
+    const values = levels.map(({ value, missing }) => {
+      const label = String(value);
+      if (missing) return `${label} (missing value)`;
+      if (typeof value === "string") {
+        return `${JSON.stringify(value)} (string)`;
+      }
+      return `${label} (${typeof value})`;
+    });
+    return levels.length ? `${aesthetic === "color" ? "Color" : "Shape"} ${spec.mapping[aesthetic]} values: ${values.join(", ")}.` : "";
+  }
+  function getAccessibleLabel(spec, chartData, pointCount) {
     const xLabel = spec.scales.x.label || spec.mapping.x;
     const yLabel = spec.scales.y.label || spec.mapping.y;
     const parts = [
       asSentence(spec.labels.title),
       asSentence(spec.labels.description),
       `Point chart of ${yLabel} by ${xLabel}.`,
-      pointCount === 0 ? "No data available." : `${pointCount} ${pointCount === 1 ? "point" : "points"}.`
+      pointCount === 0 ? "No data available." : `${pointCount} ${pointCount === 1 ? "point" : "points"}.`,
+      getEncodingLabel(spec, chartData, "color"),
+      getEncodingLabel(spec, chartData, "shape")
     ];
     return parts.filter(Boolean).join(" ");
   }
@@ -29109,7 +29313,7 @@ var gsmViz = (() => {
       hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
       clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper
     });
-    const accessibleLabel = getAccessibleLabel(merged, data.length);
+    const accessibleLabel = getAccessibleLabel(merged, chartData, data.length);
     canvas.setAttribute("role", "img");
     canvas.setAttribute("aria-label", accessibleLabel);
     canvas.textContent = accessibleLabel;
