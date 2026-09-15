@@ -252,6 +252,11 @@ describe('points/validateSpec', () => {
                 'spec.scales.color.order must contain unique values',
             ],
             [
+                'string-normalized duplicate order value',
+                { order: [1, '1'] },
+                'spec.scales.color.order must contain unique values',
+            ],
+            [
                 'invalid label',
                 { label: 42 },
                 'spec.scales.color.label must be a string or null',

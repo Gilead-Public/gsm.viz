@@ -327,41 +327,43 @@ describe('points/structureData', () => {
             ['missing field', {}],
             ['undefined', { group: undefined }],
             ['null', { group: null }],
-            ['empty string', { group: '' }],
             ['NaN', { group: NaN }],
-        ])('uses a neutral Missing level for %s', (_case, colorValue) => {
+        ])('rejects a missing mapped color value: %s', (_case, colorValue) => {
             const row = { xValue: 1, yValue: 2, id: 'A', ...colorValue };
-            const [dataset] = structureData(makeColorSpec([row])).datasets;
 
-            expect(dataset.label).toBe('(Missing)');
-            expect(dataset.backgroundColor).toBe('#bdbdbd');
-            expect(dataset.data[0]._color).toBe('(Missing)');
+            expect(() => structureData(makeColorSpec([row]))).toThrow(
+                'data[0].group mapped by spec.mapping.color must be a string or finite number'
+            );
         });
 
-        test('keeps a literal Missing category separate from absent values', () => {
+        test('normalizes string and numeric-equivalent categories into one dataset', () => {
             const rows = [
                 {
                     xValue: 1,
                     yValue: 2,
-                    id: 'literal',
-                    group: '(Missing)',
+                    id: 'numeric',
+                    group: 1,
                 },
-                { xValue: 3, yValue: 4, id: 'absent', group: null },
+                { xValue: 3, yValue: 4, id: 'string', group: '1' },
             ];
-            const datasets = structureData(
+            const [dataset] = structureData(
                 makeColorSpec(rows, {
-                    colors: { '(Missing)': '#ff0000' },
+                    colors: { 1: '#ff0000' },
                 })
             ).datasets;
 
-            expect(datasets).toHaveLength(2);
-            expect(datasets[0].backgroundColor).toBe('#ff0000');
-            expect(datasets[0].data.map((point) => point._key)).toEqual([
-                'literal',
+            expect(dataset).toMatchObject({
+                label: '1',
+                backgroundColor: '#ff0000',
+                borderColor: '#ff0000',
+            });
+            expect(dataset.data.map((point) => point._key)).toEqual([
+                'numeric',
+                'string',
             ]);
-            expect(datasets[1].backgroundColor).toBe('#bdbdbd');
-            expect(datasets[1].data.map((point) => point._key)).toEqual([
-                'absent',
+            expect(dataset.data.map((point) => point._color)).toEqual([
+                '1',
+                '1',
             ]);
         });
 
@@ -375,8 +377,19 @@ describe('points/structureData', () => {
                     makeColorSpec([{ xValue: 1, yValue: 2, id: 'A', group }])
                 )
             ).toThrow(
-                'data[0].group mapped by spec.mapping.color must be a string, finite number, or missing'
+                    'data[0].group mapped by spec.mapping.color must be a string or finite number'
             );
+        });
+
+        test('retains an empty string as a categorical level', () => {
+            const [dataset] = structureData(
+                makeColorSpec([
+                    { xValue: 1, yValue: 2, id: 'empty', group: '' },
+                ])
+            ).datasets;
+
+            expect(dataset.label).toBe('');
+            expect(dataset.data[0]._color).toBe('');
         });
 
         test('does not mutate frozen color data or scale configuration', () => {

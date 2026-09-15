@@ -128,10 +128,11 @@ function validateColorScale(scale) {
                 );
             }
 
-            if (levels.has(level)) {
+            const normalizedLevel = String(level);
+            if (levels.has(normalizedLevel)) {
                 throw new Error(`${path}.order must contain unique values`);
             }
-            levels.add(level);
+            levels.add(normalizedLevel);
         });
     }
 

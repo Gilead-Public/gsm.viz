@@ -28217,10 +28217,11 @@ var gsmViz = (() => {
             `${path}.order[${index3}] must be a string or finite number`
           );
         }
-        if (levels.has(level)) {
+        const normalizedLevel = String(level);
+        if (levels.has(normalizedLevel)) {
           throw new Error(`${path}.order must contain unique values`);
         }
-        levels.add(level);
+        levels.add(normalizedLevel);
       });
     }
     if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
@@ -28447,8 +28448,6 @@ var gsmViz = (() => {
   }
 
   // src/points/structureData.js
-  var MISSING_COLOR_LABEL = "(Missing)";
-  var MISSING_COLOR = "#bdbdbd";
   function getCoordinate(row, field, mapping, index3) {
     const value = row?.[field];
     if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -28460,26 +28459,16 @@ var gsmViz = (() => {
   }
   function getColorLevel(row, field, index3) {
     const value = row?.[field];
-    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
-      return { value: MISSING_COLOR_LABEL, missing: true };
-    }
     if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
       throw new Error(
-        `data[${index3}].${field} mapped by spec.mapping.color must be a string, finite number, or missing`
+        `data[${index3}].${field} mapped by spec.mapping.color must be a string or finite number`
       );
     }
-    return { value, missing: false };
-  }
-  function getLevelKey(level) {
-    return level.missing ? "missing" : `value:${typeof level.value}:${String(level.value)}`;
+    return String(value);
   }
   function getColor(level, index3, colorScale) {
-    if (level.missing) {
-      return MISSING_COLOR;
-    }
-    const namedLevel = String(level.value);
-    if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
-      return colorScale.colors[namedLevel];
+    if (Object.prototype.hasOwnProperty.call(colorScale.colors, level)) {
+      return colorScale.colors[level];
     }
     return colorScale.palette[index3 % colorScale.palette.length];
   }
@@ -28512,7 +28501,7 @@ var gsmViz = (() => {
         _datum: row
       };
       const colorLevel = mapping.color ? getColorLevel(row, mapping.color, index3) : void 0;
-      if (colorLevel) point._color = colorLevel.value;
+      if (colorLevel !== void 0) point._color = colorLevel;
       return { point, colorLevel };
     });
     const points2 = records.map(({ point }) => point);
@@ -28522,19 +28511,13 @@ var gsmViz = (() => {
       const groups2 = /* @__PURE__ */ new Map();
       const seenLevels = /* @__PURE__ */ new Set();
       const addLevel = (level) => {
-        const key = getLevelKey(level);
-        if (!seenLevels.has(key)) {
-          seenLevels.add(key);
+        if (!seenLevels.has(level)) {
+          seenLevels.add(level);
           levels.push(level);
         }
-        return key;
+        return level;
       };
-      colorScale.order.forEach(
-        (value) => addLevel({
-          value,
-          missing: value === MISSING_COLOR_LABEL
-        })
-      );
+      colorScale.order.forEach((value) => addLevel(String(value)));
       records.forEach(({ point, colorLevel }) => {
         const key = addLevel(colorLevel);
         if (!groups2.has(key)) {
@@ -28546,8 +28529,8 @@ var gsmViz = (() => {
         datasets: levels.map((level, index3) => {
           const color3 = getColor(level, index3, colorScale);
           return {
-            label: String(level.value),
-            data: groups2.get(getLevelKey(level)) || [],
+            label: level,
+            data: groups2.get(level) || [],
             backgroundColor: color3,
             borderColor: color3
           };
