@@ -28,7 +28,7 @@ Returns a Chart.js chart instance.
 const data = [
     { exposure: 5, events: 1, site: 'Site 01', arm: 'Control' },
     { exposure: 12, events: 3, site: 'Site 02', arm: 'Treatment' },
-    { exposure: 25, events: 6, site: 'Site 03', arm: null },
+    { exposure: 25, events: 6, site: 'Site 03', arm: 'Treatment' },
 ];
 
 const chart = gsmViz.default.points(element, data, {
@@ -46,7 +46,7 @@ const chart = gsmViz.default.points(element, data, {
                 Control: '#4e79a7',
                 Treatment: '#f28e2b',
             },
-            order: ['Control', 'Treatment', '(Missing)'],
+            order: ['Control', 'Treatment'],
             label: 'Treatment arm',
         },
     },
@@ -111,8 +111,9 @@ palette positions stay stable as data changes; new observed levels are appended.
 `scales.color.colors` maps level names to CSS colors. Levels without a named
 color use the default palette, or the non-empty `scales.color.palette` supplied by
 the caller. Set `scales.color.label` to customize the legend title; `null` or `''`
-hides the title. Null, undefined, blank, and `NaN` color values share a neutral
-gray `"(Missing)"` level rather than dropping rows.
+hides the title. Valid color levels are strings or finite numbers, and are
+normalized to strings, so `1` and `"1"` identify the same category. Null,
+undefined, and `NaN` color values are invalid.
 
 ## Data rules
 
@@ -124,6 +125,8 @@ gray `"(Missing)"` level rather than dropping rows.
     for every row. Without it, the original row index is the local point key.
 -   Each rendered point retains its original source row as `_datum`.
 -   Color-mapped points retain their resolved categorical value as `_color`.
+-   Color-mapped values must be strings or finite numbers; null, undefined,
+    and `NaN` values throw an error.
 -   An empty data array renders a valid empty chart.
 
 ## Accessibility and responsive behavior
