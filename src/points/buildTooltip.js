@@ -22,9 +22,14 @@ function getDetails(point) {
  */
 export default function buildTooltip(tooltip = {}) {
     const { format, formatter, callbacks, ...chartJsOptions } = tooltip;
+    const chartJsCallbacks = Object.fromEntries(
+        Object.entries(callbacks ?? {}).filter(
+            ([, callback]) => callback !== null
+        )
+    );
     const config = {
         ...chartJsOptions,
-        ...(callbacks ? { callbacks: { ...callbacks } } : {}),
+        ...(callbacks ? { callbacks: chartJsCallbacks } : {}),
     };
 
     if (config.callbacks?.label) return config;

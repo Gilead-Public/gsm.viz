@@ -106,6 +106,14 @@ describe('points/buildTooltip', () => {
         expect(result.callbacks.label).toBeUndefined();
     });
 
+    test('omits null callbacks so Chart.js retains its defaults', () => {
+        const result = buildTooltip({
+            callbacks: { title: null, label: null },
+        });
+
+        expect(result.callbacks).toEqual({});
+    });
+
     test('does not mutate caller-owned callback configuration', () => {
         const callbacks = Object.freeze({
             title: () => 'Title',

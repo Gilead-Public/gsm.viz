@@ -28831,9 +28831,14 @@ var gsmViz = (() => {
   }
   function buildTooltip2(tooltip5 = {}) {
     const { format: format2, formatter: formatter2, callbacks, ...chartJsOptions } = tooltip5;
+    const chartJsCallbacks = Object.fromEntries(
+      Object.entries(callbacks ?? {}).filter(
+        ([, callback2]) => callback2 !== null
+      )
+    );
     const config = {
       ...chartJsOptions,
-      ...callbacks ? { callbacks: { ...callbacks } } : {}
+      ...callbacks ? { callbacks: chartJsCallbacks } : {}
     };
     if (config.callbacks?.label) return config;
     if (typeof formatter2 === "function") {
