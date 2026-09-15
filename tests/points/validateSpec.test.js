@@ -212,6 +212,23 @@ describe('points/validateSpec', () => {
                 { breaks: [1], labels: [] },
                 'breaks and labels must have the same length',
             ],
+            [
+                {
+                    range: [1, 50],
+                    breaks: [1, 10, 100],
+                    labels: ['One', 'Ten', 'One hundred'],
+                },
+                'breaks must fall within spec.scales.x.range',
+            ],
+            [
+                {
+                    type: 'log',
+                    range: [1, 50],
+                    breaks: [1, 10, 100],
+                    labels: ['One', 'Ten', 'One hundred'],
+                },
+                'breaks must fall within spec.scales.x.range',
+            ],
         ])('rejects invalid numeric axis option %#', (axisSpec, suffix) => {
             expect(() =>
                 validateSpec(data, {

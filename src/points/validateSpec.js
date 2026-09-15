@@ -132,6 +132,13 @@ function validateScale(scale, axis) {
         throw new Error(`${path}.breaks and labels must have the same length`);
     }
 
+    if (
+        scale.range !== undefined &&
+        breaks.some((value) => value < scale.range[0] || value > scale.range[1])
+    ) {
+        throw new Error(`${path}.breaks must fall within ${path}.range`);
+    }
+
     if (scale.type === 'log') {
         if (scale.beginAtZero === true) {
             throw new Error(

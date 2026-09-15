@@ -140,4 +140,42 @@ describe('points/getScales', () => {
         expect(result.x.ticks.callback('10')).toBe('Ten');
         expect(result.x.ticks.callback(50)).toBeNull();
     });
+
+    test('keeps all explicit breaks and extends automatic domains to include them', () => {
+        const result = getScales({
+            ...spec,
+            scales: {
+                ...spec.scales,
+                x: {
+                    ...spec.scales.x,
+                    breaks: [0, 25, 50],
+                    labels: ['Zero', 'Twenty-five', 'Fifty'],
+                },
+            },
+        });
+
+        expect(result.x.ticks.autoSkip).toBe(false);
+        expect(result.x.suggestedMin).toBe(0);
+        expect(result.x.suggestedMax).toBe(50);
+    });
+
+    test('does not override fixed bounds when breaks are explicit', () => {
+        const result = getScales({
+            ...spec,
+            scales: {
+                ...spec.scales,
+                x: {
+                    ...spec.scales.x,
+                    range: [0, 50],
+                    breaks: [0, 25, 50],
+                    labels: ['Zero', 'Twenty-five', 'Fifty'],
+                },
+            },
+        });
+
+        expect(result.x.min).toBe(0);
+        expect(result.x.max).toBe(50);
+        expect(result.x.suggestedMin).toBeUndefined();
+        expect(result.x.suggestedMax).toBeUndefined();
+    });
 });

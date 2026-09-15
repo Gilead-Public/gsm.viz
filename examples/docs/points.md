@@ -127,9 +127,11 @@ automatic linear domain to zero.
 
 Set `breaks` and `labels` together to replace generated ticks. Breaks must be
 finite, strictly increasing values, and each break must have a string or numeric
-label. Log-scale coordinates, ranges, and breaks must all be greater than zero;
-`beginAtZero: true` is therefore invalid on a log scale. Invalid settings and
-coordinates throw before Chart.js renders.
+label. With an automatic range, outer breaks extend the suggested domain;
+with a fixed range, every break must fall within it. Log-scale coordinates,
+ranges, and breaks must all be greater than zero; `beginAtZero: true` is
+therefore invalid on a log scale. Invalid settings and coordinates throw before
+Chart.js renders.
 
 ## Categorical color
 

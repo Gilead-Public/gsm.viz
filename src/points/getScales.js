@@ -24,8 +24,14 @@ function getAxisScale(scale, mapping) {
             chartScale.ticks = breaks.map((value) => ({ value }));
         };
         axis.ticks = {
+            autoSkip: false,
             callback: (value) => labels.get(Number(value)) ?? null,
         };
+
+        if (scale.range === undefined) {
+            axis.suggestedMin = breaks[0];
+            axis.suggestedMax = breaks[breaks.length - 1];
+        }
     }
 
     return axis;
