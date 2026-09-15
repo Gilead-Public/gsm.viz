@@ -14,7 +14,14 @@ describe('points/mergeSpec', () => {
         expect(merged.scales).toEqual({
             x: { type: 'linear', label: undefined },
             y: { type: 'linear', label: undefined },
+            color: {
+                colors: {},
+                palette: expect.any(Array),
+                order: [],
+                label: undefined,
+            },
         });
+        expect(merged.scales.color.palette.length).toBeGreaterThan(1);
         expect(merged.labels).toEqual({
             title: undefined,
             caption: undefined,
@@ -48,6 +55,12 @@ describe('points/mergeSpec', () => {
             scales: {
                 x: { label: 'Horizontal' },
                 y: { label: 'Vertical' },
+                color: {
+                    colors: { Control: '#112233' },
+                    palette: ['#445566'],
+                    order: ['Control', 'Treatment'],
+                    label: 'Arm',
+                },
             },
             labels: {
                 title: 'Example',
@@ -69,6 +82,12 @@ describe('points/mergeSpec', () => {
         expect(merged.scales.y).toEqual({
             type: 'linear',
             label: 'Vertical',
+        });
+        expect(merged.scales.color).toEqual({
+            colors: { Control: '#112233' },
+            palette: ['#445566'],
+            order: ['Control', 'Treatment'],
+            label: 'Arm',
         });
         expect(merged.labels).toEqual({
             title: 'Example',
@@ -157,11 +176,38 @@ describe('points/mergeSpec', () => {
         const second = mergeSpec(data, minimalSpec);
 
         first.scales.x.label = 'Changed';
+        first.scales.color.colors.Changed = '#000000';
+        first.scales.color.palette.push('#000000');
+        first.scales.color.order.push('Changed');
         first.labels.title = 'Changed';
         first.selection.enabled = true;
 
         expect(second.scales.x.label).toBeUndefined();
+        expect(second.scales.color.colors).toEqual({});
+        expect(second.scales.color.palette).not.toContain('#000000');
+        expect(second.scales.color.order).toEqual([]);
         expect(second.labels.title).toBeUndefined();
         expect(second.selection.enabled).toBe(false);
+    });
+
+    test('copies caller-owned color scale arrays and objects', () => {
+        const colors = Object.freeze({ A: '#112233' });
+        const palette = Object.freeze(['#445566']);
+        const order = Object.freeze(['A']);
+        const spec = Object.freeze({
+            ...minimalSpec,
+            scales: Object.freeze({
+                color: Object.freeze({ colors, palette, order }),
+            }),
+        });
+
+        const merged = mergeSpec(data, spec);
+
+        expect(merged.scales.color.colors).not.toBe(colors);
+        expect(merged.scales.color.palette).not.toBe(palette);
+        expect(merged.scales.color.order).not.toBe(order);
+        expect(merged.scales.color.colors).toEqual(colors);
+        expect(merged.scales.color.palette).toEqual(palette);
+        expect(merged.scales.color.order).toEqual(order);
     });
 });

@@ -6,6 +6,22 @@
  */
 export default function getPlugins(spec) {
     const { title, caption } = spec.labels;
+    const hasColor = !!spec.mapping.color;
+    const colorLabel = hasColor
+        ? spec.scales.color.label !== undefined
+            ? spec.scales.color.label
+            : spec.mapping.color
+        : undefined;
+    const legend = {
+        display: hasColor,
+    };
+
+    if (hasColor) {
+        legend.title = {
+            display: !!colorLabel,
+            text: colorLabel || '',
+        };
+    }
 
     return {
         title: {
@@ -18,8 +34,6 @@ export default function getPlugins(spec) {
             align: 'start',
             text: caption || '',
         },
-        legend: {
-            display: false,
-        },
+        legend,
     };
 }
