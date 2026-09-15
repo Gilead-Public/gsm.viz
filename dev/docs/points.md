@@ -26,9 +26,9 @@ Returns a Chart.js chart instance.
 
 ```js
 const data = [
-    { exposure: 5, events: 1, site: 'Site 01' },
-    { exposure: 12, events: 3, site: 'Site 02' },
-    { exposure: 25, events: 6, site: 'Site 03' },
+    { exposure: 5, events: 1, site: 'Site 01', arm: 'Control' },
+    { exposure: 12, events: 3, site: 'Site 02', arm: 'Treatment' },
+    { exposure: 25, events: 6, site: 'Site 03', arm: 'Treatment' },
 ];
 
 const chart = gsmViz.default.points(element, data, {
@@ -36,10 +36,19 @@ const chart = gsmViz.default.points(element, data, {
         x: 'exposure',
         y: 'events',
         key: 'site',
+        color: 'arm',
     },
     scales: {
         x: { label: 'Participant exposure' },
         y: { label: 'Reported events' },
+        color: {
+            colors: {
+                Control: '#4e79a7',
+                Treatment: '#f28e2b',
+            },
+            order: ['Control', 'Treatment'],
+            label: 'Treatment arm',
+        },
     },
     labels: {
         title: 'Events by exposure',
@@ -58,6 +67,7 @@ const chart = gsmViz.default.points(element, data, {
         x: 'xField',       // required
         y: 'yField',       // required
         key: 'idField',    // optional stable point identity
+        color: 'groupField', // optional categorical grouping
     },
     scales: {
         x: {
@@ -67,6 +77,12 @@ const chart = gsmViz.default.points(element, data, {
         y: {
             type: 'linear',
             label: undefined, // defaults to mapping.y; '' hides the title
+        },
+        color: {
+            colors: {},       // level-to-CSS-color map
+            palette: [/* default categorical colors */],
+            order: [],        // explicit legend/domain order
+            label: undefined, // defaults to mapping.color
         },
     },
     labels: {
@@ -81,9 +97,23 @@ const chart = gsmViz.default.points(element, data, {
 }
 ```
 
-The initial renderer intentionally supports only ungrouped points on linear x/y
-axes. Additional aesthetics, scales, annotations, and interactions are added as
-separate reviewable features.
+The renderer supports ungrouped points or a categorical color mapping on linear
+x/y axes. Additional aesthetics, scales, annotations, and interactions are added
+as separate reviewable features.
+
+## Categorical color
+
+Set `mapping.color` to create one dataset and legend entry per categorical level.
+Levels use first-seen order unless `scales.color.order` is provided. Ordered
+levels with no matching rows remain as empty datasets so legend identity and
+palette positions stay stable as data changes; new observed levels are appended.
+
+`scales.color.colors` maps level names to CSS colors. Levels without a named
+color use the default palette, or the non-empty `scales.color.palette` supplied by
+the caller. Set `scales.color.label` to customize the legend title; `null` or `''`
+hides the title. Valid color levels are strings or finite numbers, and are
+normalized to strings, so `1` and `"1"` identify the same category. Null,
+undefined, and `NaN` color values are invalid.
 
 ## Data rules
 
@@ -94,6 +124,9 @@ separate reviewable features.
 -   `mapping.key`, when supplied, must resolve to a unique string or finite number
     for every row. Without it, the original row index is the local point key.
 -   Each rendered point retains its original source row as `_datum`.
+-   Color-mapped points retain their resolved categorical value as `_color`.
+-   Color-mapped values must be strings or finite numbers; null, undefined,
+    and `NaN` values throw an error.
 -   An empty data array renders a valid empty chart.
 
 ## Accessibility and responsive behavior
