@@ -212,6 +212,23 @@ describe('points/validateSpec', () => {
                 { breaks: [1], labels: [] },
                 'breaks and labels must have the same length',
             ],
+            [
+                {
+                    range: [1, 50],
+                    breaks: [1, 10, 100],
+                    labels: ['One', 'Ten', 'One hundred'],
+                },
+                'breaks must fall within spec.scales.x.range',
+            ],
+            [
+                {
+                    type: 'log',
+                    range: [1, 50],
+                    breaks: [1, 10, 100],
+                    labels: ['One', 'Ten', 'One hundred'],
+                },
+                'breaks must fall within spec.scales.x.range',
+            ],
         ])('rejects invalid numeric axis option %#', (axisSpec, suffix) => {
             expect(() =>
                 validateSpec(data, {
@@ -336,6 +353,11 @@ describe('points/validateSpec', () => {
                 'spec.scales.color.order must contain unique values',
             ],
             [
+                'string-normalized duplicate order value',
+                { order: [1, '1'] },
+                'spec.scales.color.order must contain unique values',
+            ],
+            [
                 'invalid label',
                 { label: 42 },
                 'spec.scales.color.label must be a string or null',
@@ -400,89 +422,6 @@ describe('points/validateSpec', () => {
                 })
             ).not.toThrow();
         });
-
-        test('accepts supported Chart.js tooltip options and callbacks', () => {
-            expect(() =>
-                validateSpec(data, {
-                    ...minimalSpec,
-                    tooltip: {
-                        enabled: false,
-                        mode: 'nearest',
-                        intersect: false,
-                        position: 'average',
-                        backgroundColor: '#112233',
-                        callbacks: {
-                            title: () => 'Title',
-                            label: () => 'Label',
-                        },
-                    },
-                })
-            ).not.toThrow();
-        });
-
-        test.each([null, [], 'invalid'])(
-            'rejects invalid tooltip callbacks %p',
-            (callbacks) => {
-                expect(() =>
-                    validateSpec(data, {
-                        ...minimalSpec,
-                        tooltip: { callbacks },
-                    })
-                ).toThrow('spec.tooltip.callbacks must be a plain object');
-            }
-        );
-
-        test('rejects a non-function tooltip callback', () => {
-            expect(() =>
-                validateSpec(data, {
-                    ...minimalSpec,
-                    tooltip: {
-                        callbacks: { label: 'invalid' },
-                    },
-                })
-            ).toThrow(
-                'spec.tooltip.callbacks.label must be a function or null'
-            );
-        });
-
-        test('rejects an unknown tooltip format placeholder before rendering', () => {
-            expect(() =>
-                validateSpec(data, {
-                    ...minimalSpec,
-                    tooltip: { format: '{unknown}' },
-                })
-            ).toThrow(
-                'spec.tooltip.format placeholder "{unknown}" is not available in data[0]'
-            );
-        });
-
-        test('accepts structured, qualified, and source-row placeholders', () => {
-            expect(() =>
-                validateSpec(data, {
-                    mapping: {
-                        ...minimalSpec.mapping,
-                        color: 'group',
-                    },
-                    tooltip: {
-                        format: '{x}, {y}, {key}, {color}, {id}, {datum.id}, {_datum.id}',
-                    },
-                })
-            ).not.toThrow();
-        });
-
-        test.each(['color', '_color'])(
-            'rejects {%s} without a color mapping',
-            (field) => {
-                expect(() =>
-                    validateSpec(data, {
-                        ...minimalSpec,
-                        tooltip: { format: `{${field}}` },
-                    })
-                ).toThrow(
-                    `spec.tooltip.format placeholder "{${field}}" requires spec.mapping.color`
-                );
-            }
-        );
     });
 
     describe('callbacks', () => {
@@ -585,11 +524,8 @@ describe('points/validateSpec', () => {
             'spec.labels.captions is not supported',
         ],
         [
-            {
-                ...minimalSpec,
-                tooltip: { callbacks: { unknown: () => {} } },
-            },
-            'spec.tooltip.callbacks.unknown is not supported',
+            { ...minimalSpec, tooltip: { callbacks: {} } },
+            'spec.tooltip.callbacks is not supported',
         ],
         [
             { ...minimalSpec, callbacks: { afterClick: () => {} } },

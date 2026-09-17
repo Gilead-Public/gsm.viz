@@ -1,6 +1,3 @@
-const MISSING_COLOR_LABEL = '(Missing)';
-const MISSING_COLOR = '#bdbdbd';
-
 function getCoordinate(row, field, mapping, index, scale) {
     const value = row?.[field];
 
@@ -23,41 +20,20 @@ function getColorLevel(row, field, index) {
     const value = row?.[field];
 
     if (
-        value === undefined ||
-        value === null ||
-        value === '' ||
-        (typeof value === 'string' && value.trim().length === 0) ||
-        (typeof value === 'number' && Number.isNaN(value))
-    ) {
-        return { value: MISSING_COLOR_LABEL, missing: true };
-    }
-
-    if (
         typeof value !== 'string' &&
         (typeof value !== 'number' || !Number.isFinite(value))
     ) {
         throw new Error(
-            `data[${index}].${field} mapped by spec.mapping.color must be a string, finite number, or missing`
+            `data[${index}].${field} mapped by spec.mapping.color must be a string or finite number`
         );
     }
 
-    return { value, missing: false };
-}
-
-function getLevelKey(level) {
-    return level.missing
-        ? 'missing'
-        : `value:${typeof level.value}:${String(level.value)}`;
+    return String(value);
 }
 
 function getColor(level, index, colorScale) {
-    if (level.missing) {
-        return MISSING_COLOR;
-    }
-
-    const namedLevel = String(level.value);
-    if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
-        return colorScale.colors[namedLevel];
+    if (Object.prototype.hasOwnProperty.call(colorScale.colors, level)) {
+        return colorScale.colors[level];
     }
 
     return colorScale.palette[index % colorScale.palette.length];
@@ -110,7 +86,7 @@ export default function structureData(spec) {
         const colorLevel = mapping.color
             ? getColorLevel(row, mapping.color, index)
             : undefined;
-        if (colorLevel) point._color = colorLevel.value;
+        if (colorLevel !== undefined) point._color = colorLevel;
 
         return { point, colorLevel };
     });
@@ -123,22 +99,15 @@ export default function structureData(spec) {
         const seenLevels = new Set();
 
         const addLevel = (level) => {
-            const key = getLevelKey(level);
-
-            if (!seenLevels.has(key)) {
-                seenLevels.add(key);
+            if (!seenLevels.has(level)) {
+                seenLevels.add(level);
                 levels.push(level);
             }
 
-            return key;
+            return level;
         };
 
-        colorScale.order.forEach((value) =>
-            addLevel({
-                value,
-                missing: value === MISSING_COLOR_LABEL,
-            })
-        );
+        colorScale.order.forEach((value) => addLevel(String(value)));
         records.forEach(({ point, colorLevel }) => {
             const key = addLevel(colorLevel);
 
@@ -154,8 +123,8 @@ export default function structureData(spec) {
                 const color = getColor(level, index, colorScale);
 
                 return {
-                    label: String(level.value),
-                    data: groups.get(getLevelKey(level)) || [],
+                    label: level,
+                    data: groups.get(level) || [],
                     backgroundColor: color,
                     borderColor: color,
                 };

@@ -126,4 +126,48 @@ describe('points/getPlugins', () => {
             );
         });
     });
+
+    describe('color legend', () => {
+        test('shows the legend with the mapping name as its title', () => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+            });
+
+            expect(plugins.legend).toEqual({
+                display: true,
+                title: {
+                    display: true,
+                    text: 'treatment',
+                },
+            });
+        });
+
+        test.each([null, ''])('hides the title for explicit %p', (label) => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+                scales: { color: { label } },
+            });
+
+            expect(plugins.legend.display).toBe(true);
+            expect(plugins.legend.title).toEqual({
+                display: false,
+                text: '',
+            });
+        });
+
+        test('uses an explicit legend title', () => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+                scales: { color: { label: 'Treatment arm' } },
+            });
+
+            expect(plugins.legend.title).toEqual({
+                display: true,
+                text: 'Treatment arm',
+            });
+        });
+    });
 });

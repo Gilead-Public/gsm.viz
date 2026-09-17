@@ -13,67 +13,7 @@ const supportedFields = {
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
-    tooltip: [
-        'format',
-        'formatter',
-        'enabled',
-        'external',
-        'position',
-        'mode',
-        'intersect',
-        'itemSort',
-        'filter',
-        'backgroundColor',
-        'titleColor',
-        'titleFont',
-        'titleAlign',
-        'titleSpacing',
-        'titleMarginBottom',
-        'bodyColor',
-        'bodyFont',
-        'bodyAlign',
-        'bodySpacing',
-        'footerColor',
-        'footerFont',
-        'footerAlign',
-        'footerSpacing',
-        'footerMarginTop',
-        'padding',
-        'caretPadding',
-        'caretSize',
-        'cornerRadius',
-        'multiKeyBackground',
-        'displayColors',
-        'boxWidth',
-        'boxHeight',
-        'boxPadding',
-        'usePointStyle',
-        'borderColor',
-        'borderWidth',
-        'rtl',
-        'textDirection',
-        'xAlign',
-        'yAlign',
-        'callbacks',
-        'animation',
-        'animations',
-    ],
-    tooltipCallbacks: [
-        'beforeTitle',
-        'title',
-        'afterTitle',
-        'beforeBody',
-        'beforeLabel',
-        'label',
-        'labelColor',
-        'labelTextColor',
-        'labelPointStyle',
-        'afterLabel',
-        'afterBody',
-        'beforeFooter',
-        'footer',
-        'afterFooter',
-    ],
+    tooltip: ['format', 'formatter'],
     callbacks: ['onClick', 'onHover', 'onSelect'],
     selection: ['enabled', 'opacity', 'multiple'],
     theme: ['maintainAspectRatio', 'animation'],
@@ -192,6 +132,13 @@ function validateScale(scale, axis) {
         throw new Error(`${path}.breaks and labels must have the same length`);
     }
 
+    if (
+        scale.range !== undefined &&
+        breaks.some((value) => value < scale.range[0] || value > scale.range[1])
+    ) {
+        throw new Error(`${path}.breaks must fall within ${path}.range`);
+    }
+
     if (scale.type === 'log') {
         if (scale.beginAtZero === true) {
             throw new Error(
@@ -264,10 +211,11 @@ function validateColorScale(scale) {
                 );
             }
 
-            if (levels.has(level)) {
+            const normalizedLevel = String(level);
+            if (levels.has(normalizedLevel)) {
                 throw new Error(`${path}.order must contain unique values`);
             }
-            levels.add(level);
+            levels.add(normalizedLevel);
         });
     }
 
@@ -442,9 +390,6 @@ export default function validateSpec(data, spec) {
             'spec.tooltip'
         );
         validateOptionalString(spec.tooltip.format, 'spec.tooltip.format');
-        if (spec.tooltip.format) {
-            validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
-        }
 
         if (
             spec.tooltip.formatter !== undefined &&
@@ -455,36 +400,9 @@ export default function validateSpec(data, spec) {
                 'spec.tooltip.formatter must be a function or null'
             );
         }
-
-        if (spec.tooltip.callbacks !== undefined) {
-            validatePlainObject(
-                spec.tooltip.callbacks,
-                'spec.tooltip.callbacks'
-            );
-            validateSupportedFields(
-                spec.tooltip.callbacks,
-                supportedFields.tooltipCallbacks,
-                'spec.tooltip.callbacks'
-            );
-
-            Object.entries(spec.tooltip.callbacks).forEach(
-                ([field, callback]) => {
-                    if (
-                        callback !== undefined &&
-                        callback !== null &&
-                        typeof callback !== 'function'
-                    ) {
-                        throw new Error(
-                            `spec.tooltip.callbacks.${field} must be a function or null`
-                        );
-                    }
-                }
-            );
-        }
     }
 
     validateCallbacks(spec.callbacks);
     validateSelection(spec.selection);
     validateTheme(spec.theme);
 }
-import { validateTooltipFormat } from './tooltipFormat.js';

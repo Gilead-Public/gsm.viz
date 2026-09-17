@@ -28110,69 +28110,6 @@ var gsmViz = (() => {
     return table;
   }
 
-  // src/points/tooltipFormat.js
-  var STRUCTURED_FIELDS = /* @__PURE__ */ new Set(["x", "y", "color", "key", "_color", "_key"]);
-  var COLOR_FIELDS = /* @__PURE__ */ new Set(["color", "_color"]);
-  function getTokens(format2) {
-    return [...format2.matchAll(/\{([^{}]+)\}/g)].map((match) => ({
-      placeholder: match[0],
-      path: match[1].trim()
-    }));
-  }
-  function getPath(object, path) {
-    const fields = path.split(".");
-    let value = object;
-    for (const field of fields) {
-      if (value === null || value === void 0 || !Object.prototype.hasOwnProperty.call(Object(value), field)) {
-        return { found: false, value: void 0 };
-      }
-      value = value[field];
-    }
-    return { found: true, value };
-  }
-  function getDatumPath(path) {
-    if (path.startsWith("datum.")) return path.slice("datum.".length);
-    if (path.startsWith("_datum.")) return path.slice("_datum.".length);
-    return path;
-  }
-  function getStructuredValue(point, path) {
-    const field = path === "color" ? "_color" : path === "key" ? "_key" : path;
-    return getPath(point, field);
-  }
-  function validateTooltipFormat(format2, data, mapping) {
-    if (!format2) return;
-    getTokens(format2).forEach(({ placeholder, path }) => {
-      if (COLOR_FIELDS.has(path) && !mapping.color) {
-        throw new Error(
-          `spec.tooltip.format placeholder "${placeholder}" requires spec.mapping.color`
-        );
-      }
-      if (STRUCTURED_FIELDS.has(path)) return;
-      if (data.length === 0) return;
-      const datumPath = getDatumPath(path);
-      const unavailableIndex = data.findIndex(
-        (datum2) => !getPath(datum2, datumPath).found
-      );
-      if (unavailableIndex !== -1) {
-        throw new Error(
-          `spec.tooltip.format placeholder "${placeholder}" is not available in data[${unavailableIndex}]`
-        );
-      }
-    });
-  }
-  function formatTooltipPoint(format2, point) {
-    return format2.replace(/\{([^{}]+)\}/g, (placeholder, rawPath) => {
-      const path = rawPath.trim();
-      const result = STRUCTURED_FIELDS.has(path) ? getStructuredValue(point, path) : getPath(point._datum, getDatumPath(path));
-      if (!result.found) {
-        throw new Error(
-          `tooltip.format placeholder "${placeholder}" could not be resolved`
-        );
-      }
-      return result.value === null || result.value === void 0 ? "" : String(result.value);
-    });
-  }
-
   // src/points/validateSpec.js
   var supportedFields = {
     spec: [
@@ -28189,67 +28126,7 @@ var gsmViz = (() => {
     scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
     labels: ["title", "caption", "description"],
-    tooltip: [
-      "format",
-      "formatter",
-      "enabled",
-      "external",
-      "position",
-      "mode",
-      "intersect",
-      "itemSort",
-      "filter",
-      "backgroundColor",
-      "titleColor",
-      "titleFont",
-      "titleAlign",
-      "titleSpacing",
-      "titleMarginBottom",
-      "bodyColor",
-      "bodyFont",
-      "bodyAlign",
-      "bodySpacing",
-      "footerColor",
-      "footerFont",
-      "footerAlign",
-      "footerSpacing",
-      "footerMarginTop",
-      "padding",
-      "caretPadding",
-      "caretSize",
-      "cornerRadius",
-      "multiKeyBackground",
-      "displayColors",
-      "boxWidth",
-      "boxHeight",
-      "boxPadding",
-      "usePointStyle",
-      "borderColor",
-      "borderWidth",
-      "rtl",
-      "textDirection",
-      "xAlign",
-      "yAlign",
-      "callbacks",
-      "animation",
-      "animations"
-    ],
-    tooltipCallbacks: [
-      "beforeTitle",
-      "title",
-      "afterTitle",
-      "beforeBody",
-      "beforeLabel",
-      "label",
-      "labelColor",
-      "labelTextColor",
-      "labelPointStyle",
-      "afterLabel",
-      "afterBody",
-      "beforeFooter",
-      "footer",
-      "afterFooter"
-    ],
+    tooltip: ["format", "formatter"],
     callbacks: ["onClick", "onHover", "onSelect"],
     selection: ["enabled", "opacity", "multiple"],
     theme: ["maintainAspectRatio", "animation"]
@@ -28336,6 +28213,9 @@ var gsmViz = (() => {
     if (breaks.length !== labels.length) {
       throw new Error(`${path}.breaks and labels must have the same length`);
     }
+    if (scale.range !== void 0 && breaks.some((value) => value < scale.range[0] || value > scale.range[1])) {
+      throw new Error(`${path}.breaks must fall within ${path}.range`);
+    }
     if (scale.type === "log") {
       if (scale.beginAtZero === true) {
         throw new Error(
@@ -28395,10 +28275,11 @@ var gsmViz = (() => {
             `${path}.order[${index3}] must be a string or finite number`
           );
         }
-        if (levels.has(level)) {
+        const normalizedLevel = String(level);
+        if (levels.has(normalizedLevel)) {
           throw new Error(`${path}.order must contain unique values`);
         }
-        levels.add(level);
+        levels.add(normalizedLevel);
       });
     }
     if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
@@ -28520,32 +28401,9 @@ var gsmViz = (() => {
         "spec.tooltip"
       );
       validateOptionalString(spec.tooltip.format, "spec.tooltip.format");
-      if (spec.tooltip.format) {
-        validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
-      }
       if (spec.tooltip.formatter !== void 0 && spec.tooltip.formatter !== null && typeof spec.tooltip.formatter !== "function") {
         throw new Error(
           "spec.tooltip.formatter must be a function or null"
-        );
-      }
-      if (spec.tooltip.callbacks !== void 0) {
-        validatePlainObject(
-          spec.tooltip.callbacks,
-          "spec.tooltip.callbacks"
-        );
-        validateSupportedFields(
-          spec.tooltip.callbacks,
-          supportedFields.tooltipCallbacks,
-          "spec.tooltip.callbacks"
-        );
-        Object.entries(spec.tooltip.callbacks).forEach(
-          ([field, callback2]) => {
-            if (callback2 !== void 0 && callback2 !== null && typeof callback2 !== "function") {
-              throw new Error(
-                `spec.tooltip.callbacks.${field} must be a function or null`
-              );
-            }
-          }
         );
       }
     }
@@ -28663,8 +28521,6 @@ var gsmViz = (() => {
   }
 
   // src/points/structureData.js
-  var MISSING_COLOR_LABEL = "(Missing)";
-  var MISSING_COLOR = "#bdbdbd";
   function getCoordinate(row, field, mapping, index3, scale) {
     const value = row?.[field];
     if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -28681,26 +28537,16 @@ var gsmViz = (() => {
   }
   function getColorLevel(row, field, index3) {
     const value = row?.[field];
-    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
-      return { value: MISSING_COLOR_LABEL, missing: true };
-    }
     if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
       throw new Error(
-        `data[${index3}].${field} mapped by spec.mapping.color must be a string, finite number, or missing`
+        `data[${index3}].${field} mapped by spec.mapping.color must be a string or finite number`
       );
     }
-    return { value, missing: false };
-  }
-  function getLevelKey(level) {
-    return level.missing ? "missing" : `value:${typeof level.value}:${String(level.value)}`;
+    return String(value);
   }
   function getColor(level, index3, colorScale) {
-    if (level.missing) {
-      return MISSING_COLOR;
-    }
-    const namedLevel = String(level.value);
-    if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
-      return colorScale.colors[namedLevel];
+    if (Object.prototype.hasOwnProperty.call(colorScale.colors, level)) {
+      return colorScale.colors[level];
     }
     return colorScale.palette[index3 % colorScale.palette.length];
   }
@@ -28733,7 +28579,7 @@ var gsmViz = (() => {
         _datum: row
       };
       const colorLevel = mapping.color ? getColorLevel(row, mapping.color, index3) : void 0;
-      if (colorLevel) point._color = colorLevel.value;
+      if (colorLevel !== void 0) point._color = colorLevel;
       return { point, colorLevel };
     });
     const points2 = records.map(({ point }) => point);
@@ -28743,19 +28589,13 @@ var gsmViz = (() => {
       const groups2 = /* @__PURE__ */ new Map();
       const seenLevels = /* @__PURE__ */ new Set();
       const addLevel = (level) => {
-        const key = getLevelKey(level);
-        if (!seenLevels.has(key)) {
-          seenLevels.add(key);
+        if (!seenLevels.has(level)) {
+          seenLevels.add(level);
           levels.push(level);
         }
-        return key;
+        return level;
       };
-      colorScale.order.forEach(
-        (value) => addLevel({
-          value,
-          missing: value === MISSING_COLOR_LABEL
-        })
-      );
+      colorScale.order.forEach((value) => addLevel(String(value)));
       records.forEach(({ point, colorLevel }) => {
         const key = addLevel(colorLevel);
         if (!groups2.has(key)) {
@@ -28767,8 +28607,8 @@ var gsmViz = (() => {
         datasets: levels.map((level, index3) => {
           const color3 = getColor(level, index3, colorScale);
           return {
-            label: String(level.value),
-            data: groups2.get(getLevelKey(level)) || [],
+            label: level,
+            data: groups2.get(level) || [],
             backgroundColor: color3,
             borderColor: color3
           };
@@ -28804,8 +28644,13 @@ var gsmViz = (() => {
         chartScale.ticks = breaks.map((value) => ({ value }));
       };
       axis.ticks = {
+        autoSkip: false,
         callback: (value) => labels.get(Number(value)) ?? null
       };
+      if (scale.range === void 0) {
+        axis.suggestedMin = breaks[0];
+        axis.suggestedMax = breaks[breaks.length - 1];
+      }
     }
     return axis;
   }
@@ -28814,6 +28659,41 @@ var gsmViz = (() => {
       x: getAxisScale(spec.scales.x, spec.mapping.x),
       y: getAxisScale(spec.scales.y, spec.mapping.y)
     };
+  }
+
+  // src/points/tooltipFormat.js
+  var STRUCTURED_FIELDS = /* @__PURE__ */ new Set(["x", "y", "color", "key", "_color", "_key"]);
+  function getPath(object, path) {
+    const fields = path.split(".");
+    let value = object;
+    for (const field of fields) {
+      if (value === null || value === void 0 || !Object.prototype.hasOwnProperty.call(Object(value), field)) {
+        return { found: false, value: void 0 };
+      }
+      value = value[field];
+    }
+    return { found: true, value };
+  }
+  function getDatumPath(path) {
+    if (path.startsWith("datum.")) return path.slice("datum.".length);
+    if (path.startsWith("_datum.")) return path.slice("_datum.".length);
+    return path;
+  }
+  function getStructuredValue(point, path) {
+    const field = path === "color" ? "_color" : path === "key" ? "_key" : path;
+    return getPath(point, field);
+  }
+  function formatTooltipPoint(format2, point) {
+    return format2.replace(/\{([^{}]+)\}/g, (placeholder, rawPath) => {
+      const path = rawPath.trim();
+      const result = STRUCTURED_FIELDS.has(path) ? getStructuredValue(point, path) : getPath(point._datum, getDatumPath(path));
+      if (!result.found) {
+        throw new Error(
+          `tooltip.format placeholder "${placeholder}" could not be resolved`
+        );
+      }
+      return result.value === null || result.value === void 0 ? "" : String(result.value);
+    });
   }
 
   // src/points/buildTooltip.js
