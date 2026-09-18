@@ -6,7 +6,7 @@ const data = [
     { exposure: 33, events: 5, site: 'Site 05', region: 'Europe' },
     { exposure: 41, events: 9, site: 'Site 06', region: 'Asia Pacific' },
     { exposure: 54, events: 8, site: 'Site 07', region: 'Europe' },
-    { exposure: 63, events: 12, site: 'Site 08', region: null },
+    { exposure: 63, events: 12, site: 'Site 08', region: '(Missing)' },
 ];
 
 gsmViz.default.points(document.getElementById('points-container'), data, {
@@ -17,8 +17,17 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
         color: 'region',
     },
     scales: {
-        x: { label: 'Participant exposure' },
-        y: { label: 'Reported events' },
+        x: {
+            type: 'log',
+            label: 'Participant exposure',
+            range: [1, 100],
+            breaks: [1, 10, 100],
+            labels: ['1', '10', '100'],
+        },
+        y: {
+            label: 'Reported events',
+            beginAtZero: true,
+        },
         color: {
             colors: {
                 Americas: '#4e79a7',
