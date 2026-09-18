@@ -102,6 +102,7 @@ export default function styleData(datasets, spec) {
                 )
             );
 
+            dataset._baseColor = baseColor;
             dataset.backgroundColor = colors;
             dataset.borderColor = [...colors];
         }

@@ -28778,6 +28778,7 @@ var gsmViz = (() => {
             )
           )
         );
+        dataset._baseColor = baseColor;
         dataset.backgroundColor = colors2;
         dataset.borderColor = [...colors2];
       }
@@ -29016,6 +29017,14 @@ var gsmViz = (() => {
       legend5.title = {
         display: !!colorLabel,
         text: colorLabel || ""
+      };
+    }
+    if (hasColor && spec.mapping.opacity) {
+      legend5.labels = {
+        generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
+          const color3 = chart.data.datasets[item.datasetIndex]._baseColor;
+          return color3 ? { ...item, fillStyle: color3, strokeStyle: color3 } : item;
+        })
       };
     }
     return {

@@ -256,6 +256,24 @@ describe('points entry point', () => {
         );
     });
 
+    test('legend swatches ignore point opacity (#573)', () => {
+        const rows = [
+            { x: 1, y: 1, group: 'A', n: 1 },
+            { x: 2, y: 2, group: 'A', n: 100 },
+            { x: 3, y: 1, group: 'B', n: 100 },
+            { x: 4, y: 2, group: 'B', n: 1 },
+        ];
+        const swatches = (mapping) =>
+            points(container, rows, {
+                mapping: { x: 'x', y: 'y', color: 'group', ...mapping },
+            }).legend.legendItems.map((item) => [
+                item.fillStyle,
+                item.strokeStyle,
+            ]);
+
+        expect(swatches({ opacity: 'n' })).toEqual(swatches({}));
+    });
+
     test('is exported from the gsmViz public module', () => {
         expect(gsmViz.points).toBe(points);
         expect(points.name).toBe('points');
