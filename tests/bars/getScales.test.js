@@ -722,3 +722,88 @@ describe('bars/getScales – y min/max pass-through', () => {
         });
     });
 });
+
+describe('bars/getScales – theme.dynamicValueAxis', () => {
+    const base = {
+        orientation: 'vertical',
+        position: 'fill',
+        scales: {
+            x: { type: 'category' },
+            y: { type: 'linear' },
+        },
+    };
+
+    test('pins percent axis max to 100 when flag is off (#606)', () => {
+        const scales = getScales({
+            ...base,
+            theme: { dynamicValueAxis: false },
+        });
+        expect(scales.y.max).toBe(100);
+        expect(scales.y.afterDataLimits).toBeUndefined();
+    });
+
+    test('leaves percent axis max unset when flag is on (#606)', () => {
+        const scales = getScales({
+            ...base,
+            theme: { dynamicValueAxis: true },
+        });
+        expect(scales.y.max).toBeUndefined();
+        expect(typeof scales.y.afterDataLimits).toBe('function');
+        expect(scales.y.ticks.callback(20)).toBe('20%');
+    });
+
+    test('caps fitted axis at 100 but keeps smaller fitted max (#606)', () => {
+        const { afterDataLimits } = getScales({
+            ...base,
+            theme: { dynamicValueAxis: true },
+        }).y;
+        const drifted = { max: 100.00000000000001 };
+        afterDataLimits(drifted);
+        expect(drifted.max).toBe(100);
+        const partial = { max: 42 };
+        afterDataLimits(partial);
+        expect(partial.max).toBe(42);
+    });
+
+    test('explicit scales.y.max wins over the flag (#606)', () => {
+        const scales = getScales({
+            ...base,
+            scales: { ...base.scales, y: { type: 'linear', max: 50 } },
+            theme: { dynamicValueAxis: true },
+        });
+        expect(scales.y.max).toBe(50);
+        expect(scales.y.afterDataLimits).toBeUndefined();
+    });
+
+    test('applies to stat percent with dodge (#606)', () => {
+        const scales = getScales({
+            ...base,
+            position: 'dodge',
+            stat: 'percent',
+            theme: { dynamicValueAxis: true },
+        });
+        expect(scales.y.max).toBeUndefined();
+        expect(typeof scales.y.afterDataLimits).toBe('function');
+    });
+
+    test('does not affect non-percent modes (#606)', () => {
+        const scales = getScales({
+            ...base,
+            position: 'stack',
+            theme: { dynamicValueAxis: true },
+        });
+        expect(scales.y.max).toBeUndefined();
+        expect(scales.y.afterDataLimits).toBeUndefined();
+    });
+
+    test('configures the x axis when horizontal (#606)', () => {
+        const scales = getScales({
+            ...base,
+            orientation: 'horizontal',
+            theme: { dynamicValueAxis: true },
+        });
+        expect(scales.x.max).toBeUndefined();
+        expect(typeof scales.x.afterDataLimits).toBe('function');
+        expect(scales.y.afterDataLimits).toBeUndefined();
+    });
+});

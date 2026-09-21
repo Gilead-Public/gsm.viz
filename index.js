@@ -24843,6 +24843,7 @@ var gsmViz = (() => {
       animation: false,
       dynamicSizing: false,
       dynamicCategoryAxis: false,
+      dynamicValueAxis: false,
       pxPerCategory: 30
     },
     zoom: {
@@ -25242,6 +25243,11 @@ var gsmViz = (() => {
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const percentageTicks = { callback: (v) => `${v}%` };
+    const percentMax = specScales.y.max !== void 0 ? {} : spec.theme?.dynamicValueAxis ? {
+      afterDataLimits: (scale) => {
+        scale.max = Math.min(scale.max, 100);
+      }
+    } : { max: 100 };
     const specTicks = specScales.x.ticks || {};
     const categoryTicks = {};
     if (spec.theme?.dynamicSizing) {
@@ -25278,7 +25284,7 @@ var gsmViz = (() => {
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
       ...percent ? {
-        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ...percentMax,
         ticks: percentageTicks
       } : {}
     };

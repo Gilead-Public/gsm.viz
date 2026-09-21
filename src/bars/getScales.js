@@ -28,6 +28,20 @@ export default function getScales(spec) {
 
     const percentageTicks = { callback: (v) => `${v}%` };
 
+    // Without a pinned max, Chart.js fits the axis to visible stacks, so it
+    // rescales on legend toggle. The cap absorbs float drift in normalized
+    // sums (e.g. 100.00000000000001), which would otherwise tick up to 120%.
+    const percentMax =
+        specScales.y.max !== undefined
+            ? {}
+            : spec.theme?.dynamicValueAxis
+            ? {
+                  afterDataLimits: (scale) => {
+                      scale.max = Math.min(scale.max, 100);
+                  },
+              }
+            : { max: 100 };
+
     // Build category axis ticks config from spec.scales.x.ticks
     const specTicks = specScales.x.ticks || {};
     const categoryTicks = {};
@@ -75,7 +89,7 @@ export default function getScales(spec) {
         ...(stacked ? { stacked: true } : {}),
         ...(percent
             ? {
-                  ...(specScales.y.max === undefined ? { max: 100 } : {}),
+                  ...percentMax,
                   ticks: percentageTicks,
               }
             : {}),
