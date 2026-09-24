@@ -6,8 +6,6 @@ import {
 } from './selection.js';
 
 let statusId = 0;
-export const POINT_SELECTION_INSTRUCTIONS =
-    'Use arrow keys to move between points, Enter to select, and Escape to clear.';
 
 function getPointLocations(chart) {
     return chart.data.datasets
@@ -185,6 +183,21 @@ export function setupKeyboardSelection(chart) {
         delete state.liveRegion;
         delete state.cleanupKeyboard;
     };
+}
+
+/**
+ * Match keyboard DOM/listeners to the current merged selection spec.
+ *
+ * @param {Object} chart - Chart.js chart instance.
+ */
+export function syncKeyboardSelection(chart) {
+    const state = chart.data._selectionState_;
+
+    if (chart.data._spec_.selection.enabled) {
+        if (!state?.cleanupKeyboard) setupKeyboardSelection(chart);
+    } else {
+        state?.cleanupKeyboard?.();
+    }
 }
 
 /**
