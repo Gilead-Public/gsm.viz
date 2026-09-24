@@ -8,6 +8,10 @@
 - Add ordered categorical color mappings, named and fallback palettes, legend titles, stable empty ordered groups, and a neutral missing-value level to `points` (#570).
 - Add linear/logarithmic point axes with fixed ranges, automatic begin-at-zero behavior, explicit breaks and labels, and strict positive log-domain validation (#571).
 
+### `bars`
+
+- Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).
+
 ## gsm.viz 2.4.0 (Release Candidate)
 
 ### New: `bars` Module
