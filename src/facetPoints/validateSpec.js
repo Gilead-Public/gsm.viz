@@ -1,10 +1,19 @@
 import validatePointsSpec from '../points/validateSpec.js';
 
 const supportedFields = {
-    facet: ['field', 'order', 'nCol', 'chartHeight', 'label', 'scales'],
+    facet: [
+        'field',
+        'order',
+        'nCol',
+        'chartHeight',
+        'label',
+        'scales',
+        'legend',
+    ],
     label: ['position', 'font'],
     scales: ['x', 'y'],
     axis: ['free'],
+    legend: ['display', 'sync'],
 };
 
 function isPlainObject(value) {
@@ -125,6 +134,22 @@ function validateScales(scales) {
     });
 }
 
+function validateLegend(legend) {
+    if (legend === undefined) return;
+
+    validatePlainObject(legend, 'spec.facet.legend');
+    validateSupportedFields(
+        legend,
+        supportedFields.legend,
+        'spec.facet.legend'
+    );
+    supportedFields.legend.forEach((field) => {
+        if (legend[field] !== undefined && typeof legend[field] !== 'boolean') {
+            throw new Error(`spec.facet.legend.${field} must be a boolean`);
+        }
+    });
+}
+
 function validateFacetData(data, field) {
     data.forEach((row, index) => {
         const value = row?.[field];
@@ -183,5 +208,6 @@ export default function validateSpec(data, spec) {
 
     validateLabel(facet.label);
     validateScales(facet.scales);
+    validateLegend(facet.legend);
     validateFacetData(data, facet.field);
 }

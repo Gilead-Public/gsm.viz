@@ -650,3 +650,6 @@ application, adds the documented controls to its text alternative, and reports
 changes through a polite live status element.
 `theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
 as the container resizes.
+
+For ordered small multiples with fixed/free numeric domains and linked
+interaction, use [`facetPoints`](facetPoints.md).

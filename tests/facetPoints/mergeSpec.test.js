@@ -30,6 +30,10 @@ describe('facetPoints/mergeSpec', () => {
                 x: { free: false },
                 y: { free: false },
             },
+            legend: {
+                display: true,
+                sync: true,
+            },
         });
     });
 
@@ -61,6 +65,10 @@ describe('facetPoints/mergeSpec', () => {
             scales: {
                 x: { free: true },
                 y: { free: false },
+            },
+            legend: {
+                display: true,
+                sync: true,
             },
         });
     });
@@ -94,5 +102,19 @@ describe('facetPoints/mergeSpec', () => {
 
         expect(second.facet.label.position).toBe('top');
         expect(second.facet.scales.x.free).toBe(false);
+    });
+
+    test('merges legend settings without sharing state', () => {
+        const legend = { display: false };
+        const merged = mergeSpec(data, {
+            ...spec,
+            facet: { field: 'region', legend },
+        });
+
+        expect(merged.facet.legend).toEqual({
+            display: false,
+            sync: true,
+        });
+        expect(merged.facet.legend).not.toBe(legend);
     });
 });

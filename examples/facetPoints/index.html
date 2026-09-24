@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Faceted Points</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <link rel="stylesheet" href="../examples.css" />
+        <style>
+            .facet-points-controls,
+            #facet-points-container {
+                margin: 1rem auto;
+                max-width: 1100px;
+                width: 92%;
+            }
+
+            .facet-points-controls button {
+                margin: 0 0.35rem 0.5rem 0;
+            }
+
+            #interaction-status {
+                display: block;
+                min-height: 1.5rem;
+            }
+        </style>
+
+        <script src="../index.js"></script>
+    </head>
+
+    <body>
+        <main class="gsm-viz--example">
+            <section class="facet-points-controls">
+                <h1>Faceted points</h1>
+                <p>
+                    Hover or select a site to link its stable key across visits.
+                    Legend clicks hide the same color/shape combination in every
+                    panel. Week 8 begins as a requested empty facet.
+                </p>
+                <button id="fixed-scales" type="button">Use fixed axes</button>
+                <button id="free-y-scale" type="button">
+                    Use a free y axis
+                </button>
+                <button id="select-site" type="button">Select Site 01</button>
+                <button id="add-week-8" type="button">Add Week 8 data</button>
+                <button id="reset-data" type="button">Reset data</button>
+                <output id="interaction-status" aria-live="polite">
+                    No point selected.
+                </output>
+            </section>
+            <div id="facet-points-container"></div>
+        </main>
+
+        <script src="index.js"></script>
+        <script src="../nav.js"></script>
+    </body>
+</html>
