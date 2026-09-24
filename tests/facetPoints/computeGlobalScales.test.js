@@ -78,6 +78,77 @@ describe('facetPoints/computeGlobalScales', () => {
         });
     });
 
+    test('excludes facet-aware line rows for unrendered facets', () => {
+        expect(
+            compute(data, {
+                facet: { order: ['North'] },
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                { region: 'North', lineX: -10, lineY: 20 },
+                                { region: 'South', lineX: 100, lineY: 200 },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toEqual({
+            xMin: -10,
+            xMax: 4,
+            yMin: 3,
+            yMax: 20,
+        });
+    });
+
+    test('validates auxiliary coordinates in unrendered facets', () => {
+        expect(() =>
+            compute(data, {
+                facet: { order: ['North'] },
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                {
+                                    region: 'South',
+                                    lineX: 'invalid',
+                                    lineY: 200,
+                                },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toThrow(
+            'spec.annotations.lines[0].data[0].lineX mapped by mapping.x must be a finite number'
+        );
+    });
+
+    test('rejects unsupported auxiliary facet identities', () => {
+        expect(() =>
+            compute(data, {
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                {
+                                    region: { nested: true },
+                                    lineX: 1,
+                                    lineY: 2,
+                                },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toThrow(
+            'spec.annotations.lines[0].data[0].region mapped by spec.facet.field must be a string, finite number, or missing'
+        );
+    });
+
     test('includes reference-line values on their corresponding axes', () => {
         expect(
             compute(data, {

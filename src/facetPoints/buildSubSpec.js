@@ -1,3 +1,5 @@
+import getFacetLines from './facetLines.js';
+
 function getScale(scale) {
     return {
         ...scale,
@@ -15,6 +17,13 @@ function wrapCallback(callback, facetValue) {
     return callback
         ? (value, event) => callback(value, facetValue, event)
         : null;
+}
+
+function getAnnotations(annotations, facetField, facetValue) {
+    return {
+        ...annotations,
+        lines: getFacetLines(annotations.lines, facetField, facetValue),
+    };
 }
 
 /**
@@ -51,6 +60,11 @@ export default function buildSubSpec(
 
     return {
         ...pointsSpec,
+        annotations: getAnnotations(
+            pointsSpec.annotations,
+            facet.field,
+            facetValue
+        ),
         scales,
         callbacks: {
             onClick: wrapCallback(callbacks.onClick, facetValue),

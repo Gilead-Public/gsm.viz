@@ -1,4 +1,5 @@
 import getDatasetIdentity from '../points/datasetIdentity.js';
+import { refreshFacetAccessibleLabel } from './accessibility.js';
 import { applyGlobalStyles } from './globalStyles.js';
 import syncHover from './syncHover.js';
 import syncLegendClicks from './syncLegendClicks.js';
@@ -21,6 +22,7 @@ function decorateChart(chart, charts, templates, legend, hidden) {
     chart.options.plugins.legend.display =
         legend.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
+    refreshFacetAccessibleLabel(chart);
     syncHover(charts);
     syncSelection(charts);
     syncLegendClicks(charts, { sync: legend.sync });
