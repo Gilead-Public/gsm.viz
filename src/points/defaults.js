@@ -67,6 +67,9 @@ const defaults = {
     annotations: {
         referenceLines: [],
         lines: [],
+        labels: {
+            point: null,
+        },
     },
     tooltip: {
         format: undefined,
