@@ -400,7 +400,7 @@ describe('points/validateSpec', () => {
             }
         );
 
-        test('validates tooltip format and formatter', () => {
+        test('validates tooltip format, formatter, and Chart.js options', () => {
             expect(() =>
                 validateSpec(data, {
                     ...minimalSpec,
@@ -419,6 +419,18 @@ describe('points/validateSpec', () => {
                 validateSpec(data, {
                     ...minimalSpec,
                     tooltip: { formatter: null },
+                })
+            ).not.toThrow();
+
+            expect(() =>
+                validateSpec(data, {
+                    ...minimalSpec,
+                    tooltip: {
+                        enabled: false,
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: { label: () => 'Label' },
+                    },
                 })
             ).not.toThrow();
         });
@@ -522,10 +534,6 @@ describe('points/validateSpec', () => {
         [
             { ...minimalSpec, labels: { captions: [] } },
             'spec.labels.captions is not supported',
-        ],
-        [
-            { ...minimalSpec, tooltip: { callbacks: {} } },
-            'spec.tooltip.callbacks is not supported',
         ],
         [
             { ...minimalSpec, callbacks: { afterClick: () => {} } },

@@ -15,6 +15,14 @@ function mergeDefaults(defaultValues, userValues = {}) {
     }, {});
 }
 
+function mergeTooltip(tooltip = {}) {
+    return {
+        ...tooltip,
+        ...mergeDefaults(defaults.tooltip, tooltip),
+        ...(tooltip.callbacks ? { callbacks: { ...tooltip.callbacks } } : {}),
+    };
+}
+
 /**
  * Merge a validated points spec with module defaults without mutating inputs.
  *
@@ -32,7 +40,7 @@ export default function mergeSpec(data, spec) {
             color: mergeDefaults(defaults.scales.color, spec.scales?.color),
         },
         labels: mergeDefaults(defaults.labels, spec.labels),
-        tooltip: mergeDefaults(defaults.tooltip, spec.tooltip),
+        tooltip: mergeTooltip(spec.tooltip),
         callbacks: mergeDefaults(defaults.callbacks, spec.callbacks),
         selection: mergeDefaults(defaults.selection, spec.selection),
         theme: mergeDefaults(defaults.theme, spec.theme),

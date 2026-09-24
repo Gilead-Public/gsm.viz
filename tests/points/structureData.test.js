@@ -391,7 +391,7 @@ describe('points/structureData', () => {
                     makeColorSpec([{ xValue: 1, yValue: 2, id: 'A', group }])
                 )
             ).toThrow(
-                    'data[0].group mapped by spec.mapping.color must be a string or finite number'
+                'data[0].group mapped by spec.mapping.color must be a string or finite number'
             );
         });
 

@@ -98,6 +98,26 @@ describe('points entry point', () => {
         expect(canvas.textContent).toContain('No data available.');
     });
 
+    test('validates tooltip template fields before rendering', () => {
+        expect(() =>
+            points(container, data, {
+                ...spec,
+                tooltip: { format: '{missing}' },
+            })
+        ).toThrow(
+            'spec.tooltip.format placeholder "{missing}" is not available in data[0]'
+        );
+
+        expect(() =>
+            points(container, data, {
+                ...spec,
+                tooltip: { format: '{color}' },
+            })
+        ).toThrow(
+            'spec.tooltip.format placeholder "{color}" requires spec.mapping.color'
+        );
+    });
+
     test('builds an accessible label from chart metadata', () => {
         points(container, data, {
             ...spec,

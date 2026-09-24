@@ -263,4 +263,26 @@ describe('points/mergeSpec', () => {
         expect(merged.scales.x.breaks).toEqual(breaks);
         expect(merged.scales.x.labels).toEqual(labels);
     });
+
+    test('preserves Chart.js tooltip options and copies callbacks', () => {
+        const label = jest.fn();
+        const callbacks = Object.freeze({ label });
+        const spec = Object.freeze({
+            ...minimalSpec,
+            tooltip: Object.freeze({
+                enabled: false,
+                mode: 'nearest',
+                callbacks,
+            }),
+        });
+
+        const merged = mergeSpec(data, spec);
+
+        expect(merged.tooltip.enabled).toBe(false);
+        expect(merged.tooltip.mode).toBe('nearest');
+        expect(merged.tooltip.callbacks).not.toBe(callbacks);
+        expect(merged.tooltip.callbacks.label).toBe(label);
+        expect(merged.tooltip.format).toBeUndefined();
+        expect(merged.tooltip.formatter).toBeUndefined();
+    });
 });

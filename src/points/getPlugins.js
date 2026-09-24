@@ -35,5 +35,7 @@ export default function getPlugins(spec) {
             text: caption || '',
         },
         legend,
+        tooltip: buildTooltip(spec.tooltip),
     };
 }
+import buildTooltip from './buildTooltip.js';

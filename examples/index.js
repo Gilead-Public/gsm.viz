@@ -28116,6 +28116,69 @@ var gsmViz = (() => {
     return table;
   }
 
+  // src/points/tooltipFormat.js
+  var STRUCTURED_FIELDS = /* @__PURE__ */ new Set(["x", "y", "color", "key", "_color", "_key"]);
+  var COLOR_FIELDS = /* @__PURE__ */ new Set(["color", "_color"]);
+  function getTokens(format2) {
+    return [...format2.matchAll(/\{([^{}]+)\}/g)].map((match) => ({
+      placeholder: match[0],
+      path: match[1].trim()
+    }));
+  }
+  function getPath(object, path) {
+    const fields = path.split(".");
+    let value = object;
+    for (const field of fields) {
+      if (value === null || value === void 0 || !Object.prototype.hasOwnProperty.call(Object(value), field)) {
+        return { found: false, value: void 0 };
+      }
+      value = value[field];
+    }
+    return { found: true, value };
+  }
+  function getDatumPath(path) {
+    if (path.startsWith("datum.")) return path.slice("datum.".length);
+    if (path.startsWith("_datum.")) return path.slice("_datum.".length);
+    return path;
+  }
+  function getStructuredValue(point, path) {
+    const field = path === "color" ? "_color" : path === "key" ? "_key" : path;
+    return getPath(point, field);
+  }
+  function validateTooltipFormat(format2, data, mapping) {
+    if (!format2) return;
+    getTokens(format2).forEach(({ placeholder, path }) => {
+      if (COLOR_FIELDS.has(path) && !mapping.color) {
+        throw new Error(
+          `spec.tooltip.format placeholder "${placeholder}" requires spec.mapping.color`
+        );
+      }
+      if (STRUCTURED_FIELDS.has(path)) return;
+      if (data.length === 0) return;
+      const datumPath = getDatumPath(path);
+      const unavailableIndex = data.findIndex(
+        (datum2) => !getPath(datum2, datumPath).found
+      );
+      if (unavailableIndex !== -1) {
+        throw new Error(
+          `spec.tooltip.format placeholder "${placeholder}" is not available in data[${unavailableIndex}]`
+        );
+      }
+    });
+  }
+  function formatTooltipPoint(format2, point) {
+    return format2.replace(/\{([^{}]+)\}/g, (placeholder, rawPath) => {
+      const path = rawPath.trim();
+      const result = STRUCTURED_FIELDS.has(path) ? getStructuredValue(point, path) : getPath(point._datum, getDatumPath(path));
+      if (!result.found) {
+        throw new Error(
+          `tooltip.format placeholder "${placeholder}" could not be resolved`
+        );
+      }
+      return result.value === null || result.value === void 0 ? "" : String(result.value);
+    });
+  }
+
   // src/points/validateSpec.js
   var supportedFields = {
     spec: [
@@ -28132,7 +28195,6 @@ var gsmViz = (() => {
     scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
     labels: ["title", "caption", "description"],
-    tooltip: ["format", "formatter"],
     callbacks: ["onClick", "onHover", "onSelect"],
     selection: ["enabled", "opacity", "multiple"],
     theme: ["maintainAspectRatio", "animation"]
@@ -28401,17 +28463,13 @@ var gsmViz = (() => {
     }
     if (spec.tooltip !== void 0) {
       validatePlainObject(spec.tooltip, "spec.tooltip");
-      validateSupportedFields(
-        spec.tooltip,
-        supportedFields.tooltip,
-        "spec.tooltip"
-      );
       validateOptionalString(spec.tooltip.format, "spec.tooltip.format");
       if (spec.tooltip.formatter !== void 0 && spec.tooltip.formatter !== null && typeof spec.tooltip.formatter !== "function") {
         throw new Error(
           "spec.tooltip.formatter must be a function or null"
         );
       }
+      validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
     }
     validateCallbacks(spec.callbacks);
     validateSelection(spec.selection);
@@ -28502,6 +28560,13 @@ var gsmViz = (() => {
       return merged;
     }, {});
   }
+  function mergeTooltip(tooltip5 = {}) {
+    return {
+      ...tooltip5,
+      ...mergeDefaults(defaults_default3.tooltip, tooltip5),
+      ...tooltip5.callbacks ? { callbacks: { ...tooltip5.callbacks } } : {}
+    };
+  }
   function mergeSpec3(data, spec) {
     return {
       data,
@@ -28512,7 +28577,7 @@ var gsmViz = (() => {
         color: mergeDefaults(defaults_default3.scales.color, spec.scales?.color)
       },
       labels: mergeDefaults(defaults_default3.labels, spec.labels),
-      tooltip: mergeDefaults(defaults_default3.tooltip, spec.tooltip),
+      tooltip: mergeTooltip(spec.tooltip),
       callbacks: mergeDefaults(defaults_default3.callbacks, spec.callbacks),
       selection: mergeDefaults(defaults_default3.selection, spec.selection),
       theme: mergeDefaults(defaults_default3.theme, spec.theme)
@@ -28660,6 +28725,55 @@ var gsmViz = (() => {
     };
   }
 
+  // src/points/buildTooltip.js
+  function getPoint4(context) {
+    return context.raw ?? context.dataset?.data?.[context.dataIndex];
+  }
+  function getDetails(point) {
+    return {
+      x: point.x,
+      y: point.y,
+      color: point._color,
+      key: point._key,
+      datum: point._datum
+    };
+  }
+  function buildTooltip2(tooltip5 = {}) {
+    const { format: format2, formatter: formatter2, callbacks, ...chartJsOptions } = tooltip5;
+    const chartJsCallbacks = Object.fromEntries(
+      Object.entries(callbacks ?? {}).filter(
+        ([, callback2]) => callback2 !== null
+      )
+    );
+    const config = {
+      ...chartJsOptions,
+      ...callbacks ? { callbacks: chartJsCallbacks } : {}
+    };
+    if (config.callbacks?.label) return config;
+    if (typeof formatter2 === "function") {
+      return {
+        ...config,
+        callbacks: {
+          ...config.callbacks,
+          label: (context) => {
+            const point = getPoint4(context);
+            return formatter2(point, context, getDetails(point));
+          }
+        }
+      };
+    }
+    if (format2) {
+      return {
+        ...config,
+        callbacks: {
+          ...config.callbacks,
+          label: (context) => formatTooltipPoint(format2, getPoint4(context))
+        }
+      };
+    }
+    return config;
+  }
+
   // src/points/getPlugins.js
   function getPlugins3(spec) {
     const { title: title4, caption } = spec.labels;
@@ -28685,8 +28799,42 @@ var gsmViz = (() => {
         align: "start",
         text: caption || ""
       },
-      legend: legend5
+      legend: legend5,
+      tooltip: buildTooltip2(spec.tooltip)
     };
+  }
+
+  // src/points/onClick.js
+  function onClick3(event, activeElements, chart) {
+    if (!activeElements.length) return;
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const point = chart.data.datasets[datasetIndex]?.data[index3];
+    if (point && chart.data._spec_.callbacks.onClick) {
+      chart.data._spec_.callbacks.onClick(point, event);
+    }
+  }
+
+  // src/points/onHover.js
+  function onHover3(event, activeElements, chart) {
+    const callbacks = chart.data._spec_.callbacks;
+    const target = event?.native?.target;
+    const isInteractive = !!(callbacks.onClick || callbacks.onHover);
+    if (!isInteractive) {
+      if (target?.style?.cursor === "pointer") {
+        target.style.cursor = "default";
+      }
+      return;
+    }
+    if (!activeElements.length) {
+      if (target) target.style.cursor = "default";
+      return;
+    }
+    if (target) target.style.cursor = "pointer";
+    if (callbacks.onHover) {
+      const { datasetIndex, index: index3 } = activeElements[0];
+      const point = chart.data.datasets[datasetIndex]?.data[index3];
+      if (point) callbacks.onHover(point, event);
+    }
   }
 
   // src/points.js
@@ -28744,6 +28892,8 @@ var gsmViz = (() => {
       options: {
         animation: merged.theme.animation,
         maintainAspectRatio: merged.theme.maintainAspectRatio,
+        onClick: onClick3,
+        onHover: onHover3,
         responsive: true,
         plugins: getPlugins3(merged),
         scales: scales2

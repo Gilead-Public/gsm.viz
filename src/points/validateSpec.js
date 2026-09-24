@@ -1,3 +1,5 @@
+import { validateTooltipFormat } from './tooltipFormat.js';
+
 const supportedFields = {
     spec: [
         'mapping',
@@ -13,7 +15,6 @@ const supportedFields = {
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
-    tooltip: ['format', 'formatter'],
     callbacks: ['onClick', 'onHover', 'onSelect'],
     selection: ['enabled', 'opacity', 'multiple'],
     theme: ['maintainAspectRatio', 'animation'],
@@ -384,11 +385,6 @@ export default function validateSpec(data, spec) {
 
     if (spec.tooltip !== undefined) {
         validatePlainObject(spec.tooltip, 'spec.tooltip');
-        validateSupportedFields(
-            spec.tooltip,
-            supportedFields.tooltip,
-            'spec.tooltip'
-        );
         validateOptionalString(spec.tooltip.format, 'spec.tooltip.format');
 
         if (
@@ -400,6 +396,8 @@ export default function validateSpec(data, spec) {
                 'spec.tooltip.formatter must be a function or null'
             );
         }
+
+        validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
     }
 
     validateCallbacks(spec.callbacks);
