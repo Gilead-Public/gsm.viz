@@ -43,6 +43,7 @@ export default function mergeSpec(data, spec) {
                 defaults.scales.opacity,
                 spec.scales?.opacity
             ),
+            shape: mergeDefaults(defaults.scales.shape, spec.scales?.shape),
         },
         labels: mergeDefaults(defaults.labels, spec.labels),
         tooltip: mergeTooltip(spec.tooltip),
