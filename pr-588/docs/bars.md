@@ -111,6 +111,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
         animation: false,
         dynamicSizing: false,        // set container height (horizontal) or width (vertical) at pxPerCategory px per category plus chart overhead
         dynamicCategoryAxis: false,  // legend toggles remove categories that are only present in hidden fill groups
+        dynamicValueAxis: false,     // percent modes: value axis fits visible stacks instead of fixed 0–100%
         pxPerCategory: 30,           // pixels allocated per category when dynamicSizing is true
     },
     zoom: {
@@ -153,6 +154,7 @@ The spec mirrors ggplot2's `aes()` + `geom_bar()` + `scale_*` + `labs()` + `them
 | `theme.animation`                           | `false`                                                       |
 | `theme.dynamicSizing`                       | `false`                                                       |
 | `theme.dynamicCategoryAxis`                 | `false`                                                       |
+| `theme.dynamicValueAxis`                    | `false`                                                       |
 | `theme.pxPerCategory`                       | `30`                                                          |
 | `tooltip.format`                            | `undefined`                                                   |
 | `tooltip.formatter`                         | `undefined`                                                   |
@@ -223,6 +225,22 @@ position-toggle control.
 
 For `position: 'fill'`, the value scale is capped at 100 and tooltip labels
 default to percentages unless you provide `tooltip.callbacks.label`.
+
+#### Dynamic value axis
+
+In `position: 'fill'` or `stat: 'percent'` the value axis is fixed at 0–100%.
+Hiding dominant categories via the legend then leaves short stacks. Set
+`theme.dynamicValueAxis: true` to fit the axis to the visible bars (stacks or
+dodged bars), so it rescales on each legend toggle. Percentages remain shares of all categories.
+An explicit `scales.y.max` takes precedence.
+
+```js
+gsmViz.default.bars(el, data, {
+    mapping: { x: 'country', fill: 'status' },
+    position: 'fill',
+    theme: { dynamicValueAxis: true },
+});
+```
 
 #### Embedded position control
 
