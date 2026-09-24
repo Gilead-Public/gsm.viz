@@ -28364,7 +28364,7 @@ var gsmViz = (() => {
       supportedFields.continuousAestheticScale,
       path
     );
-    if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
+    if (!Array.isArray(scale.range) || scale.range.length !== 2 || !Number.isFinite(scale.range[0]) || !Number.isFinite(scale.range[1])) {
       throw new Error(`${path}.range must contain two finite numbers`);
     }
     if (aesthetic === "size" && scale.range.some((value) => value <= 0)) {
