@@ -1,3 +1,5 @@
+import styleData from './styleData.js';
+
 function getCoordinate(row, field, mapping, index, scale) {
     const value = row?.[field];
 
@@ -29,6 +31,26 @@ function getColorLevel(row, field, index) {
     }
 
     return String(value);
+}
+
+function getNumericAesthetic(row, field, aesthetic, index) {
+    const value = row?.[field];
+    const requirement =
+        aesthetic === 'size'
+            ? 'a finite non-negative number'
+            : 'a finite number';
+    const isValid =
+        typeof value === 'number' &&
+        Number.isFinite(value) &&
+        (aesthetic !== 'size' || value >= 0);
+
+    if (!isValid) {
+        throw new Error(
+            `data[${index}].${field} mapped by spec.mapping.${aesthetic} must be ${requirement}`
+        );
+    }
+
+    return value;
 }
 
 function getColor(level, index, colorScale) {
@@ -87,6 +109,17 @@ export default function structureData(spec) {
             ? getColorLevel(row, mapping.color, index)
             : undefined;
         if (colorLevel !== undefined) point._color = colorLevel;
+        if (mapping.size) {
+            point._size = getNumericAesthetic(row, mapping.size, 'size', index);
+        }
+        if (mapping.opacity) {
+            point._opacity = getNumericAesthetic(
+                row,
+                mapping.opacity,
+                'opacity',
+                index
+            );
+        }
 
         return { point, colorLevel };
     });
@@ -118,21 +151,21 @@ export default function structureData(spec) {
             groups.get(key).push(point);
         });
 
-        return {
-            datasets: levels.map((level, index) => {
-                const color = getColor(level, index, colorScale);
+        const datasets = levels.map((level, index) => {
+            const color = getColor(level, index, colorScale);
 
-                return {
-                    label: level,
-                    data: groups.get(level) || [],
-                    backgroundColor: color,
-                    borderColor: color,
-                };
-            }),
-        };
+            return {
+                label: level,
+                data: groups.get(level) || [],
+                backgroundColor: color,
+                borderColor: color,
+            };
+        });
+
+        return { datasets: styleData(datasets, spec) };
     }
 
     return {
-        datasets: [{ data: points }],
+        datasets: styleData([{ data: points }], spec),
     };
 }

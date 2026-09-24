@@ -34,6 +34,8 @@ describe('points/mergeSpec', () => {
                 order: [],
                 label: undefined,
             },
+            size: { range: [3, 12] },
+            opacity: { range: [0.25, 1] },
         });
         expect(merged.scales.color.palette.length).toBeGreaterThan(1);
         expect(merged.labels).toEqual({
@@ -81,6 +83,8 @@ describe('points/mergeSpec', () => {
                     order: ['Control', 'Treatment'],
                     label: 'Arm',
                 },
+                size: { range: [2, 10] },
+                opacity: { range: [0.1, 0.9] },
             },
             labels: {
                 title: 'Example',
@@ -117,6 +121,8 @@ describe('points/mergeSpec', () => {
             order: ['Control', 'Treatment'],
             label: 'Arm',
         });
+        expect(merged.scales.size).toEqual({ range: [2, 10] });
+        expect(merged.scales.opacity).toEqual({ range: [0.1, 0.9] });
         expect(merged.labels).toEqual({
             title: 'Example',
             caption: undefined,
@@ -209,6 +215,8 @@ describe('points/mergeSpec', () => {
         first.scales.color.colors.Changed = '#000000';
         first.scales.color.palette.push('#000000');
         first.scales.color.order.push('Changed');
+        first.scales.size.range.push(20);
+        first.scales.opacity.range.push(0.5);
         first.labels.title = 'Changed';
         first.selection.enabled = true;
 
@@ -218,6 +226,8 @@ describe('points/mergeSpec', () => {
         expect(second.scales.color.colors).toEqual({});
         expect(second.scales.color.palette).not.toContain('#000000');
         expect(second.scales.color.order).toEqual([]);
+        expect(second.scales.size.range).toEqual([3, 12]);
+        expect(second.scales.opacity.range).toEqual([0.25, 1]);
         expect(second.labels.title).toBeUndefined();
         expect(second.selection.enabled).toBe(false);
     });
@@ -284,5 +294,24 @@ describe('points/mergeSpec', () => {
         expect(merged.tooltip.callbacks.label).toBe(label);
         expect(merged.tooltip.format).toBeUndefined();
         expect(merged.tooltip.formatter).toBeUndefined();
+    });
+
+    test('copies caller-owned aesthetic ranges', () => {
+        const sizeRange = Object.freeze([2, 10]);
+        const opacityRange = Object.freeze([0.2, 0.8]);
+        const spec = Object.freeze({
+            ...minimalSpec,
+            scales: Object.freeze({
+                size: Object.freeze({ range: sizeRange }),
+                opacity: Object.freeze({ range: opacityRange }),
+            }),
+        });
+
+        const merged = mergeSpec(data, spec);
+
+        expect(merged.scales.size.range).not.toBe(sizeRange);
+        expect(merged.scales.opacity.range).not.toBe(opacityRange);
+        expect(merged.scales.size.range).toEqual(sizeRange);
+        expect(merged.scales.opacity.range).toEqual(opacityRange);
     });
 });

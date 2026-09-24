@@ -47,6 +47,12 @@ const defaults = {
             order: [],
             label: undefined,
         },
+        size: {
+            range: [3, 12],
+        },
+        opacity: {
+            range: [0.25, 1],
+        },
     },
     labels: {
         title: undefined,
