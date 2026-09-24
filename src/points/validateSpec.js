@@ -244,7 +244,8 @@ function validateContinuousAestheticScale(scale, aesthetic) {
     if (
         !Array.isArray(scale.range) ||
         scale.range.length !== 2 ||
-        !scale.range.every(Number.isFinite)
+        !Number.isFinite(scale.range[0]) ||
+        !Number.isFinite(scale.range[1])
     ) {
         throw new Error(`${path}.range must contain two finite numbers`);
     }
