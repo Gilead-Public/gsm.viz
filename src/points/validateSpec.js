@@ -90,7 +90,7 @@ function isPlainObject(value) {
     return prototype === Object.prototype || prototype === null;
 }
 
-function validateDiscreteOrder(order, path) {
+function validateDiscreteOrder(order, path, normalize = (value) => value) {
     if (!Array.isArray(order)) {
         throw new Error(`${path} must be an array`);
     }
@@ -106,10 +106,11 @@ function validateDiscreteOrder(order, path) {
                 `${path}[${index}] must be a string, finite number, or null`
             );
         }
-        if (levels.has(level)) {
+        const normalizedLevel = normalize(level);
+        if (levels.has(normalizedLevel)) {
             throw new Error(`${path} must contain unique values`);
         }
-        levels.add(level);
+        levels.add(normalizedLevel);
     });
 }
 
@@ -248,6 +249,13 @@ function validateScale(scale, axis) {
         throw new Error(`${path}.breaks and labels must have the same length`);
     }
 
+    if (
+        scale.range !== undefined &&
+        breaks.some((value) => value < scale.range[0] || value > scale.range[1])
+    ) {
+        throw new Error(`${path}.breaks must fall within ${path}.range`);
+    }
+
     if (scale.type === 'log') {
         if (scale.beginAtZero === true) {
             throw new Error(
@@ -305,7 +313,7 @@ function validateColorScale(scale) {
     }
 
     if (scale.order !== undefined) {
-        validateDiscreteOrder(scale.order, `${path}.order`);
+        validateDiscreteOrder(scale.order, `${path}.order`, String);
     }
 
     if (
