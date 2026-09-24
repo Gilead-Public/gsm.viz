@@ -44,4 +44,12 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
         description:
             'Each point represents one site and compares participant exposure with reported events.',
     },
+    tooltip: {
+        format: '{site}: {events} events at {exposure} exposure ({color})',
+    },
+    callbacks: {
+        onClick: (point) => {
+            console.log('Selected source row:', point._datum);
+        },
+    },
 });
