@@ -25,8 +25,20 @@ describe('points/structureData', () => {
             datasets: [
                 {
                     data: [
-                        { x: 2, y: 20, _key: 0, _datum: first },
-                        { x: 1, y: 10, _key: 1, _datum: second },
+                        {
+                            x: 2,
+                            y: 20,
+                            _index: 0,
+                            _key: 0,
+                            _datum: first,
+                        },
+                        {
+                            x: 1,
+                            y: 10,
+                            _index: 1,
+                            _key: 1,
+                            _datum: second,
+                        },
                     ],
                 },
             ],
@@ -578,7 +590,9 @@ describe('points/structureData', () => {
                     structureData(
                         makeAestheticSpec(
                             [{ xValue: 1, yValue: 2, [field]: value }],
-                            { [aesthetic]: field }
+                            {
+                                [aesthetic]: field,
+                            }
                         )
                     )
                 ).toThrow(
