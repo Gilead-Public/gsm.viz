@@ -53,7 +53,6 @@ function getNumericAesthetic(row, field, aesthetic, index) {
     return value;
 }
 
-
 function getColor(level, index, colorScale) {
     if (Object.prototype.hasOwnProperty.call(colorScale.colors, level)) {
         return colorScale.colors[level];
