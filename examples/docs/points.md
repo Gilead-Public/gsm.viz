@@ -243,6 +243,13 @@ const chart = gsmViz.default.points(element, data, {
         multiple: false,
         opacity: 0.2,
     },
+    zoom: {
+        enabled: false,
+        mode: 'xy',  // 'x', 'y', or 'xy'
+        pan: false,
+        wheel: true,
+        pinch: true,
+    },
     theme: {
         maintainAspectRatio: false,
         animation: false,
@@ -252,7 +259,7 @@ const chart = gsmViz.default.points(element, data, {
 
 The renderer supports ungrouped points; categorical color and shape mappings;
 continuous size and opacity mappings; linear or logarithmic x/y axes;
-annotations; and keyed point or color-group selection.
+annotations; keyed point or color-group selection; and optional zoom and pan.
 
 ## Numeric axes
 
@@ -559,6 +566,61 @@ Fixed ranges, current callbacks, keyboard behavior, and hidden groups otherwise
 remain configured. Enabling or disabling point labels and keyboard selection
 through `updateSpec` registers or cleans up their plugins, status element, and
 listeners in place.
+
+## Zoom and pan
+
+Zoom is disabled by default. Enable it for either axis or both axes:
+
+```js
+const chart = gsmViz.default.points(element, data, {
+    mapping: { x: 'exposure', y: 'events' },
+    zoom: {
+        enabled: true,
+        mode: 'xy',
+        pan: true,
+        wheel: true,
+        pinch: true,
+    },
+});
+
+chart.resetZoom();
+```
+
+| Key       | Type      | Default | Description                               |
+| --------- | --------- | ------- | ----------------------------------------- |
+| `enabled` | `boolean` | `false` | Activate zoom and pan behavior            |
+| `mode`    | `string`  | `'xy'`  | Restrict interaction to `x`, `y`, or `xy` |
+| `pan`     | `boolean` | `false` | Allow pointer dragging to pan             |
+| `wheel`   | `boolean` | `true`  | Allow mouse-wheel zooming                 |
+| `pinch`   | `boolean` | `true`  | Allow touch pinch-to-zoom                 |
+
+`chart.resetZoom()` is supplied by `chartjs-plugin-zoom`. The normal
+`updateData` and `updateSpec` helpers rebuild zoom options, so settings can be
+enabled, disabled, or changed in place. Either update resets the current zoom
+window before applying the rebuilt scales. Zoom operates on Chart.js's runtime
+scale limits; it never modifies a configured `scales.x.range` or
+`scales.y.range` in the stored spec. A later update therefore reapplies those
+fixed ranges.
+
+## Image export
+
+Every chart exposes an image-download helper:
+
+```js
+chart.helpers.exportImage(chart);
+chart.helpers.exportImage(chart, 'site-scatter.png');
+```
+
+The helper captures the rendered canvas, including its white background, as an
+opaque PNG. An explicit non-empty filename is used unchanged. When it is
+omitted, the filename is chosen in this order:
+
+1. The sanitized `labels.title`
+2. `<y>-by-<x>.png`, using each scale label when present and otherwise its mapping
+3. `points.png`
+
+Generated names are lowercase, remove non-filename punctuation, and replace
+whitespace with dashes.
 
 ## Data rules
 
