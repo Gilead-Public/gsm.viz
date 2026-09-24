@@ -9,6 +9,10 @@
 - Add linear/logarithmic point axes with fixed ranges, automatic begin-at-zero behavior, explicit breaks and labels, and strict positive log-domain validation (#571).
 - Add row-aware tooltip templates and formatters, Chart.js tooltip callback precedence, and point-only click/hover callbacks with source-row payloads (#572).
 
+### `bars`
+
+- Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).
+
 ## gsm.viz 2.4.0 (Release Candidate)
 
 ### New: `bars` Module

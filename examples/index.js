@@ -24843,6 +24843,7 @@ var gsmViz = (() => {
       animation: false,
       dynamicSizing: false,
       dynamicCategoryAxis: false,
+      dynamicValueAxis: false,
       pxPerCategory: 30
     },
     zoom: {
@@ -25242,6 +25243,11 @@ var gsmViz = (() => {
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const percentageTicks = { callback: (v) => `${v}%` };
+    const percentMax = specScales.y.max !== void 0 ? {} : spec.theme?.dynamicValueAxis ? {
+      afterDataLimits: (scale) => {
+        scale.max = Math.min(scale.max, 100);
+      }
+    } : { max: 100 };
     const specTicks = specScales.x.ticks || {};
     const categoryTicks = {};
     if (spec.theme?.dynamicSizing) {
@@ -25278,7 +25284,7 @@ var gsmViz = (() => {
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
       ...percent ? {
-        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ...percentMax,
         ticks: percentageTicks
       } : {}
     };
@@ -28280,7 +28286,9 @@ var gsmViz = (() => {
     }
     if (scale.type === "log") {
       if (scale.beginAtZero === true) {
-        throw new Error(`${path}.beginAtZero cannot be true for a log scale`);
+        throw new Error(
+          `${path}.beginAtZero cannot be true for a log scale`
+        );
       }
       if (scale.range?.some((value) => value <= 0)) {
         throw new Error(
@@ -28306,7 +28314,9 @@ var gsmViz = (() => {
       validatePlainObject(scale.colors, `${path}.colors`);
       Object.entries(scale.colors).forEach(([level, color3]) => {
         if (typeof color3 !== "string" || color3.trim().length === 0) {
-          throw new Error(`${path}.colors.${level} must be a non-empty string`);
+          throw new Error(
+            `${path}.colors.${level} must be a non-empty string`
+          );
         }
       });
     }
@@ -28316,7 +28326,9 @@ var gsmViz = (() => {
       }
       scale.palette.forEach((color3, index3) => {
         if (typeof color3 !== "string" || color3.trim().length === 0) {
-          throw new Error(`${path}.palette[${index3}] must be a non-empty string`);
+          throw new Error(
+            `${path}.palette[${index3}] must be a non-empty string`
+          );
         }
       });
     }
@@ -28355,7 +28367,9 @@ var gsmViz = (() => {
     supportedFields.callbacks.forEach((field) => {
       const callback2 = callbacks[field];
       if (callback2 !== void 0 && callback2 !== null && typeof callback2 !== "function") {
-        throw new Error(`spec.callbacks.${field} must be a function or null`);
+        throw new Error(
+          `spec.callbacks.${field} must be a function or null`
+        );
       }
     });
   }
@@ -28427,14 +28441,22 @@ var gsmViz = (() => {
     }
     if (spec.scales !== void 0) {
       validatePlainObject(spec.scales, "spec.scales");
-      validateSupportedFields(spec.scales, supportedFields.scales, "spec.scales");
+      validateSupportedFields(
+        spec.scales,
+        supportedFields.scales,
+        "spec.scales"
+      );
       validateScale(spec.scales.x, "x");
       validateScale(spec.scales.y, "y");
       validateColorScale(spec.scales.color);
     }
     if (spec.labels !== void 0) {
       validatePlainObject(spec.labels, "spec.labels");
-      validateSupportedFields(spec.labels, supportedFields.labels, "spec.labels");
+      validateSupportedFields(
+        spec.labels,
+        supportedFields.labels,
+        "spec.labels"
+      );
       supportedFields.labels.forEach((field) => {
         validateOptionalString(spec.labels[field], `spec.labels.${field}`);
       });
@@ -28443,7 +28465,9 @@ var gsmViz = (() => {
       validatePlainObject(spec.tooltip, "spec.tooltip");
       validateOptionalString(spec.tooltip.format, "spec.tooltip.format");
       if (spec.tooltip.formatter !== void 0 && spec.tooltip.formatter !== null && typeof spec.tooltip.formatter !== "function") {
-        throw new Error("spec.tooltip.formatter must be a function or null");
+        throw new Error(
+          "spec.tooltip.formatter must be a function or null"
+        );
       }
       validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
     }
