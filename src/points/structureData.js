@@ -1,3 +1,5 @@
+import styleData from './styleData.js';
+
 const MISSING_COLOR_LABEL = '(Missing)';
 const MISSING_COLOR = '#bdbdbd';
 
@@ -198,4 +200,3 @@ export default function structureData(spec) {
         datasets: styleData([{ data: points }], spec),
     };
 }
-import styleData from './styleData.js';

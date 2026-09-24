@@ -1,3 +1,5 @@
+import { validateTooltipFormat } from './tooltipFormat.js';
+
 const supportedFields = {
     spec: [
         'mapping',
@@ -537,4 +539,3 @@ export default function validateSpec(data, spec) {
     validateSelection(spec.selection);
     validateTheme(spec.theme);
 }
-import { validateTooltipFormat } from './tooltipFormat.js';

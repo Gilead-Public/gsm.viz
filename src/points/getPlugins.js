@@ -1,3 +1,6 @@
+import { Chart } from 'chart.js';
+import buildTooltip from './buildTooltip.js';
+
 /**
  * Build the initial Chart.js plugin configuration for points.
  *
@@ -56,5 +59,3 @@ export default function getPlugins(spec) {
         tooltip: buildTooltip(spec.tooltip),
     };
 }
-import { Chart } from 'chart.js';
-import buildTooltip from './buildTooltip.js';
