@@ -64,6 +64,10 @@ const defaults = {
         caption: undefined,
         description: undefined,
     },
+    annotations: {
+        referenceLines: [],
+        lines: [],
+    },
     tooltip: {
         format: undefined,
         formatter: undefined,
