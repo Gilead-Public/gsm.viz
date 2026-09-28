@@ -1,3 +1,6 @@
+import { Chart } from 'chart.js';
+import buildTooltip from './buildTooltip.js';
+
 /**
  * Build the initial Chart.js plugin configuration for points.
  *
@@ -23,6 +26,24 @@ export default function getPlugins(spec) {
         };
     }
 
+    if (hasColor && spec.mapping.opacity) {
+        // Chart.js draws each swatch from the group's first point, so use the
+        // group's base color instead of that point's opacity.
+        legend.labels = {
+            generateLabels: (chart) =>
+                Chart.defaults.plugins.legend.labels
+                    .generateLabels(chart)
+                    .map((item) => {
+                        const color =
+                            chart.data.datasets[item.datasetIndex]._baseColor;
+
+                        return color
+                            ? { ...item, fillStyle: color, strokeStyle: color }
+                            : item;
+                    }),
+        };
+    }
+
     return {
         title: {
             display: !!title,
@@ -38,4 +59,3 @@ export default function getPlugins(spec) {
         tooltip: buildTooltip(spec.tooltip),
     };
 }
-import buildTooltip from './buildTooltip.js';

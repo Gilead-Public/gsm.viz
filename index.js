@@ -28190,10 +28190,11 @@ var gsmViz = (() => {
       "selection",
       "theme"
     ],
-    mapping: ["x", "y", "key", "color"],
-    scales: ["x", "y", "color"],
+    mapping: ["x", "y", "key", "color", "size", "opacity"],
+    scales: ["x", "y", "color", "size", "opacity"],
     scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
+    continuousAestheticScale: ["range"],
     labels: ["title", "caption", "description"],
     callbacks: ["onClick", "onHover", "onSelect"],
     selection: ["enabled", "opacity", "multiple"],
@@ -28354,6 +28355,28 @@ var gsmViz = (() => {
       throw new Error(`${path}.label must be a string or null`);
     }
   }
+  function validateContinuousAestheticScale(scale, aesthetic) {
+    if (scale === void 0) return;
+    const path = `spec.scales.${aesthetic}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(
+      scale,
+      supportedFields.continuousAestheticScale,
+      path
+    );
+    if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
+      throw new Error(`${path}.range must contain two finite numbers`);
+    }
+    if (aesthetic === "size" && scale.range.some((value) => value <= 0)) {
+      throw new Error(`${path}.range values must be greater than zero`);
+    }
+    if (aesthetic === "opacity" && scale.range.some((value) => value < 0 || value > 1)) {
+      throw new Error(`${path}.range values must be between 0 and 1`);
+    }
+    if (scale.range[0] >= scale.range[1]) {
+      throw new Error(`${path}.range values must be strictly increasing`);
+    }
+  }
   function validateCallbacks(callbacks) {
     if (callbacks === void 0) {
       return;
@@ -28439,6 +28462,13 @@ var gsmViz = (() => {
         throw new Error("spec.mapping.color must be a non-empty string");
       }
     }
+    ["size", "opacity"].forEach((aesthetic) => {
+      if (spec.mapping[aesthetic] !== void 0 && (typeof spec.mapping[aesthetic] !== "string" || spec.mapping[aesthetic].trim().length === 0)) {
+        throw new Error(
+          `spec.mapping.${aesthetic} must be a non-empty string`
+        );
+      }
+    });
     if (spec.scales !== void 0) {
       validatePlainObject(spec.scales, "spec.scales");
       validateSupportedFields(
@@ -28449,6 +28479,8 @@ var gsmViz = (() => {
       validateScale(spec.scales.x, "x");
       validateScale(spec.scales.y, "y");
       validateColorScale(spec.scales.color);
+      validateContinuousAestheticScale(spec.scales.size, "size");
+      validateContinuousAestheticScale(spec.scales.opacity, "opacity");
     }
     if (spec.labels !== void 0) {
       validatePlainObject(spec.labels, "spec.labels");
@@ -28524,6 +28556,12 @@ var gsmViz = (() => {
         palette: DEFAULT_COLOR_PALETTE,
         order: [],
         label: void 0
+      },
+      size: {
+        range: [3, 12]
+      },
+      opacity: {
+        range: [0.25, 1]
       }
     },
     labels: {
@@ -28574,7 +28612,12 @@ var gsmViz = (() => {
       scales: {
         x: mergeDefaults(defaults_default3.scales.x, spec.scales?.x),
         y: mergeDefaults(defaults_default3.scales.y, spec.scales?.y),
-        color: mergeDefaults(defaults_default3.scales.color, spec.scales?.color)
+        color: mergeDefaults(defaults_default3.scales.color, spec.scales?.color),
+        size: mergeDefaults(defaults_default3.scales.size, spec.scales?.size),
+        opacity: mergeDefaults(
+          defaults_default3.scales.opacity,
+          spec.scales?.opacity
+        )
       },
       labels: mergeDefaults(defaults_default3.labels, spec.labels),
       tooltip: mergeTooltip(spec.tooltip),
@@ -28582,6 +28625,87 @@ var gsmViz = (() => {
       selection: mergeDefaults(defaults_default3.selection, spec.selection),
       theme: mergeDefaults(defaults_default3.theme, spec.theme)
     };
+  }
+
+  // src/points/styleData.js
+  function clamp3(value, minimum, maximum) {
+    return Math.min(Math.max(value, minimum), maximum);
+  }
+  function mapSizeValue(value, domain, range) {
+    if (domain[0] === domain[1]) {
+      return (range[0] + range[1]) / 2;
+    }
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
+    const minimumArea = range[0] ** 2;
+    const maximumArea = range[1] ** 2;
+    return Math.sqrt(minimumArea + proportion * (maximumArea - minimumArea));
+  }
+  function mapOpacityValue(value, domain, range) {
+    if (domain[0] === domain[1]) {
+      return (range[0] + range[1]) / 2;
+    }
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
+    return range[0] + proportion * (range[1] - range[0]);
+  }
+  function withOpacity(color3, opacity) {
+    const parsed = color2(color3);
+    if (!parsed) {
+      throw new Error(
+        `points could not apply opacity to color ${JSON.stringify(color3)}`
+      );
+    }
+    parsed.opacity = opacity;
+    return parsed.formatRgb();
+  }
+  function getDomain(points2, field) {
+    let minimum = Infinity;
+    let maximum = -Infinity;
+    points2.forEach((point) => {
+      minimum = Math.min(minimum, point[field]);
+      maximum = Math.max(maximum, point[field]);
+    });
+    return [minimum, maximum];
+  }
+  function styleData(datasets, spec) {
+    const points2 = datasets.flatMap((dataset) => dataset.data);
+    if (points2.length === 0) return datasets;
+    const sizeDomain = spec.mapping.size ? getDomain(points2, "_size") : void 0;
+    const opacityDomain = spec.mapping.opacity ? getDomain(points2, "_opacity") : void 0;
+    datasets.forEach((dataset) => {
+      if (sizeDomain) {
+        dataset.pointRadius = dataset.data.map(
+          (point) => mapSizeValue(point._size, sizeDomain, spec.scales.size.range)
+        );
+        dataset.pointHoverRadius = dataset.pointRadius.map(
+          (radius3) => radius3 + 2
+        );
+      }
+      if (opacityDomain && dataset.data.length > 0) {
+        const baseColor = dataset.backgroundColor ?? spec.scales.color.palette[0];
+        const colors2 = dataset.data.map(
+          (point) => withOpacity(
+            baseColor,
+            mapOpacityValue(
+              point._opacity,
+              opacityDomain,
+              spec.scales.opacity.range
+            )
+          )
+        );
+        dataset._baseColor = baseColor;
+        dataset.backgroundColor = colors2;
+        dataset.borderColor = [...colors2];
+      }
+    });
+    return datasets;
   }
 
   // src/points/structureData.js
@@ -28607,6 +28731,17 @@ var gsmViz = (() => {
       );
     }
     return String(value);
+  }
+  function getNumericAesthetic(row, field, aesthetic, index3) {
+    const value = row?.[field];
+    const requirement = aesthetic === "size" ? "a finite non-negative number" : "a finite number";
+    const isValid = typeof value === "number" && Number.isFinite(value) && (aesthetic !== "size" || value >= 0);
+    if (!isValid) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${aesthetic} must be ${requirement}`
+      );
+    }
+    return value;
   }
   function getColor(level, index3, colorScale) {
     if (Object.prototype.hasOwnProperty.call(colorScale.colors, level)) {
@@ -28644,6 +28779,17 @@ var gsmViz = (() => {
       };
       const colorLevel = mapping.color ? getColorLevel(row, mapping.color, index3) : void 0;
       if (colorLevel !== void 0) point._color = colorLevel;
+      if (mapping.size) {
+        point._size = getNumericAesthetic(row, mapping.size, "size", index3);
+      }
+      if (mapping.opacity) {
+        point._opacity = getNumericAesthetic(
+          row,
+          mapping.opacity,
+          "opacity",
+          index3
+        );
+      }
       return { point, colorLevel };
     });
     const points2 = records.map(({ point }) => point);
@@ -28667,20 +28813,19 @@ var gsmViz = (() => {
         }
         groups2.get(key).push(point);
       });
-      return {
-        datasets: levels.map((level, index3) => {
-          const color3 = getColor(level, index3, colorScale);
-          return {
-            label: level,
-            data: groups2.get(level) || [],
-            backgroundColor: color3,
-            borderColor: color3
-          };
-        })
-      };
+      const datasets = levels.map((level, index3) => {
+        const color3 = getColor(level, index3, colorScale);
+        return {
+          label: level,
+          data: groups2.get(level) || [],
+          backgroundColor: color3,
+          borderColor: color3
+        };
+      });
+      return { datasets: styleData(datasets, spec) };
     }
     return {
-      datasets: [{ data: points2 }]
+      datasets: styleData([{ data: points2 }], spec)
     };
   }
 
@@ -28786,6 +28931,14 @@ var gsmViz = (() => {
       legend5.title = {
         display: !!colorLabel,
         text: colorLabel || ""
+      };
+    }
+    if (hasColor && spec.mapping.opacity) {
+      legend5.labels = {
+        generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
+          const color3 = chart.data.datasets[item.datasetIndex]._baseColor;
+          return color3 ? { ...item, fillStyle: color3, strokeStyle: color3 } : item;
+        })
       };
     }
     return {
