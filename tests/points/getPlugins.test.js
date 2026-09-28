@@ -226,47 +226,106 @@ describe('points/getPlugins', () => {
         });
     });
 
-    describe('color legend', () => {
-        test('shows the legend with the mapping name as its title', () => {
+    describe('line annotations', () => {
+        test('configures reference lines for the annotation plugin', () => {
             const plugins = getPlugins({
                 ...spec,
-                mapping: { ...spec.mapping, color: 'treatment' },
-            });
-
-            expect(plugins.legend).toEqual({
-                display: true,
-                title: {
-                    display: true,
-                    text: 'treatment',
+                annotations: {
+                    referenceLines: [{ axis: 'y', value: 5 }],
+                    lines: [],
                 },
             });
+
+            expect(plugins.annotation.annotations).toEqual([
+                expect.objectContaining({
+                    type: 'line',
+                    yMin: 5,
+                    yMax: 5,
+                }),
+            ]);
+            expect(plugins.annotation.clip).toBe(false);
         });
 
-        test.each([null, ''])('hides the title for explicit %p', (label) => {
+        test('shows only opted-in line datasets in the legend', () => {
             const plugins = getPlugins({
                 ...spec,
-                mapping: { ...spec.mapping, color: 'treatment' },
-                scales: { color: { label } },
+                annotations: {
+                    referenceLines: [],
+                    lines: [{ showInLegend: false }, { showInLegend: true }],
+                },
             });
+            const point = { label: '' };
+            const hiddenLine = {
+                label: 'Hidden',
+                _annotation: true,
+                _showInLegend: false,
+            };
+            const visibleLine = {
+                label: 'Visible',
+                _annotation: true,
+                _showInLegend: true,
+            };
+            const chartData = {
+                datasets: [point, hiddenLine, visibleLine],
+            };
 
             expect(plugins.legend.display).toBe(true);
-            expect(plugins.legend.title).toEqual({
-                display: false,
-                text: '',
-            });
+            expect(
+                [0, 1, 2].filter((datasetIndex) =>
+                    plugins.legend.labels.filter({ datasetIndex }, chartData)
+                )
+            ).toEqual([2]);
         });
 
-        test('uses an explicit legend title', () => {
+        test('keeps point groups when filtering annotation legends', () => {
             const plugins = getPlugins({
                 ...spec,
-                mapping: { ...spec.mapping, color: 'treatment' },
-                scales: { color: { label: 'Treatment arm' } },
+                mapping: { ...spec.mapping, color: 'group' },
+                annotations: {
+                    referenceLines: [],
+                    lines: [{ showInLegend: false }],
+                },
             });
+            const chartData = {
+                datasets: [
+                    { label: 'A' },
+                    {
+                        label: 'Line',
+                        _annotation: true,
+                        _showInLegend: false,
+                    },
+                ],
+            };
 
-            expect(plugins.legend.title).toEqual({
-                display: true,
-                text: 'Treatment arm',
+            expect(
+                plugins.legend.labels.filter({ datasetIndex: 0 }, chartData)
+            ).toBe(true);
+            expect(
+                plugins.legend.labels.filter({ datasetIndex: 1 }, chartData)
+            ).toBe(false);
+        });
+
+        test('excludes annotation datasets before applying a tooltip filter', () => {
+            const owner = {};
+            const filter = jest.fn(function () {
+                return this === owner;
             });
+            const plugins = getPlugins({
+                ...spec,
+                tooltip: { filter },
+                annotations: {
+                    referenceLines: [],
+                    lines: [{}],
+                },
+            });
+            const annotation = { dataset: { _annotation: true } };
+            const point = { dataset: {} };
+
+            expect(plugins.tooltip.filter(annotation)).toBe(false);
+            expect(filter).not.toHaveBeenCalled();
+            expect(plugins.tooltip.filter.call(owner, point)).toBe(true);
+            expect(filter).toHaveBeenCalledWith(point);
+            expect(plugins.tooltip.mode).toBe('gsmPoints:point');
         });
     });
 });

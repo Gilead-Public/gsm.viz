@@ -55,6 +55,15 @@ const data = [
     },
 ];
 
+const thresholds = [
+    { exposure: 1, events: 2, threshold: 'Review' },
+    { exposure: 10, events: 5, threshold: 'Review' },
+    { exposure: 100, events: 10, threshold: 'Review' },
+    { exposure: 1, events: 4, threshold: 'Alert' },
+    { exposure: 10, events: 8, threshold: 'Alert' },
+    { exposure: 100, events: 16, threshold: 'Alert' },
+];
+
 const chart = gsmViz.default.points(element, data, {
     mapping: {
         x: 'exposure',
@@ -101,6 +110,34 @@ const chart = gsmViz.default.points(element, data, {
         caption: 'Simulated data',
         description:
             'Each point represents one site and compares exposure with reported events.',
+    },
+    annotations: {
+        referenceLines: [
+            {
+                axis: 'y',
+                value: 10,
+                label: '10-event reference',
+                dash: [3, 3],
+            },
+        ],
+        lines: [
+            {
+                data: thresholds,
+                mapping: {
+                    x: 'exposure',
+                    y: 'events',
+                    group: 'threshold',
+                },
+                order: ['Review', 'Alert'],
+                colors: {
+                    Review: '#e5a919',
+                    Alert: '#e15759',
+                },
+                width: 2,
+                dash: [6, 3],
+                showInLegend: true,
+            },
+        ],
     },
     tooltip: {
         format: '{site}: {events} events at {exposure} exposure ({color})',
@@ -165,6 +202,10 @@ const chart = gsmViz.default.points(element, data, {
         title: undefined,
         caption: undefined,
         description: undefined,
+    },
+    annotations: {
+        referenceLines: [],
+        lines: [],
     },
     tooltip: {
         format: undefined,
@@ -248,6 +289,72 @@ title component.
 For a shared color/shape field, an explicit color label takes precedence over an
 explicit shape label; otherwise either explicit label takes precedence over the
 field name.
+
+## Reference lines
+
+Use `annotations.referenceLines` for constant vertical or horizontal guides:
+
+```js
+annotations: {
+    referenceLines: [
+        {
+            axis: 'y',          // 'x' or 'y'
+            value: 10,
+            label: 'Target',    // optional
+            color: '#666666',
+            width: 1,
+            dash: [4, 2],
+            labelPosition: 'end', // 'start', 'center', or 'end'
+        },
+    ],
+}
+```
+
+Reference values must be finite JavaScript numbers and must be positive on a log
+axis. They extend automatic domains so the guide remains visible; an explicit
+axis `range` remains authoritative.
+
+## Auxiliary line series
+
+`annotations.lines` adds one or more external line layers without merging them
+into the point data:
+
+```js
+annotations: {
+    lines: [
+        {
+            data: thresholdData,
+            mapping: {
+                x: 'exposure',
+                y: 'limit',
+                group: 'threshold', // optional
+            },
+            order: ['Review', 'Alert'],
+            label: 'Threshold',     // legend prefix for grouped lines
+            color: undefined,       // shared line color
+            colors: { Review: '#e5a919', Alert: '#e15759' },
+            palette: ['#e5a919', '#e15759'],
+            width: 2,
+            dash: [6, 3],
+            tension: 0,
+            stepped: false,         // or 'before', 'after', 'middle'
+            showInLegend: false,
+        },
+    ],
+}
+```
+
+Auxiliary coordinates follow the same strict finite-number and positive-log
+rules as points. Input order determines each line path. With `mapping.group`,
+first-seen order is used unless `order` is supplied; ordered absent groups remain
+as empty datasets, and `null` positions the missing group. Named `colors` take
+precedence over `color`, then `palette`. Without a group, the first palette color
+is used when `color` is absent.
+
+Line geometry participates in automatic x/y domains, while explicit ranges still
+win. Auxiliary lines are excluded from tooltips, pointer callbacks, and point
+encoding descriptions. `showInLegend` opts a line into the legend; an ungrouped
+line then requires a non-empty `label`.
 
 ## Tooltips
 
