@@ -1,0 +1,55 @@
+div.list * {
+    margin: 0;
+    padding: 0;
+}
+
+#container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#container div {
+    width: 13.74%;
+    height: 50px;
+    border: 1px dotted #aaa;
+    margin: 2px;
+    display: none;
+}
+
+div.sparkline {
+    display: inline-block;
+    width: 200px;
+    height: 40px;
+    float: left;
+    margin: 0 15px 0 0;
+}
+
+div.list {
+    margin: 20px;
+}
+
+ul {
+    list-style-type: none;
+    width: 1000px;
+}
+
+li {
+    padding: 10px;
+    overflow: auto;
+}
+
+li:hover {
+    background: #eee;
+    cursor: pointer;
+}
+
+li h3 {
+    font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+}
+
+li p {
+    font: 200 12px/1.5 Georgia, Times New Roman, serif;
+}
