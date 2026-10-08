@@ -43,7 +43,7 @@ export default function getPlugins(spec) {
         legend.labels = { usePointStyle: true };
     }
 
-    if (hasColor && spec.mapping.opacity) {
+    if ((hasColor || hasShape) && spec.mapping.opacity) {
         // Chart.js draws each swatch from the group's first point, so use the
         // group's base color instead of that point's opacity.
         legend.labels = {
