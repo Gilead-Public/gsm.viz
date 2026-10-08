@@ -1,0 +1,419 @@
+# points
+
+Renders a two-dimensional point chart using a **ggplot2-inspired spec** object.
+`points` is the generic, data-agnostic counterpart to the KRI-specific
+`scatterPlot` module.
+
+---
+
+## Signature
+
+```js
+gsmViz.default.points(element, data, spec);
+```
+
+| Parameter | Type             | Default  | Description                                              |
+| --------- | ---------------- | -------- | -------------------------------------------------------- |
+| `element` | `Node \| string` | `'body'` | DOM element or CSS selector in which to render the chart |
+| `data`    | `Array`          | `[]`     | Array of source rows                                     |
+| `spec`    | `Object`         | required | Point chart specification                                |
+
+Returns a Chart.js chart instance.
+
+---
+
+## Basic example
+
+```js
+const data = [
+    {
+        exposure: 5,
+        events: 1,
+        site: 'Site 01',
+        arm: 'Control',
+        participants: 12,
+        completeness: 0.72,
+        status: 'Review',
+    },
+    {
+        exposure: 12,
+        events: 3,
+        site: 'Site 02',
+        arm: 'Treatment',
+        participants: 35,
+        completeness: 0.94,
+        status: 'On target',
+    },
+    {
+        exposure: 25,
+        events: 6,
+        site: 'Site 03',
+        arm: null,
+        participants: 48,
+        completeness: 0.83,
+        status: 'Review',
+    },
+];
+
+const thresholds = [
+    { exposure: 1, events: 2, threshold: 'Review' },
+    { exposure: 10, events: 5, threshold: 'Review' },
+    { exposure: 100, events: 10, threshold: 'Review' },
+    { exposure: 1, events: 4, threshold: 'Alert' },
+    { exposure: 10, events: 8, threshold: 'Alert' },
+    { exposure: 100, events: 16, threshold: 'Alert' },
+];
+
+const chart = gsmViz.default.points(element, data, {
+    mapping: {
+        x: 'exposure',
+        y: 'events',
+        key: 'site',
+        color: 'arm',
+        size: 'participants',
+        opacity: 'completeness',
+        shape: 'status',
+    },
+    scales: {
+        x: {
+            type: 'log',
+            label: 'Participant exposure',
+            range: [1, 100],
+            breaks: [1, 10, 100],
+            labels: ['1', '10', '100'],
+        },
+        y: {
+            label: 'Reported events',
+            beginAtZero: true,
+        },
+        color: {
+            colors: {
+                Control: '#4e79a7',
+                Treatment: '#f28e2b',
+            },
+            order: ['Control', 'Treatment', null],
+            label: 'Treatment arm',
+        },
+        size: { range: [4, 12] },
+        opacity: { range: [0.35, 1] },
+        shape: {
+            values: {
+                'On target': 'circle',
+                Review: 'triangle',
+            },
+            order: ['On target', 'Review'],
+            label: 'Monitoring status',
+        },
+    },
+    labels: {
+        title: 'Events by exposure',
+        caption: 'Simulated data',
+        description:
+            'Each point represents one site and compares exposure with reported events.',
+    },
+    annotations: {
+        referenceLines: [
+            {
+                axis: 'y',
+                value: 10,
+                label: '10-event reference',
+                dash: [3, 3],
+            },
+        ],
+        lines: [
+            {
+                data: thresholds,
+                mapping: {
+                    x: 'exposure',
+                    y: 'events',
+                    group: 'threshold',
+                },
+                order: ['Review', 'Alert'],
+                colors: {
+                    Review: '#e5a919',
+                    Alert: '#e15759',
+                },
+                width: 2,
+                dash: [6, 3],
+                showInLegend: true,
+            },
+        ],
+    },
+    tooltip: {
+        format: '{site}: {events} events at {exposure} exposure ({color})',
+    },
+    callbacks: {
+        onClick: (point) => {
+            console.log(point._datum);
+        },
+    },
+});
+```
+
+## Initial spec
+
+```js
+{
+    mapping: {
+        x: 'xField',       // required
+        y: 'yField',       // required
+        key: 'idField',    // optional stable point identity
+        color: 'groupField', // optional categorical grouping
+        size: 'sizeField',    // optional non-negative numeric field
+        opacity: 'alphaField', // optional finite numeric field
+        shape: 'shapeField',   // optional categorical grouping
+    },
+    scales: {
+        x: {
+            type: 'linear',     // 'linear' or 'log'
+            label: undefined, // defaults to mapping.x; '' hides the title
+            range: undefined,   // optional fixed [min, max]
+            beginAtZero: false, // automatic linear domains only
+            breaks: [],         // explicit, increasing tick values
+            labels: [],         // one label per break
+        },
+        y: {
+            type: 'linear',
+            label: undefined, // defaults to mapping.y; '' hides the title
+            range: undefined,
+            beginAtZero: false,
+            breaks: [],
+            labels: [],
+        },
+        color: {
+            colors: {},       // level-to-CSS-color map
+            palette: [/* default categorical colors */],
+            order: [],        // explicit order; null places missing values
+            label: undefined, // defaults to mapping.color
+        },
+        size: {
+            range: [3, 12],   // positive minimum and maximum radius
+        },
+        opacity: {
+            range: [0.25, 1], // minimum and maximum alpha
+        },
+        shape: {
+            values: {},       // level-to-point-style map
+            order: [],        // explicit order; null places missing values
+            label: undefined, // defaults to mapping.shape
+        },
+    },
+    labels: {
+        title: undefined,
+        caption: undefined,
+        description: undefined,
+    },
+    annotations: {
+        referenceLines: [],
+        lines: [],
+    },
+    tooltip: {
+        format: undefined,
+        formatter: undefined,
+    },
+    callbacks: {
+        onClick: null,
+        onHover: null,
+    },
+    theme: {
+        maintainAspectRatio: false,
+        animation: false,
+    },
+}
+```
+
+The renderer supports ungrouped points; categorical color and shape mappings;
+continuous size and opacity mappings; and linear or logarithmic x/y axes.
+Annotations and additional interactions are added as separate reviewable
+features.
+
+## Numeric axes
+
+Each axis supports `type: 'linear'` or `type: 'log'`; the public `log` spelling is
+normalized to Chart.js's `logarithmic` scale. An explicit two-number `range`
+fixes the axis minimum and maximum. Otherwise, `beginAtZero: true` extends an
+automatic linear domain to zero.
+
+Set `breaks` and `labels` together to replace generated ticks. Breaks must be
+finite, strictly increasing values, and each break must have a string or numeric
+label. Log-scale coordinates, ranges, and breaks must all be greater than zero;
+`beginAtZero: true` is therefore invalid on a log scale. Invalid settings and
+coordinates throw before Chart.js renders.
+
+## Categorical color
+
+Set `mapping.color` to create one dataset and legend entry per categorical level.
+Levels use first-seen order unless `scales.color.order` is provided. Ordered
+levels with no matching rows remain as empty datasets so legend identity and
+palette positions stay stable as data changes; new observed levels are appended.
+
+`scales.color.colors` maps level names to CSS colors. Levels without a named
+color use the default palette, or the non-empty `scales.color.palette` supplied by
+the caller. Set `scales.color.label` to customize the legend title; `null` or `''`
+hides the title. Null, undefined, blank, and `NaN` color values share a neutral
+gray `"(Missing)"` level rather than dropping rows. Add `null` to
+`scales.color.order` to position this level explicitly. The literal string
+`"(Missing)"` remains a separate categorical value and is quoted in the legend.
+
+## Continuous size and opacity
+
+`mapping.size` maps finite, non-negative values into `scales.size.range`. The
+scale interpolates point **area**, avoiding the visual exaggeration caused by
+linear radius scaling. Equal input values use the midpoint radius. Hover radius
+is always two pixels larger than the rendered radius.
+
+`mapping.opacity` maps finite values into the clamped
+`scales.opacity.range`. Equal input values use the midpoint alpha. Opacity is
+applied to each point's resolved color, including color-mapped datasets. Numeric
+strings, missing values, infinities, and negative size values throw rather than
+being coerced or dropped.
+
+## Discrete shape
+
+`mapping.shape` creates one dataset per shape level. Use `scales.shape.values` to
+map levels to `circle`, `triangle`, `rect`, `rectRot`, `cross`, `crossRot`,
+`star`, `line`, `dash`, or `rectRounded`; otherwise shapes are assigned in a
+deterministic first-seen or explicit `order`. Missing values use a neutral
+`"(Missing)"` cross that is reserved from automatic fallback assignment.
+
+When color and shape map the same field, each level receives both styles in one
+legend entry. The shared domain starts with `scales.color.order`, appends any
+additional `scales.shape.order` levels, and then appends observed levels. When
+color and shape map different fields, the legend contains only observed
+color/shape combinations, ordered by their respective scale domains. String
+components are quoted in composite labels so combinations remain unambiguous.
+Add `null` to `scales.shape.order` to position missing values; the literal string
+`"(Missing)"` remains distinct and is quoted in the legend. Set
+`scales.shape.label` to customize the legend title; `null` or `''` hides that
+title component.
+For a shared color/shape field, an explicit color label takes precedence over an
+explicit shape label; otherwise either explicit label takes precedence over the
+field name.
+
+## Reference lines
+
+Use `annotations.referenceLines` for constant vertical or horizontal guides:
+
+```js
+annotations: {
+    referenceLines: [
+        {
+            axis: 'y',          // 'x' or 'y'
+            value: 10,
+            label: 'Target',    // optional
+            color: '#666666',
+            width: 1,
+            dash: [4, 2],
+            labelPosition: 'end', // 'start', 'center', or 'end'
+        },
+    ],
+}
+```
+
+Reference values must be finite JavaScript numbers and must be positive on a log
+axis. They extend automatic domains so the guide remains visible; an explicit
+axis `range` remains authoritative.
+
+## Auxiliary line series
+
+`annotations.lines` adds one or more external line layers without merging them
+into the point data:
+
+```js
+annotations: {
+    lines: [
+        {
+            data: thresholdData,
+            mapping: {
+                x: 'exposure',
+                y: 'limit',
+                group: 'threshold', // optional
+            },
+            order: ['Review', 'Alert'],
+            label: 'Threshold',     // legend prefix for grouped lines
+            color: undefined,       // shared line color
+            colors: { Review: '#e5a919', Alert: '#e15759' },
+            palette: ['#e5a919', '#e15759'],
+            width: 2,
+            dash: [6, 3],
+            tension: 0,
+            stepped: false,         // or 'before', 'after', 'middle'
+            showInLegend: false,
+        },
+    ],
+}
+```
+
+Auxiliary coordinates follow the same strict finite-number and positive-log
+rules as points. Input order determines each line path. With `mapping.group`,
+first-seen order is used unless `order` is supplied; ordered absent groups remain
+as empty datasets, and `null` positions the missing group. Named `colors` take
+precedence over `color`, then `palette`. Without a group, the first palette color
+is used when `color` is absent.
+
+Line geometry participates in automatic x/y domains, while explicit ranges still
+win. Auxiliary lines are excluded from tooltips, pointer callbacks, and point
+encoding descriptions. `showInLegend` opts a line into the legend; an ungrouped
+line then requires a non-empty `label`.
+
+## Tooltips
+
+Use `tooltip.format` for field templates:
+
+```js
+tooltip: {
+    format: '{site}: ({x}, {y}), {color}, {datum.region}',
+}
+```
+
+`{x}`, `{y}`, and `{key}` resolve structured point values; `{color}` is available
+when `mapping.color` is set.
+Unqualified placeholders such as `{site}` resolve fields on the original source
+row. Prefix a field with `datum.` or `_datum.` for an explicit source-row lookup;
+nested paths such as `{datum.participant.id}` are supported. Every requested
+source field must exist on every non-empty input row, and unresolved placeholders
+throw descriptive errors.
+
+For complete control, provide
+`tooltip.formatter(point, context, details)`. `details` contains
+`{ x, y, color, key, datum }`. Label precedence is:
+
+1. `tooltip.callbacks.label` using the standard Chart.js signature
+2. `tooltip.formatter`
+3. `tooltip.format`
+4. Chart.js's default scatter label
+
+The gsm.viz-only `format` and `formatter` keys are removed before tooltip options
+are passed to Chart.js. Standard options such as `enabled`, `mode`, `intersect`,
+`position`, styling, and tooltip callbacks can be configured in the same object.
+
+## Pointer callbacks
+
+`callbacks.onClick(point, event)` and `callbacks.onHover(point, event)` run only
+when a point is hit. The structured `point` contains its coordinates, `_key`,
+optional `_color`, and original source row in `_datum`. A pointer cursor is shown
+for interactive points and reset when the pointer leaves or callbacks are
+removed.
+
+## Data rules
+
+-   Values mapped to x and y must already be finite JavaScript numbers and must be
+    positive when their axis uses a log scale.
+-   Numeric strings are not coerced.
+-   Invalid rows throw a descriptive error; rows are never silently dropped.
+-   Duplicate coordinates remain independent points.
+-   `mapping.key`, when supplied, must resolve to a unique string or finite number
+    for every row. Without it, the original row index is the local point key.
+-   Each rendered point retains its original source row as `_datum`.
+-   Color-mapped points retain their resolved categorical value as `_color`.
+-   Size- and opacity-mapped points retain their source values as `_size` and
+    `_opacity`.
+-   Shape-mapped points retain their resolved categorical value as `_shape`.
+-   An empty data array renders a valid empty chart.
+
+## Accessibility and responsive behavior
+
+The canvas receives an image role and text alternative derived from the title,
+description, axis mappings, point count, and encoded color/shape values.
+`theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
+as the container resizes.
