@@ -29218,7 +29218,7 @@ var gsmViz = (() => {
     if (hasShape) {
       legend5.labels = { usePointStyle: true };
     }
-    if (hasColor && spec.mapping.opacity) {
+    if ((hasColor || hasShape) && spec.mapping.opacity) {
       legend5.labels = {
         generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
           const color3 = chart.data.datasets[item.datasetIndex]._baseColor;
