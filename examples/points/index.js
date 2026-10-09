@@ -73,6 +73,15 @@ const data = [
     },
 ];
 
+const thresholds = [
+    { exposure: 1, events: 2, threshold: 'Review threshold' },
+    { exposure: 10, events: 5, threshold: 'Review threshold' },
+    { exposure: 100, events: 10, threshold: 'Review threshold' },
+    { exposure: 1, events: 4, threshold: 'Alert threshold' },
+    { exposure: 10, events: 8, threshold: 'Alert threshold' },
+    { exposure: 100, events: 16, threshold: 'Alert threshold' },
+];
+
 gsmViz.default.points(document.getElementById('points-container'), data, {
     mapping: {
         x: 'exposure',
@@ -120,6 +129,35 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
         caption: 'Simulated site-level data',
         description:
             'Each point represents one site and compares participant exposure with reported events.',
+    },
+    annotations: {
+        referenceLines: [
+            {
+                axis: 'y',
+                value: 10,
+                label: '10-event reference',
+                color: '#666666',
+                dash: [3, 3],
+            },
+        ],
+        lines: [
+            {
+                data: thresholds,
+                mapping: {
+                    x: 'exposure',
+                    y: 'events',
+                    group: 'threshold',
+                },
+                order: ['Review threshold', 'Alert threshold'],
+                colors: {
+                    'Review threshold': '#e5a919',
+                    'Alert threshold': '#e15759',
+                },
+                width: 2,
+                dash: [6, 3],
+                showInLegend: true,
+            },
+        ],
     },
     tooltip: {
         format: '{site}: {events} events at {exposure} exposure ({color})',
