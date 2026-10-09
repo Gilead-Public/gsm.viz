@@ -1,7 +1,11 @@
 export default function onHover(event, activeElements, chart) {
     const callbacks = chart.data._spec_.callbacks;
     const target = event?.native?.target;
-    const isInteractive = !!(callbacks.onClick || callbacks.onHover);
+    const isInteractive = !!(
+        callbacks.onClick ||
+        callbacks.onHover ||
+        chart.data._spec_.selection.enabled
+    );
 
     if (!isInteractive) {
         if (target?.style?.cursor === 'pointer') {

@@ -51,9 +51,7 @@ export function withOpacityFactor(color, factor) {
     const parsed = parseColor(color);
 
     if (!parsed) {
-        throw new Error(
-            `points could not apply opacity to color ${JSON.stringify(color)}`
-        );
+        return `color-mix(in srgb, ${color} ${factor * 100}%, transparent)`;
     }
 
     parsed.opacity = Number((parsed.opacity * factor).toFixed(6));

@@ -433,6 +433,32 @@ describe('points reactive updates', () => {
         );
     });
 
+    test('does not toggle selection after an onClick callback rebuilds the chart', () => {
+        const onSelect = jest.fn();
+        chart = points(container, data, {
+            ...spec,
+            selection: { enabled: true },
+            callbacks: {
+                onSelect,
+                onClick: (point) =>
+                    updateData(
+                        chart,
+                        data.filter((row) => row.id !== point._key)
+                    ),
+            },
+        });
+
+        expect(() =>
+            chart.options.onClick(
+                { type: 'click' },
+                [{ datasetIndex: 0, index: 0 }],
+                chart
+            )
+        ).not.toThrow();
+        expect(getSelection(chart)).toEqual({ type: null, values: [] });
+        expect(onSelect).not.toHaveBeenCalled();
+    });
+
     test('updates the accessible summary and keyboard-selection UI', () => {
         updateSpec(chart, {
             labels: { title: 'Accessible update' },

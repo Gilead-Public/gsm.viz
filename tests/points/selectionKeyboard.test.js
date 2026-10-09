@@ -115,6 +115,39 @@ describe('points keyboard selection', () => {
         expect(getActivePoint(chart)._key).toBe('C');
     });
 
+    test('traverses only points in the current axis ranges', () => {
+        chart = points(
+            container,
+            [
+                { x: 0, y: 0, id: 'hidden', group: 'First' },
+                { x: 5, y: 5, id: 'visible', group: 'Later' },
+                { x: 9, y: 9, id: 'hidden-too', group: 'Later' },
+            ],
+            {
+                mapping: {
+                    x: 'x',
+                    y: 'y',
+                    key: 'id',
+                    color: 'group',
+                },
+                scales: {
+                    x: { range: [4, 6] },
+                    y: { range: [4, 6] },
+                    color: { order: ['First', 'Later'] },
+                },
+                selection: { enabled: true },
+            }
+        );
+
+        press(chart.canvas, 'ArrowRight');
+        expect(getActivePoint(chart)._key).toBe('visible');
+        press(chart.canvas, 'Enter');
+        expect(getSelection(chart)).toEqual({
+            type: 'point',
+            values: ['visible'],
+        });
+    });
+
     test('selects the active point with Enter and clears with Escape', () => {
         const onSelect = jest.fn();
         render({ enabled: true });
