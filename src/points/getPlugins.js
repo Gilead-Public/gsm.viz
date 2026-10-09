@@ -59,7 +59,24 @@ export default function getPlugins(spec) {
             },
         };
     }
-    if (hasColor && spec.mapping.opacity) {
+
+    const tooltip = buildTooltip(spec.tooltip);
+    if (hasLines) {
+        const userFilter = tooltip.filter;
+        tooltip.mode = getPointInteractionMode(tooltip.mode || 'point');
+        tooltip.filter = function (item, ...args) {
+            return (
+                !item.dataset?._annotation &&
+                (!userFilter || userFilter.call(this, item, ...args))
+            );
+        };
+    }
+    const lines = referenceLines(spec);
+    const labels = spec.annotations?.labels?.point;
+
+    if ((hasColor || hasShape) && spec.mapping.opacity) {
+        // Chart.js draws each swatch from the group's first point, so use the
+        // group's base color instead of that point's opacity.
         legend.labels = {
             ...legend.labels,
             generateLabels: (chart) =>
@@ -75,20 +92,6 @@ export default function getPlugins(spec) {
                     }),
         };
     }
-
-    const tooltip = buildTooltip(spec.tooltip);
-    if (hasLines) {
-        const userFilter = tooltip.filter;
-        tooltip.mode = getPointInteractionMode(tooltip.mode || 'point');
-        tooltip.filter = function (item, ...args) {
-            return (
-                !item.dataset?._annotation &&
-                (!userFilter || userFilter.call(this, item, ...args))
-            );
-        };
-    }
-    const lines = referenceLines(spec);
-    const labels = spec.annotations?.labels?.point;
 
     return {
         title: {
