@@ -32,6 +32,10 @@ function mergeAnnotations(annotations = {}) {
         annotations.lines === undefined
             ? defaults.annotations.lines
             : annotations.lines;
+    const pointLabel =
+        annotations.labels?.point === undefined
+            ? defaults.annotations.labels.point
+            : annotations.labels.point;
 
     return {
         referenceLines: referenceLines.map((line) => ({
@@ -47,6 +51,17 @@ function mergeAnnotations(annotations = {}) {
             ...(line.palette ? { palette: [...line.palette] } : {}),
             ...(line.dash ? { dash: [...line.dash] } : {}),
         })),
+        labels: {
+            point:
+                pointLabel === null || pointLabel === false
+                    ? pointLabel
+                    : {
+                          ...pointLabel,
+                          ...(pointLabel.font
+                              ? { font: { ...pointLabel.font } }
+                              : {}),
+                      },
+        },
     };
 }
 

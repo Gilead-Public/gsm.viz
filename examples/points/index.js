@@ -7,6 +7,7 @@ const data = [
         participants: 12,
         completeness: 0.72,
         status: 'Review',
+        flagged: true,
     },
     {
         exposure: 12,
@@ -16,6 +17,7 @@ const data = [
         participants: 35,
         completeness: 0.94,
         status: 'On target',
+        flagged: false,
     },
     {
         exposure: 18,
@@ -25,6 +27,7 @@ const data = [
         participants: 24,
         completeness: 0.83,
         status: 'On target',
+        flagged: false,
     },
     {
         exposure: 25,
@@ -34,6 +37,7 @@ const data = [
         participants: 48,
         completeness: 0.9,
         status: 'Review',
+        flagged: true,
     },
     {
         exposure: 33,
@@ -43,6 +47,7 @@ const data = [
         participants: 31,
         completeness: 0.79,
         status: 'On target',
+        flagged: false,
     },
     {
         exposure: 41,
@@ -52,6 +57,7 @@ const data = [
         participants: 62,
         completeness: 1,
         status: 'Review',
+        flagged: true,
     },
     {
         exposure: 54,
@@ -61,6 +67,7 @@ const data = [
         participants: 53,
         completeness: 0.88,
         status: 'On target',
+        flagged: false,
     },
     {
         exposure: 63,
@@ -70,6 +77,7 @@ const data = [
         participants: 70,
         completeness: 0.65,
         status: 'Review',
+        flagged: true,
     },
 ];
 
@@ -158,6 +166,14 @@ gsmViz.default.points(document.getElementById('points-container'), data, {
                 showInLegend: true,
             },
         ],
+        labels: {
+            point: {
+                field: 'site',
+                display: 'flagged',
+                align: 'top',
+                offset: 6,
+            },
+        },
     },
     tooltip: {
         format: '{site}: {events} events at {exposure} exposure ({color})',
