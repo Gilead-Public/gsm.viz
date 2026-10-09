@@ -15,7 +15,7 @@ const data = [
     { x: 3, y: 4, id: 'B', group: 'Treatment' },
 ];
 
-function makeChart(callbacks = {}, annotations) {
+function makeChart(callbacks = {}, annotations, selection) {
     const container = document.createElement('div');
     document.body.appendChild(container);
     const chart = points(container, data, {
@@ -27,6 +27,7 @@ function makeChart(callbacks = {}, annotations) {
         },
         callbacks,
         ...(annotations ? { annotations } : {}),
+        ...(selection ? { selection } : {}),
     });
 
     return { chart, container };
@@ -42,8 +43,8 @@ describe('points pointer callbacks', () => {
         });
     });
 
-    function render(callbacks, annotations) {
-        const result = makeChart(callbacks, annotations);
+    function render(callbacks, annotations, selection) {
+        const result = makeChart(callbacks, annotations, selection);
         rendered.push(result);
         return result.chart;
     }
@@ -95,6 +96,19 @@ describe('points pointer callbacks', () => {
 
     test('uses a pointer for clickable points without an onHover callback', () => {
         const chart = render({ onClick: jest.fn() });
+        const target = { style: { cursor: '' } };
+
+        chart.options.onHover(
+            { native: { target } },
+            [{ datasetIndex: 0, index: 0 }],
+            chart
+        );
+
+        expect(target.style.cursor).toBe('pointer');
+    });
+
+    test('uses a pointer for selectable points without pointer callbacks', () => {
+        const chart = render({}, undefined, { enabled: true });
         const target = { style: { cursor: '' } };
 
         chart.options.onHover(

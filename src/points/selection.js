@@ -130,12 +130,15 @@ function getGroupValue(dataset) {
 }
 
 function getGroupValues(chart) {
-    return getMainDatasets(chart)
+    const orderedValues = chart.data._spec_.scales.color.order || [];
+    const renderedValues = getMainDatasets(chart)
         .map(({ dataset }) => dataset)
         .filter((dataset) =>
             Object.prototype.hasOwnProperty.call(dataset, '_color')
         )
         .map(getGroupValue);
+
+    return [...new Set([...orderedValues, ...renderedValues])];
 }
 
 function isSelected(point, dataset, selection, selectedValues) {
@@ -508,11 +511,11 @@ function reconcileSelectedPoint(
 
     const location = findPointLocation(chart, selection.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
-        const hadActivity =
-            chart.getActiveElements().length > 0 ||
-            (chart.tooltip?.getActiveElements().length || 0) > 0;
-        if (hadActivity) clearActivePoint(chart);
-        return hadActivity;
+        const selectedIsActive =
+            hasLocation(chart.getActiveElements(), location) ||
+            hasLocation(chart.tooltip?.getActiveElements() || [], location);
+        if (selectedIsActive) clearActivePoint(chart);
+        return selectedIsActive;
     }
 
     const chartActive = chart.getActiveElements();

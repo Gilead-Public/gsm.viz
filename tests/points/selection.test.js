@@ -198,6 +198,28 @@ describe('points selection', () => {
         expect(dataset.backgroundColor[index]).toBe('rgba(17, 34, 51, 0.02)');
     });
 
+    test('dims valid CSS colors that d3 does not parse', () => {
+        const { chart } = render({
+            scales: {
+                color: {
+                    colors: {
+                        G1: 'rgb(10 20 30)',
+                        G2: '#445566',
+                    },
+                },
+            },
+        });
+
+        expect(() => selectPoint(chart, 'B')).not.toThrow();
+        expect(getSelection(chart)).toEqual({
+            type: 'point',
+            values: ['B'],
+        });
+        expect(findPoint(chart, 'A').dataset.backgroundColor[0]).toBe(
+            'color-mix(in srgb, rgb(10 20 30) 20%, transparent)'
+        );
+    });
+
     test('distinguishes missing and literal missing-label color groups', () => {
         const rows = [
             { x: 1, y: 2, id: 'literal', group: '(Missing)' },
@@ -225,13 +247,20 @@ describe('points selection', () => {
     test('accepts an empty ordered color group as a selection value', () => {
         const { chart } = render(
             {
+                mapping: {
+                    x: 'x',
+                    y: 'y',
+                    key: 'id',
+                    color: 'group',
+                    shape: 'shape',
+                },
                 scales: {
                     color: {
                         order: ['G1', 'Absent'],
                     },
                 },
             },
-            [{ x: 1, y: 2, id: 'A', group: 'G1' }]
+            [{ x: 1, y: 2, id: 'A', group: 'G1', shape: 'Circle' }]
         );
 
         expect(() => selectGroup(chart, 'Absent')).not.toThrow();
@@ -442,6 +471,35 @@ describe('points selection', () => {
         });
         expect(chart.getActiveElements()).toEqual([]);
         expect(chart.tooltip.getActiveElements()).toEqual([]);
+    });
+
+    test('keeps hover activity after a different selected group is hidden', () => {
+        const { chart } = render();
+        const selected = findPoint(chart, 'A');
+        const hovered = findPoint(chart, 'B');
+        selectPoint(chart, 'A');
+
+        chart.hide(selected.datasetIndex);
+        chart.setActiveElements([
+            { datasetIndex: hovered.datasetIndex, index: hovered.index },
+        ]);
+        chart.tooltip.setActiveElements(
+            [{ datasetIndex: hovered.datasetIndex, index: hovered.index }],
+            chart
+                .getDatasetMeta(hovered.datasetIndex)
+                .data[hovered.index].getCenterPoint()
+        );
+        chart._plugins.notify(chart, 'afterEvent', {
+            event: { type: 'mousemove' },
+            replay: false,
+            cancelable: false,
+            inChartArea: true,
+            changed: false,
+        });
+
+        const [active] = chart.getActiveElements();
+        expect(active.datasetIndex).toBe(hovered.datasetIndex);
+        expect(active.index).toBe(hovered.index);
     });
 
     test('repositions a selected point tooltip after chart resize', () => {

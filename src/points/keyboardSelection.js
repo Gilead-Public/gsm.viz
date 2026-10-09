@@ -7,6 +7,13 @@ import {
 
 let statusId = 0;
 
+function isPointInRange(point, scale) {
+    return (
+        !scale ||
+        (point[scale.axis] >= scale.min && point[scale.axis] <= scale.max)
+    );
+}
+
 function getPointLocations(chart) {
     return chart.data.datasets
         .flatMap((dataset, datasetIndex) =>
@@ -19,6 +26,11 @@ function getPointLocations(chart) {
                   }))
         )
         .filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex))
+        .filter(
+            ({ point }) =>
+                isPointInRange(point, chart.scales.x) &&
+                isPointInRange(point, chart.scales.y)
+        )
         .sort((a, b) => a.point._index - b.point._index);
 }
 
