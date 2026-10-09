@@ -130,12 +130,15 @@ function getGroupValue(dataset) {
 }
 
 function getGroupValues(chart) {
-    return getMainDatasets(chart)
+    const orderedValues = chart.data._spec_.scales.color.order || [];
+    const renderedValues = getMainDatasets(chart)
         .map(({ dataset }) => dataset)
         .filter((dataset) =>
             Object.prototype.hasOwnProperty.call(dataset, '_color')
         )
         .map(getGroupValue);
+
+    return [...new Set([...orderedValues, ...renderedValues])];
 }
 
 function isSelected(point, dataset, selection, selectedValues) {

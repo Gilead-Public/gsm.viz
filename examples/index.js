@@ -30057,9 +30057,11 @@ var gsmViz = (() => {
     return dataset._colorMissing ? MISSING_GROUP_VALUE : dataset._color;
   }
   function getGroupValues(chart) {
-    return getMainDatasets(chart).map(({ dataset }) => dataset).filter(
+    const orderedValues = chart.data._spec_.scales.color.order || [];
+    const renderedValues = getMainDatasets(chart).map(({ dataset }) => dataset).filter(
       (dataset) => Object.prototype.hasOwnProperty.call(dataset, "_color")
     ).map(getGroupValue);
+    return [.../* @__PURE__ */ new Set([...orderedValues, ...renderedValues])];
   }
   function isSelected(point, dataset, selection2, selectedValues) {
     const value = selection2.type === "point" ? point._key : getGroupValue(dataset);
