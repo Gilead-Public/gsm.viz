@@ -349,6 +349,38 @@ describe('points/getPlugins', () => {
             ).toBe(false);
         });
 
+        test('preserves annotation legend filtering with opacity-mapped groups', () => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: {
+                    ...spec.mapping,
+                    color: 'group',
+                    opacity: 'weight',
+                },
+                annotations: {
+                    referenceLines: [],
+                    lines: [{ showInLegend: false }],
+                },
+            });
+            const chartData = {
+                datasets: [
+                    { label: 'A' },
+                    {
+                        label: 'Line',
+                        _annotation: true,
+                        _showInLegend: false,
+                    },
+                ],
+            };
+
+            expect(
+                plugins.legend.labels.filter({ datasetIndex: 0 }, chartData)
+            ).toBe(true);
+            expect(
+                plugins.legend.labels.filter({ datasetIndex: 1 }, chartData)
+            ).toBe(false);
+        });
+
         test('excludes annotation datasets before applying a tooltip filter', () => {
             const owner = {};
             const filter = jest.fn(function () {

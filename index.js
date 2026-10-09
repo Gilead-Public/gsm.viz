@@ -29771,6 +29771,7 @@ var gsmViz = (() => {
     const labels = spec.annotations?.labels?.point;
     if ((hasColor || hasShape) && spec.mapping.opacity) {
       legend5.labels = {
+        ...legend5.labels,
         generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
           const color3 = chart.data.datasets[item.datasetIndex]._baseColor;
           return color3 ? { ...item, fillStyle: color3, strokeStyle: color3 } : item;
