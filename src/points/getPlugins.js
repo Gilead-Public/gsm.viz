@@ -60,7 +60,7 @@ export default function getPlugins(spec) {
             },
         };
     }
-    if (hasColor && spec.mapping.opacity) {
+    if ((hasColor || hasShape) && spec.mapping.opacity) {
         legend.labels = {
             ...legend.labels,
             generateLabels: (chart) =>
