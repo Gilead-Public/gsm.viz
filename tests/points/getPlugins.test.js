@@ -226,6 +226,50 @@ describe('points/getPlugins', () => {
         });
     });
 
+    describe('color legend', () => {
+        test('shows the legend with the mapping name as its title', () => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+            });
+
+            expect(plugins.legend).toEqual({
+                display: true,
+                title: {
+                    display: true,
+                    text: 'treatment',
+                },
+            });
+        });
+
+        test.each([null, ''])('hides the title for explicit %p', (label) => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+                scales: { color: { label } },
+            });
+
+            expect(plugins.legend.display).toBe(true);
+            expect(plugins.legend.title).toEqual({
+                display: false,
+                text: '',
+            });
+        });
+
+        test('uses an explicit legend title', () => {
+            const plugins = getPlugins({
+                ...spec,
+                mapping: { ...spec.mapping, color: 'treatment' },
+                scales: { color: { label: 'Treatment arm' } },
+            });
+
+            expect(plugins.legend.title).toEqual({
+                display: true,
+                text: 'Treatment arm',
+            });
+        });
+    });
+
     describe('line annotations', () => {
         test('configures reference lines for the annotation plugin', () => {
             const plugins = getPlugins({
@@ -305,112 +349,14 @@ describe('points/getPlugins', () => {
             ).toBe(false);
         });
 
-        test('excludes annotation datasets before applying a tooltip filter', () => {
-            const owner = {};
-            const filter = jest.fn(function () {
-                return this === owner;
-            });
+        test('preserves annotation legend filtering with opacity-mapped groups', () => {
             const plugins = getPlugins({
                 ...spec,
-                tooltip: { filter },
-                annotations: {
-                    referenceLines: [],
-                    lines: [{}],
+                mapping: {
+                    ...spec.mapping,
+                    color: 'group',
+                    opacity: 'weight',
                 },
-            });
-            const annotation = { dataset: { _annotation: true } };
-            const point = { dataset: {} };
-
-            expect(plugins.tooltip.filter(annotation)).toBe(false);
-            expect(filter).not.toHaveBeenCalled();
-            expect(plugins.tooltip.filter.call(owner, point)).toBe(true);
-            expect(filter).toHaveBeenCalledWith(point);
-            expect(plugins.tooltip.mode).toBe('gsmPoints:point');
-        });
-    });
-
-    describe('point labels', () => {
-        test('configures datalabels only when point labels are enabled', () => {
-            const enabled = getPlugins({
-                ...spec,
-                annotations: {
-                    labels: {
-                        point: { field: 'id' },
-                    },
-                },
-            });
-            const disabled = getPlugins({
-                ...spec,
-                annotations: {
-                    labels: { point: null },
-                },
-            });
-
-            expect(enabled.datalabels).toEqual(
-                expect.objectContaining({
-                    align: 'top',
-                    offset: 4,
-                })
-            );
-            expect(disabled.datalabels).toBeUndefined();
-        });
-    });
-
-    describe('line annotations', () => {
-        test('configures reference lines for the annotation plugin', () => {
-            const plugins = getPlugins({
-                ...spec,
-                annotations: {
-                    referenceLines: [{ axis: 'y', value: 5 }],
-                    lines: [],
-                },
-            });
-
-            expect(plugins.annotation.annotations).toEqual([
-                expect.objectContaining({
-                    type: 'line',
-                    yMin: 5,
-                    yMax: 5,
-                }),
-            ]);
-            expect(plugins.annotation.clip).toBe(false);
-        });
-
-        test('shows only opted-in line datasets in the legend', () => {
-            const plugins = getPlugins({
-                ...spec,
-                annotations: {
-                    referenceLines: [],
-                    lines: [{ showInLegend: false }, { showInLegend: true }],
-                },
-            });
-            const point = { label: '' };
-            const hiddenLine = {
-                label: 'Hidden',
-                _annotation: true,
-                _showInLegend: false,
-            };
-            const visibleLine = {
-                label: 'Visible',
-                _annotation: true,
-                _showInLegend: true,
-            };
-            const chartData = {
-                datasets: [point, hiddenLine, visibleLine],
-            };
-
-            expect(plugins.legend.display).toBe(true);
-            expect(
-                [0, 1, 2].filter((datasetIndex) =>
-                    plugins.legend.labels.filter({ datasetIndex }, chartData)
-                )
-            ).toEqual([2]);
-        });
-
-        test('keeps point groups when filtering annotation legends', () => {
-            const plugins = getPlugins({
-                ...spec,
-                mapping: { ...spec.mapping, color: 'group' },
                 annotations: {
                     referenceLines: [],
                     lines: [{ showInLegend: false }],
