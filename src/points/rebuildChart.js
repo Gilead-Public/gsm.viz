@@ -70,6 +70,12 @@ function applyOptions(chart, state) {
     }
 }
 
+function resetZoomForUpdate(chart) {
+    if (chart.isZoomedOrPanned?.()) {
+        chart.resetZoom('none');
+    }
+}
+
 /**
  * Rebuild an existing points chart from validated public inputs.
  *
@@ -82,6 +88,7 @@ export default function rebuildChart(chart, data, spec) {
     const state = buildState(data, spec);
     const hiddenIdentities = getHiddenDatasetIdentities(chart);
 
+    resetZoomForUpdate(chart);
     resetSelectionForUpdate(chart);
     chart.data.datasets = state.chartData.datasets;
     chart.data._spec_ = state.merged;

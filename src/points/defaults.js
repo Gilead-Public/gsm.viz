@@ -85,6 +85,13 @@ const defaults = {
         opacity: 0.2,
         multiple: false,
     },
+    zoom: {
+        enabled: false,
+        mode: 'xy',
+        pan: false,
+        wheel: true,
+        pinch: true,
+    },
     theme: {
         maintainAspectRatio: false,
         animation: false,

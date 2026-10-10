@@ -1,5 +1,6 @@
 import { Chart } from 'chart.js';
 import buildTooltip from './buildTooltip.js';
+import buildZoom from './buildZoom.js';
 import getPointInteractionMode from './pointInteractionMode.js';
 import pointLabels from './pointLabels.js';
 import referenceLines from './referenceLines.js';
@@ -59,24 +60,7 @@ export default function getPlugins(spec) {
             },
         };
     }
-
-    const tooltip = buildTooltip(spec.tooltip);
-    if (hasLines) {
-        const userFilter = tooltip.filter;
-        tooltip.mode = getPointInteractionMode(tooltip.mode || 'point');
-        tooltip.filter = function (item, ...args) {
-            return (
-                !item.dataset?._annotation &&
-                (!userFilter || userFilter.call(this, item, ...args))
-            );
-        };
-    }
-    const lines = referenceLines(spec);
-    const labels = spec.annotations?.labels?.point;
-
     if ((hasColor || hasShape) && spec.mapping.opacity) {
-        // Chart.js draws each swatch from the group's first point, so use the
-        // group's base color instead of that point's opacity.
         legend.labels = {
             ...legend.labels,
             generateLabels: (chart) =>
@@ -93,6 +77,21 @@ export default function getPlugins(spec) {
         };
     }
 
+    const tooltip = buildTooltip(spec.tooltip);
+    if (hasLines) {
+        const userFilter = tooltip.filter;
+        tooltip.mode = getPointInteractionMode(tooltip.mode || 'point');
+        tooltip.filter = function (item, ...args) {
+            return (
+                !item.dataset?._annotation &&
+                (!userFilter || userFilter.call(this, item, ...args))
+            );
+        };
+    }
+    const lines = referenceLines(spec);
+    const labels = spec.annotations?.labels?.point;
+    const zoom = buildZoom(spec.zoom);
+
     return {
         title: {
             display: !!title,
@@ -106,6 +105,7 @@ export default function getPlugins(spec) {
         },
         legend,
         tooltip,
+        ...(zoom ? { zoom } : {}),
         ...(labels ? { datalabels: pointLabels(spec) } : {}),
         ...(lines
             ? {

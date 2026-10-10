@@ -7,6 +7,7 @@ const supportedFields = {
         'tooltip',
         'callbacks',
         'selection',
+        'zoom',
         'theme',
     ],
     mapping: ['x', 'y', 'key', 'color', 'size', 'opacity', 'shape'],
@@ -115,6 +116,7 @@ const supportedFields = {
     ],
     callbacks: ['onClick', 'onHover', 'onSelect'],
     selection: ['enabled', 'opacity', 'multiple'],
+    zoom: ['enabled', 'mode', 'pan', 'wheel', 'pinch'],
     theme: ['maintainAspectRatio', 'animation'],
 };
 
@@ -774,6 +776,25 @@ function validateTheme(theme) {
     });
 }
 
+function validateZoom(zoom) {
+    if (zoom === undefined) {
+        return;
+    }
+
+    validatePlainObject(zoom, 'spec.zoom');
+    validateSupportedFields(zoom, supportedFields.zoom, 'spec.zoom');
+
+    ['enabled', 'pan', 'wheel', 'pinch'].forEach((field) => {
+        if (zoom[field] !== undefined && typeof zoom[field] !== 'boolean') {
+            throw new Error(`spec.zoom.${field} must be a boolean`);
+        }
+    });
+
+    if (zoom.mode !== undefined && !['x', 'y', 'xy'].includes(zoom.mode)) {
+        throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
+    }
+}
+
 /**
  * Validate data and the implemented portion of the generic points spec.
  *
@@ -921,6 +942,7 @@ export default function validateSpec(data, spec) {
 
     validateCallbacks(spec.callbacks);
     validateSelection(spec.selection);
+    validateZoom(spec.zoom);
     validateTheme(spec.theme);
 }
 import { validateTooltipFormat } from './tooltipFormat.js';
