@@ -78,6 +78,7 @@ export default function getPlugins(spec) {
         // Chart.js draws each swatch from the group's first point, so use the
         // group's base color instead of that point's opacity.
         legend.labels = {
+            ...legend.labels,
             generateLabels: (chart) =>
                 Chart.defaults.plugins.legend.labels
                     .generateLabels(chart)
