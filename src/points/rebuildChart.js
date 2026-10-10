@@ -2,32 +2,9 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import buildState from './buildState.js';
 import { setAccessibleLabel } from './accessibility.js';
+import getDatasetIdentity from './datasetIdentity.js';
 import { syncKeyboardSelection } from './keyboardSelection.js';
 import { resetSelectionForUpdate } from './selection.js';
-
-function encodeLevel(value, missing) {
-    return missing ? ['missing'] : ['value', typeof value, String(value)];
-}
-
-function getDatasetIdentity(dataset, spec) {
-    if (dataset._annotation) return undefined;
-
-    return JSON.stringify([
-        'points',
-        spec.mapping.color
-            ? [
-                  spec.mapping.color,
-                  ...encodeLevel(dataset._color, dataset._colorMissing),
-              ]
-            : null,
-        spec.mapping.shape
-            ? [
-                  spec.mapping.shape,
-                  ...encodeLevel(dataset._shape, dataset._shapeMissing),
-              ]
-            : null,
-    ]);
-}
 
 function getHiddenDatasetIdentities(chart) {
     const identities = new Set();

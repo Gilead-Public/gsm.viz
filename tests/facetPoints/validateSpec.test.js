@@ -73,9 +73,9 @@ describe('facetPoints/validateSpec', () => {
         expect(() =>
             validateSpec(data, {
                 ...spec,
-                facet: { field: 'region', legend: { display: true } },
+                facet: { field: 'region', spacing: 8 },
             })
-        ).toThrow('spec.facet.legend is not supported');
+        ).toThrow('spec.facet.spacing is not supported');
     });
 
     describe('order', () => {
@@ -332,6 +332,59 @@ describe('facetPoints/validateSpec', () => {
                             x: { free: true },
                             y: { free: false },
                         },
+                    },
+                })
+            ).not.toThrow();
+        });
+    });
+
+    describe('legend', () => {
+        test.each([null, [], 'yes'])(
+            'requires legend to be a plain object: %p',
+            (legend) => {
+                expect(() =>
+                    validateSpec(data, {
+                        ...spec,
+                        facet: { field: 'region', legend },
+                    })
+                ).toThrow('spec.facet.legend must be a plain object');
+            }
+        );
+
+        test('rejects unsupported legend fields', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    facet: {
+                        field: 'region',
+                        legend: { position: 'left' },
+                    },
+                })
+            ).toThrow('spec.facet.legend.position is not supported');
+        });
+
+        test.each(['display', 'sync'])(
+            'requires legend.%s to be boolean',
+            (field) => {
+                expect(() =>
+                    validateSpec(data, {
+                        ...spec,
+                        facet: {
+                            field: 'region',
+                            legend: { [field]: 'yes' },
+                        },
+                    })
+                ).toThrow(`spec.facet.legend.${field} must be a boolean`);
+            }
+        );
+
+        test('accepts display and synchronization controls', () => {
+            expect(() =>
+                validateSpec(data, {
+                    ...spec,
+                    facet: {
+                        field: 'region',
+                        legend: { display: false, sync: false },
                     },
                 })
             ).not.toThrow();
