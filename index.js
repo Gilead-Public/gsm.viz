@@ -29062,11 +29062,7 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3(
-      (value - domain[0]) / (domain[1] - domain[0]),
-      0,
-      1
-    );
+    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
     const minimumArea = range[0] ** 2;
     const maximumArea = range[1] ** 2;
     return Math.sqrt(minimumArea + proportion * (maximumArea - minimumArea));
@@ -29075,11 +29071,7 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3(
-      (value - domain[0]) / (domain[1] - domain[0]),
-      0,
-      1
-    );
+    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
     return range[0] + proportion * (range[1] - range[0]);
   }
   function withOpacity(color3, opacity) {
@@ -29095,9 +29087,7 @@ var gsmViz = (() => {
   function withOpacityFactor(color3, factor) {
     const parsed = color2(color3);
     if (!parsed) {
-      throw new Error(
-        `points could not apply opacity to color ${JSON.stringify(color3)}`
-      );
+      return `color-mix(in srgb, ${color3} ${factor * 100}%, transparent)`;
     }
     parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
     return parsed.formatRgb();
@@ -29847,7 +29837,9 @@ var gsmViz = (() => {
   }
   function setAccessibleLabel(canvas, label) {
     canvas.setAttribute("aria-label", label);
-    const textNode = [...canvas.childNodes].find((node) => node.nodeType === 3);
+    const textNode = [...canvas.childNodes].find(
+      (node) => node.nodeType === Node.TEXT_NODE
+    );
     if (textNode) {
       textNode.nodeValue = label;
     } else {
@@ -29901,9 +29893,7 @@ var gsmViz = (() => {
     values.forEach((value) => {
       if (!knownValues.has(value)) {
         throw new Error(
-          `points ${name} could not find ${valueName} ${JSON.stringify(
-            value
-          )}`
+          `points ${name} could not find ${valueName} ${JSON.stringify(value)}`
         );
       }
     });
@@ -29940,12 +29930,7 @@ var gsmViz = (() => {
             )
           ),
           borderColor: dataset.data.map(
-            (_point, pointIndex) => getResolvedColor(
-              chart,
-              datasetIndex,
-              pointIndex,
-              "borderColor"
-            )
+            (_point, pointIndex) => getResolvedColor(chart, datasetIndex, pointIndex, "borderColor")
           )
         }
       }
@@ -30226,9 +30211,9 @@ var gsmViz = (() => {
     }
     const location = findPointLocation(chart, selection2.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
-      const hadActivity = chart.getActiveElements().length > 0 || (chart.tooltip?.getActiveElements().length || 0) > 0;
-      if (hadActivity) clearActivePoint(chart);
-      return hadActivity;
+      const selectedIsActive = hasLocation(chart.getActiveElements(), location) || hasLocation(chart.tooltip?.getActiveElements() || [], location);
+      if (selectedIsActive) clearActivePoint(chart);
+      return selectedIsActive;
     }
     const chartActive = chart.getActiveElements();
     const tooltipActive = chart.tooltip?.getActiveElements() || [];
@@ -30274,6 +30259,7 @@ var gsmViz = (() => {
     if (dataset?._annotation) return;
     const point = dataset?.data[index3];
     if (point && spec.callbacks.onClick) spec.callbacks.onClick(point, event);
+    if (chart.data._spec_ !== spec) return;
     if (point && spec.selection.enabled) {
       togglePointSelection(chart, point._key, event);
     }
@@ -30309,6 +30295,9 @@ var gsmViz = (() => {
 
   // src/points/keyboardSelection.js
   var statusId = 0;
+  function isPointInRange2(point, scale) {
+    return !scale || point[scale.axis] >= scale.min && point[scale.axis] <= scale.max;
+  }
   function getPointLocations(chart) {
     return chart.data.datasets.flatMap(
       (dataset, datasetIndex) => dataset._annotation ? [] : dataset.data.map((point, index3) => ({
@@ -30316,7 +30305,9 @@ var gsmViz = (() => {
         index: index3,
         point
       }))
-    ).filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex)).sort((a, b) => a.point._index - b.point._index);
+    ).filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex)).filter(
+      ({ point }) => isPointInRange2(point, chart.scales.x) && isPointInRange2(point, chart.scales.y)
+    ).sort((a, b) => a.point._index - b.point._index);
   }
   function getPosition(chart, location) {
     const element = chart.getDatasetMeta(location.datasetIndex).data[location.index];
@@ -30463,6 +30454,12 @@ var gsmViz = (() => {
     };
   }
 
+  // src/points/getStoredInputs.js
+  function getStoredInputs(chart) {
+    const { data, ...spec } = chart.data._spec_;
+    return { data, spec };
+  }
+
   // src/points/rebuildChart.js
   function encodeLevel(value, missing) {
     return missing ? ["missing"] : ["value", typeof value, String(value)];
@@ -30537,15 +30534,11 @@ var gsmViz = (() => {
   }
 
   // src/points/updateData.js
-  function getStoredSpec(chart) {
-    const { data: _data, ...spec } = chart.data._spec_;
-    return spec;
-  }
   function updateData3(chart, data, spec) {
     return rebuildChart(
       chart,
       data,
-      spec === void 0 ? getStoredSpec(chart) : spec
+      spec === void 0 ? getStoredInputs(chart).spec : spec
     );
   }
 
@@ -30564,15 +30557,11 @@ var gsmViz = (() => {
       { ...existing }
     );
   }
-  function getStoredSpec2(chart) {
-    const { data, ...spec } = chart.data._spec_;
-    return { data, spec };
-  }
   function updateSpec2(chart, spec) {
     if (!isPlainObject2(spec)) {
       throw new Error("points updateSpec spec must be a plain object");
     }
-    const stored = getStoredSpec2(chart);
+    const stored = getStoredInputs(chart);
     return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
   }
 
