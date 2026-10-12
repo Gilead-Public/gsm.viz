@@ -1,107 +1,115 @@
 import {
-    announceActivePoint,
-    clearSelection,
-    dismissActivePoint,
-    togglePointSelection,
-} from './selection.js';
+  announceActivePoint,
+  clearSelection,
+  dismissActivePoint,
+  togglePointSelection,
+} from "./selection.js";
 
 let statusId = 0;
 export const POINT_SELECTION_INSTRUCTIONS =
-    'Use arrow keys to move between points, Enter to select, and Escape to clear.';
+  "Use arrow keys to move between points, Enter to select, and Escape to clear.";
+
+function isPointInRange(point, scale) {
+  return (
+    !scale || (point[scale.axis] >= scale.min && point[scale.axis] <= scale.max)
+  );
+}
 
 function getPointLocations(chart) {
-    return chart.data.datasets
-        .flatMap((dataset, datasetIndex) =>
-            dataset._annotation
-                ? []
-                : dataset.data.map((point, index) => ({
-                      datasetIndex,
-                      index,
-                      point,
-                  }))
-        )
-        .filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex))
-        .sort((a, b) => a.point._index - b.point._index);
+  return chart.data.datasets
+    .flatMap((dataset, datasetIndex) =>
+      dataset._annotation
+        ? []
+        : dataset.data.map((point, index) => ({
+            datasetIndex,
+            index,
+            point,
+          }))
+    )
+    .filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex))
+    .filter(
+      ({ point }) =>
+        isPointInRange(point, chart.scales.x) &&
+        isPointInRange(point, chart.scales.y)
+    )
+    .sort((a, b) => a.point._index - b.point._index);
 }
 
 function getPosition(chart, location) {
-    const element = chart.getDatasetMeta(location.datasetIndex).data[
-        location.index
-    ];
-    return typeof element?.getCenterPoint === 'function'
-        ? element.getCenterPoint()
-        : { x: element?.x ?? 0, y: element?.y ?? 0 };
+  const element = chart.getDatasetMeta(location.datasetIndex).data[
+    location.index
+  ];
+  return typeof element?.getCenterPoint === "function"
+    ? element.getCenterPoint()
+    : { x: element?.x ?? 0, y: element?.y ?? 0 };
 }
 
 function activate(chart, location) {
-    const descriptor = {
-        datasetIndex: location.datasetIndex,
-        index: location.index,
-    };
-    chart.setActiveElements([descriptor]);
-    chart.tooltip?.setActiveElements(
-        [descriptor],
-        getPosition(chart, location)
-    );
-    chart.data._selectionState_.keyboardIndex = location.point._index;
-    chart.update('none');
-    announceActivePoint(chart, location.point);
+  const descriptor = {
+    datasetIndex: location.datasetIndex,
+    index: location.index,
+  };
+  chart.setActiveElements([descriptor]);
+  chart.tooltip?.setActiveElements([descriptor], getPosition(chart, location));
+  chart.data._selectionState_.keyboardIndex = location.point._index;
+  chart.update("none");
+  announceActivePoint(chart, location.point);
 }
 
 function move(chart, direction) {
-    const locations = getPointLocations(chart);
-    if (locations.length === 0) return false;
+  const locations = getPointLocations(chart);
+  if (locations.length === 0) return false;
 
-    const state = chart.data._selectionState_;
-    const current = locations.findIndex(
-        ({ point }) => point._index === state.keyboardIndex
-    );
-    const next =
-        current === -1
-            ? direction > 0
-                ? 0
-                : locations.length - 1
-            : (current + direction + locations.length) % locations.length;
+  const state = chart.data._selectionState_;
+  const current = locations.findIndex(
+    ({ point }) => point._index === state.keyboardIndex
+  );
+  const next =
+    current === -1
+      ? direction > 0
+        ? 0
+        : locations.length - 1
+      : (current + direction + locations.length) % locations.length;
 
-    activate(chart, locations[next]);
-    return true;
+  activate(chart, locations[next]);
+  return true;
 }
 
 function getActiveLocation(chart) {
-    const locations = getPointLocations(chart);
-    const state = chart.data._selectionState_;
-    return locations.find(({ point }) => point._index === state.keyboardIndex);
+  const locations = getPointLocations(chart);
+  const state = chart.data._selectionState_;
+  return locations.find(({ point }) => point._index === state.keyboardIndex);
 }
 
 function visuallyHide(element) {
-    Object.assign(element.style, {
-        position: 'absolute',
-        width: '1px',
-        height: '1px',
-        padding: '0',
-        margin: '-1px',
-        overflow: 'hidden',
-        clip: 'rect(0, 0, 0, 0)',
-        whiteSpace: 'nowrap',
-        border: '0',
-    });
+  Object.assign(element.style, {
+    position: "absolute",
+    width: "1px",
+    height: "1px",
+    padding: "0",
+    margin: "-1px",
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    whiteSpace: "nowrap",
+    border: "0",
+  });
 }
 
 function addStatus(canvas) {
-    const status = document.createElement('span');
-    status.id = `gsm-points-status-${++statusId}`;
-    status.className = 'gsm-points-live-status';
-    status.setAttribute('role', 'status');
-    status.setAttribute('aria-live', 'polite');
-    status.setAttribute('aria-atomic', 'true');
-    visuallyHide(status);
+  const status = document.createElement("span");
+  status.id = `gsm-points-status-${++statusId}`;
+  status.className = "gsm-points-live-status";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.setAttribute("aria-atomic", "true");
+  visuallyHide(status);
 
-    if (canvas.parentNode) {
-        canvas.parentNode.insertBefore(status, canvas.nextSibling);
-    } else {
-        canvas.appendChild(status);
-    }
-    return status;
+  if (canvas.parentNode) {
+    canvas.parentNode.insertBefore(status, canvas.nextSibling);
+  } else {
+    canvas.appendChild(status);
+  }
+  return status;
 }
 
 /**
@@ -110,81 +118,81 @@ function addStatus(canvas) {
  * @param {Object} chart - Chart.js chart instance.
  */
 export function setupKeyboardSelection(chart) {
-    if (!chart.data._spec_.selection.enabled) return;
+  if (!chart.data._spec_.selection.enabled) return;
 
-    const { canvas } = chart;
-    const state = (chart.data._selectionState_ ||= {});
-    state.selection ||= { type: null, values: [] };
-    const previous = {
-        tabindex: canvas.getAttribute('tabindex'),
-        role: canvas.getAttribute('role'),
-        roledescription: canvas.getAttribute('aria-roledescription'),
-        keyshortcuts: canvas.getAttribute('aria-keyshortcuts'),
-    };
-    const liveRegion = addStatus(canvas);
+  const { canvas } = chart;
+  const state = (chart.data._selectionState_ ||= {});
+  state.selection ||= { type: null, values: [] };
+  const previous = {
+    tabindex: canvas.getAttribute("tabindex"),
+    role: canvas.getAttribute("role"),
+    roledescription: canvas.getAttribute("aria-roledescription"),
+    keyshortcuts: canvas.getAttribute("aria-keyshortcuts"),
+  };
+  const liveRegion = addStatus(canvas);
 
-    canvas.tabIndex = 0;
-    canvas.setAttribute('role', 'application');
-    canvas.setAttribute('aria-roledescription', 'interactive point chart');
-    canvas.setAttribute(
-        'aria-keyshortcuts',
-        'ArrowLeft ArrowRight ArrowUp ArrowDown Enter Escape'
-    );
-    state.liveRegion = liveRegion;
+  canvas.tabIndex = 0;
+  canvas.setAttribute("role", "application");
+  canvas.setAttribute("aria-roledescription", "interactive point chart");
+  canvas.setAttribute(
+    "aria-keyshortcuts",
+    "ArrowLeft ArrowRight ArrowUp ArrowDown Enter Escape"
+  );
+  state.liveRegion = liveRegion;
 
-    const onKeyDown = (event) => {
-        const directions = {
-            ArrowLeft: -1,
-            ArrowUp: -1,
-            ArrowRight: 1,
-            ArrowDown: 1,
-        };
-
-        if (Object.prototype.hasOwnProperty.call(directions, event.key)) {
-            if (move(chart, directions[event.key])) event.preventDefault();
-            return;
-        }
-
-        if (event.key === 'Enter') {
-            let active = getActiveLocation(chart);
-            if (!active) {
-                const [first] = getPointLocations(chart);
-                if (!first) return;
-                activate(chart, first);
-                active = first;
-            }
-            event.preventDefault();
-            togglePointSelection(chart, active.point._key, event);
-            return;
-        }
-
-        if (event.key === 'Escape') {
-            if (state.selection?.type !== null) {
-                event.preventDefault();
-                clearSelection(chart, event);
-            } else if (state.keyboardIndex !== undefined) {
-                event.preventDefault();
-                dismissActivePoint(chart);
-            }
-        }
+  const onKeyDown = (event) => {
+    const directions = {
+      ArrowLeft: -1,
+      ArrowUp: -1,
+      ArrowRight: 1,
+      ArrowDown: 1,
     };
 
-    canvas.addEventListener('keydown', onKeyDown);
-    state.cleanupKeyboard = () => {
-        canvas.removeEventListener('keydown', onKeyDown);
-        liveRegion.remove();
+    if (Object.prototype.hasOwnProperty.call(directions, event.key)) {
+      if (move(chart, directions[event.key])) event.preventDefault();
+      return;
+    }
 
-        Object.entries(previous).forEach(([attribute, value]) => {
-            const name = ['tabindex', 'role'].includes(attribute)
-                ? attribute
-                : `aria-${attribute}`;
-            if (value === null) canvas.removeAttribute(name);
-            else canvas.setAttribute(name, value);
-        });
+    if (event.key === "Enter") {
+      let active = getActiveLocation(chart);
+      if (!active) {
+        const [first] = getPointLocations(chart);
+        if (!first) return;
+        activate(chart, first);
+        active = first;
+      }
+      event.preventDefault();
+      togglePointSelection(chart, active.point._key, event);
+      return;
+    }
 
-        delete state.liveRegion;
-        delete state.cleanupKeyboard;
-    };
+    if (event.key === "Escape") {
+      if (state.selection?.type !== null) {
+        event.preventDefault();
+        clearSelection(chart, event);
+      } else if (state.keyboardIndex !== undefined) {
+        event.preventDefault();
+        dismissActivePoint(chart);
+      }
+    }
+  };
+
+  canvas.addEventListener("keydown", onKeyDown);
+  state.cleanupKeyboard = () => {
+    canvas.removeEventListener("keydown", onKeyDown);
+    liveRegion.remove();
+
+    Object.entries(previous).forEach(([attribute, value]) => {
+      const name = ["tabindex", "role"].includes(attribute)
+        ? attribute
+        : `aria-${attribute}`;
+      if (value === null) canvas.removeAttribute(name);
+      else canvas.setAttribute(name, value);
+    });
+
+    delete state.liveRegion;
+    delete state.cleanupKeyboard;
+  };
 }
 
 /**
@@ -193,10 +201,10 @@ export function setupKeyboardSelection(chart) {
  * @returns {Object} Chart.js plugin.
  */
 export function selectionAccessibilityPlugin() {
-    return {
-        id: 'pointsSelectionAccessibility',
-        afterDestroy(chart) {
-            chart.data?._selectionState_?.cleanupKeyboard?.();
-        },
-    };
+  return {
+    id: "pointsSelectionAccessibility",
+    afterDestroy(chart) {
+      chart.data?._selectionState_?.cleanupKeyboard?.();
+    },
+  };
 }

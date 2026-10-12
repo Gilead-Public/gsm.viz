@@ -29062,11 +29062,7 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3(
-      (value - domain[0]) / (domain[1] - domain[0]),
-      0,
-      1
-    );
+    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
     const minimumArea = range[0] ** 2;
     const maximumArea = range[1] ** 2;
     return Math.sqrt(minimumArea + proportion * (maximumArea - minimumArea));
@@ -29075,11 +29071,7 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3(
-      (value - domain[0]) / (domain[1] - domain[0]),
-      0,
-      1
-    );
+    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
     return range[0] + proportion * (range[1] - range[0]);
   }
   function withOpacity(color3, opacity) {
@@ -29095,9 +29087,7 @@ var gsmViz = (() => {
   function withOpacityFactor(color3, factor) {
     const parsed = color2(color3);
     if (!parsed) {
-      throw new Error(
-        `points could not apply opacity to color ${JSON.stringify(color3)}`
-      );
+      return `color-mix(in srgb, ${color3} ${factor * 100}%, transparent)`;
     }
     parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
     return parsed.formatRgb();
@@ -29831,9 +29821,7 @@ var gsmViz = (() => {
     values.forEach((value) => {
       if (!knownValues.has(value)) {
         throw new Error(
-          `points ${name} could not find ${valueName} ${JSON.stringify(
-            value
-          )}`
+          `points ${name} could not find ${valueName} ${JSON.stringify(value)}`
         );
       }
     });
@@ -29870,12 +29858,7 @@ var gsmViz = (() => {
             )
           ),
           borderColor: dataset.data.map(
-            (_point, pointIndex) => getResolvedColor(
-              chart,
-              datasetIndex,
-              pointIndex,
-              "borderColor"
-            )
+            (_point, pointIndex) => getResolvedColor(chart, datasetIndex, pointIndex, "borderColor")
           )
         }
       }
@@ -29900,11 +29883,9 @@ var gsmViz = (() => {
     return dataset._colorMissing ? MISSING_GROUP_VALUE : dataset._color;
   }
   function getGroupValues(chart) {
-    const orderedValues = chart.data._spec_.scales.color.order || [];
-    const renderedValues = getMainDatasets(chart).map(({ dataset }) => dataset).filter(
+    return getMainDatasets(chart).map(({ dataset }) => dataset).filter(
       (dataset) => Object.prototype.hasOwnProperty.call(dataset, "_color")
     ).map(getGroupValue);
-    return [.../* @__PURE__ */ new Set([...orderedValues, ...renderedValues])];
   }
   function isSelected(point, dataset, selection2, selectedValues) {
     const value = selection2.type === "point" ? point._key : getGroupValue(dataset);
@@ -30140,9 +30121,9 @@ var gsmViz = (() => {
     }
     const location = findPointLocation(chart, selection2.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
-      const hadActivity = chart.getActiveElements().length > 0 || (chart.tooltip?.getActiveElements().length || 0) > 0;
-      if (hadActivity) clearActivePoint(chart);
-      return hadActivity;
+      const selectedIsActive = hasLocation(chart.getActiveElements(), location) || hasLocation(chart.tooltip?.getActiveElements() || [], location);
+      if (selectedIsActive) clearActivePoint(chart);
+      return selectedIsActive;
     }
     const chartActive = chart.getActiveElements();
     const tooltipActive = chart.tooltip?.getActiveElements() || [];
@@ -30224,6 +30205,9 @@ var gsmViz = (() => {
   // src/points/keyboardSelection.js
   var statusId = 0;
   var POINT_SELECTION_INSTRUCTIONS = "Use arrow keys to move between points, Enter to select, and Escape to clear.";
+  function isPointInRange2(point, scale) {
+    return !scale || point[scale.axis] >= scale.min && point[scale.axis] <= scale.max;
+  }
   function getPointLocations(chart) {
     return chart.data.datasets.flatMap(
       (dataset, datasetIndex) => dataset._annotation ? [] : dataset.data.map((point, index3) => ({
@@ -30231,7 +30215,9 @@ var gsmViz = (() => {
         index: index3,
         point
       }))
-    ).filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex)).sort((a, b) => a.point._index - b.point._index);
+    ).filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex)).filter(
+      ({ point }) => isPointInRange2(point, chart.scales.x) && isPointInRange2(point, chart.scales.y)
+    ).sort((a, b) => a.point._index - b.point._index);
   }
   function getPosition(chart, location) {
     const element = chart.getDatasetMeta(location.datasetIndex).data[location.index];
@@ -30243,10 +30229,7 @@ var gsmViz = (() => {
       index: location.index
     };
     chart.setActiveElements([descriptor]);
-    chart.tooltip?.setActiveElements(
-      [descriptor],
-      getPosition(chart, location)
-    );
+    chart.tooltip?.setActiveElements([descriptor], getPosition(chart, location));
     chart.data._selectionState_.keyboardIndex = location.point._index;
     chart.update("none");
     announceActivePoint(chart, location.point);
