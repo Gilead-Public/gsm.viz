@@ -29062,7 +29062,11 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
     const minimumArea = range[0] ** 2;
     const maximumArea = range[1] ** 2;
     return Math.sqrt(minimumArea + proportion * (maximumArea - minimumArea));
@@ -29071,7 +29075,11 @@ var gsmViz = (() => {
     if (domain[0] === domain[1]) {
       return (range[0] + range[1]) / 2;
     }
-    const proportion = clamp3((value - domain[0]) / (domain[1] - domain[0]), 0, 1);
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
     return range[0] + proportion * (range[1] - range[0]);
   }
   function withOpacity(color3, opacity) {
@@ -29821,7 +29829,9 @@ var gsmViz = (() => {
     values.forEach((value) => {
       if (!knownValues.has(value)) {
         throw new Error(
-          `points ${name} could not find ${valueName} ${JSON.stringify(value)}`
+          `points ${name} could not find ${valueName} ${JSON.stringify(
+            value
+          )}`
         );
       }
     });
@@ -29858,7 +29868,12 @@ var gsmViz = (() => {
             )
           ),
           borderColor: dataset.data.map(
-            (_point, pointIndex) => getResolvedColor(chart, datasetIndex, pointIndex, "borderColor")
+            (_point, pointIndex) => getResolvedColor(
+              chart,
+              datasetIndex,
+              pointIndex,
+              "borderColor"
+            )
           )
         }
       }
@@ -29883,9 +29898,11 @@ var gsmViz = (() => {
     return dataset._colorMissing ? MISSING_GROUP_VALUE : dataset._color;
   }
   function getGroupValues(chart) {
-    return getMainDatasets(chart).map(({ dataset }) => dataset).filter(
+    const orderedValues = chart.data._spec_.scales.color.order || [];
+    const renderedValues = getMainDatasets(chart).map(({ dataset }) => dataset).filter(
       (dataset) => Object.prototype.hasOwnProperty.call(dataset, "_color")
     ).map(getGroupValue);
+    return [.../* @__PURE__ */ new Set([...orderedValues, ...renderedValues])];
   }
   function isSelected(point, dataset, selection2, selectedValues) {
     const value = selection2.type === "point" ? point._key : getGroupValue(dataset);
@@ -30229,7 +30246,10 @@ var gsmViz = (() => {
       index: location.index
     };
     chart.setActiveElements([descriptor]);
-    chart.tooltip?.setActiveElements([descriptor], getPosition(chart, location));
+    chart.tooltip?.setActiveElements(
+      [descriptor],
+      getPosition(chart, location)
+    );
     chart.data._selectionState_.keyboardIndex = location.point._index;
     chart.update("none");
     announceActivePoint(chart, location.point);
