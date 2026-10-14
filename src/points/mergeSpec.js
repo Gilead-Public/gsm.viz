@@ -92,6 +92,7 @@ export default function mergeSpec(data, spec) {
         tooltip: mergeTooltip(spec.tooltip),
         callbacks: mergeDefaults(defaults.callbacks, spec.callbacks),
         selection: mergeDefaults(defaults.selection, spec.selection),
+        zoom: mergeDefaults(defaults.zoom, spec.zoom),
         theme: mergeDefaults(defaults.theme, spec.theme),
     };
 }
