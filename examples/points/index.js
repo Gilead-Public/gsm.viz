@@ -200,3 +200,18 @@ document.getElementById('select-europe').addEventListener('click', () => {
 document.getElementById('clear-selection').addEventListener('click', () => {
     chart.helpers.clearSelection(chart);
 });
+document.getElementById('show-review').addEventListener('click', () => {
+    chart.helpers.updateData(
+        chart,
+        data.filter(({ status }) => status === 'Review')
+    );
+    chart.helpers.updateSpec(chart, {
+        labels: { title: 'Review sites: events by exposure' },
+    });
+});
+document.getElementById('show-all').addEventListener('click', () => {
+    chart.helpers.updateData(chart, data);
+    chart.helpers.updateSpec(chart, {
+        labels: { title: 'Events by exposure' },
+    });
+});
