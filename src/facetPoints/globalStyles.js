@@ -8,22 +8,36 @@ function getRenderedRows(facets, spec) {
     );
 }
 
-function getValue(dataset, aesthetic) {
-    if (!Object.prototype.hasOwnProperty.call(dataset, `_${aesthetic}`)) {
-        return undefined;
-    }
-    return dataset[`_${aesthetic}Missing`] ? null : dataset[`_${aesthetic}`];
-}
-
 function getKey(value) {
     return value === null ? 'missing' : JSON.stringify([typeof value, value]);
 }
 
-function resolveOrder(order, templates, aesthetic) {
+function isMissing(value) {
+    return (
+        value === undefined ||
+        value === null ||
+        (typeof value === 'string' && value.trim().length === 0) ||
+        (typeof value === 'number' && Number.isNaN(value))
+    );
+}
+
+// Source-ordered levels; invalid values are left for structureData to reject.
+function getObservedLevels(rows, field) {
+    return rows
+        .map((row) => row?.[field])
+        .map((value) => (isMissing(value) ? null : value))
+        .filter(
+            (value) =>
+                value === null ||
+                typeof value === 'string' ||
+                (typeof value === 'number' && Number.isFinite(value))
+        );
+}
+
+function resolveOrder(order, observed) {
     const result = [];
     const seen = new Set();
     const add = (value) => {
-        if (value === undefined) return;
         const key = getKey(value);
         if (!seen.has(key)) {
             seen.add(key);
@@ -32,10 +46,9 @@ function resolveOrder(order, templates, aesthetic) {
     };
 
     order.forEach(add);
-    templates.forEach((dataset) => add(getValue(dataset, aesthetic)));
+    observed.forEach(add);
     return result;
 }
-
 function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
         template[key] =
@@ -52,21 +65,38 @@ function makeTemplate(dataset) {
  * @returns {{templates: Array, colorOrder: Array, shapeOrder: Array}}
  */
 export function getGlobalStyles(facets, spec) {
-    const mapping = { ...spec.mapping, key: undefined };
+    const rows = getRenderedRows(facets, spec);
+    const colorOrder = spec.mapping.color
+        ? resolveOrder(
+              spec.scales.color.order,
+              getObservedLevels(rows, spec.mapping.color)
+          )
+        : [...spec.scales.color.order];
+    const shapeOrder = spec.mapping.shape
+        ? resolveOrder(
+              spec.scales.shape.order,
+              getObservedLevels(rows, spec.mapping.shape)
+          )
+        : [...spec.scales.shape.order];
+
+    // Templates use the same source-ordered domains as the child specs.
     const datasets = structureData({
         ...spec,
-        data: getRenderedRows(facets, spec),
-        mapping,
+        data: rows,
+        mapping: { ...spec.mapping, key: undefined },
+        scales: {
+            ...spec.scales,
+            color: { ...spec.scales.color, order: colorOrder },
+            shape: { ...spec.scales.shape, order: shapeOrder },
+        },
     }).datasets;
-    const templates = datasets.map(makeTemplate);
 
     return {
-        templates,
-        colorOrder: resolveOrder(spec.scales.color.order, templates, 'color'),
-        shapeOrder: resolveOrder(spec.scales.shape.order, templates, 'shape'),
+        templates: datasets.map(makeTemplate),
+        colorOrder,
+        shapeOrder,
     };
 }
-
 function cloneGhost(template) {
     return Object.entries(template).reduce(
         (dataset, [key, value]) => {

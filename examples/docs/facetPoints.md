@@ -276,3 +276,5 @@ be customized with these classes in addition to `nCol` and `chartHeight`.
 Each child canvas retains the points text alternative, no-data message,
 color/shape encoding summary, and keyboard/live selection behavior. Visible
 facet labels provide the panel context without creating per-point DOM nodes.
+Each canvas also has `aria-describedby` pointing at its facet label, so assistive
+technology announces which panel is focused.
