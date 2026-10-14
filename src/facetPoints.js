@@ -41,7 +41,11 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
     const globalScales = computeGlobalScales(facets, merged);
     const globalStyles = getGlobalStyles(facets, merged);
     const facetValues = [...facets.keys()];
-    const { containers, grid } = renderGrid(parent, facetValues, merged);
+    const { containers, labels, grid } = renderGrid(
+        parent,
+        facetValues,
+        merged
+    );
     const charts = [];
 
     try {
@@ -52,6 +56,10 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
                 buildSubSpec(facetValue, merged, globalScales, globalStyles)
             );
             charts.push(chart);
+            chart.canvas.setAttribute(
+                'aria-describedby',
+                labels.get(facetValue).id
+            );
 
             chart.options.plugins.legend.display =
                 merged.facet.legend.display &&

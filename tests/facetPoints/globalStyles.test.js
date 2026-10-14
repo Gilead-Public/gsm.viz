@@ -64,6 +64,33 @@ describe('facetPoints/globalStyles', () => {
         expect(styles.shapeOrder).toEqual(['Square', '(Missing)', null]);
     });
 
+    test('keeps templates and child styles on source-ordered shape domains', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },
+            { x: 2, y: 2, facet: 'A', color: 'Blue', shape: 'Triangle' },
+            { x: 3, y: 3, facet: 'B', color: 'Red', shape: 'Square' },
+        ];
+        const { merged, facets } = prepare(data);
+
+        const styles = getGlobalStyles(facets, merged);
+        const childDatasets = structureData({
+            ...merged,
+            data,
+            scales: {
+                ...merged.scales,
+                color: { ...merged.scales.color, order: styles.colorOrder },
+                shape: { ...merged.scales.shape, order: styles.shapeOrder },
+            },
+        }).datasets;
+        const style = (datasets) =>
+            datasets.find(
+                ({ _color, _shape }) => _color === 'Red' && _shape === 'Square'
+            ).pointStyle;
+
+        expect(styles.shapeOrder).toEqual(['Circle', 'Triangle', 'Square']);
+        expect(style(styles.templates)).toBe(style(childDatasets));
+    });
+
     test('builds one template for every observed composite style', () => {
         const data = [
             { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },

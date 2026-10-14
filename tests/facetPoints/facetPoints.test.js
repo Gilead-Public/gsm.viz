@@ -429,6 +429,63 @@ describe('facetPoints', () => {
         expect(charts[1].getActiveElements()).toEqual([]);
     });
 
+    test('associates every canvas with its facet label for both positions', () => {
+        ['top', 'bottom'].forEach((position) => {
+            const { charts } = facetPoints(parent, data, {
+                ...baseSpec,
+                facet: { ...baseSpec.facet, label: { position } },
+            });
+
+            charts.forEach((chart, index) => {
+                const label = document.getElementById(
+                    chart.canvas.getAttribute('aria-describedby')
+                );
+                expect(label.classList.contains('gsm-facet-label')).toBe(true);
+                expect(label.textContent).toBe(['Baseline', 'Week 4'][index]);
+            });
+
+            charts[0].helpers.updateSpec(charts[0], {
+                labels: { title: 'Updated' },
+            });
+            expect(charts[0].canvas.getAttribute('aria-describedby')).toBe(
+                charts[0].canvas
+                    .closest('.gsm-facet-cell')
+                    .querySelector('.gsm-facet-label').id
+            );
+        });
+    });
+
+    test('keeps rerendering when explicit breaks extend past the data', () => {
+        const spec = {
+            ...baseSpec,
+            scales: {
+                x: { breaks: [0, 5, 10], labels: ['zero', 'five', 'ten'] },
+            },
+        };
+
+        facetPoints(parent, data, spec);
+        const { charts } = facetPoints(parent, data, spec);
+
+        expect(parent.querySelectorAll('.gsm-facet-grid')).toHaveLength(1);
+        expect(charts).toHaveLength(2);
+        expect(charts[0].options.scales.x.min).toBe(0);
+        expect(charts[0].options.scales.x.max).toBe(10);
+    });
+
+    test('clears linked hover when the pointer leaves the canvas', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+
+        charts[0].options.onHover(
+            { type: 'mousemove', native: { target: charts[0].canvas } },
+            [findPoint(charts[0], 'A')],
+            charts[0]
+        );
+        expect(charts[1].getActiveElements()).toHaveLength(1);
+
+        charts[0].canvas.dispatchEvent(new Event('mouseout'));
+        expect(charts[1].getActiveElements()).toEqual([]);
+    });
+
     test('synchronizes keyed selection and fires onSelect once with facet context', () => {
         const onSelect = jest.fn();
         const { charts } = facetPoints(parent, data, {
