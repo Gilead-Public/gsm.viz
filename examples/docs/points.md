@@ -20,152 +20,156 @@ gsmViz.default.points(element, data, spec);
 
 Returns a Chart.js chart instance.
 
+See the [interactive examples](../points/) for a KRI scatter plot modeled on
+`scatterPlot`, a faceted scatter plot split by `MetricID`, a Gapminder-style
+bubble chart (`mapping.size`), and a selection and zoom demo.
+
 ---
 
 ## Basic example
 
 ```js
 const data = [
-    {
-        exposure: 5,
-        events: 1,
-        site: 'Site 01',
-        arm: 'Control',
-        participants: 12,
-        completeness: 0.72,
-        status: 'Review',
-        flagged: true,
-    },
-    {
-        exposure: 12,
-        events: 3,
-        site: 'Site 02',
-        arm: 'Treatment',
-        participants: 35,
-        completeness: 0.94,
-        status: 'On target',
-        flagged: false,
-    },
-    {
-        exposure: 25,
-        events: 6,
-        site: 'Site 03',
-        arm: null,
-        participants: 48,
-        completeness: 0.83,
-        status: 'Review',
-        flagged: true,
-    },
+  {
+    exposure: 5,
+    events: 1,
+    site: "Site 01",
+    arm: "Control",
+    participants: 12,
+    completeness: 0.72,
+    status: "Review",
+    flagged: true,
+  },
+  {
+    exposure: 12,
+    events: 3,
+    site: "Site 02",
+    arm: "Treatment",
+    participants: 35,
+    completeness: 0.94,
+    status: "On target",
+    flagged: false,
+  },
+  {
+    exposure: 25,
+    events: 6,
+    site: "Site 03",
+    arm: null,
+    participants: 48,
+    completeness: 0.83,
+    status: "Review",
+    flagged: true,
+  },
 ];
 
 const thresholds = [
-    { exposure: 1, events: 2, threshold: 'Review' },
-    { exposure: 10, events: 5, threshold: 'Review' },
-    { exposure: 100, events: 10, threshold: 'Review' },
-    { exposure: 1, events: 4, threshold: 'Alert' },
-    { exposure: 10, events: 8, threshold: 'Alert' },
-    { exposure: 100, events: 16, threshold: 'Alert' },
+  { exposure: 1, events: 2, threshold: "Review" },
+  { exposure: 10, events: 5, threshold: "Review" },
+  { exposure: 100, events: 10, threshold: "Review" },
+  { exposure: 1, events: 4, threshold: "Alert" },
+  { exposure: 10, events: 8, threshold: "Alert" },
+  { exposure: 100, events: 16, threshold: "Alert" },
 ];
 
 const chart = gsmViz.default.points(element, data, {
-    mapping: {
-        x: 'exposure',
-        y: 'events',
-        key: 'site',
-        color: 'arm',
-        size: 'participants',
-        opacity: 'completeness',
-        shape: 'status',
+  mapping: {
+    x: "exposure",
+    y: "events",
+    key: "site",
+    color: "arm",
+    size: "participants",
+    opacity: "completeness",
+    shape: "status",
+  },
+  scales: {
+    x: {
+      type: "log",
+      label: "Participant exposure",
+      range: [1, 100],
+      breaks: [1, 10, 100],
+      labels: ["1", "10", "100"],
     },
-    scales: {
-        x: {
-            type: 'log',
-            label: 'Participant exposure',
-            range: [1, 100],
-            breaks: [1, 10, 100],
-            labels: ['1', '10', '100'],
-        },
-        y: {
-            label: 'Reported events',
-            beginAtZero: true,
-        },
-        color: {
-            colors: {
-                Control: '#4e79a7',
-                Treatment: '#f28e2b',
-            },
-            order: ['Control', 'Treatment', null],
-            label: 'Treatment arm',
-        },
-        size: { range: [4, 12] },
-        opacity: { range: [0.35, 1] },
-        shape: {
-            values: {
-                'On target': 'circle',
-                Review: 'triangle',
-            },
-            order: ['On target', 'Review'],
-            label: 'Monitoring status',
-        },
+    y: {
+      label: "Reported events",
+      beginAtZero: true,
     },
+    color: {
+      colors: {
+        Control: "#4e79a7",
+        Treatment: "#f28e2b",
+      },
+      order: ["Control", "Treatment", null],
+      label: "Treatment arm",
+    },
+    size: { range: [4, 12] },
+    opacity: { range: [0.35, 1] },
+    shape: {
+      values: {
+        "On target": "circle",
+        Review: "triangle",
+      },
+      order: ["On target", "Review"],
+      label: "Monitoring status",
+    },
+  },
+  labels: {
+    title: "Events by exposure",
+    caption: "Simulated data",
+    description:
+      "Each point represents one site and compares exposure with reported events.",
+  },
+  annotations: {
+    referenceLines: [
+      {
+        axis: "y",
+        value: 10,
+        label: "10-event reference",
+        dash: [3, 3],
+      },
+    ],
+    lines: [
+      {
+        data: thresholds,
+        mapping: {
+          x: "exposure",
+          y: "events",
+          group: "threshold",
+        },
+        order: ["Review", "Alert"],
+        colors: {
+          Review: "#e5a919",
+          Alert: "#e15759",
+        },
+        width: 2,
+        dash: [6, 3],
+        showInLegend: true,
+      },
+    ],
     labels: {
-        title: 'Events by exposure',
-        caption: 'Simulated data',
-        description:
-            'Each point represents one site and compares exposure with reported events.',
+      point: {
+        field: "site",
+        display: "flagged",
+        align: "top",
+        offset: 6,
+      },
     },
-    annotations: {
-        referenceLines: [
-            {
-                axis: 'y',
-                value: 10,
-                label: '10-event reference',
-                dash: [3, 3],
-            },
-        ],
-        lines: [
-            {
-                data: thresholds,
-                mapping: {
-                    x: 'exposure',
-                    y: 'events',
-                    group: 'threshold',
-                },
-                order: ['Review', 'Alert'],
-                colors: {
-                    Review: '#e5a919',
-                    Alert: '#e15759',
-                },
-                width: 2,
-                dash: [6, 3],
-                showInLegend: true,
-            },
-        ],
-        labels: {
-            point: {
-                field: 'site',
-                display: 'flagged',
-                align: 'top',
-                offset: 6,
-            },
-        },
+  },
+  tooltip: {
+    format: "{site}: {events} events at {exposure} exposure ({color})",
+  },
+  callbacks: {
+    onClick: (point) => {
+      console.log(point._datum);
     },
-    tooltip: {
-        format: '{site}: {events} events at {exposure} exposure ({color})',
+    onSelect: (selection, event) => {
+      console.log(selection, event);
     },
-    callbacks: {
-        onClick: (point) => {
-            console.log(point._datum);
-        },
-        onSelect: (selection, event) => {
-            console.log(selection, event);
-        },
-    },
-    selection: {
-        enabled: true,
-        multiple: true,
-        opacity: 0.2,
-    },
+  },
+  selection: {
+    enabled: true,
+    multiple: true,
+    opacity: 0.2,
+  },
 });
 ```
 
@@ -474,10 +478,10 @@ removed.
 Every chart exposes serializable point and color-group selection helpers:
 
 ```js
-chart.helpers.selectPoint(chart, 'Site 01');
-chart.helpers.selectPoint(chart, ['Site 01', 'Site 02']);
-chart.helpers.selectGroup(chart, 'Control');
-chart.helpers.selectGroup(chart, ['Control', 'Treatment']);
+chart.helpers.selectPoint(chart, "Site 01");
+chart.helpers.selectPoint(chart, ["Site 01", "Site 02"]);
+chart.helpers.selectGroup(chart, "Control");
+chart.helpers.selectGroup(chart, ["Control", "Treatment"]);
 
 const selection = chart.helpers.getSelection(chart);
 // { type: 'point'|'group'|null, values: [...] }
@@ -516,7 +520,7 @@ accept an event as their third argument and `{ _silent: true }` as their fourth
 argument:
 
 ```js
-chart.helpers.selectPoint(chart, ['Site 01'], event, { _silent: true });
+chart.helpers.selectPoint(chart, ["Site 01"], event, { _silent: true });
 chart.helpers.clearSelection(chart, event, { _silent: true });
 ```
 
@@ -537,8 +541,8 @@ Every chart also exposes two in-place lifecycle helpers:
 chart.helpers.updateData(chart, nextData);
 chart.helpers.updateData(chart, nextData, replacementSpec);
 chart.helpers.updateSpec(chart, {
-    labels: { title: 'Updated title' },
-    scales: { x: { label: 'Updated x label' } },
+  labels: { title: "Updated title" },
+  scales: { x: { label: "Updated x label" } },
 });
 ```
 
@@ -573,14 +577,14 @@ Zoom is disabled by default. Enable it for either axis or both axes:
 
 ```js
 const chart = gsmViz.default.points(element, data, {
-    mapping: { x: 'exposure', y: 'events' },
-    zoom: {
-        enabled: true,
-        mode: 'xy',
-        pan: true,
-        wheel: true,
-        pinch: true,
-    },
+  mapping: { x: "exposure", y: "events" },
+  zoom: {
+    enabled: true,
+    mode: "xy",
+    pan: true,
+    wheel: true,
+    pinch: true,
+  },
 });
 
 chart.resetZoom();
@@ -608,7 +612,7 @@ Every chart exposes an image-download helper:
 
 ```js
 chart.helpers.exportImage(chart);
-chart.helpers.exportImage(chart, 'site-scatter.png');
+chart.helpers.exportImage(chart, "site-scatter.png");
 ```
 
 The helper captures the rendered canvas, including its white background, as an
@@ -624,22 +628,22 @@ whitespace with dashes.
 
 ## Data rules
 
--   Values mapped to x and y must already be finite JavaScript numbers and must be
-    positive when their axis uses a log scale.
--   Numeric strings are not coerced.
--   Invalid rows throw a descriptive error; rows are never silently dropped.
--   Duplicate coordinates remain independent points.
--   `mapping.key`, when supplied, must resolve to a unique string or finite number
-    for every row. Without it, the original row index is the local point key.
--   Each rendered point retains its original source row as `_datum`.
--   Each rendered point retains its original source-row position as `_index`;
-    keyboard traversal uses this value even when categorical datasets reorder
-    points.
--   Color-mapped points retain their resolved categorical value as `_color`.
--   Size- and opacity-mapped points retain their source values as `_size` and
-    `_opacity`.
--   Shape-mapped points retain their resolved categorical value as `_shape`.
--   An empty data array renders a valid empty chart.
+- Values mapped to x and y must already be finite JavaScript numbers and must be
+  positive when their axis uses a log scale.
+- Numeric strings are not coerced.
+- Invalid rows throw a descriptive error; rows are never silently dropped.
+- Duplicate coordinates remain independent points.
+- `mapping.key`, when supplied, must resolve to a unique string or finite number
+  for every row. Without it, the original row index is the local point key.
+- Each rendered point retains its original source row as `_datum`.
+- Each rendered point retains its original source-row position as `_index`;
+  keyboard traversal uses this value even when categorical datasets reorder
+  points.
+- Color-mapped points retain their resolved categorical value as `_color`.
+- Size- and opacity-mapped points retain their source values as `_size` and
+  `_opacity`.
+- Shape-mapped points retain their resolved categorical value as `_shape`.
+- An empty data array renders a valid empty chart.
 
 ## Accessibility and responsive behavior
 
