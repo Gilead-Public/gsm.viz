@@ -157,6 +157,14 @@ const chart = gsmViz.default.points(element, data, {
         onClick: (point) => {
             console.log(point._datum);
         },
+        onSelect: (selection, event) => {
+            console.log(selection, event);
+        },
+    },
+    selection: {
+        enabled: true,
+        multiple: true,
+        opacity: 0.2,
     },
 });
 ```
@@ -228,6 +236,12 @@ const chart = gsmViz.default.points(element, data, {
     callbacks: {
         onClick: null,
         onHover: null,
+        onSelect: null,
+    },
+    selection: {
+        enabled: false,
+        multiple: false,
+        opacity: 0.2,
     },
     theme: {
         maintainAspectRatio: false,
@@ -237,9 +251,8 @@ const chart = gsmViz.default.points(element, data, {
 ```
 
 The renderer supports ungrouped points; categorical color and shape mappings;
-continuous size and opacity mappings; and linear or logarithmic x/y axes.
-Annotations and additional interactions are added as separate reviewable
-features.
+continuous size and opacity mappings; linear or logarithmic x/y axes;
+annotations; and keyed point or color-group selection.
 
 ## Numeric axes
 
@@ -449,6 +462,66 @@ optional `_color`, and original source row in `_datum`. A pointer cursor is show
 for interactive points and reset when the pointer leaves or callbacks are
 removed.
 
+## Selection
+
+Every chart exposes serializable point and color-group selection helpers:
+
+```js
+chart.helpers.selectPoint(chart, 'Site 01');
+chart.helpers.selectPoint(chart, ['Site 01', 'Site 02']);
+chart.helpers.selectGroup(chart, 'Control');
+chart.helpers.selectGroup(chart, ['Control', 'Treatment']);
+
+const selection = chart.helpers.getSelection(chart);
+// { type: 'point'|'group'|null, values: [...] }
+
+chart.helpers.clearSelection(chart);
+```
+
+Point values are the mapped `mapping.key` values, or original row indexes when
+no key is mapped. Group values are resolved `mapping.color` values and
+`selectGroup` requires a color mapping. Point values must be known strings or
+finite numbers; group values may additionally use `null` for the missing-value
+level. This keeps a missing group distinct from the literal string
+`"(Missing)"`. Empty levels named in `scales.color.order` are also valid group
+selection values. Numeric and string values remain distinct. Scalar and array
+inputs are accepted, duplicates are removed without reordering, and an empty
+array clears the current selection.
+
+A selected point or group keeps its original color while all other points are
+dimmed by multiplying their encoded alpha by `selection.opacity`; selection
+therefore never makes a low-opacity point more prominent. Auxiliary lines and
+legend swatches retain their original colors. Selecting exactly one point keeps
+that point's tooltip active by dataset and index, so points at duplicate
+coordinates remain independent.
+
+Set `selection.enabled: true` to enable pointer and keyboard selection. A point
+click selects its key, clicking it again clears it, and clicking empty chart
+space clears the current selection. With `selection.multiple: true`, point
+clicks toggle keys additively; otherwise a new click replaces the selection.
+Programmatic array selection is available regardless of this interaction
+setting.
+
+`callbacks.onSelect(selection, event)` runs after click, keyboard, or
+programmatic selection changes. The callback receives a defensive
+`{ type, values }` object. For linked-chart synchronization, mutating helpers
+accept an event as their third argument and `{ _silent: true }` as their fourth
+argument:
+
+```js
+chart.helpers.selectPoint(chart, ['Site 01'], event, { _silent: true });
+chart.helpers.clearSelection(chart, event, { _silent: true });
+```
+
+When enabled, the canvas is focusable. `ArrowRight` and `ArrowDown` move to the
+next point in original source-row order; `ArrowLeft` and `ArrowUp` move to the
+previous point, with traversal wrapping at either end. `Enter` toggles the
+active point and `Escape` clears selection or dismisses an active point. The
+canvas uses interactive application semantics and includes the keyboard
+instructions in its accessible label. One initially quiet, visually hidden live
+status announces active-point and selection changes; no per-point DOM nodes are
+created.
+
 ## Data rules
 
 -   Values mapped to x and y must already be finite JavaScript numbers and must be
@@ -459,6 +532,9 @@ removed.
 -   `mapping.key`, when supplied, must resolve to a unique string or finite number
     for every row. Without it, the original row index is the local point key.
 -   Each rendered point retains its original source row as `_datum`.
+-   Each rendered point retains its original source-row position as `_index`;
+    keyboard traversal uses this value even when categorical datasets reorder
+    points.
 -   Color-mapped points retain their resolved categorical value as `_color`.
 -   Size- and opacity-mapped points retain their source values as `_size` and
     `_opacity`.
@@ -469,5 +545,8 @@ removed.
 
 The canvas receives an image role and text alternative derived from the title,
 description, axis mappings, point count, and encoded color/shape values.
+When selection is enabled, the canvas becomes a focusable interactive
+application, adds the documented controls to its text alternative, and reports
+changes through a polite live status element.
 `theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
 as the container resizes.
