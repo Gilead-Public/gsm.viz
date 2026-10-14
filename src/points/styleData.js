@@ -47,6 +47,17 @@ export function withOpacity(color, opacity) {
     return parsed.formatRgb();
 }
 
+export function withOpacityFactor(color, factor) {
+    const parsed = parseColor(color);
+
+    if (!parsed) {
+        return `color-mix(in srgb, ${color} ${factor * 100}%, transparent)`;
+    }
+
+    parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
+    return parsed.formatRgb();
+}
+
 function getDomain(points, field) {
     let minimum = Infinity;
     let maximum = -Infinity;
