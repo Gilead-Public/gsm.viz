@@ -28214,7 +28214,7 @@ var gsmViz = (() => {
     scales: ["x", "y", "color", "size", "opacity", "shape"],
     scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
     colorScale: ["colors", "palette", "order", "label"],
-    continuousAestheticScale: ["range"],
+    continuousAestheticScale: ["range", "domain"],
     shapeScale: ["values", "order", "label"],
     labels: ["title", "caption", "description"],
     annotations: ["referenceLines", "lines", "labels"],
@@ -28715,15 +28715,19 @@ var gsmViz = (() => {
       throw new Error(`${path}.label must be a string or null`);
     }
   }
-  function validateContinuousAestheticScale(scale, aesthetic) {
-    if (scale === void 0) return;
-    const path = `spec.scales.${aesthetic}`;
-    validatePlainObject(scale, path);
-    validateSupportedFields(
-      scale,
-      supportedFields.continuousAestheticScale,
-      path
-    );
+  function validateDomain(scale, aesthetic, path) {
+    if (scale.domain === void 0) return;
+    if (!Array.isArray(scale.domain) || scale.domain.length !== 2 || !scale.domain.every(Number.isFinite)) {
+      throw new Error(`${path}.domain must contain two finite numbers`);
+    }
+    if (aesthetic === "size" && scale.domain.some((value) => value < 0)) {
+      throw new Error(`${path}.domain values must not be negative`);
+    }
+    if (scale.domain[0] > scale.domain[1]) {
+      throw new Error(`${path}.domain values must not be decreasing`);
+    }
+  }
+  function validateRange(scale, aesthetic, path) {
     if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
       throw new Error(`${path}.range must contain two finite numbers`);
     }
@@ -28736,6 +28740,20 @@ var gsmViz = (() => {
     if (scale.range[0] >= scale.range[1]) {
       throw new Error(`${path}.range values must be strictly increasing`);
     }
+  }
+  function validateContinuousAestheticScale(scale, aesthetic) {
+    if (scale === void 0) return;
+    const path = `spec.scales.${aesthetic}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(
+      scale,
+      supportedFields.continuousAestheticScale,
+      path
+    );
+    if (scale.range !== void 0 || scale.domain === void 0) {
+      validateRange(scale, aesthetic, path);
+    }
+    validateDomain(scale, aesthetic, path);
   }
   function validateCallbacks(callbacks) {
     if (callbacks === void 0) {
@@ -28963,10 +28981,12 @@ var gsmViz = (() => {
         label: void 0
       },
       size: {
-        range: [3, 12]
+        range: [3, 12],
+        domain: void 0
       },
       opacity: {
-        range: [0.25, 1]
+        range: [0.25, 1],
+        domain: void 0
       },
       shape: {
         values: {},
@@ -29126,7 +29146,8 @@ var gsmViz = (() => {
     parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
     return parsed.formatRgb();
   }
-  function getDomain(points2, field) {
+  function getDomain(points2, field, configured) {
+    if (configured) return configured;
     let minimum = Infinity;
     let maximum = -Infinity;
     points2.forEach((point) => {
@@ -29138,8 +29159,8 @@ var gsmViz = (() => {
   function styleData(datasets, spec) {
     const points2 = datasets.flatMap((dataset) => dataset.data);
     if (points2.length === 0) return datasets;
-    const sizeDomain = spec.mapping.size ? getDomain(points2, "_size") : void 0;
-    const opacityDomain = spec.mapping.opacity ? getDomain(points2, "_opacity") : void 0;
+    const sizeDomain = spec.mapping.size ? getDomain(points2, "_size", spec.scales.size.domain) : void 0;
+    const opacityDomain = spec.mapping.opacity ? getDomain(points2, "_opacity", spec.scales.opacity.domain) : void 0;
     datasets.forEach((dataset) => {
       if (sizeDomain) {
         dataset.pointRadius = dataset.data.map(
@@ -30170,6 +30191,7 @@ var gsmViz = (() => {
     storeOriginalStyles(chart);
     const state = ensureState(chart);
     state.selection = { type: type2, values: [...values] };
+    state.tooltipSuppressed = Boolean(options?._silent);
     applySelectionStyles(chart);
     const activeKey = options?._activeKey;
     const fromKeyboard = event?.type === "keydown" && activeKey !== void 0;
@@ -30183,7 +30205,8 @@ var gsmViz = (() => {
       if (!setActivePoint(chart, activeKey)) clearActivePoint(chart);
     } else if (type2 === "point" && values.length === 1) {
       setKeyboardIndex(chart, values[0]);
-      if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
+      if (state.tooltipSuppressed) clearActivePoint(chart);
+      else if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
     } else {
       clearActivePoint(chart);
       delete state.keyboardIndex;
@@ -30313,6 +30336,7 @@ var gsmViz = (() => {
     if (selection2.type !== "point" || selection2.values.length !== 1) {
       return false;
     }
+    if (chart.data._selectionState_?.tooltipSuppressed) return false;
     const location = findPointLocation(chart, selection2.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
       const selectedIsActive = hasLocation(chart.getActiveElements(), location) || hasLocation(chart.tooltip?.getActiveElements() || [], location);
@@ -32497,6 +32521,7 @@ var gsmViz = (() => {
     return {
       ...scale,
       ...scale.range ? { range: [...scale.range] } : {},
+      ...scale.domain ? { domain: [...scale.domain] } : {},
       ...scale.breaks ? { breaks: [...scale.breaks] } : {},
       ...scale.labels ? { labels: [...scale.labels] } : {},
       ...scale.order ? { order: [...scale.order] } : {},
@@ -32524,6 +32549,12 @@ var gsmViz = (() => {
     }
     scales2.color.order = [...globalStyles.colorOrder];
     scales2.shape.order = [...globalStyles.shapeOrder];
+    if (globalStyles.sizeDomain && !scales2.size.domain) {
+      scales2.size.domain = [...globalStyles.sizeDomain];
+    }
+    if (globalStyles.opacityDomain && !scales2.opacity.domain) {
+      scales2.opacity.domain = [...globalStyles.opacityDomain];
+    }
     return {
       ...pointsSpec,
       scales: scales2,
@@ -32682,6 +32713,13 @@ var gsmViz = (() => {
     observed.forEach(add);
     return result;
   }
+  function getRange(datasets, field) {
+    const values = datasets.flatMap(
+      (dataset) => dataset.data.map((point) => point[field])
+    );
+    if (values.length === 0) return void 0;
+    return [Math.min(...values), Math.max(...values)];
+  }
   function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
       template[key] = key === "data" ? [] : Array.isArray(value) ? [...value] : value;
@@ -32711,7 +32749,9 @@ var gsmViz = (() => {
     return {
       templates: datasets.map(makeTemplate),
       colorOrder,
-      shapeOrder
+      shapeOrder,
+      ...spec.mapping.size ? { sizeDomain: getRange(datasets, "_size") } : {},
+      ...spec.mapping.opacity ? { opacityDomain: getRange(datasets, "_opacity") } : {}
     };
   }
   function cloneGhost(template) {
