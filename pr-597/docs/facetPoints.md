@@ -254,7 +254,9 @@ first.helpers.updateSpec(first, { labels: { title: 'Updated panel' } });
 A child `updateData` or `updateSpec` is local to that chart. It preserves the
 initial global point-dataset templates, facet legend display, hidden semantic
 groups, and synchronization wrappers when the original color/shape domain is
-retained.
+retained. Callback functions supplied through a child's `updateSpec` or through
+the `spec` argument of `updateData` also receive the facet value, so their
+signatures match the callbacks above.
 
 Reinvoke `facetPoints(element, completeData, completeSpec)` whenever an update
 changes facet membership/order, shared x/y domains, color/shape mappings or
