@@ -1,52 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Points</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <title>Points</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <link rel="stylesheet" href="../examples.css" />
-        <style>
-            #points-container {
-                height: 70vh;
-                margin: 2rem auto;
-                max-width: 960px;
-                width: 90%;
-            }
+    <link rel="stylesheet" href="../examples.css" />
+    <style>
+      .tab-nav {
+        display: flex;
+        gap: 4px;
+        padding: 8px 16px 0;
+        border-bottom: 2px solid #ccc;
+      }
+      .tab-nav button {
+        padding: 6px 16px;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        background: #f5f5f5;
+        cursor: pointer;
+        border-radius: 4px 4px 0 0;
+        font-size: 14px;
+      }
+      .tab-nav button.active {
+        background: #fff;
+        border-bottom: 2px solid #fff;
+        margin-bottom: -2px;
+        font-weight: bold;
+      }
+      .tab-panel {
+        display: none;
+      }
+      .tab-panel.active {
+        display: block;
+      }
+      .points-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+        padding: 12px 16px;
+      }
+      .points-controls label {
+        display: flex;
+        flex-direction: column;
+        font-size: 12px;
+        font-weight: bold;
+        gap: 2px;
+      }
+      .points-controls .status {
+        font-size: 13px;
+        min-height: 1.4em;
+      }
+      #kri-container,
+      #gapminder-container {
+        height: 65vh;
+        margin: 0 16px;
+      }
+      #kri-facet-container {
+        margin: 0 16px;
+      }
+      #points-container {
+        height: 70vh;
+        margin: 2rem auto;
+        max-width: 960px;
+        width: 90%;
+      }
+      .selection-controls {
+        margin: 1rem auto;
+        max-width: 960px;
+        width: 90%;
+      }
+    </style>
 
-            .selection-controls {
-                margin: 1rem auto;
-                max-width: 960px;
-                width: 90%;
-            }
-        </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="../index.js"></script>
+    <script src="../data/helpers/filterOnMetricID.js"></script>
+    <script src="../data/helpers/selectMetricID.js"></script>
+    <script src="../groupTooltipKeys.js"></script>
+  </head>
 
-        <script src="../index.js"></script>
-    </head>
+  <body>
+    <nav class="tab-nav">
+      <button class="active" data-tab="kri-scatter">Scatter</button>
+      <button data-tab="kri-facet">Faceted</button>
+      <button data-tab="gapminder">Bubble</button>
+      <button data-tab="selection">Selection &amp; Zoom</button>
+    </nav>
 
-    <body>
-        <main class="gsm-viz--example">
-            <div class="selection-controls">
-                <p>
-                    Click points or focus the chart and use the arrow keys plus
-                    Enter to select multiple sites. Drag to pan and use the
-                    mouse wheel or a pinch gesture to zoom.
-                </p>
-                <button id="select-europe" type="button">Select Europe</button>
-                <button id="clear-selection" type="button">
-                    Clear selection
-                </button>
-                <button id="show-review" type="button">
-                    Show review sites
-                </button>
-                <button id="show-all" type="button">Show all sites</button>
-                <button id="reset-zoom" type="button">Reset zoom</button>
-                <button id="export-image" type="button">Export PNG</button>
-            </div>
-            <div id="points-container"></div>
-        </main>
+    <!-- KRI scatter tab -->
+    <div id="kri-scatter" class="tab-panel active gsm-viz--example">
+      <div class="points-controls">
+        <label>
+          Metric
+          <select id="kri-metric"></select>
+        </label>
+        <label>
+          Highlighted Group
+          <select id="kri-group"></select>
+        </label>
+        <label>
+          Highlighted Country
+          <select id="kri-country"></select>
+        </label>
+        <label>
+          X-axis Type
+          <select id="kri-x-type">
+            <option value="log" selected>log</option>
+            <option value="linear">linear</option>
+          </select>
+        </label>
+        <button id="kri-download" type="button">Generate .png</button>
+      </div>
+      <div id="kri-container"></div>
+    </div>
 
-        <script src="index.js"></script>
-        <script src="../nav.js"></script>
-    </body>
+    <!-- KRI facet tab -->
+    <div id="kri-facet" class="tab-panel gsm-viz--example">
+      <div class="points-controls">
+        <label>
+          Highlighted Site
+          <select id="kri-facet-site">
+            <option value="">None</option>
+          </select>
+        </label>
+        <label>
+          X-axis Type
+          <select id="kri-facet-x-type">
+            <option value="log" selected>log</option>
+            <option value="linear">linear</option>
+          </select>
+        </label>
+        <label>
+          X Scale
+          <select id="kri-facet-x-scale">
+            <option value="constant" selected>Constant</option>
+            <option value="free">Free</option>
+          </select>
+        </label>
+        <label>
+          Y Scale
+          <select id="kri-facet-y-scale">
+            <option value="constant" selected>Constant</option>
+            <option value="free">Free</option>
+          </select>
+        </label>
+        <label>
+          Flags
+          <select id="kri-facet-flag-filter" multiple size="5">
+            <option value="-2" selected>-2</option>
+            <option value="-1" selected>-1</option>
+            <option value="0" selected>0</option>
+            <option value="1" selected>1</option>
+            <option value="2" selected>2</option>
+          </select>
+        </label>
+        <output id="kri-facet-status" class="status"></output>
+      </div>
+      <div id="kri-facet-container"></div>
+    </div>
+
+    <!-- Gapminder bubble tab -->
+    <div id="gapminder" class="tab-panel gsm-viz--example">
+      <div class="points-controls">
+        <label>
+          Year: <output id="gapminder-year-label"></output>
+          <input id="gapminder-year" type="range" step="1" />
+        </label>
+        <button id="gapminder-play" type="button">Play</button>
+        <label>
+          Bubble Size
+          <select id="gapminder-size">
+            <option value="co2_consump" selected>CO2 consumption</option>
+            <option value="services">Services (% of GDP)</option>
+            <option value="hdi_index">HDI</option>
+          </select>
+        </label>
+        <output id="gapminder-status" class="status"></output>
+      </div>
+      <div id="gapminder-container"></div>
+    </div>
+
+    <!-- Selection and zoom tab -->
+    <div id="selection" class="tab-panel gsm-viz--example">
+      <div class="selection-controls">
+        <p>
+          Click points or focus the chart and use the arrow keys plus Enter to
+          select multiple sites. Drag to pan and use the mouse wheel or a pinch
+          gesture to zoom.
+        </p>
+        <button id="select-europe" type="button">Select Europe</button>
+        <button id="clear-selection" type="button">Clear selection</button>
+        <button id="show-review" type="button">Show review sites</button>
+        <button id="show-all" type="button">Show all sites</button>
+        <button id="reset-zoom" type="button">Reset zoom</button>
+        <button id="export-image" type="button">Export PNG</button>
+      </div>
+      <div id="points-container"></div>
+    </div>
+
+    <script>
+      // Tab switching
+      const tabButtons = document.querySelectorAll(".tab-nav button");
+      const tabPanels = document.querySelectorAll(".tab-panel");
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach((b) => b.classList.remove("active"));
+          tabPanels.forEach((p) => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+    </script>
+
+    <script src="controls.js"></script>
+    <script src="kriScatterChart.js"></script>
+    <script src="kriFacetScatterChart.js"></script>
+    <script src="gapminderChart.js"></script>
+    <script src="selectionDemo.js"></script>
+    <script src="../nav.js"></script>
+  </body>
 </html>
