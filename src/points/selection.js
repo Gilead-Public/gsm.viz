@@ -280,6 +280,8 @@ function setSelection(chart, type, values, event, options) {
     storeOriginalStyles(chart);
     const state = ensureState(chart);
     state.selection = { type, values: [...values] };
+    // Silent updates mirror a linked selection and must not pin a tooltip.
+    state.tooltipSuppressed = Boolean(options?._silent);
     applySelectionStyles(chart);
     const activeKey = options?._activeKey;
     const fromKeyboard = event?.type === 'keydown' && activeKey !== undefined;
@@ -294,7 +296,8 @@ function setSelection(chart, type, values, event, options) {
         if (!setActivePoint(chart, activeKey)) clearActivePoint(chart);
     } else if (type === 'point' && values.length === 1) {
         setKeyboardIndex(chart, values[0]);
-        if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
+        if (state.tooltipSuppressed) clearActivePoint(chart);
+        else if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
     } else {
         clearActivePoint(chart);
         delete state.keyboardIndex;
@@ -508,6 +511,7 @@ function reconcileSelectedPoint(
     if (selection.type !== 'point' || selection.values.length !== 1) {
         return false;
     }
+    if (chart.data._selectionState_?.tooltipSuppressed) return false;
 
     const location = findPointLocation(chart, selection.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {

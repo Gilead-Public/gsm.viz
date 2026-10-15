@@ -2,6 +2,7 @@ function getScale(scale) {
     return {
         ...scale,
         ...(scale.range ? { range: [...scale.range] } : {}),
+        ...(scale.domain ? { domain: [...scale.domain] } : {}),
         ...(scale.breaks ? { breaks: [...scale.breaks] } : {}),
         ...(scale.labels ? { labels: [...scale.labels] } : {}),
         ...(scale.order ? { order: [...scale.order] } : {}),
@@ -48,6 +49,13 @@ export default function buildSubSpec(
     }
     scales.color.order = [...globalStyles.colorOrder];
     scales.shape.order = [...globalStyles.shapeOrder];
+    // An explicit points domain stays authoritative over the shared one.
+    if (globalStyles.sizeDomain && !scales.size.domain) {
+        scales.size.domain = [...globalStyles.sizeDomain];
+    }
+    if (globalStyles.opacityDomain && !scales.opacity.domain) {
+        scales.opacity.domain = [...globalStyles.opacityDomain];
+    }
 
     return {
         ...pointsSpec,

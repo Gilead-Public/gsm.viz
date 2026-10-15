@@ -472,6 +472,36 @@ describe('facetPoints', () => {
         expect(charts[0].options.scales.x.max).toBe(10);
     });
 
+    test('renders the same size and opacity value identically in every facet', () => {
+        const sizeData = [
+            { phase: 'Baseline', id: 'A', x: 1, y: 1, n: 10, o: 10 },
+            { phase: 'Baseline', id: 'B', x: 2, y: 2, n: 20, o: 20 },
+            { phase: 'Week 4', id: 'C', x: 3, y: 3, n: 20, o: 20 },
+            { phase: 'Week 4', id: 'D', x: 4, y: 4, n: 500, o: 500 },
+        ];
+        const { charts } = facetPoints(parent, sizeData, {
+            mapping: { x: 'x', y: 'y', key: 'id', size: 'n', opacity: 'o' },
+            facet: { field: 'phase' },
+        });
+        const radius = (chart, key) => {
+            const point = findPoint(chart, key);
+            return chart.data.datasets[point.datasetIndex].pointRadius[
+                point.index
+            ];
+        };
+        const color = (chart, key) => {
+            const point = findPoint(chart, key);
+            return chart.data.datasets[point.datasetIndex].backgroundColor[
+                point.index
+            ];
+        };
+
+        expect(radius(charts[0], 'B')).toBeCloseTo(radius(charts[1], 'C'));
+        expect(radius(charts[0], 'B')).toBeLessThan(12);
+        expect(color(charts[0], 'B')).toBe(color(charts[1], 'C'));
+        expect(radius(charts[1], 'D')).toBe(12);
+    });
+
     test('clears linked hover when the pointer leaves the canvas', () => {
         const { charts } = facetPoints(parent, data, baseSpec);
 

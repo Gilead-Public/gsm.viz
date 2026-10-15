@@ -94,6 +94,20 @@ describe('facetPoints/syncSelection', () => {
         });
     });
 
+    test('does not open sibling tooltips for a single-key selection', () => {
+        const origin = add([{ x: 1, y: 2, id: 'shared' }]);
+        const sibling = add([{ x: 5, y: 6, id: 'shared' }]);
+
+        syncSelection([origin, sibling]);
+        origin.helpers.selectPoint(origin, 'shared');
+
+        expect(origin.tooltip.getActiveElements()).toHaveLength(1);
+        expect(sibling.helpers.getSelection(sibling).values).toEqual([
+            'shared',
+        ]);
+        expect(sibling.tooltip.getActiveElements()).toHaveLength(0);
+    });
+
     test('does not synchronize fallback row indexes without mapping.key', () => {
         const origin = add([{ x: 1, y: 2 }], {
             mapping: { key: undefined },

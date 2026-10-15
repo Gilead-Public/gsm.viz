@@ -190,6 +190,12 @@ represent combinations absent from one facet, so composite color/shape legends
 remain aligned without creating rendered points. Numeric/string levels and
 missing/literal `"(Missing)"` levels remain distinct.
 
+Continuous `mapping.size` and `mapping.opacity` domains are also resolved once
+across every rendered facet and passed to each child as `scales.size.domain` and
+`scales.opacity.domain`, so the same value has the same radius and alpha in every
+panel. An explicit `scales.size.domain` or `scales.opacity.domain` takes
+precedence.
+
 By default, clicking a point or auxiliary-line legend item propagates its
 visibility to the semantically matching dataset in every sibling:
 
@@ -213,7 +219,8 @@ hover is not linked.
 
 Point selection is also linked only when `mapping.key` is present in both
 charts. A sibling selects the subset of requested keys that it contains and
-clears when it has no match. Color-group selection synchronizes by typed group
+clears when it has no match. Sibling selections never open or pin a tooltip;
+only the originating chart shows one. Color-group selection synchronizes by typed group
 identity. Sibling updates are silent, so `onSelect` runs once on the originating
 facet. Pointer, keyboard, and programmatic selection all use the same path.
 

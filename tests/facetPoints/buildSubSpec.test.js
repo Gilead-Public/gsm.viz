@@ -31,6 +31,39 @@ describe('facetPoints/buildSubSpec', () => {
         expect(result.annotations.lines).toEqual([]);
     });
 
+    test('injects shared size and opacity domains unless configured', () => {
+        const styles = {
+            colorOrder: [],
+            shapeOrder: [],
+            sizeDomain: [10, 500],
+            opacityDomain: [0, 1],
+        };
+
+        const shared = buildSubSpec('North', makeMerged(), {}, styles);
+        expect(shared.scales.size.domain).toEqual([10, 500]);
+        expect(shared.scales.opacity.domain).toEqual([0, 1]);
+
+        const configured = buildSubSpec(
+            'North',
+            makeMerged({ scales: { size: { domain: [0, 5] } } }),
+            {},
+            styles
+        );
+        expect(configured.scales.size.domain).toEqual([0, 5]);
+        expect(configured.scales.opacity.domain).toEqual([0, 1]);
+
+        const unmapped = buildSubSpec(
+            'North',
+            makeMerged(),
+            {},
+            {
+                colorOrder: [],
+                shapeOrder: [],
+            }
+        );
+        expect(unmapped.scales.size.domain).toBeUndefined();
+    });
+
     test('injects fixed global ranges and resolved aesthetic orders', () => {
         const result = buildSubSpec(
             'North',

@@ -91,6 +91,41 @@ describe('facetPoints/globalStyles', () => {
         expect(style(styles.templates)).toBe(style(childDatasets));
     });
 
+    test('resolves size and opacity domains across every rendered facet', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', n: 10, o: 0.5 },
+            { x: 2, y: 2, facet: 'A', n: 20, o: 0.2 },
+            { x: 3, y: 3, facet: 'B', n: 500, o: 0.9 },
+            { x: 4, y: 4, facet: 'C', n: 9999, o: 5 },
+        ];
+        const { merged, facets } = prepare(data, {
+            mapping: {
+                color: undefined,
+                shape: undefined,
+                size: 'n',
+                opacity: 'o',
+            },
+            facet: { order: ['A', 'B'] },
+        });
+
+        const styles = getGlobalStyles(facets, merged);
+
+        expect(styles.sizeDomain).toEqual([10, 500]);
+        expect(styles.opacityDomain).toEqual([0.2, 0.9]);
+    });
+
+    test('omits size and opacity domains when they are not mapped', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },
+        ];
+        const { merged, facets } = prepare(data);
+
+        const styles = getGlobalStyles(facets, merged);
+
+        expect(styles.sizeDomain).toBeUndefined();
+        expect(styles.opacityDomain).toBeUndefined();
+    });
+
     test('builds one template for every observed composite style', () => {
         const data = [
             { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },

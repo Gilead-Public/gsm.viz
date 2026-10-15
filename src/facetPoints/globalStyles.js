@@ -49,6 +49,15 @@ function resolveOrder(order, observed) {
     observed.forEach(add);
     return result;
 }
+function getRange(datasets, field) {
+    const values = datasets.flatMap((dataset) =>
+        dataset.data.map((point) => point[field])
+    );
+    if (values.length === 0) return undefined;
+
+    return [Math.min(...values), Math.max(...values)];
+}
+
 function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
         template[key] =
@@ -62,7 +71,7 @@ function makeTemplate(dataset) {
  *
  * @param {Map<*, Array>} facets - Rendered facet rows.
  * @param {Object} spec - Merged facet points spec.
- * @returns {{templates: Array, colorOrder: Array, shapeOrder: Array}}
+ * @returns {{templates: Array, colorOrder: Array, shapeOrder: Array, sizeDomain?: number[], opacityDomain?: number[]}}
  */
 export function getGlobalStyles(facets, spec) {
     const rows = getRenderedRows(facets, spec);
@@ -95,6 +104,12 @@ export function getGlobalStyles(facets, spec) {
         templates: datasets.map(makeTemplate),
         colorOrder,
         shapeOrder,
+        ...(spec.mapping.size
+            ? { sizeDomain: getRange(datasets, '_size') }
+            : {}),
+        ...(spec.mapping.opacity
+            ? { opacityDomain: getRange(datasets, '_opacity') }
+            : {}),
     };
 }
 function cloneGhost(template) {
