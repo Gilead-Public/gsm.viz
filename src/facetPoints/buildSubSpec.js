@@ -12,10 +12,16 @@ function getScale(scale) {
     };
 }
 
-function wrapCallback(callback, facetValue) {
-    return callback
-        ? (value, event) => callback(value, facetValue, event)
-        : null;
+const wrappedCallbacks = new WeakSet();
+
+export function wrapCallback(callback, facetValue) {
+    if (!callback) return null;
+    // Re-wrapping would insert the facet value twice.
+    if (wrappedCallbacks.has(callback)) return callback;
+
+    const wrapped = (value, event) => callback(value, facetValue, event);
+    wrappedCallbacks.add(wrapped);
+    return wrapped;
 }
 
 /**

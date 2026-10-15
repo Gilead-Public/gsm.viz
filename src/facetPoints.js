@@ -70,7 +70,12 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
         syncHover(charts);
         syncSelection(charts);
         syncLegendClicks(charts, { sync: merged.facet.legend.sync });
-        syncUpdates(charts, globalStyles.templates, merged.facet.legend);
+        syncUpdates(
+            charts,
+            globalStyles.templates,
+            merged.facet.legend,
+            facetValues
+        );
     } catch (error) {
         charts.forEach((chart) => chart.destroy());
         grid.remove();

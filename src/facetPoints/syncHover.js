@@ -45,7 +45,10 @@ export default function syncHover(charts) {
                 : current;
 
         const wrapper = function (event, activeElements, chartInstance) {
+            const spec = chartInstance.data._spec_;
             original?.call(this, event, activeElements, chartInstance);
+            // A callback that rebuilt the chart leaves the hit index stale.
+            if (chartInstance.data._spec_ !== spec) return;
 
             const active = activeElements[0];
             const dataset = active

@@ -502,6 +502,99 @@ describe('facetPoints', () => {
         expect(radius(charts[1], 'D')).toBe(12);
     });
 
+    test('keeps facet context for callbacks replaced after rendering', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+        const onClick = jest.fn();
+        const onHover = jest.fn();
+        const onSelect = jest.fn();
+        const active = findPoint(charts[1], 'A');
+        const click = { type: 'click', native: { target: charts[1].canvas } };
+
+        charts[1].helpers.updateSpec(charts[1], {
+            callbacks: { onClick, onHover },
+            selection: { enabled: true },
+        });
+        charts[1].options.onClick(click, [active], charts[1]);
+        charts[1].options.onHover(click, [active], charts[1]);
+
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onClick).toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'A' }),
+            'Week 4',
+            click
+        );
+        expect(onHover).toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'A' }),
+            'Week 4',
+            click
+        );
+
+        charts[1].helpers.updateData(charts[1], data.slice(2), {
+            mapping: baseSpec.mapping,
+            selection: { enabled: true },
+            callbacks: { onSelect },
+        });
+        charts[1].helpers.selectPoint(charts[1], 'A');
+        expect(onSelect).toHaveBeenCalledTimes(1);
+        expect(onSelect).toHaveBeenCalledWith(
+            { type: 'point', values: ['A'] },
+            'Week 4',
+            undefined
+        );
+        expect(charts[0].helpers.getSelection(charts[0]).values).toEqual(['A']);
+    });
+
+    test('keeps rendering when mapped size values exceed the argument limit', () => {
+        const rows = Array.from({ length: 300000 }, (_, index) => ({
+            phase: index % 2 ? 'Baseline' : 'Week 4',
+            id: index,
+            x: index,
+            y: index,
+            n: index,
+        }));
+
+        expect(() =>
+            facetPoints(parent, rows, {
+                mapping: { x: 'x', y: 'y', size: 'n' },
+                facet: { field: 'phase' },
+            })
+        ).not.toThrow();
+    }, 60000);
+
+    test('does not synchronize hover after a hover callback rebuilds the chart', () => {
+        const { charts } = facetPoints(parent, data, {
+            ...baseSpec,
+            callbacks: {
+                onHover: (point, facetValue) => {
+                    if (facetValue === 'Baseline') {
+                        charts[0].helpers.updateData(charts[0], [
+                            {
+                                phase: 'Baseline',
+                                id: 'C',
+                                x: 1,
+                                y: 1,
+                                group: 'Control',
+                                status: 'Circle',
+                            },
+                        ]);
+                    }
+                },
+            },
+        });
+        const hover = {
+            type: 'mousemove',
+            native: { target: charts[0].canvas },
+        };
+
+        charts[0].options.onHover(
+            hover,
+            [findPoint(charts[0], 'A')],
+            charts[0]
+        );
+
+        expect(charts[1].getActiveElements()).toEqual([]);
+    });
+
     test('clears linked hover when the pointer leaves the canvas', () => {
         const { charts } = facetPoints(parent, data, baseSpec);
 

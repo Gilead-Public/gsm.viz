@@ -32530,8 +32530,13 @@ var gsmViz = (() => {
       ...scale.values ? { values: { ...scale.values } } : {}
     };
   }
+  var wrappedCallbacks = /* @__PURE__ */ new WeakSet();
   function wrapCallback(callback2, facetValue) {
-    return callback2 ? (value, event) => callback2(value, facetValue, event) : null;
+    if (!callback2) return null;
+    if (wrappedCallbacks.has(callback2)) return callback2;
+    const wrapped = (value, event) => callback2(value, facetValue, event);
+    wrappedCallbacks.add(wrapped);
+    return wrapped;
   }
   function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles) {
     const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
@@ -32714,11 +32719,16 @@ var gsmViz = (() => {
     return result;
   }
   function getRange(datasets, field) {
-    const values = datasets.flatMap(
-      (dataset) => dataset.data.map((point) => point[field])
+    let min3 = Infinity;
+    let max3 = -Infinity;
+    datasets.forEach(
+      (dataset) => dataset.data.forEach((point) => {
+        const value = point[field];
+        if (value < min3) min3 = value;
+        if (value > max3) max3 = value;
+      })
     );
-    if (values.length === 0) return void 0;
-    return [Math.min(...values), Math.max(...values)];
+    return min3 === Infinity ? void 0 : [min3, max3];
   }
   function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
@@ -32942,7 +32952,9 @@ var gsmViz = (() => {
       const current = chart.options.onHover;
       const original = current === chart._facetPointsHoverSyncWrapper ? chart._facetPointsHoverOriginal : current;
       const wrapper = function(event, activeElements, chartInstance) {
+        const spec = chartInstance.data._spec_;
         original?.call(this, event, activeElements, chartInstance);
+        if (chartInstance.data._spec_ !== spec) return;
         const active = activeElements[0];
         const dataset = active ? chartInstance.data.datasets[active.datasetIndex] : void 0;
         const point = dataset && !dataset._annotation ? dataset.data[active.index] : void 0;
@@ -33014,11 +33026,11 @@ var gsmViz = (() => {
     );
   }
   function getGroupValues2(chart) {
-    return new Set(
-      chart.data.datasets.filter(
-        (dataset) => !dataset._annotation && Object.prototype.hasOwnProperty.call(dataset, "_color")
-      ).map((dataset) => dataset._colorMissing ? null : dataset._color)
-    );
+    const declared = chart.data._spec_.scales.color.order || [];
+    const rendered = chart.data.datasets.filter(
+      (dataset) => !dataset._annotation && Object.prototype.hasOwnProperty.call(dataset, "_color")
+    ).map((dataset) => dataset._colorMissing ? null : dataset._color);
+    return /* @__PURE__ */ new Set([...declared, ...rendered]);
   }
   function clearSibling(sibling) {
     clearSelection2(sibling, void 0, { _silent: true });
@@ -33094,12 +33106,28 @@ var gsmViz = (() => {
     syncSelection2(charts);
     syncLegendClicks2(charts, { sync: legend5.sync });
   }
-  function syncUpdates(charts, templates, legend5) {
-    charts.forEach((chart) => {
+  var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
+  function wrapSpecCallbacks(spec, facetValue) {
+    if (!spec?.callbacks) return spec;
+    const callbacks = { ...spec.callbacks };
+    CALLBACK_NAMES.forEach((name) => {
+      if (typeof callbacks[name] === "function") {
+        callbacks[name] = wrapCallback(callbacks[name], facetValue);
+      }
+    });
+    return { ...spec, callbacks };
+  }
+  function syncUpdates(charts, templates, legend5, facetValues) {
+    charts.forEach((chart, chartIndex) => {
+      const specIndex = { updateData: 1, updateSpec: 0 };
       ["updateData", "updateSpec"].forEach((name) => {
         const update = chart.helpers[name];
         chart.helpers[name] = function(chartInstance, ...args) {
           const hidden = getHiddenIdentities(chartInstance);
+          args[specIndex[name]] = wrapSpecCallbacks(
+            args[specIndex[name]],
+            facetValues[chartIndex]
+          );
           const result = update.call(this, chartInstance, ...args);
           decorateChart(chartInstance, charts, templates, legend5, hidden);
           return result;
@@ -33300,7 +33328,12 @@ var gsmViz = (() => {
       syncHover(charts);
       syncSelection2(charts);
       syncLegendClicks2(charts, { sync: merged.facet.legend.sync });
-      syncUpdates(charts, globalStyles.templates, merged.facet.legend);
+      syncUpdates(
+        charts,
+        globalStyles.templates,
+        merged.facet.legend,
+        facetValues
+      );
     } catch (error) {
       charts.forEach((chart) => chart.destroy());
       grid.remove();

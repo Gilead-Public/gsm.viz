@@ -50,12 +50,18 @@ function resolveOrder(order, observed) {
     return result;
 }
 function getRange(datasets, field) {
-    const values = datasets.flatMap((dataset) =>
-        dataset.data.map((point) => point[field])
+    // Spreading large row sets into Math.min/max overflows the call stack.
+    let min = Infinity;
+    let max = -Infinity;
+    datasets.forEach((dataset) =>
+        dataset.data.forEach((point) => {
+            const value = point[field];
+            if (value < min) min = value;
+            if (value > max) max = value;
+        })
     );
-    if (values.length === 0) return undefined;
 
-    return [Math.min(...values), Math.max(...values)];
+    return min === Infinity ? undefined : [min, max];
 }
 
 function makeTemplate(dataset) {
