@@ -207,9 +207,11 @@ const chart = gsmViz.default.points(element, data, {
         },
         size: {
             range: [3, 12],   // positive minimum and maximum radius
+            domain: undefined, // optional [min, max] input values to map onto range
         },
         opacity: {
             range: [0.25, 1], // minimum and maximum alpha
+            domain: undefined, // optional [min, max] input values to map onto range
         },
         shape: {
             values: {},       // level-to-point-style map
@@ -301,6 +303,12 @@ is always two pixels larger than the rendered radius.
 applied to each point's resolved color, including color-mapped datasets. Numeric
 strings, missing values, infinities, and negative size values throw rather than
 being coerced or dropped.
+
+By default each scale's input domain is the minimum and maximum of the rendered
+points. An optional two-number `scales.size.domain` or `scales.opacity.domain`
+(non-decreasing; non-negative for size) fixes that input domain instead, so the
+same value always maps to the same radius or alpha. Values outside the domain
+are clamped to the range ends. `facetPoints` sets these automatically.
 
 ## Discrete shape
 
@@ -650,3 +658,6 @@ application, adds the documented controls to its text alternative, and reports
 changes through a polite live status element.
 `theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
 as the container resizes.
+
+For ordered small multiples with fixed/free numeric domains and linked
+interaction, use [`facetPoints`](facetPoints.md).

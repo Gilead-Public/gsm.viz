@@ -362,6 +362,19 @@ describe('points selection', () => {
         expect(onSelect).not.toHaveBeenCalled();
     });
 
+    test('silent single-point selection does not pin a tooltip through updates', () => {
+        const { chart } = render();
+
+        selectPoint(chart, 'A', undefined, { _silent: true });
+        chart.update('none');
+
+        expect(getSelection(chart)).toEqual({ type: 'point', values: ['A'] });
+        expect(chart.tooltip.getActiveElements()).toHaveLength(0);
+
+        selectPoint(chart, 'A');
+        expect(chart.tooltip.getActiveElements()).toHaveLength(1);
+    });
+
     test('an empty value array clears an existing selection', () => {
         const { chart } = render();
 

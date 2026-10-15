@@ -6,6 +6,7 @@
         -   [Bar Chart](bars/ ':ignore')
         -   [Bar Chart Builder](bars/builder.html ':ignore')
         -   [Points](points/ ':ignore')
+        -   [Faceted Points](facetPoints/ ':ignore')
     -   Metrics
         -   [Bar Chart](barChart/ ':ignore')
         -   [Group Overview — Country](groupOverview/country ':ignore')
@@ -19,6 +20,7 @@
     -   Generics
         -   [bars](docs/bars)
         -   [points](docs/points)
+        -   [facetPoints](docs/facetPoints)
     -   Metrics
         -   [barChart](docs/barChart)
         -   [groupOverview](docs/groupOverview)

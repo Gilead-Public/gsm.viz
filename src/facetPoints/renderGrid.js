@@ -1,6 +1,8 @@
 import { Chart } from 'chart.js';
 import { formatFacetValue } from './splitData.js';
 
+let gridCount = 0;
+
 function removeExistingGrids(parentElement) {
     [...parentElement.children]
         .filter((element) => element.classList.contains('gsm-facet-grid'))
@@ -18,7 +20,8 @@ function removeExistingGrids(parentElement) {
  * @param {Element} parentElement - Grid host.
  * @param {Array} facetValues - Typed values in display order.
  * @param {Object} spec - Merged facet points spec.
- * @returns {{containers: Map, grid: Element}} New containers and grid.
+ * @returns {{containers: Map, labels: Map, grid: Element}} New containers,
+ *     facet labels, and grid.
  */
 export default function renderGrid(parentElement, facetValues, spec) {
     removeExistingGrids(parentElement);
@@ -27,17 +30,20 @@ export default function renderGrid(parentElement, facetValues, spec) {
         spec.facet.nCol ?? Math.max(1, Math.min(facetValues.length, 3));
     const grid = document.createElement('div');
     grid.className = 'gsm-facet-grid';
+    gridCount += 1;
     grid.style.display = 'grid';
     grid.style.gridTemplateColumns = `repeat(${nCol}, 1fr)`;
     grid.style.gap = '8px';
 
     const containers = new Map();
-    facetValues.forEach((facetValue) => {
+    const labels = new Map();
+    facetValues.forEach((facetValue, index) => {
         const cell = document.createElement('div');
         cell.className = 'gsm-facet-cell';
 
         const label = document.createElement('div');
         label.className = 'gsm-facet-label';
+        label.id = `gsm-facet-label-${gridCount}-${index}`;
         label.textContent = formatFacetValue(facetValue);
         if (spec.facet.label.font) {
             label.style.font = spec.facet.label.font;
@@ -56,8 +62,9 @@ export default function renderGrid(parentElement, facetValues, spec) {
         }
         grid.appendChild(cell);
         containers.set(facetValue, container);
+        labels.set(facetValue, label);
     });
 
     parentElement.appendChild(grid);
-    return { containers, grid };
+    return { containers, labels, grid };
 }
