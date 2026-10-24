@@ -17,6 +17,7 @@ import groupOverview from './groupOverview.js';
 import points from './points.js';
 import scatterPlot from './scatterPlot.js';
 import sparkline from './sparkline.js';
+import tiles from './tiles.js';
 import timeSeries from './timeSeries.js';
 
 Chart.register(
@@ -39,6 +40,7 @@ const gsmViz = {
     points,
     scatterPlot,
     sparkline,
+    tiles,
     timeSeries,
 };
 

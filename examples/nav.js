@@ -23,6 +23,7 @@
                 { label: 'Bar Chart', href: root + 'bars/' },
                 { label: 'Bar Chart Builder', href: root + 'bars/builder.html' },
                 { label: 'Points', href: root + 'points/' },
+                { label: 'Tiles', href: root + 'tiles/' },
             ],
         },
         {
@@ -45,6 +46,7 @@
             items: [
                 { label: 'bars', href: root + '#/docs/bars' },
                 { label: 'points', href: root + '#/docs/points' },
+                { label: 'tiles', href: root + '#/docs/tiles' },
             ],
         },
         {

@@ -14,6 +14,7 @@
 | ------- | ----------------------------------- | ---------------------------------------------------------------- |
 | Generic | [bars](docs/bars)                   | ggplot2-inspired bar chart with flexible spec-based API          |
 | Generic | [points](docs/points)               | ggplot2-inspired two-dimensional point chart                     |
+| Generic | [tiles](docs/tiles)                 | Heatmap grid of tiles with expandable columns                    |
 | Metrics | [barChart](docs/barChart)           | Bar chart of a single KRI metric across groups                   |
 | Metrics | [groupOverview](docs/groupOverview) | Sortable summary table of all groups across all metrics          |
 | Metrics | [scatterPlot](docs/scatterPlot)     | Scatter plot of two numeric KRI metrics, coloured by flag status |
@@ -28,6 +29,7 @@
     -   [Bar Chart](bars/ ':ignore')
     -   [Bar Chart Builder](bars/builder.html ':ignore')
     -   [Points](points/ ':ignore')
+    -   [Tiles](tiles/ ':ignore')
 -   Metrics
     -   [Bar Chart](barChart/ ':ignore')
     -   [Group Overview — Country](groupOverview/country ':ignore')

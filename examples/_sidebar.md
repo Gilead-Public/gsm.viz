@@ -6,6 +6,7 @@
         -   [Bar Chart](bars/ ':ignore')
         -   [Bar Chart Builder](bars/builder.html ':ignore')
         -   [Points](points/ ':ignore')
+        -   [Tiles](tiles/ ':ignore')
     -   Metrics
         -   [Bar Chart](barChart/ ':ignore')
         -   [Group Overview — Country](groupOverview/country ':ignore')
@@ -19,6 +20,7 @@
     -   Generics
         -   [bars](docs/bars)
         -   [points](docs/points)
+        -   [tiles](docs/tiles)
     -   Metrics
         -   [barChart](docs/barChart)
         -   [groupOverview](docs/groupOverview)

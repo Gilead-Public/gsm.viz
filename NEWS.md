@@ -16,6 +16,10 @@
 - Add in-place `updateData` and deep partial `updateSpec` helpers with full-pipeline rebuilds, typed hidden-group restoration, dynamic plugin/keyboard lifecycle handling, and deliberate stale-selection cleanup (#578).
 - Add optional x/y zoom and pan controls plus an opaque PNG export helper with deterministic title- or axis-derived filenames to `points` (#579).
 
+### New: `tiles` Module
+
+- Add the generic `tiles(element, data, spec)` heatmap rendered as an HTML table with sticky headers and first column, fill/label mappings, missing-cell styling, legends, tooltips, in-place expandable columns backed by detail rows, row selection, paging, cell/row/expand callbacks, and `updateData`/`updateSpec` helpers that preserve expansion and selection (#614).
+
 ### `bars`
 
 - Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).

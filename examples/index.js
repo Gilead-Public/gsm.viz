@@ -3546,8 +3546,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults6 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults6.scriptable, _indexable = defaults6.indexable, _allKeys = defaults6.allKeys } = proxy;
+  function _descriptors(proxy, defaults7 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults7.scriptable, _indexable = defaults7.indexable, _allKeys = defaults7.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -23713,10 +23713,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults6, _config_, customSettings = null) {
+  function configure2(defaults7, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults6) {
-      config[key] = coalesce(config[key], defaults6[key]);
+    for (const key in defaults7) {
+      config[key] = coalesce(config[key], defaults7[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -23837,31 +23837,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.x = "GroupID";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.x = "GroupID";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.displayTitle = false;
-    defaults6.dynamicSizing = false;
-    defaults6.maintainAspectRatio = false;
-    const config = configure2(defaults6, _config_ || {}, {
+    defaults7.displayTitle = false;
+    defaults7.dynamicSizing = false;
+    defaults7.maintainAspectRatio = false;
+    const config = configure2(defaults7, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -27435,26 +27435,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = null;
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults6.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults6.groupClickCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = null;
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults7.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults7.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.metricClickCallback = (datum2) => {
+    defaults7.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults6, _config_);
+    const config = configure2(defaults7, _config_);
     return config;
   }
 
@@ -30772,34 +30772,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.x = "Denominator";
-    defaults6[defaults6.x] = defaults6.x;
-    defaults6.xType = "logarithmic";
-    defaults6.y = "Numerator";
-    defaults6[defaults6.y] = defaults6.y;
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.x = "Denominator";
+    defaults7[defaults7.x] = defaults7.x;
+    defaults7.xType = "logarithmic";
+    defaults7.y = "Numerator";
+    defaults7[defaults7.y] = defaults7.y;
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.displayTitle = false;
-    defaults6.displayLegend = true;
-    defaults6.displayTrendLine = false;
-    defaults6.maintainAspectRatio = false;
-    const config = configure2(defaults6, _config_, {
+    defaults7.displayTitle = false;
+    defaults7.displayLegend = true;
+    defaults7.displayTrendLine = false;
+    defaults7.maintainAspectRatio = false;
+    const config = configure2(defaults7, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -31301,21 +31301,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults6 = {};
-    defaults6.x = "SnapshotDate";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    const defaults7 = {};
+    defaults7.x = "SnapshotDate";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.maintainAspectRatio = false;
-    defaults6.nSnapshots = 5;
-    defaults6.displayThresholds = false;
-    const config = configure2(defaults6, _config_, {
+    defaults7.maintainAspectRatio = false;
+    defaults7.nSnapshots = 5;
+    defaults7.displayThresholds = false;
+    const config = configure2(defaults7, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -31584,6 +31584,702 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/tiles/validateSpec.js
+  var isPlainObject3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  function fail(message) {
+    throw new Error(`tiles: ${message}`);
+  }
+  function checkFields(rows, fields, name) {
+    rows.forEach((row, i) => {
+      if (!isPlainObject3(row)) fail(`${name}[${i}] must be an object`);
+      fields.forEach((field) => {
+        if (row[field] === void 0) {
+          fail(`${name}[${i}] is missing field "${field}"`);
+        }
+      });
+    });
+  }
+  function checkOrder(order, name) {
+    if (order !== void 0 && order !== null && !Array.isArray(order)) {
+      fail(`${name} must be an array`);
+    }
+  }
+  function checkColors(colors2, name) {
+    if (colors2 !== void 0 && !isPlainObject3(colors2)) {
+      fail(`${name} must be an object`);
+    }
+  }
+  function checkTooltip(tooltip5, name) {
+    if (tooltip5 === void 0 || tooltip5 === null) return;
+    if (!isPlainObject3(tooltip5)) fail(`${name} must be an object`);
+    if (tooltip5.format !== void 0 && typeof tooltip5.format !== "string") {
+      fail(`${name}.format must be a string`);
+    }
+    if (tooltip5.formatter !== void 0 && typeof tooltip5.formatter !== "function") {
+      fail(`${name}.formatter must be a function`);
+    }
+  }
+  function validateSpec4(data, spec) {
+    if (!Array.isArray(data)) fail("data must be an array");
+    if (!isPlainObject3(spec)) fail("spec must be a plain object");
+    if (!isPlainObject3(spec.mapping)) fail("spec.mapping is required");
+    const { x, y } = spec.mapping;
+    if (!x || typeof x !== "string") fail("spec.mapping.x is required");
+    if (!y || typeof y !== "string") fail("spec.mapping.y is required");
+    checkFields(data, [x, y], "data");
+    const scales2 = spec.scales ?? {};
+    if (!isPlainObject3(scales2)) fail("spec.scales must be an object");
+    checkOrder(scales2.x?.order, "spec.scales.x.order");
+    checkOrder(scales2.y?.order, "spec.scales.y.order");
+    checkOrder(scales2.fill?.order, "spec.scales.fill.order");
+    checkColors(scales2.fill?.colors, "spec.scales.fill.colors");
+    checkTooltip(spec.tooltip, "spec.tooltip");
+    if (spec.callbacks !== void 0 && spec.callbacks !== null) {
+      if (!isPlainObject3(spec.callbacks)) {
+        fail("spec.callbacks must be an object");
+      }
+      ["onClick", "onRowClick", "onExpand"].forEach((name) => {
+        const fn = spec.callbacks[name];
+        if (fn !== void 0 && fn !== null && typeof fn !== "function") {
+          fail(`spec.callbacks.${name} must be a function`);
+        }
+      });
+    }
+    const pageSize = spec.rows?.pageSize;
+    if (pageSize !== void 0 && pageSize !== null && !(Number.isInteger(pageSize) && pageSize > 0)) {
+      fail("spec.rows.pageSize must be a positive integer");
+    }
+    const expand = spec.expand;
+    if (expand === void 0 || expand === null) return;
+    if (!isPlainObject3(expand)) fail("spec.expand must be an object");
+    if (!Array.isArray(expand.data)) fail("spec.expand.data must be an array");
+    if (!isPlainObject3(expand.mapping) || !expand.mapping.x) {
+      fail("spec.expand.mapping.x is required");
+    }
+    checkFields(expand.data, [x, y, expand.mapping.x], "spec.expand.data");
+    checkOrder(expand.scales?.fill?.order, "spec.expand.scales.fill.order");
+    checkColors(expand.scales?.fill?.colors, "spec.expand.scales.fill.colors");
+    checkOrder(expand.initial, "spec.expand.initial");
+    checkTooltip(expand.tooltip, "spec.expand.tooltip");
+  }
+
+  // src/tiles/defaults.js
+  var defaults6 = {
+    scales: {
+      x: { order: null, label: void 0 },
+      y: { order: null, label: void 0 },
+      fill: { colors: {}, order: null, label: void 0, missing: "#f6f6f6" }
+    },
+    rows: { pageSize: null },
+    labels: { title: null, subtitle: null },
+    theme: {
+      cellWidth: 64,
+      detailCellWidth: 32,
+      cellHeight: 28,
+      rowHeaderWidth: 120,
+      maxHeight: "600px",
+      fontSize: 12,
+      legend: true
+    },
+    // Fill for cells whose value has no configured color (not a spec option).
+    neutralFill: "#d9d9d9"
+  };
+  var defaults_default4 = defaults6;
+
+  // src/tiles/mergeSpec.js
+  var isPlainObject4 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  function mergeSpec4(spec) {
+    const scales2 = spec.scales ?? {};
+    const expand = spec.expand;
+    return {
+      mapping: { ...spec.mapping },
+      scales: {
+        x: { ...defaults_default4.scales.x, ...scales2.x },
+        y: { ...defaults_default4.scales.y, ...scales2.y },
+        fill: {
+          ...defaults_default4.scales.fill,
+          ...scales2.fill,
+          colors: { ...scales2.fill?.colors }
+        }
+      },
+      expand: expand ? {
+        data: expand.data,
+        mapping: { ...expand.mapping },
+        scales: {
+          fill: {
+            order: null,
+            label: void 0,
+            ...expand.scales?.fill,
+            colors: { ...expand.scales?.fill?.colors }
+          }
+        },
+        initial: expand.initial ?? [],
+        tooltip: { ...expand.tooltip }
+      } : null,
+      tooltip: { ...spec.tooltip },
+      callbacks: {
+        onClick: null,
+        onRowClick: null,
+        onExpand: null,
+        ...spec.callbacks
+      },
+      rows: { ...defaults_default4.rows, ...spec.rows },
+      labels: { ...defaults_default4.labels, ...spec.labels },
+      theme: { ...defaults_default4.theme, ...spec.theme }
+    };
+  }
+  function deepMerge(target, delta) {
+    const out = { ...target };
+    Object.keys(delta ?? {}).forEach((key) => {
+      out[key] = isPlainObject4(delta[key]) && isPlainObject4(target?.[key]) ? deepMerge(target[key], delta[key]) : delta[key];
+    });
+    return out;
+  }
+
+  // src/tiles/structureData.js
+  function keyOf(value) {
+    return value === null || value === void 0 ? "" : String(value);
+  }
+  function orderValues(values, order) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    [...order ?? [], ...values].forEach((value) => {
+      const key = keyOf(value);
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(value);
+      }
+    });
+    return out;
+  }
+  var isNumeric = (value) => value !== null && value !== "" && typeof value !== "boolean" && Number.isFinite(Number(value));
+  function sortDetailValues(values) {
+    return values.every(isNumeric) ? [...values].sort((a, b) => Number(a) - Number(b)) : values;
+  }
+  function structureData7(data, spec) {
+    const { x, y } = spec.mapping;
+    const cellKey = (yValue, xValue) => `${keyOf(yValue)}\0${keyOf(xValue)}`;
+    const cells = /* @__PURE__ */ new Map();
+    const rowData = /* @__PURE__ */ new Map();
+    data.forEach((row) => {
+      const key = cellKey(row[y], row[x]);
+      if (!cells.has(key)) cells.set(key, row);
+      const yKey = keyOf(row[y]);
+      if (!rowData.has(yKey)) rowData.set(yKey, []);
+      rowData.get(yKey).push(row);
+    });
+    const detailValues = /* @__PURE__ */ new Map();
+    const detailCells = /* @__PURE__ */ new Map();
+    if (spec.expand) {
+      const dx = spec.expand.mapping.x;
+      spec.expand.data.forEach((row) => {
+        const xKey = keyOf(row[x]);
+        if (!detailValues.has(xKey)) detailValues.set(xKey, []);
+        detailValues.get(xKey).push(row[dx]);
+        const key = `${cellKey(row[y], row[x])}\0${keyOf(row[dx])}`;
+        if (!detailCells.has(key)) detailCells.set(key, row);
+      });
+    }
+    const rows = orderValues(
+      data.map((row) => row[y]),
+      spec.scales.y.order
+    ).map((value) => ({ value, key: keyOf(value) }));
+    const columns = orderValues(
+      data.map((row) => row[x]),
+      spec.scales.x.order
+    ).map((value) => {
+      const key = keyOf(value);
+      return {
+        value,
+        key,
+        details: sortDetailValues(orderValues(detailValues.get(key) ?? []))
+      };
+    });
+    return {
+      rows,
+      columns,
+      rowData,
+      getCell: (yValue, xValue) => cells.get(cellKey(yValue, xValue)),
+      getDetailCell: (yValue, xValue, dxValue) => detailCells.get(
+        `${cellKey(yValue, xValue)}\0${keyOf(dxValue)}`
+      )
+    };
+  }
+
+  // src/tiles/formatTooltip.js
+  function formatTooltip(tooltip5, row, aliases) {
+    if (typeof tooltip5?.formatter === "function") {
+      return keyOf(tooltip5.formatter(row));
+    }
+    if (typeof tooltip5?.format === "string") {
+      return tooltip5.format.replace(
+        /\{([^{}]+)\}/g,
+        (match, name) => keyOf(
+          Object.prototype.hasOwnProperty.call(row, name) ? row[name] : aliases[name]
+        )
+      );
+    }
+    const x = aliases.column === void 0 ? keyOf(aliases.x) : `${keyOf(aliases.column)} ${keyOf(aliases.x)}`;
+    const value = keyOf(aliases.label) || keyOf(aliases.fill);
+    return `${keyOf(aliases.y)} \xB7 ${x}${value ? `: ${value}` : ""}`;
+  }
+
+  // src/tiles/injectStyle.js
+  var STYLE_ID = "gsm-viz-tiles-style";
+  var CSS = `
+.gsm-tiles { font-family: sans-serif; color: #333; }
+.gsm-tiles-title { font-size: 1.3em; font-weight: 600; margin-bottom: 2px; }
+.gsm-tiles-subtitle { color: #666; margin-bottom: 6px; }
+.gsm-tiles-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 8px; }
+.gsm-tiles-legend-group { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.gsm-tiles-legend-title { font-weight: 600; }
+.gsm-tiles-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+.gsm-tiles-swatch { display: inline-block; width: 12px; height: 12px; border: 1px solid #bbb; }
+.gsm-tiles-x-label { font-weight: 600; margin-bottom: 2px; }
+.gsm-tiles-scroll { overflow: auto; position: relative; width: fit-content; max-width: 100%; }
+.gsm-tiles-table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.gsm-tiles-table th, .gsm-tiles-table td { box-sizing: border-box; padding: 2px 4px; overflow: hidden; border-right: 1px solid #fff; border-bottom: 1px solid #fff; }
+.gsm-tiles-table thead th { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid #ccc; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
+.gsm-tiles-corner, .gsm-tiles-row-header { position: sticky; left: 0; background: #fff; text-align: left; white-space: nowrap; text-overflow: ellipsis; }
+.gsm-tiles-table thead th.gsm-tiles-corner { z-index: 3; text-align: left; }
+.gsm-tiles-row-header { z-index: 1; font-weight: normal; cursor: pointer; border-right: 1px solid #ccc; }
+.gsm-tiles-cell { text-align: center; white-space: pre-line; line-height: 1.2; cursor: pointer; }
+.gsm-tiles-missing { cursor: default; }
+.gsm-tiles-detail { font-size: 0.9em; }
+.gsm-tiles-toggle { cursor: pointer; }
+.gsm-tiles-toggle:hover, .gsm-tiles-row-header:hover { background: #f0f4fa; }
+.gsm-tiles-toggle:focus-visible, .gsm-tiles-row-header:focus-visible { outline: 2px solid #0969da; outline-offset: -2px; }
+.gsm-tiles-table tr.gsm-tiles-selected > th { background: #fff3c4; font-weight: 600; }
+.gsm-tiles-table tr.gsm-tiles-selected > td { box-shadow: inset 0 2px 0 #333, inset 0 -2px 0 #333; }
+.gsm-tiles-pager { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+`;
+  function injectStyle(doc) {
+    if (doc.getElementById(STYLE_ID)) return;
+    const style = doc.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = CSS;
+    (doc.head ?? doc.documentElement).appendChild(style);
+  }
+
+  // src/tiles/render.js
+  var px = (value) => typeof value === "number" ? `${value}px` : value;
+  var resolveLabel = (label, field) => label === void 0 ? field : label;
+  function make(doc, tag, className, text) {
+    const node = doc.createElement(tag);
+    if (className) node.className = className;
+    if (text !== void 0) node.textContent = text;
+    return node;
+  }
+  function legendGroup(doc, title4, fillScale) {
+    const values = fillScale.order ?? Object.keys(fillScale.colors);
+    if (!values.length) return null;
+    const group2 = make(doc, "div", "gsm-tiles-legend-group");
+    if (title4 !== null && title4 !== void 0 && title4 !== "") {
+      group2.appendChild(make(doc, "span", "gsm-tiles-legend-title", title4));
+    }
+    values.forEach((value) => {
+      const item = make(doc, "span", "gsm-tiles-legend-item");
+      const swatch = make(doc, "span", "gsm-tiles-swatch");
+      swatch.style.backgroundColor = fillScale.colors[keyOf(value)] ?? defaults_default4.neutralFill;
+      item.appendChild(swatch);
+      item.appendChild(doc.createTextNode(keyOf(value)));
+      group2.appendChild(item);
+    });
+    return group2;
+  }
+  function fillCell(td, { datum: datum2, mapping, colors: colors2, missing, tooltip: tooltip5, aliases }) {
+    if (!datum2) {
+      td.classList.add("gsm-tiles-missing");
+      td.style.backgroundColor = missing;
+      return;
+    }
+    const fill2 = mapping.fill ? datum2[mapping.fill] : void 0;
+    const label = mapping.label ? keyOf(datum2[mapping.label]) : "";
+    const background = mapping.fill && colors2[keyOf(fill2)] ? colors2[keyOf(fill2)] : defaults_default4.neutralFill;
+    td.style.backgroundColor = background;
+    td.style.color = getContrastColor(background);
+    td.textContent = label;
+    td.title = formatTooltip(tooltip5, datum2, { ...aliases, fill: fill2, label });
+    td._gsmTilesDatum = datum2;
+  }
+  function headerCell(doc, column, expanded, expandable, theme) {
+    const th = make(doc, "th", "gsm-tiles-col-header");
+    const text = keyOf(column.value);
+    th.textContent = expandable ? `${text} ${expanded ? "\u25BE" : "\u25B8"}` : text;
+    th.title = text;
+    th.style.height = px(theme.cellHeight);
+    if (expandable) {
+      th.classList.add("gsm-tiles-toggle");
+      th.setAttribute("role", "button");
+      th.setAttribute("tabindex", "0");
+      th.setAttribute("aria-expanded", String(expanded));
+      th._gsmTilesX = column.value;
+    }
+    return th;
+  }
+  function applySelection2(chart) {
+    const selected = chart._state.selected;
+    const key = selected === null ? null : keyOf(selected);
+    chart.root.querySelectorAll("tbody tr").forEach((tr) => {
+      const isSelected2 = tr._gsmTilesKey === key;
+      tr.classList.toggle("gsm-tiles-selected", isSelected2);
+      tr.firstChild.setAttribute("aria-pressed", String(isSelected2));
+    });
+  }
+  function scrollToSelected(chart) {
+    const scroller = chart.root.querySelector(".gsm-tiles-scroll");
+    const tr = chart.root.querySelector("tr.gsm-tiles-selected");
+    if (!scroller || !tr) return;
+    const headHeight = scroller.querySelector("thead").offsetHeight;
+    const top = tr.offsetTop;
+    if (top < scroller.scrollTop + headHeight) {
+      scroller.scrollTop = Math.max(0, top - headHeight);
+    } else if (top + tr.offsetHeight > scroller.scrollTop + scroller.clientHeight) {
+      scroller.scrollTop = top + tr.offsetHeight - scroller.clientHeight;
+    }
+  }
+  function render(chart, { resetScroll = false } = {}) {
+    const { root: root2, spec, data, _state: state } = chart;
+    const doc = root2.ownerDocument;
+    const { mapping, scales: scales2, expand, theme } = spec;
+    injectStyle(doc);
+    const structure = structureData7(data, spec);
+    chart._structure = structure;
+    const expandedKeys = new Set(state.expanded.map(keyOf));
+    state.expanded = structure.columns.filter((col) => expandedKeys.has(col.key) && col.details.length).map((col) => col.value);
+    const isExpanded2 = (col) => col.details.length > 0 && state.expanded.some((v) => keyOf(v) === col.key);
+    const anyExpanded = state.expanded.length > 0;
+    if (state.selected !== null && !structure.rows.some((row) => row.key === keyOf(state.selected))) {
+      state.selected = null;
+    }
+    const pageSize = spec.rows.pageSize;
+    const nRows = structure.rows.length;
+    const paged = Boolean(pageSize) && nRows > pageSize;
+    const nPages = paged ? Math.ceil(nRows / pageSize) : 1;
+    state.page = Math.min(Math.max(1, state.page), nPages);
+    const start2 = paged ? (state.page - 1) * pageSize : 0;
+    const pageRows = paged ? structure.rows.slice(start2, start2 + pageSize) : structure.rows;
+    const oldScroller = root2.querySelector(".gsm-tiles-scroll");
+    const scrollTop = resetScroll ? 0 : oldScroller?.scrollTop ?? 0;
+    const scrollLeft = oldScroller?.scrollLeft ?? 0;
+    root2.replaceChildren();
+    root2.style.fontSize = px(theme.fontSize);
+    if (spec.labels.title) {
+      root2.appendChild(
+        make(doc, "div", "gsm-tiles-title", spec.labels.title)
+      );
+    }
+    if (spec.labels.subtitle) {
+      root2.appendChild(
+        make(doc, "div", "gsm-tiles-subtitle", spec.labels.subtitle)
+      );
+    }
+    if (theme.legend) {
+      const legend5 = make(doc, "div", "gsm-tiles-legend");
+      if (mapping.fill) {
+        const group2 = legendGroup(
+          doc,
+          resolveLabel(scales2.fill.label, mapping.fill),
+          scales2.fill
+        );
+        if (group2) legend5.appendChild(group2);
+      }
+      if (anyExpanded && expand.mapping.fill) {
+        const group2 = legendGroup(
+          doc,
+          resolveLabel(expand.scales.fill.label, expand.mapping.fill),
+          expand.scales.fill
+        );
+        if (group2) legend5.appendChild(group2);
+      }
+      if (legend5.childNodes.length) root2.appendChild(legend5);
+    }
+    const xLabel = resolveLabel(scales2.x.label, mapping.x);
+    if (xLabel) {
+      const node = make(doc, "div", "gsm-tiles-x-label", xLabel);
+      node.style.paddingLeft = px(theme.rowHeaderWidth);
+      root2.appendChild(node);
+    }
+    const scroller = make(doc, "div", "gsm-tiles-scroll");
+    scroller.style.maxHeight = px(theme.maxHeight);
+    const table = make(doc, "table", "gsm-tiles-table");
+    const colgroup = make(doc, "colgroup");
+    const thead = make(doc, "thead");
+    const headRow = make(doc, "tr");
+    const subRow = make(doc, "tr");
+    let tableWidth = theme.rowHeaderWidth;
+    const addCol = (width) => {
+      const col = make(doc, "col");
+      col.style.width = px(width);
+      colgroup.appendChild(col);
+      tableWidth += width;
+    };
+    colgroup.appendChild(make(doc, "col")).style.width = px(
+      theme.rowHeaderWidth
+    );
+    const corner = make(
+      doc,
+      "th",
+      "gsm-tiles-corner",
+      keyOf(resolveLabel(scales2.y.label, mapping.y))
+    );
+    if (anyExpanded) corner.rowSpan = 2;
+    headRow.appendChild(corner);
+    structure.columns.forEach((col) => {
+      const expanded = isExpanded2(col);
+      const expandable = Boolean(expand) && col.details.length > 0;
+      const th = headerCell(doc, col, expanded, expandable, theme);
+      headRow.appendChild(th);
+      if (expanded) {
+        th.colSpan = col.details.length;
+        col.details.forEach((detail) => {
+          const sub = make(
+            doc,
+            "th",
+            "gsm-tiles-subheader",
+            keyOf(detail)
+          );
+          sub.style.top = px(theme.cellHeight);
+          sub.style.height = px(theme.cellHeight);
+          subRow.appendChild(sub);
+          addCol(theme.detailCellWidth);
+        });
+      } else {
+        if (anyExpanded) th.rowSpan = 2;
+        addCol(theme.cellWidth);
+      }
+    });
+    thead.appendChild(headRow);
+    if (anyExpanded) thead.appendChild(subRow);
+    const tbody = make(doc, "tbody");
+    const missing = scales2.fill.missing;
+    pageRows.forEach((row) => {
+      const tr = make(doc, "tr");
+      tr._gsmTilesKey = row.key;
+      const th = make(doc, "th", "gsm-tiles-row-header", keyOf(row.value));
+      th.title = keyOf(row.value);
+      th.setAttribute("role", "button");
+      th.setAttribute("tabindex", "0");
+      th._gsmTilesY = row.value;
+      tr.appendChild(th);
+      structure.columns.forEach((col) => {
+        if (isExpanded2(col)) {
+          col.details.forEach((detail) => {
+            const td = make(
+              doc,
+              "td",
+              "gsm-tiles-cell gsm-tiles-detail"
+            );
+            td.style.height = px(theme.cellHeight);
+            fillCell(td, {
+              datum: structure.getDetailCell(
+                row.value,
+                col.value,
+                detail
+              ),
+              mapping: expand.mapping,
+              colors: expand.scales.fill.colors,
+              missing,
+              tooltip: expand.tooltip,
+              aliases: { x: detail, y: row.value, column: col.value }
+            });
+            tr.appendChild(td);
+          });
+        } else {
+          const td = make(doc, "td", "gsm-tiles-cell");
+          td.style.height = px(theme.cellHeight);
+          fillCell(td, {
+            datum: structure.getCell(row.value, col.value),
+            mapping,
+            colors: scales2.fill.colors,
+            missing,
+            tooltip: spec.tooltip,
+            aliases: { x: col.value, y: row.value }
+          });
+          tr.appendChild(td);
+        }
+      });
+      tbody.appendChild(tr);
+    });
+    table.style.width = px(tableWidth);
+    table.append(colgroup, thead, tbody);
+    scroller.appendChild(table);
+    root2.appendChild(scroller);
+    if (paged) {
+      const pager = make(doc, "div", "gsm-tiles-pager");
+      const prev = make(doc, "button", "gsm-tiles-prev", "\u2039 Prev");
+      const next = make(doc, "button", "gsm-tiles-next", "Next \u203A");
+      prev.type = "button";
+      next.type = "button";
+      prev.dataset.step = "-1";
+      next.dataset.step = "1";
+      prev.disabled = state.page === 1;
+      next.disabled = state.page === nPages;
+      const text = make(
+        doc,
+        "span",
+        "gsm-tiles-pager-text",
+        `Rows ${start2 + 1}\u2013${start2 + pageRows.length} of ${nRows}`
+      );
+      pager.append(prev, text, next);
+      root2.appendChild(pager);
+    }
+    scroller.scrollTop = scrollTop;
+    scroller.scrollLeft = scrollLeft;
+    applySelection2(chart);
+  }
+
+  // src/tiles/updateData.js
+  function updateData6(chart, data, spec) {
+    validateSpec4(data, spec === void 0 ? chart.spec : spec);
+    chart.data = data;
+    if (spec !== void 0) chart.spec = mergeSpec4(spec);
+    chart._state.page = 1;
+    render(chart, { resetScroll: true });
+  }
+
+  // src/tiles/updateSpec.js
+  function updateSpec3(chart, delta) {
+    const next = deepMerge(chart.spec, delta);
+    validateSpec4(chart.data, next);
+    chart.spec = mergeSpec4(next);
+    render(chart);
+  }
+
+  // src/tiles/expansion.js
+  function findColumn(chart, x) {
+    const key = keyOf(x);
+    return chart._structure.columns.find((col) => col.key === key);
+  }
+  function isExpanded(chart, x) {
+    return chart._state.expanded.some((value) => keyOf(value) === keyOf(x));
+  }
+  function setExpanded(chart, x, expanded) {
+    const col = findColumn(chart, x);
+    if (!col || !col.details.length || isExpanded(chart, x) === expanded) {
+      return false;
+    }
+    chart._state.expanded = expanded ? [...chart._state.expanded, col.value] : chart._state.expanded.filter((value) => keyOf(value) !== col.key);
+    render(chart);
+    chart.spec.callbacks.onExpand?.(col.value, expanded);
+    return true;
+  }
+  function expandColumn(chart, x) {
+    return setExpanded(chart, x, true);
+  }
+  function collapseColumn(chart, x) {
+    return setExpanded(chart, x, false);
+  }
+
+  // src/tiles/selection.js
+  function selectRow(chart, y) {
+    const rows = chart._structure.rows;
+    const index3 = rows.findIndex((row) => row.key === keyOf(y));
+    if (index3 < 0) {
+      clearSelection3(chart);
+      return false;
+    }
+    chart._state.selected = rows[index3].value;
+    const pageSize = chart.spec.rows.pageSize;
+    const page = pageSize ? Math.floor(index3 / pageSize) + 1 : 1;
+    if (page !== chart._state.page) {
+      chart._state.page = page;
+      render(chart, { resetScroll: true });
+    } else {
+      applySelection2(chart);
+    }
+    scrollToSelected(chart);
+    return true;
+  }
+  function clearSelection3(chart) {
+    chart._state.selected = null;
+    applySelection2(chart);
+  }
+  function getState2(chart) {
+    return {
+      expanded: [...chart._state.expanded],
+      selected: chart._state.selected,
+      page: chart._state.page
+    };
+  }
+
+  // src/tiles.js
+  var INTERACTIVE = ".gsm-tiles-toggle, .gsm-tiles-row-header, .gsm-tiles-cell, .gsm-tiles-pager button";
+  function onActivate(chart, event) {
+    const target = event.target.closest?.(INTERACTIVE);
+    if (!target || !chart.root.contains(target)) return;
+    const { callbacks } = chart.spec;
+    if (target.classList.contains("gsm-tiles-toggle")) {
+      const x = target._gsmTilesX;
+      if (isExpanded(chart, x)) collapseColumn(chart, x);
+      else expandColumn(chart, x);
+      const header = [
+        ...chart.root.querySelectorAll(".gsm-tiles-toggle")
+      ].find((th) => keyOf(th._gsmTilesX) === keyOf(x));
+      header?.focus();
+    } else if (target.classList.contains("gsm-tiles-row-header")) {
+      const y = target._gsmTilesY;
+      callbacks.onRowClick?.(
+        { y, rows: chart._structure.rowData.get(keyOf(y)) ?? [] },
+        event
+      );
+    } else if (target.dataset.step) {
+      chart._state.page += Number(target.dataset.step);
+      render(chart, { resetScroll: true });
+    } else if (target._gsmTilesDatum) {
+      callbacks.onClick?.(target._gsmTilesDatum, event);
+    }
+  }
+  function tiles(element = "body", data = [], spec = {}) {
+    validateSpec4(data, spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(
+          `tiles: could not find element matching "${element}"`
+        );
+      }
+    }
+    el.querySelectorAll(":scope > .gsm-tiles").forEach((node) => node.remove());
+    const root2 = el.ownerDocument.createElement("div");
+    root2.className = "gsm-tiles";
+    el.appendChild(root2);
+    const merged = mergeSpec4(spec);
+    const chart = {
+      element: el,
+      root: root2,
+      data,
+      spec: merged,
+      _state: {
+        expanded: [...merged.expand?.initial ?? []],
+        selected: null,
+        page: 1
+      },
+      helpers: {
+        updateData: updateData6,
+        updateSpec: updateSpec3,
+        expandColumn,
+        collapseColumn,
+        selectRow,
+        clearSelection: clearSelection3,
+        getState: getState2
+      },
+      destroy() {
+        root2.remove();
+      }
+    };
+    root2.addEventListener("click", (event) => onActivate(chart, event));
+    root2.addEventListener("keydown", (event) => {
+      if ((event.key === "Enter" || event.key === " ") && event.target.matches?.(".gsm-tiles-toggle, .gsm-tiles-row-header")) {
+        event.preventDefault();
+        onActivate(chart, event);
+      }
+    });
+    render(chart);
+    return chart;
+  }
+
   // src/timeSeries/checkInputs.js
   function checkInputs5(_results_, _config_, _thresholds_, _intervals_, _groupMetadata_) {
     const discrete = /^n_((at_risk)?(_or_)?(flagged)?)$/i.test(_config_?.y);
@@ -31623,39 +32319,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults6 = {};
-    defaults6.resultTooltipKeys = [
+    const defaults7 = {};
+    defaults7.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults6.GroupLevel = "Site";
-    defaults6.groupLabelKey = "InvestigatorLastName";
-    defaults6.groupParticipantCountKey = "ParticipantCount";
-    defaults6.groupTooltipKeys = null;
-    defaults6.dataType = "continuous";
-    defaults6.discreteUnit = null;
-    defaults6.distributionDisplay = "boxplot";
-    defaults6.x = "SnapshotDate";
-    defaults6.xType = "category";
-    defaults6.y = "Score";
-    defaults6.yType = "linear";
-    defaults6.color = "Flag";
-    defaults6.hoverCallback = (datum2) => {
+    defaults7.GroupLevel = "Site";
+    defaults7.groupLabelKey = "InvestigatorLastName";
+    defaults7.groupParticipantCountKey = "ParticipantCount";
+    defaults7.groupTooltipKeys = null;
+    defaults7.dataType = "continuous";
+    defaults7.discreteUnit = null;
+    defaults7.distributionDisplay = "boxplot";
+    defaults7.x = "SnapshotDate";
+    defaults7.xType = "category";
+    defaults7.y = "Score";
+    defaults7.yType = "linear";
+    defaults7.color = "Flag";
+    defaults7.hoverCallback = (datum2) => {
     };
-    defaults6.clickCallback = (datum2) => {
+    defaults7.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults6.aggregateLabel = "Study";
-    defaults6.annotateThreshold = _thresholds_ !== null;
-    defaults6.displayTitle = false;
-    defaults6.maintainAspectRatio = false;
+    defaults7.aggregateLabel = "Study";
+    defaults7.annotateThreshold = _thresholds_ !== null;
+    defaults7.displayTitle = false;
+    defaults7.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults6, _config_, {
+    const config = configure2(defaults7, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -31668,7 +32364,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults6.dataType === "discrete")
+    if (defaults7.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -32076,7 +32772,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/structureData.js
-  function structureData7(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function structureData8(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const { results, labels, thresholds: thresholds2, intervals } = mutate4(
       _results_,
@@ -32393,9 +33089,9 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/updateData.js
-  function updateData6(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function updateData7(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
-    const datasets = structureData7(
+    const datasets = structureData8(
       _results_,
       config,
       _thresholds_,
@@ -32428,7 +33124,7 @@ var gsmViz = (() => {
       this.data.config.selectedGroupIDs
     );
     this.canvas.riskSignalSelected.data = this.data.config.selectedGroupDatum;
-    this.data.datasets = structureData7(
+    this.data.datasets = structureData8(
       this.data._results_,
       this.data.config,
       this.data._thresholds_,
@@ -32449,7 +33145,7 @@ var gsmViz = (() => {
     );
     const config = configure7(_config_, _results_, _thresholds_, _intervals_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData7(
+    const datasets = structureData8(
       _results_,
       config,
       _thresholds_,
@@ -32484,7 +33180,7 @@ var gsmViz = (() => {
     });
     canvas.chart = chart;
     chart.helpers = {
-      updateData: updateData6.bind(chart),
+      updateData: updateData7.bind(chart),
       updateSelectedGroupIDs: updateSelectedGroupIDs.bind(chart)
     };
     return chart;
@@ -32509,6 +33205,7 @@ var gsmViz = (() => {
     points,
     scatterPlot,
     sparkline,
+    tiles,
     timeSeries
   };
   var main_default = gsmViz;

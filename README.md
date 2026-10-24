@@ -11,6 +11,7 @@ and development examples [here](https://gilead-public.github.io/gsm.viz/dev/).
 - [bar chart](https://gilead-public.github.io/gsm.viz/bars/)
 - [bar chart builder](https://gilead-public.github.io/gsm.viz/bars/builder.html)
 - [points](https://gilead-public.github.io/gsm.viz/points/)
+- [tiles](https://gilead-public.github.io/gsm.viz/tiles/)
 
 **Metrics**
 - [bar chart](https://gilead-public.github.io/gsm.viz/barChart/)
