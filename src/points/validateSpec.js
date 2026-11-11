@@ -14,7 +14,7 @@ const supportedFields = {
     scales: ['x', 'y', 'color', 'size', 'opacity', 'shape'],
     scale: ['type', 'label', 'range', 'beginAtZero', 'breaks', 'labels'],
     colorScale: ['colors', 'palette', 'order', 'label'],
-    continuousAestheticScale: ['range'],
+    continuousAestheticScale: ['range', 'domain'],
     shapeScale: ['values', 'order', 'label'],
     labels: ['title', 'caption', 'description'],
     annotations: ['referenceLines', 'lines', 'labels'],
@@ -666,17 +666,27 @@ function validateColorScale(scale) {
     }
 }
 
-function validateContinuousAestheticScale(scale, aesthetic) {
-    if (scale === undefined) return;
+function validateDomain(scale, aesthetic, path) {
+    if (scale.domain === undefined) return;
 
-    const path = `spec.scales.${aesthetic}`;
-    validatePlainObject(scale, path);
-    validateSupportedFields(
-        scale,
-        supportedFields.continuousAestheticScale,
-        path
-    );
+    if (
+        !Array.isArray(scale.domain) ||
+        scale.domain.length !== 2 ||
+        !scale.domain.every(Number.isFinite)
+    ) {
+        throw new Error(`${path}.domain must contain two finite numbers`);
+    }
 
+    if (aesthetic === 'size' && scale.domain.some((value) => value < 0)) {
+        throw new Error(`${path}.domain values must not be negative`);
+    }
+
+    if (scale.domain[0] > scale.domain[1]) {
+        throw new Error(`${path}.domain values must not be decreasing`);
+    }
+}
+
+function validateRange(scale, aesthetic, path) {
     if (
         !Array.isArray(scale.range) ||
         scale.range.length !== 2 ||
@@ -699,6 +709,24 @@ function validateContinuousAestheticScale(scale, aesthetic) {
     if (scale.range[0] >= scale.range[1]) {
         throw new Error(`${path}.range values must be strictly increasing`);
     }
+}
+
+function validateContinuousAestheticScale(scale, aesthetic) {
+    if (scale === undefined) return;
+
+    const path = `spec.scales.${aesthetic}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(
+        scale,
+        supportedFields.continuousAestheticScale,
+        path
+    );
+
+    // A domain-only scale keeps the default range.
+    if (scale.range !== undefined || scale.domain === undefined) {
+        validateRange(scale, aesthetic, path);
+    }
+    validateDomain(scale, aesthetic, path);
 }
 
 function validateCallbacks(callbacks) {

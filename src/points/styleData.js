@@ -51,16 +51,16 @@ export function withOpacityFactor(color, factor) {
     const parsed = parseColor(color);
 
     if (!parsed) {
-        throw new Error(
-            `points could not apply opacity to color ${JSON.stringify(color)}`
-        );
+        return `color-mix(in srgb, ${color} ${factor * 100}%, transparent)`;
     }
 
     parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
     return parsed.formatRgb();
 }
 
-function getDomain(points, field) {
+function getDomain(points, field, configured) {
+    if (configured) return configured;
+
     let minimum = Infinity;
     let maximum = -Infinity;
 
@@ -85,10 +85,10 @@ export default function styleData(datasets, spec) {
     if (points.length === 0) return datasets;
 
     const sizeDomain = spec.mapping.size
-        ? getDomain(points, '_size')
+        ? getDomain(points, '_size', spec.scales.size.domain)
         : undefined;
     const opacityDomain = spec.mapping.opacity
-        ? getDomain(points, '_opacity')
+        ? getDomain(points, '_opacity', spec.scales.opacity.domain)
         : undefined;
 
     datasets.forEach((dataset) => {

@@ -275,6 +275,46 @@ describe('facetPoints/computeGlobalScales', () => {
         ).toEqual({});
     });
 
+    test('extends automatic domains to include axis breaks', () => {
+        const breakData = [
+            { x: 2, y: 5, region: 'A' },
+            { x: 3, y: 6, region: 'B' },
+        ];
+
+        expect(
+            compute(breakData, {
+                scales: {
+                    x: { breaks: [0, 10], labels: ['zero', 'ten'] },
+                },
+            })
+        ).toEqual({ xMin: 0, xMax: 10, yMin: 5, yMax: 6 });
+    });
+
+    test('uses axis breaks as the domain when no facet has points', () => {
+        expect(
+            compute([], {
+                facet: { order: ['Requested empty facet'] },
+                scales: {
+                    y: { breaks: [10, 0, 5], labels: ['a', 'b', 'c'] },
+                },
+            })
+        ).toEqual({ yMin: 0, yMax: 10 });
+    });
+
+    test('lets explicit ranges take precedence over axis breaks', () => {
+        expect(
+            compute(data, {
+                scales: {
+                    x: {
+                        range: [-5, 5],
+                        breaks: [0, 100],
+                        labels: ['zero', 'hundred'],
+                    },
+                },
+            })
+        ).toMatchObject({ xMin: -5, xMax: 5 });
+    });
+
     test('allows a mapped key to repeat across facets', () => {
         expect(() =>
             compute(

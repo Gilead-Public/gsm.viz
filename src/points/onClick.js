@@ -20,6 +20,8 @@ export default function onClick(event, activeElements, chart) {
     const point = dataset?.data[index];
 
     if (point && spec.callbacks.onClick) spec.callbacks.onClick(point, event);
+    if (chart.data._spec_ !== spec) return;
+
     if (point && spec.selection.enabled) {
         togglePointSelection(chart, point._key, event);
     }

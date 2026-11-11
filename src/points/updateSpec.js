@@ -1,3 +1,4 @@
+import getStoredInputs from './getStoredInputs.js';
 import rebuildChart from './rebuildChart.js';
 
 function isPlainObject(value) {
@@ -19,11 +20,6 @@ function mergePartial(existing, partial) {
     );
 }
 
-function getStoredSpec(chart) {
-    const { data, ...spec } = chart.data._spec_;
-    return { data, spec };
-}
-
 /**
  * Deep-merge a partial spec and run the complete rendering pipeline in place.
  *
@@ -36,6 +32,6 @@ export default function updateSpec(chart, spec) {
         throw new Error('points updateSpec spec must be a plain object');
     }
 
-    const stored = getStoredSpec(chart);
+    const stored = getStoredInputs(chart);
     return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
 }

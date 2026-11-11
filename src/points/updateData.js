@@ -1,9 +1,5 @@
+import getStoredInputs from './getStoredInputs.js';
 import rebuildChart from './rebuildChart.js';
-
-function getStoredSpec(chart) {
-    const { data: _data, ...spec } = chart.data._spec_;
-    return spec;
-}
 
 /**
  * Replace point rows and run the complete rendering pipeline in place.
@@ -17,6 +13,6 @@ export default function updateData(chart, data, spec) {
     return rebuildChart(
         chart,
         data,
-        spec === undefined ? getStoredSpec(chart) : spec
+        spec === undefined ? getStoredInputs(chart).spec : spec
     );
 }

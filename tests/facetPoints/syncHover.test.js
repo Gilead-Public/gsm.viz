@@ -10,6 +10,8 @@ function makeChart(
             _spec_: { mapping: { x: 'x', y: 'y', key } },
         },
         options: { onHover: jest.fn() },
+        canvas: document.createElement('canvas'),
+        destroy: jest.fn(),
         setActiveElements: jest.fn(),
         update: jest.fn(),
         isDatasetVisible: jest.fn((index) => visible[index]),
@@ -124,5 +126,23 @@ describe('facetPoints/syncHover', () => {
         expect(original).toHaveBeenCalledTimes(1);
         expect(sibling.setActiveElements).toHaveBeenCalledTimes(1);
         expect(sibling.update).toHaveBeenCalledTimes(1);
+    });
+
+    test('clears siblings on canvas mouseout and stops after destroy', () => {
+        const origin = makeChart([dataset({ x: 1, y: 2, _key: 'A' })]);
+        const sibling = makeChart([dataset({ x: 3, y: 4, _key: 'A' })]);
+        const originDestroy = origin.destroy;
+
+        syncHover([origin, sibling]);
+        syncHover([origin, sibling]);
+        origin.canvas.dispatchEvent(new Event('mouseout'));
+
+        expect(sibling.setActiveElements).toHaveBeenCalledTimes(1);
+        expect(sibling.setActiveElements).toHaveBeenCalledWith([]);
+
+        origin.destroy();
+        expect(originDestroy).toHaveBeenCalledTimes(1);
+        origin.canvas.dispatchEvent(new Event('mouseout'));
+        expect(sibling.setActiveElements).toHaveBeenCalledTimes(1);
     });
 });

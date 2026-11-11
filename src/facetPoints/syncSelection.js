@@ -14,15 +14,16 @@ function getPointKeys(chart) {
 }
 
 function getGroupValues(chart) {
-    return new Set(
-        chart.data.datasets
-            .filter(
-                (dataset) =>
-                    !dataset._annotation &&
-                    Object.prototype.hasOwnProperty.call(dataset, '_color')
-            )
-            .map((dataset) => (dataset._colorMissing ? null : dataset._color))
-    );
+    const declared = chart.data._spec_.scales.color.order || [];
+    const rendered = chart.data.datasets
+        .filter(
+            (dataset) =>
+                !dataset._annotation &&
+                Object.prototype.hasOwnProperty.call(dataset, '_color')
+        )
+        .map((dataset) => (dataset._colorMissing ? null : dataset._color));
+
+    return new Set([...declared, ...rendered]);
 }
 
 function clearSibling(sibling) {

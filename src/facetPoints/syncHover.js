@@ -45,7 +45,10 @@ export default function syncHover(charts) {
                 : current;
 
         const wrapper = function (event, activeElements, chartInstance) {
+            const spec = chartInstance.data._spec_;
             original?.call(this, event, activeElements, chartInstance);
+            // A callback that rebuilt the chart leaves the hit index stale.
+            if (chartInstance.data._spec_ !== spec) return;
 
             const active = activeElements[0];
             const dataset = active
@@ -60,6 +63,22 @@ export default function syncHover(charts) {
                 : undefined;
             synchronizeHover(charts, chartInstance, key);
         };
+        chart._facetPointsHoverExitCleanup?.();
+        // Chart.js skips onHover for mouseout, so clear siblings explicitly.
+        const onExit = () => synchronizeHover(charts, chart, undefined);
+        chart.canvas.addEventListener('mouseout', onExit);
+        const destroy = chart.destroy;
+        const cleanup = () => {
+            chart.canvas.removeEventListener('mouseout', onExit);
+            if (chart.destroy === wrappedDestroy) chart.destroy = destroy;
+            delete chart._facetPointsHoverExitCleanup;
+        };
+        const wrappedDestroy = function (...args) {
+            cleanup();
+            return destroy.apply(this, args);
+        };
+        chart.destroy = wrappedDestroy;
+        chart._facetPointsHoverExitCleanup = cleanup;
         chart._facetPointsHoverOriginal = original;
         chart._facetPointsHoverSyncWrapper = wrapper;
         chart.options.onHover = wrapper;

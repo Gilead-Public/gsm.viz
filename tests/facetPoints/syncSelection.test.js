@@ -94,6 +94,20 @@ describe('facetPoints/syncSelection', () => {
         });
     });
 
+    test('does not open sibling tooltips for a single-key selection', () => {
+        const origin = add([{ x: 1, y: 2, id: 'shared' }]);
+        const sibling = add([{ x: 5, y: 6, id: 'shared' }]);
+
+        syncSelection([origin, sibling]);
+        origin.helpers.selectPoint(origin, 'shared');
+
+        expect(origin.tooltip.getActiveElements()).toHaveLength(1);
+        expect(sibling.helpers.getSelection(sibling).values).toEqual([
+            'shared',
+        ]);
+        expect(sibling.tooltip.getActiveElements()).toHaveLength(0);
+    });
+
     test('does not synchronize fallback row indexes without mapping.key', () => {
         const origin = add([{ x: 1, y: 2 }], {
             mapping: { key: undefined },
@@ -126,6 +140,35 @@ describe('facetPoints/syncSelection', () => {
 
         origin.helpers.clearSelection(origin);
         expect(sibling.helpers.getSelection(sibling).type).toBeNull();
+    });
+
+    test('selects declared color levels that a sibling has not observed', () => {
+        const origin = add([{ x: 1, y: 2, id: 'one', group: 'A', kind: 'k' }], {
+            mapping: { color: 'group', shape: 'kind' },
+        });
+        const sibling = add(
+            [{ x: 3, y: 4, id: 'two', group: 'A', kind: 'k' }],
+            {
+                mapping: { color: 'group', shape: 'kind' },
+                scales: { color: { order: ['Expected'] } },
+            }
+        );
+        const declared = add(
+            [{ x: 5, y: 6, id: 'three', group: 'Expected', kind: 'k' }],
+            {
+                mapping: { color: 'group', shape: 'kind' },
+                scales: { color: { order: ['Expected'] } },
+            }
+        );
+
+        syncSelection([declared, sibling, origin]);
+        declared.helpers.selectGroup(declared, 'Expected');
+
+        expect(sibling.helpers.getSelection(sibling)).toEqual({
+            type: 'group',
+            values: ['Expected'],
+        });
+        expect(origin.helpers.getSelection(origin).type).toBeNull();
     });
 
     test('synchronizes keyboard selection through the callback lifecycle', () => {

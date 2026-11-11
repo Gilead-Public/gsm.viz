@@ -78,7 +78,9 @@ export function getAccessibleLabel(spec, chartData, pointCount) {
  */
 export function setAccessibleLabel(canvas, label) {
     canvas.setAttribute('aria-label', label);
-    const textNode = [...canvas.childNodes].find((node) => node.nodeType === 3);
+    const textNode = [...canvas.childNodes].find(
+        (node) => node.nodeType === Node.TEXT_NODE
+    );
 
     if (textNode) {
         textNode.nodeValue = label;

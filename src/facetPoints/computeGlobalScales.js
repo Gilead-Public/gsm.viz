@@ -62,13 +62,15 @@ function getDomain(values, scale) {
     if (scale.range !== undefined) {
         return [...scale.range];
     }
-    if (values.length === 0) {
+    // Match points/getScales.js, which extends automatic bounds to the breaks.
+    const allValues = [...values, ...(scale.breaks || [])];
+    if (allValues.length === 0) {
         return undefined;
     }
 
     let min = Infinity;
     let max = -Infinity;
-    values.forEach((value) => {
+    allValues.forEach((value) => {
         min = Math.min(min, value);
         max = Math.max(max, value);
     });

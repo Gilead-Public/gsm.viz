@@ -429,6 +429,186 @@ describe('facetPoints', () => {
         expect(charts[1].getActiveElements()).toEqual([]);
     });
 
+    test('associates every canvas with its facet label for both positions', () => {
+        ['top', 'bottom'].forEach((position) => {
+            const { charts } = facetPoints(parent, data, {
+                ...baseSpec,
+                facet: { ...baseSpec.facet, label: { position } },
+            });
+
+            charts.forEach((chart, index) => {
+                const label = document.getElementById(
+                    chart.canvas.getAttribute('aria-describedby')
+                );
+                expect(label.classList.contains('gsm-facet-label')).toBe(true);
+                expect(label.textContent).toBe(['Baseline', 'Week 4'][index]);
+            });
+
+            charts[0].helpers.updateSpec(charts[0], {
+                labels: { title: 'Updated' },
+            });
+            expect(charts[0].canvas.getAttribute('aria-describedby')).toBe(
+                charts[0].canvas
+                    .closest('.gsm-facet-cell')
+                    .querySelector('.gsm-facet-label').id
+            );
+        });
+    });
+
+    test('keeps rerendering when explicit breaks extend past the data', () => {
+        const spec = {
+            ...baseSpec,
+            scales: {
+                x: { breaks: [0, 5, 10], labels: ['zero', 'five', 'ten'] },
+            },
+        };
+
+        facetPoints(parent, data, spec);
+        const { charts } = facetPoints(parent, data, spec);
+
+        expect(parent.querySelectorAll('.gsm-facet-grid')).toHaveLength(1);
+        expect(charts).toHaveLength(2);
+        expect(charts[0].options.scales.x.min).toBe(0);
+        expect(charts[0].options.scales.x.max).toBe(10);
+    });
+
+    test('renders the same size and opacity value identically in every facet', () => {
+        const sizeData = [
+            { phase: 'Baseline', id: 'A', x: 1, y: 1, n: 10, o: 10 },
+            { phase: 'Baseline', id: 'B', x: 2, y: 2, n: 20, o: 20 },
+            { phase: 'Week 4', id: 'C', x: 3, y: 3, n: 20, o: 20 },
+            { phase: 'Week 4', id: 'D', x: 4, y: 4, n: 500, o: 500 },
+        ];
+        const { charts } = facetPoints(parent, sizeData, {
+            mapping: { x: 'x', y: 'y', key: 'id', size: 'n', opacity: 'o' },
+            facet: { field: 'phase' },
+        });
+        const radius = (chart, key) => {
+            const point = findPoint(chart, key);
+            return chart.data.datasets[point.datasetIndex].pointRadius[
+                point.index
+            ];
+        };
+        const color = (chart, key) => {
+            const point = findPoint(chart, key);
+            return chart.data.datasets[point.datasetIndex].backgroundColor[
+                point.index
+            ];
+        };
+
+        expect(radius(charts[0], 'B')).toBeCloseTo(radius(charts[1], 'C'));
+        expect(radius(charts[0], 'B')).toBeLessThan(12);
+        expect(color(charts[0], 'B')).toBe(color(charts[1], 'C'));
+        expect(radius(charts[1], 'D')).toBe(12);
+    });
+
+    test('keeps facet context for callbacks replaced after rendering', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+        const onClick = jest.fn();
+        const onHover = jest.fn();
+        const onSelect = jest.fn();
+        const active = findPoint(charts[1], 'A');
+        const click = { type: 'click', native: { target: charts[1].canvas } };
+
+        charts[1].helpers.updateSpec(charts[1], {
+            callbacks: { onClick, onHover },
+            selection: { enabled: true },
+        });
+        charts[1].options.onClick(click, [active], charts[1]);
+        charts[1].options.onHover(click, [active], charts[1]);
+
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onClick).toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'A' }),
+            'Week 4',
+            click
+        );
+        expect(onHover).toHaveBeenCalledWith(
+            expect.objectContaining({ _key: 'A' }),
+            'Week 4',
+            click
+        );
+
+        charts[1].helpers.updateData(charts[1], data.slice(2), {
+            mapping: baseSpec.mapping,
+            selection: { enabled: true },
+            callbacks: { onSelect },
+        });
+        charts[1].helpers.selectPoint(charts[1], 'A');
+        expect(onSelect).toHaveBeenCalledTimes(1);
+        expect(onSelect).toHaveBeenCalledWith(
+            { type: 'point', values: ['A'] },
+            'Week 4',
+            undefined
+        );
+        expect(charts[0].helpers.getSelection(charts[0]).values).toEqual(['A']);
+    });
+
+    test('keeps rendering when mapped size values exceed the argument limit', () => {
+        const rows = Array.from({ length: 300000 }, (_, index) => ({
+            phase: index % 2 ? 'Baseline' : 'Week 4',
+            id: index,
+            x: index,
+            y: index,
+            n: index,
+        }));
+
+        expect(() =>
+            facetPoints(parent, rows, {
+                mapping: { x: 'x', y: 'y', size: 'n' },
+                facet: { field: 'phase' },
+            })
+        ).not.toThrow();
+    }, 60000);
+
+    test('does not synchronize hover after a hover callback rebuilds the chart', () => {
+        const { charts } = facetPoints(parent, data, {
+            ...baseSpec,
+            callbacks: {
+                onHover: (point, facetValue) => {
+                    if (facetValue === 'Baseline') {
+                        charts[0].helpers.updateData(charts[0], [
+                            {
+                                phase: 'Baseline',
+                                id: 'C',
+                                x: 1,
+                                y: 1,
+                                group: 'Control',
+                                status: 'Circle',
+                            },
+                        ]);
+                    }
+                },
+            },
+        });
+        const hover = {
+            type: 'mousemove',
+            native: { target: charts[0].canvas },
+        };
+
+        charts[0].options.onHover(
+            hover,
+            [findPoint(charts[0], 'A')],
+            charts[0]
+        );
+
+        expect(charts[1].getActiveElements()).toEqual([]);
+    });
+
+    test('clears linked hover when the pointer leaves the canvas', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+
+        charts[0].options.onHover(
+            { type: 'mousemove', native: { target: charts[0].canvas } },
+            [findPoint(charts[0], 'A')],
+            charts[0]
+        );
+        expect(charts[1].getActiveElements()).toHaveLength(1);
+
+        charts[0].canvas.dispatchEvent(new Event('mouseout'));
+        expect(charts[1].getActiveElements()).toEqual([]);
+    });
+
     test('synchronizes keyed selection and fires onSelect once with facet context', () => {
         const onSelect = jest.fn();
         const { charts } = facetPoints(parent, data, {

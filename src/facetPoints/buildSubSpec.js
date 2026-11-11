@@ -2,6 +2,7 @@ function getScale(scale) {
     return {
         ...scale,
         ...(scale.range ? { range: [...scale.range] } : {}),
+        ...(scale.domain ? { domain: [...scale.domain] } : {}),
         ...(scale.breaks ? { breaks: [...scale.breaks] } : {}),
         ...(scale.labels ? { labels: [...scale.labels] } : {}),
         ...(scale.order ? { order: [...scale.order] } : {}),
@@ -11,10 +12,16 @@ function getScale(scale) {
     };
 }
 
-function wrapCallback(callback, facetValue) {
-    return callback
-        ? (value, event) => callback(value, facetValue, event)
-        : null;
+const wrappedCallbacks = new WeakSet();
+
+export function wrapCallback(callback, facetValue) {
+    if (!callback) return null;
+    // Re-wrapping would insert the facet value twice.
+    if (wrappedCallbacks.has(callback)) return callback;
+
+    const wrapped = (value, event) => callback(value, facetValue, event);
+    wrappedCallbacks.add(wrapped);
+    return wrapped;
 }
 
 /**
@@ -48,6 +55,13 @@ export default function buildSubSpec(
     }
     scales.color.order = [...globalStyles.colorOrder];
     scales.shape.order = [...globalStyles.shapeOrder];
+    // An explicit points domain stays authoritative over the shared one.
+    if (globalStyles.sizeDomain && !scales.size.domain) {
+        scales.size.domain = [...globalStyles.sizeDomain];
+    }
+    if (globalStyles.opacityDomain && !scales.opacity.domain) {
+        scales.opacity.domain = [...globalStyles.opacityDomain];
+    }
 
     return {
         ...pointsSpec,
