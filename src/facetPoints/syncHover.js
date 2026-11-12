@@ -18,15 +18,34 @@ function findPoint(chart, key) {
     return undefined;
 }
 
+function isDestroyed(chart) {
+    // Chart.js nulls the canvas when a chart is destroyed.
+    return !chart.canvas;
+}
+
+function isSameActive(current, next) {
+    return (
+        current.length === next.length &&
+        current.every(
+            (element, index) =>
+                element.datasetIndex === next[index].datasetIndex &&
+                element.index === next[index].index
+        )
+    );
+}
+
 function synchronizeHover(charts, origin, key) {
     charts.forEach((sibling) => {
-        if (sibling === origin) return;
+        if (sibling === origin || isDestroyed(sibling)) return;
 
-        const active =
+        const point =
             key !== undefined && sibling.data._spec_.mapping.key
                 ? findPoint(sibling, key)
                 : undefined;
-        sibling.setActiveElements(active ? [active] : []);
+        const active = point ? [point] : [];
+        if (isSameActive(sibling.getActiveElements(), active)) return;
+
+        sibling.setActiveElements(active);
         sibling.update('none');
     });
 }
@@ -47,8 +66,13 @@ export default function syncHover(charts) {
         const wrapper = function (event, activeElements, chartInstance) {
             const spec = chartInstance.data._spec_;
             original?.call(this, event, activeElements, chartInstance);
-            // A callback that rebuilt the chart leaves the hit index stale.
-            if (chartInstance.data._spec_ !== spec) return;
+            // A callback that rebuilt or destroyed the chart leaves the hit index stale.
+            if (
+                isDestroyed(chartInstance) ||
+                chartInstance.data._spec_ !== spec
+            ) {
+                return;
+            }
 
             const active = activeElements[0];
             const dataset = active

@@ -224,6 +224,65 @@ describe('facetPoints/globalStyles', () => {
         expect(chart.update).toHaveBeenCalledWith('none');
     });
 
+    test('keeps only scalar per-point styles in templates and ghosts', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', color: 'Red', n: 1, o: 0.1 },
+            { x: 2, y: 2, facet: 'A', color: 'Red', n: 2, o: 0.2 },
+            { x: 3, y: 3, facet: 'B', color: 'Blue', n: 3, o: 0.3 },
+        ];
+        const { merged, facets } = prepare(data, {
+            mapping: { shape: undefined, size: 'n', opacity: 'o' },
+        });
+        const styles = getGlobalStyles(facets, merged);
+        const chart = {
+            data: { datasets: [], _spec_: merged },
+            setDatasetVisibility: jest.fn(),
+            update: jest.fn(),
+        };
+
+        applyGlobalStyles(chart, styles.templates);
+
+        [...styles.templates, ...chart.data.datasets].forEach((dataset) => {
+            ['pointRadius', 'pointHoverRadius', 'backgroundColor'].forEach(
+                (key) => expect(Array.isArray(dataset[key])).toBe(false)
+            );
+            expect(Array.isArray(dataset.borderColor)).toBe(false);
+            expect(typeof dataset.pointRadius).toBe('number');
+            expect(typeof dataset.backgroundColor).toBe('string');
+        });
+        expect(styles.templates[0]._baseColor).toEqual(expect.any(String));
+    });
+
+    test('resolves a shared color/shape field like standalone points', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', group: 'A' },
+            { x: 2, y: 2, facet: 'B', group: 'B' },
+        ];
+        const { merged, facets } = prepare(data, {
+            mapping: { color: 'group', shape: 'group' },
+            scales: { shape: { order: ['B', 'A'] } },
+        });
+
+        const styles = getGlobalStyles(facets, merged);
+        const standalone = structureData({ ...merged, data }).datasets;
+
+        expect(styles.colorOrder).toEqual(['B', 'A']);
+        expect(styles.shapeOrder).toEqual(['B', 'A']);
+        expect(
+            styles.templates.map(({ label, pointStyle, borderColor }) => [
+                label,
+                pointStyle,
+                borderColor,
+            ])
+        ).toEqual(
+            standalone.map(({ label, pointStyle, borderColor }) => [
+                label,
+                pointStyle,
+                borderColor,
+            ])
+        );
+    });
+
     test('creates independent ghost style arrays for separate charts', () => {
         const data = [
             { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },

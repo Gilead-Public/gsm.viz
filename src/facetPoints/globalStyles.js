@@ -64,12 +64,41 @@ function getRange(datasets, field) {
     return min === Infinity ? undefined : [min, max];
 }
 
+// Ghosts hold no points, so one representative value replaces per-point arrays.
 function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
         template[key] =
-            key === 'data' ? [] : Array.isArray(value) ? [...value] : value;
+            key === 'data' ? [] : Array.isArray(value) ? value[0] : value;
         return template;
     }, {});
+}
+
+function resolveAestheticOrders(rows, spec) {
+    const { color, shape } = spec.mapping;
+
+    // Match points/structureData.js, which merges explicit orders first.
+    if (color && shape && color === shape) {
+        const shared = resolveOrder(
+            [...spec.scales.color.order, ...spec.scales.shape.order],
+            getObservedLevels(rows, color)
+        );
+        return { colorOrder: shared, shapeOrder: [...shared] };
+    }
+
+    return {
+        colorOrder: color
+            ? resolveOrder(
+                  spec.scales.color.order,
+                  getObservedLevels(rows, color)
+              )
+            : [...spec.scales.color.order],
+        shapeOrder: shape
+            ? resolveOrder(
+                  spec.scales.shape.order,
+                  getObservedLevels(rows, shape)
+              )
+            : [...spec.scales.shape.order],
+    };
 }
 
 /**
@@ -81,18 +110,7 @@ function makeTemplate(dataset) {
  */
 export function getGlobalStyles(facets, spec) {
     const rows = getRenderedRows(facets, spec);
-    const colorOrder = spec.mapping.color
-        ? resolveOrder(
-              spec.scales.color.order,
-              getObservedLevels(rows, spec.mapping.color)
-          )
-        : [...spec.scales.color.order];
-    const shapeOrder = spec.mapping.shape
-        ? resolveOrder(
-              spec.scales.shape.order,
-              getObservedLevels(rows, spec.mapping.shape)
-          )
-        : [...spec.scales.shape.order];
+    const { colorOrder, shapeOrder } = resolveAestheticOrders(rows, spec);
 
     // Templates use the same source-ordered domains as the child specs.
     const datasets = structureData({

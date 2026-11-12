@@ -32732,20 +32732,33 @@ var gsmViz = (() => {
   }
   function makeTemplate(dataset) {
     return Object.entries(dataset).reduce((template, [key, value]) => {
-      template[key] = key === "data" ? [] : Array.isArray(value) ? [...value] : value;
+      template[key] = key === "data" ? [] : Array.isArray(value) ? value[0] : value;
       return template;
     }, {});
   }
+  function resolveAestheticOrders(rows, spec) {
+    const { color: color3, shape } = spec.mapping;
+    if (color3 && shape && color3 === shape) {
+      const shared = resolveOrder(
+        [...spec.scales.color.order, ...spec.scales.shape.order],
+        getObservedLevels(rows, color3)
+      );
+      return { colorOrder: shared, shapeOrder: [...shared] };
+    }
+    return {
+      colorOrder: color3 ? resolveOrder(
+        spec.scales.color.order,
+        getObservedLevels(rows, color3)
+      ) : [...spec.scales.color.order],
+      shapeOrder: shape ? resolveOrder(
+        spec.scales.shape.order,
+        getObservedLevels(rows, shape)
+      ) : [...spec.scales.shape.order]
+    };
+  }
   function getGlobalStyles(facets, spec) {
     const rows = getRenderedRows(facets, spec);
-    const colorOrder = spec.mapping.color ? resolveOrder(
-      spec.scales.color.order,
-      getObservedLevels(rows, spec.mapping.color)
-    ) : [...spec.scales.color.order];
-    const shapeOrder = spec.mapping.shape ? resolveOrder(
-      spec.scales.shape.order,
-      getObservedLevels(rows, spec.mapping.shape)
-    ) : [...spec.scales.shape.order];
+    const { colorOrder, shapeOrder } = resolveAestheticOrders(rows, spec);
     const datasets = structureData4({
       ...spec,
       data: rows,
@@ -32939,11 +32952,21 @@ var gsmViz = (() => {
     }
     return void 0;
   }
+  function isDestroyed(chart) {
+    return !chart.canvas;
+  }
+  function isSameActive(current, next) {
+    return current.length === next.length && current.every(
+      (element, index3) => element.datasetIndex === next[index3].datasetIndex && element.index === next[index3].index
+    );
+  }
   function synchronizeHover(charts, origin, key) {
     charts.forEach((sibling) => {
-      if (sibling === origin) return;
-      const active = key !== void 0 && sibling.data._spec_.mapping.key ? findPoint2(sibling, key) : void 0;
-      sibling.setActiveElements(active ? [active] : []);
+      if (sibling === origin || isDestroyed(sibling)) return;
+      const point = key !== void 0 && sibling.data._spec_.mapping.key ? findPoint2(sibling, key) : void 0;
+      const active = point ? [point] : [];
+      if (isSameActive(sibling.getActiveElements(), active)) return;
+      sibling.setActiveElements(active);
       sibling.update("none");
     });
   }
@@ -32954,7 +32977,9 @@ var gsmViz = (() => {
       const wrapper = function(event, activeElements, chartInstance) {
         const spec = chartInstance.data._spec_;
         original?.call(this, event, activeElements, chartInstance);
-        if (chartInstance.data._spec_ !== spec) return;
+        if (isDestroyed(chartInstance) || chartInstance.data._spec_ !== spec) {
+          return;
+        }
         const active = activeElements[0];
         const dataset = active ? chartInstance.data.datasets[active.datasetIndex] : void 0;
         const point = dataset && !dataset._annotation ? dataset.data[active.index] : void 0;
@@ -33107,6 +33132,28 @@ var gsmViz = (() => {
     syncLegendClicks2(charts, { sync: legend5.sync });
   }
   var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
+  function withScale(scales2, name, key, value) {
+    if (value === void 0 || scales2[name]?.[key] !== void 0) return;
+    scales2[name] = { ...scales2[name], [key]: [...value] };
+  }
+  function injectGlobalStyles(spec, globalStyles, mapping) {
+    if (!spec || typeof spec !== "object") return spec;
+    const scales2 = { ...spec.scales };
+    const sameField = (aesthetic) => mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
+    if (sameField("color")) {
+      withScale(scales2, "color", "order", globalStyles.colorOrder);
+    }
+    if (sameField("shape")) {
+      withScale(scales2, "shape", "order", globalStyles.shapeOrder);
+    }
+    if (sameField("size")) {
+      withScale(scales2, "size", "domain", globalStyles.sizeDomain);
+    }
+    if (sameField("opacity")) {
+      withScale(scales2, "opacity", "domain", globalStyles.opacityDomain);
+    }
+    return { ...spec, scales: scales2 };
+  }
   function wrapSpecCallbacks(spec, facetValue) {
     if (!spec?.callbacks) return spec;
     const callbacks = { ...spec.callbacks };
@@ -33117,13 +33164,21 @@ var gsmViz = (() => {
     });
     return { ...spec, callbacks };
   }
-  function syncUpdates(charts, templates, legend5, facetValues) {
+  function syncUpdates(charts, globalStyles, legend5, facetValues, mapping) {
+    const { templates } = globalStyles;
     charts.forEach((chart, chartIndex) => {
       const specIndex = { updateData: 1, updateSpec: 0 };
       ["updateData", "updateSpec"].forEach((name) => {
         const update = chart.helpers[name];
         chart.helpers[name] = function(chartInstance, ...args) {
           const hidden = getHiddenIdentities(chartInstance);
+          if (name === "updateData") {
+            args[1] = injectGlobalStyles(
+              args[1],
+              globalStyles,
+              mapping
+            );
+          }
           args[specIndex[name]] = wrapSpecCallbacks(
             args[specIndex[name]],
             facetValues[chartIndex]
@@ -33330,9 +33385,10 @@ var gsmViz = (() => {
       syncLegendClicks2(charts, { sync: merged.facet.legend.sync });
       syncUpdates(
         charts,
-        globalStyles.templates,
+        globalStyles,
         merged.facet.legend,
-        facetValues
+        facetValues,
+        merged.mapping
       );
     } catch (error) {
       charts.forEach((chart) => chart.destroy());

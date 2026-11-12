@@ -595,6 +595,63 @@ describe('facetPoints', () => {
         expect(charts[1].getActiveElements()).toEqual([]);
     });
 
+    test('does not throw when a hover callback rerenders the whole grid', () => {
+        let rerendered;
+        const spec = {
+            ...baseSpec,
+            callbacks: {
+                onHover: () => {
+                    if (!rerendered) {
+                        rerendered = facetPoints(parent, data, baseSpec);
+                    }
+                },
+            },
+        };
+        const { charts } = facetPoints(parent, data, spec);
+
+        expect(() =>
+            charts[0].options.onHover(
+                {
+                    type: 'mousemove',
+                    native: { target: charts[0].canvas },
+                },
+                [findPoint(charts[0], 'A')],
+                charts[0]
+            )
+        ).not.toThrow();
+        expect(rerendered.charts[1].getActiveElements()).toEqual([]);
+    });
+
+    test('keeps shared styles after a replacement-spec updateData', () => {
+        const styledData = data.map((row, index) => ({
+            ...row,
+            n: [1, 2, 3, 100][index],
+        }));
+        const spec = {
+            ...baseSpec,
+            mapping: { ...baseSpec.mapping, shape: undefined, size: 'n' },
+        };
+        const { charts } = facetPoints(parent, styledData, spec);
+        const snapshot = (chart) =>
+            chart.data.datasets
+                .filter((dataset) => !dataset._annotation)
+                .map(({ _color, backgroundColor, pointRadius, data }) => ({
+                    _color,
+                    backgroundColor,
+                    pointRadius: data.length ? pointRadius : undefined,
+                }));
+        const before = snapshot(charts[1]);
+
+        charts[1].helpers.updateData(
+            charts[1],
+            styledData.filter(({ phase }) => phase === 'Week 4'),
+            { mapping: spec.mapping }
+        );
+
+        expect(snapshot(charts[1])).toEqual(before);
+        expect(charts[1].data._spec_.scales.size.domain).toEqual([1, 100]);
+    });
+
     test('clears linked hover when the pointer leaves the canvas', () => {
         const { charts } = facetPoints(parent, data, baseSpec);
 

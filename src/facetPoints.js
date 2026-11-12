@@ -72,9 +72,10 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
         syncLegendClicks(charts, { sync: merged.facet.legend.sync });
         syncUpdates(
             charts,
-            globalStyles.templates,
+            globalStyles,
             merged.facet.legend,
-            facetValues
+            facetValues,
+            merged.mapping
         );
     } catch (error) {
         charts.forEach((chart) => chart.destroy());
