@@ -183,7 +183,9 @@ a finite usable range. Log domains remain positive.
 Color and shape levels are resolved once across the complete source data.
 Palette assignment follows original source-row order rather than
 `facet.order`, so rearranging panels does not change styles. Explicit
-`scales.color.order` and `scales.shape.order` still take precedence.
+`scales.color.order` and `scales.shape.order` still take precedence. When color
+and shape map the same field, the two explicit orders are combined (color first)
+before observed levels are appended, matching standalone `points`.
 
 Every child legend uses the same typed point-dataset order. Empty ghost datasets
 represent combinations absent from one facet, so composite color/shape legends
@@ -256,7 +258,10 @@ initial global point-dataset templates, facet legend display, hidden semantic
 groups, and synchronization wrappers when the original color/shape domain is
 retained. Callback functions supplied through a child's `updateSpec` or through
 the `spec` argument of `updateData` also receive the facet value, so their
-signatures match the callbacks above.
+signatures match the callbacks above. A complete replacement `spec` passed to
+`updateData` also inherits the shared color/shape orders and size/opacity
+domains for any aesthetic still mapped to the original field, unless that spec
+sets its own `order` or `domain`.
 
 Reinvoke `facetPoints(element, completeData, completeSpec)` whenever an update
 changes facet membership/order, shared x/y domains, color/shape mappings or
