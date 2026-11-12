@@ -36,6 +36,10 @@ export default function mergeSpec(data, spec) {
                     ...(userFacet.scales?.y || {}),
                 },
             },
+            legend: {
+                ...defaults.facet.legend,
+                ...(userFacet.legend || {}),
+            },
         },
     };
 }
