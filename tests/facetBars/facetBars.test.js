@@ -232,6 +232,30 @@ describe('facetBars integration', () => {
                 expect(c.options.scales.y.max).toBeUndefined();
             });
         });
+
+        test('dynamicValueAxis with free y: facet percent axes not pinned (#606)', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                position: 'fill',
+                theme: { dynamicValueAxis: true },
+                facet: { field: 'region', scales: { y: { free: true } } },
+            });
+            charts.forEach((c) => {
+                expect(c.options.scales.y.max).toBeUndefined();
+            });
+        });
+
+        test('dynamicValueAxis with constant y: facets stay pinned at 100 (#606)', () => {
+            const { charts } = facetBars(container, data, {
+                ...baseSpec,
+                position: 'fill',
+                theme: { dynamicValueAxis: true },
+            });
+            charts.forEach((c) => {
+                expect(c.options.scales.y.min).toBe(0);
+                expect(c.options.scales.y.max).toBe(100);
+            });
+        });
     });
 
     describe('legend control', () => {

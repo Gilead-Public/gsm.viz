@@ -575,4 +575,20 @@ describe('bars/updateSpec', () => {
             expect(chart.data._spec_.zoom.pan).toBe(true);
         });
     });
+
+    test('applies theme.dynamicValueAxis on re-render (#606)', () => {
+        const fillData = [
+            { category: 'A', value: 10, group: 'X' },
+            { category: 'A', value: 30, group: 'Y' },
+        ];
+        const chart = bars(container, fillData, {
+            mapping: { x: 'category', y: 'value', fill: 'group' },
+            position: 'fill',
+        });
+        expect(chart.options.scales.y.max).toBe(100);
+
+        updateSpec(chart, { theme: { dynamicValueAxis: true } });
+        expect(chart.options.scales.y.max).toBeUndefined();
+        expect(typeof chart.options.scales.y.afterDataLimits).toBe('function');
+    });
 });

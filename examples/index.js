@@ -2274,8 +2274,8 @@ var gsmViz = (() => {
     const check = rtl ? "left" : "right";
     return align === check ? right : align === "center" ? (left + right) / 2 : left;
   };
-  function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
-    const pointCount = points.length;
+  function _getStartAndCountOfVisiblePoints(meta, points2, animationsDisabled) {
+    const pointCount = points2.length;
     let start2 = 0;
     let count = pointCount;
     if (meta._sorted) {
@@ -2286,7 +2286,7 @@ var gsmViz = (() => {
         start2 = _limitValue(
           Math.min(
             _lookupByKey(_parsed, iScale.axis, min3).lo,
-            animationsDisabled ? pointCount : _lookupByKey(points, axis, iScale.getPixelForValue(min3)).lo
+            animationsDisabled ? pointCount : _lookupByKey(points2, axis, iScale.getPixelForValue(min3)).lo
           ),
           0,
           pointCount - 1
@@ -2296,7 +2296,7 @@ var gsmViz = (() => {
         count = _limitValue(
           Math.max(
             _lookupByKey(_parsed, iScale.axis, max3, true).hi + 1,
-            animationsDisabled ? 0 : _lookupByKey(points, axis, iScale.getPixelForValue(max3), true).hi + 1
+            animationsDisabled ? 0 : _lookupByKey(points2, axis, iScale.getPixelForValue(max3), true).hi + 1
           ),
           start2,
           pointCount
@@ -3546,8 +3546,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults5 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults5.scriptable, _indexable = defaults5.indexable, _allKeys = defaults5.allKeys } = proxy;
+  function _descriptors(proxy, defaults6 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults6.scriptable, _indexable = defaults6.indexable, _allKeys = defaults6.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -3719,7 +3719,7 @@ var gsmViz = (() => {
     return parsed;
   }
   var EPSILON = Number.EPSILON || 1e-14;
-  var getPoint = (points, i) => i < points.length && !points[i].skip && points[i];
+  var getPoint = (points2, i) => i < points2.length && !points2[i].skip && points2[i];
   var getValueAxis = (indexAxis) => indexAxis === "x" ? "y" : "x";
   function splineCurve(firstPoint, middlePoint, afterPoint, t) {
     const previous = firstPoint.skip ? middlePoint : firstPoint;
@@ -3744,13 +3744,13 @@ var gsmViz = (() => {
       }
     };
   }
-  function monotoneAdjust(points, deltaK, mK) {
-    const pointsLen = points.length;
+  function monotoneAdjust(points2, deltaK, mK) {
+    const pointsLen = points2.length;
     let alphaK, betaK, tauK, squaredMagnitude, pointCurrent;
-    let pointAfter = getPoint(points, 0);
+    let pointAfter = getPoint(points2, 0);
     for (let i = 0; i < pointsLen - 1; ++i) {
       pointCurrent = pointAfter;
-      pointAfter = getPoint(points, i + 1);
+      pointAfter = getPoint(points2, i + 1);
       if (!pointCurrent || !pointAfter) {
         continue;
       }
@@ -3769,15 +3769,15 @@ var gsmViz = (() => {
       mK[i + 1] = betaK * tauK * deltaK[i];
     }
   }
-  function monotoneCompute(points, mK, indexAxis = "x") {
+  function monotoneCompute(points2, mK, indexAxis = "x") {
     const valueAxis = getValueAxis(indexAxis);
-    const pointsLen = points.length;
+    const pointsLen = points2.length;
     let delta, pointBefore, pointCurrent;
-    let pointAfter = getPoint(points, 0);
+    let pointAfter = getPoint(points2, 0);
     for (let i = 0; i < pointsLen; ++i) {
       pointBefore = pointCurrent;
       pointCurrent = pointAfter;
-      pointAfter = getPoint(points, i + 1);
+      pointAfter = getPoint(points2, i + 1);
       if (!pointCurrent) {
         continue;
       }
@@ -3795,17 +3795,17 @@ var gsmViz = (() => {
       }
     }
   }
-  function splineCurveMonotone(points, indexAxis = "x") {
+  function splineCurveMonotone(points2, indexAxis = "x") {
     const valueAxis = getValueAxis(indexAxis);
-    const pointsLen = points.length;
+    const pointsLen = points2.length;
     const deltaK = Array(pointsLen).fill(0);
     const mK = Array(pointsLen);
     let i, pointBefore, pointCurrent;
-    let pointAfter = getPoint(points, 0);
+    let pointAfter = getPoint(points2, 0);
     for (i = 0; i < pointsLen; ++i) {
       pointBefore = pointCurrent;
       pointCurrent = pointAfter;
-      pointAfter = getPoint(points, i + 1);
+      pointAfter = getPoint(points2, i + 1);
       if (!pointCurrent) {
         continue;
       }
@@ -3815,23 +3815,23 @@ var gsmViz = (() => {
       }
       mK[i] = !pointBefore ? deltaK[i] : !pointAfter ? deltaK[i - 1] : sign(deltaK[i - 1]) !== sign(deltaK[i]) ? 0 : (deltaK[i - 1] + deltaK[i]) / 2;
     }
-    monotoneAdjust(points, deltaK, mK);
-    monotoneCompute(points, mK, indexAxis);
+    monotoneAdjust(points2, deltaK, mK);
+    monotoneCompute(points2, mK, indexAxis);
   }
   function capControlPoint(pt, min3, max3) {
     return Math.max(Math.min(pt, max3), min3);
   }
-  function capBezierPoints(points, area) {
+  function capBezierPoints(points2, area) {
     let i, ilen, point, inArea, inAreaPrev;
-    let inAreaNext = _isPointInArea(points[0], area);
-    for (i = 0, ilen = points.length; i < ilen; ++i) {
+    let inAreaNext = _isPointInArea(points2[0], area);
+    for (i = 0, ilen = points2.length; i < ilen; ++i) {
       inAreaPrev = inArea;
       inArea = inAreaNext;
-      inAreaNext = i < ilen - 1 && _isPointInArea(points[i + 1], area);
+      inAreaNext = i < ilen - 1 && _isPointInArea(points2[i + 1], area);
       if (!inArea) {
         continue;
       }
-      point = points[i];
+      point = points2[i];
       if (inAreaPrev) {
         point.cp1x = capControlPoint(point.cp1x, area.left, area.right);
         point.cp1y = capControlPoint(point.cp1y, area.top, area.bottom);
@@ -3842,21 +3842,21 @@ var gsmViz = (() => {
       }
     }
   }
-  function _updateBezierControlPoints(points, options, area, loop, indexAxis) {
+  function _updateBezierControlPoints(points2, options, area, loop, indexAxis) {
     let i, ilen, point, controlPoints;
     if (options.spanGaps) {
-      points = points.filter((pt) => !pt.skip);
+      points2 = points2.filter((pt) => !pt.skip);
     }
     if (options.cubicInterpolationMode === "monotone") {
-      splineCurveMonotone(points, indexAxis);
+      splineCurveMonotone(points2, indexAxis);
     } else {
-      let prev = loop ? points[points.length - 1] : points[0];
-      for (i = 0, ilen = points.length; i < ilen; ++i) {
-        point = points[i];
+      let prev = loop ? points2[points2.length - 1] : points2[0];
+      for (i = 0, ilen = points2.length; i < ilen; ++i) {
+        point = points2[i];
         controlPoints = splineCurve(
           prev,
           point,
-          points[Math.min(i + 1, ilen - (loop ? 0 : 1)) % ilen],
+          points2[Math.min(i + 1, ilen - (loop ? 0 : 1)) % ilen],
           options.tension
         );
         point.cp1x = controlPoints.previous.x;
@@ -3867,7 +3867,7 @@ var gsmViz = (() => {
       }
     }
     if (options.capBezierPoints) {
-      capBezierPoints(points, area);
+      capBezierPoints(points2, area);
     }
   }
   function _isDomSupported() {
@@ -4158,17 +4158,17 @@ var gsmViz = (() => {
       style
     };
   }
-  function getSegment(segment, points, bounds) {
+  function getSegment(segment, points2, bounds) {
     const { property, start: startBound, end: endBound } = bounds;
     const { between, normalize } = propertyFn(property);
-    const count = points.length;
+    const count = points2.length;
     let { start: start2, end, loop } = segment;
     let i, ilen;
     if (loop) {
       start2 += count;
       end += count;
       for (i = 0, ilen = count; i < ilen; ++i) {
-        if (!between(normalize(points[start2 % count][property]), startBound, endBound)) {
+        if (!between(normalize(points2[start2 % count][property]), startBound, endBound)) {
           break;
         }
         start2--;
@@ -4182,14 +4182,14 @@ var gsmViz = (() => {
     }
     return { start: start2, end, loop, style: segment.style };
   }
-  function _boundSegment(segment, points, bounds) {
+  function _boundSegment(segment, points2, bounds) {
     if (!bounds) {
       return [segment];
     }
     const { property, start: startBound, end: endBound } = bounds;
-    const count = points.length;
+    const count = points2.length;
     const { compare, between, normalize } = propertyFn(property);
-    const { start: start2, end, loop, style } = getSegment(segment, points, bounds);
+    const { start: start2, end, loop, style } = getSegment(segment, points2, bounds);
     const result = [];
     let inside = false;
     let subStart = null;
@@ -4199,7 +4199,7 @@ var gsmViz = (() => {
     const shouldStart = () => inside || startIsBefore();
     const shouldStop = () => !inside || endIsBefore();
     for (let i = start2, prev = start2; i <= end; ++i) {
-      point = points[i % count];
+      point = points2[i % count];
       if (point.skip) {
         continue;
       }
@@ -4234,35 +4234,35 @@ var gsmViz = (() => {
     }
     return result;
   }
-  function findStartAndEnd(points, count, loop, spanGaps) {
+  function findStartAndEnd(points2, count, loop, spanGaps) {
     let start2 = 0;
     let end = count - 1;
     if (loop && !spanGaps) {
-      while (start2 < count && !points[start2].skip) {
+      while (start2 < count && !points2[start2].skip) {
         start2++;
       }
     }
-    while (start2 < count && points[start2].skip) {
+    while (start2 < count && points2[start2].skip) {
       start2++;
     }
     start2 %= count;
     if (loop) {
       end += start2;
     }
-    while (end > start2 && points[end % count].skip) {
+    while (end > start2 && points2[end % count].skip) {
       end--;
     }
     end %= count;
     return { start: start2, end };
   }
-  function solidSegments(points, start2, max3, loop) {
-    const count = points.length;
+  function solidSegments(points2, start2, max3, loop) {
+    const count = points2.length;
     const result = [];
     let last = start2;
-    let prev = points[start2];
+    let prev = points2[start2];
     let end;
     for (end = start2 + 1; end <= max3; ++end) {
-      const cur = points[end % count];
+      const cur = points2[end % count];
       if (cur.skip || cur.stop) {
         if (!prev.skip) {
           loop = false;
@@ -4283,32 +4283,32 @@ var gsmViz = (() => {
     return result;
   }
   function _computeSegments(line, segmentOptions) {
-    const points = line.points;
+    const points2 = line.points;
     const spanGaps = line.options.spanGaps;
-    const count = points.length;
+    const count = points2.length;
     if (!count) {
       return [];
     }
     const loop = !!line._loop;
-    const { start: start2, end } = findStartAndEnd(points, count, loop, spanGaps);
+    const { start: start2, end } = findStartAndEnd(points2, count, loop, spanGaps);
     if (spanGaps === true) {
-      return splitByStyles(line, [{ start: start2, end, loop }], points, segmentOptions);
+      return splitByStyles(line, [{ start: start2, end, loop }], points2, segmentOptions);
     }
     const max3 = end < start2 ? end + count : end;
     const completeLoop = !!line._fullLoop && start2 === 0 && end === count - 1;
-    return splitByStyles(line, solidSegments(points, start2, max3, completeLoop), points, segmentOptions);
+    return splitByStyles(line, solidSegments(points2, start2, max3, completeLoop), points2, segmentOptions);
   }
-  function splitByStyles(line, segments, points, segmentOptions) {
-    if (!segmentOptions || !segmentOptions.setContext || !points) {
+  function splitByStyles(line, segments, points2, segmentOptions) {
+    if (!segmentOptions || !segmentOptions.setContext || !points2) {
       return segments;
     }
-    return doSplitByStyles(line, segments, points, segmentOptions);
+    return doSplitByStyles(line, segments, points2, segmentOptions);
   }
-  function doSplitByStyles(line, segments, points, segmentOptions) {
+  function doSplitByStyles(line, segments, points2, segmentOptions) {
     const chartContext = line._chart.getContext();
     const baseStyle = readStyle(line.options);
     const { _datasetIndex: datasetIndex, options: { spanGaps } } = line;
-    const count = points.length;
+    const count = points2.length;
     const result = [];
     let prevStyle = baseStyle;
     let start2 = segments[0].start;
@@ -4319,10 +4319,10 @@ var gsmViz = (() => {
         return;
       }
       s += count;
-      while (points[s % count].skip) {
+      while (points2[s % count].skip) {
         s -= dir;
       }
-      while (points[e % count].skip) {
+      while (points2[e % count].skip) {
         e += dir;
       }
       if (s % count !== e % count) {
@@ -4333,10 +4333,10 @@ var gsmViz = (() => {
     }
     for (const segment of segments) {
       start2 = spanGaps ? start2 : segment.start;
-      let prev = points[start2 % count];
+      let prev = points2[start2 % count];
       let style;
       for (i = start2 + 1; i <= segment.end; i++) {
-        const pt = points[i % count];
+        const pt = points2[i % count];
         style = readStyle(segmentOptions.setContext(createContext(chartContext, {
           type: "segment",
           p0: prev,
@@ -5441,18 +5441,18 @@ var gsmViz = (() => {
       const data = meta.data;
       const end = start2 + count;
       let i;
-      const move = (arr) => {
+      const move2 = (arr) => {
         arr.length += count;
         for (i = arr.length - 1; i >= end; i--) {
           arr[i] = arr[i - count];
         }
       };
-      move(data);
+      move2(data);
       for (i = start2; i < end; ++i) {
         data[i] = new this.dataElementType();
       }
       if (this._parsing) {
-        move(meta._parsed);
+        move2(meta._parsed);
       }
       this.parse(start2, count);
       if (resetNewElements) {
@@ -6005,17 +6005,17 @@ var gsmViz = (() => {
       };
     }
     update(mode) {
-      const points = this._cachedMeta.data;
-      this.updateElements(points, 0, points.length, mode);
+      const points2 = this._cachedMeta.data;
+      this.updateElements(points2, 0, points2.length, mode);
     }
-    updateElements(points, start2, count, mode) {
+    updateElements(points2, start2, count, mode) {
       const reset = mode === "reset";
       const { iScale, vScale } = this._cachedMeta;
       const { sharedOptions, includeOptions } = this._getSharedOptions(start2, mode);
       const iAxis = iScale.axis;
       const vAxis = vScale.axis;
       for (let i = start2; i < start2 + count; i++) {
-        const point = points[i];
+        const point = points2[i];
         const parsed = !reset && this.getParsed(i);
         const properties = {};
         const iPixel = properties[iAxis] = reset ? iScale.getPixelForDecimal(0.5) : iScale.getPixelForValue(parsed[iAxis]);
@@ -6382,19 +6382,19 @@ var gsmViz = (() => {
     }
     update(mode) {
       const meta = this._cachedMeta;
-      const { dataset: line, data: points = [], _dataset } = meta;
+      const { dataset: line, data: points2 = [], _dataset } = meta;
       const animationsDisabled = this.chart._animationsDisabled;
-      let { start: start2, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+      let { start: start2, count } = _getStartAndCountOfVisiblePoints(meta, points2, animationsDisabled);
       this._drawStart = start2;
       this._drawCount = count;
       if (_scaleRangesChanged(meta)) {
         start2 = 0;
-        count = points.length;
+        count = points2.length;
       }
       line._chart = this.chart;
       line._datasetIndex = this.index;
       line._decimated = !!_dataset._decimated;
-      line.points = points;
+      line.points = points2;
       const options = this.resolveDatasetElementOptions(mode);
       if (!this.options.showLine) {
         options.borderWidth = 0;
@@ -6404,9 +6404,9 @@ var gsmViz = (() => {
         animated: !animationsDisabled,
         options
       }, mode);
-      this.updateElements(points, start2, count, mode);
+      this.updateElements(points2, start2, count, mode);
     }
-    updateElements(points, start2, count, mode) {
+    updateElements(points2, start2, count, mode) {
       const reset = mode === "reset";
       const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
       const { sharedOptions, includeOptions } = this._getSharedOptions(start2, mode);
@@ -6417,7 +6417,7 @@ var gsmViz = (() => {
       const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
       let prevParsed = start2 > 0 && this.getParsed(start2 - 1);
       for (let i = start2; i < start2 + count; ++i) {
-        const point = points[i];
+        const point = points2[i];
         const parsed = this.getParsed(i);
         const properties = directUpdate ? point : {};
         const nullData = isNullOrUndef(parsed[vAxis]);
@@ -6678,9 +6678,9 @@ var gsmViz = (() => {
     update(mode) {
       const meta = this._cachedMeta;
       const line = meta.dataset;
-      const points = meta.data || [];
+      const points2 = meta.data || [];
       const labels = meta.iScale.getLabels();
-      line.points = points;
+      line.points = points2;
       if (mode !== "resize") {
         const options = this.resolveDatasetElementOptions(mode);
         if (!this.options.showLine) {
@@ -6688,18 +6688,18 @@ var gsmViz = (() => {
         }
         const properties = {
           _loop: true,
-          _fullLoop: labels.length === points.length,
+          _fullLoop: labels.length === points2.length,
           options
         };
         this.updateElement(line, void 0, properties, mode);
       }
-      this.updateElements(points, 0, points.length, mode);
+      this.updateElements(points2, 0, points2.length, mode);
     }
-    updateElements(points, start2, count, mode) {
+    updateElements(points2, start2, count, mode) {
       const scale = this._cachedMeta.rScale;
       const reset = mode === "reset";
       for (let i = start2; i < start2 + count; i++) {
-        const point = points[i];
+        const point = points2[i];
         const options = this.resolveDataElementOptions(i, point.active ? "active" : mode);
         const pointPosition = scale.getPointPositionForValue(i, this.getParsed(i).r);
         const x = reset ? scale.xCenter : pointPosition.x;
@@ -8340,21 +8340,21 @@ var gsmViz = (() => {
   var ScatterController = class extends DatasetController {
     update(mode) {
       const meta = this._cachedMeta;
-      const { data: points = [] } = meta;
+      const { data: points2 = [] } = meta;
       const animationsDisabled = this.chart._animationsDisabled;
-      let { start: start2, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+      let { start: start2, count } = _getStartAndCountOfVisiblePoints(meta, points2, animationsDisabled);
       this._drawStart = start2;
       this._drawCount = count;
       if (_scaleRangesChanged(meta)) {
         start2 = 0;
-        count = points.length;
+        count = points2.length;
       }
       if (this.options.showLine) {
         const { dataset: line, _dataset } = meta;
         line._chart = this.chart;
         line._datasetIndex = this.index;
         line._decimated = !!_dataset._decimated;
-        line.points = points;
+        line.points = points2;
         const options = this.resolveDatasetElementOptions(mode);
         options.segment = this.options.segment;
         this.updateElement(line, void 0, {
@@ -8362,7 +8362,7 @@ var gsmViz = (() => {
           options
         }, mode);
       }
-      this.updateElements(points, start2, count, mode);
+      this.updateElements(points2, start2, count, mode);
     }
     addElements() {
       const { showLine } = this.options;
@@ -8371,7 +8371,7 @@ var gsmViz = (() => {
       }
       super.addElements();
     }
-    updateElements(points, start2, count, mode) {
+    updateElements(points2, start2, count, mode) {
       const reset = mode === "reset";
       const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
       const firstOpts = this.resolveDataElementOptions(start2, mode);
@@ -8384,7 +8384,7 @@ var gsmViz = (() => {
       const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
       let prevParsed = start2 > 0 && this.getParsed(start2 - 1);
       for (let i = start2; i < start2 + count; ++i) {
-        const point = points[i];
+        const point = points2[i];
         const parsed = this.getParsed(i);
         const properties = directUpdate ? point : {};
         const nullData = isNullOrUndef(parsed[vAxis]);
@@ -9702,15 +9702,15 @@ var gsmViz = (() => {
     const canvas = getCanvas(key);
     return Object.values(instances).filter((c) => c.canvas === canvas).pop();
   };
-  function moveNumericKeys(obj, start2, move) {
+  function moveNumericKeys(obj, start2, move2) {
     const keys = Object.keys(obj);
     for (const key of keys) {
       const intKey = +key;
       if (intKey >= start2) {
         const value = obj[key];
         delete obj[key];
-        if (move > 0 || intKey > start2) {
-          obj[intKey + move] = value;
+        if (move2 > 0 || intKey > start2) {
+          obj[intKey + move2] = value;
         }
       }
     }
@@ -10042,8 +10042,8 @@ var gsmViz = (() => {
       const { _hiddenIndices } = this;
       const changes = this._getUniformDataChanges() || [];
       for (const { method, start: start2, count } of changes) {
-        const move = method === "_removeElements" ? -count : count;
-        moveNumericKeys(_hiddenIndices, start2, move);
+        const move2 = method === "_removeElements" ? -count : count;
+        moveNumericKeys(_hiddenIndices, start2, move2);
       }
     }
     _getUniformDataChanges() {
@@ -10802,8 +10802,8 @@ var gsmViz = (() => {
     }
     return lineTo;
   }
-  function pathVars(points, segment, params = {}) {
-    const count = points.length;
+  function pathVars(points2, segment, params = {}) {
+    const count = points2.length;
     const { start: paramsStart = 0, end: paramsEnd = count - 1 } = params;
     const { start: segmentStart, end: segmentEnd } = segment;
     const start2 = Math.max(paramsStart, segmentStart);
@@ -10817,33 +10817,33 @@ var gsmViz = (() => {
     };
   }
   function pathSegment(ctx, line, segment, params) {
-    const { points, options } = line;
-    const { count, start: start2, loop, ilen } = pathVars(points, segment, params);
+    const { points: points2, options } = line;
+    const { count, start: start2, loop, ilen } = pathVars(points2, segment, params);
     const lineMethod = getLineMethod(options);
-    let { move = true, reverse } = params || {};
+    let { move: move2 = true, reverse } = params || {};
     let i, point, prev;
     for (i = 0; i <= ilen; ++i) {
-      point = points[(start2 + (reverse ? ilen - i : i)) % count];
+      point = points2[(start2 + (reverse ? ilen - i : i)) % count];
       if (point.skip) {
         continue;
-      } else if (move) {
+      } else if (move2) {
         ctx.moveTo(point.x, point.y);
-        move = false;
+        move2 = false;
       } else {
         lineMethod(ctx, prev, point, reverse, options.stepped);
       }
       prev = point;
     }
     if (loop) {
-      point = points[(start2 + (reverse ? ilen : 0)) % count];
+      point = points2[(start2 + (reverse ? ilen : 0)) % count];
       lineMethod(ctx, prev, point, reverse, options.stepped);
     }
     return !!loop;
   }
   function fastPathSegment(ctx, line, segment, params) {
-    const points = line.points;
-    const { count, start: start2, ilen } = pathVars(points, segment, params);
-    const { move = true, reverse } = params || {};
+    const points2 = line.points;
+    const { count, start: start2, ilen } = pathVars(points2, segment, params);
+    const { move: move2 = true, reverse } = params || {};
     let avgX = 0;
     let countX = 0;
     let i, point, prevX, minY, maxY, lastY;
@@ -10855,12 +10855,12 @@ var gsmViz = (() => {
         ctx.lineTo(avgX, lastY);
       }
     };
-    if (move) {
-      point = points[pointIndex(0)];
+    if (move2) {
+      point = points2[pointIndex(0)];
       ctx.moveTo(point.x, point.y);
     }
     for (i = 0; i <= ilen; ++i) {
-      point = points[pointIndex(i)];
+      point = points2[pointIndex(i)];
       if (point.skip) {
         continue;
       }
@@ -10957,8 +10957,8 @@ var gsmViz = (() => {
         this._pointsUpdated = true;
       }
     }
-    set points(points) {
-      this._points = points;
+    set points(points2) {
+      this._points = points2;
       delete this._segments;
       delete this._path;
       this._pointsUpdated = false;
@@ -10971,19 +10971,19 @@ var gsmViz = (() => {
     }
     first() {
       const segments = this.segments;
-      const points = this.points;
-      return segments.length && points[segments[0].start];
+      const points2 = this.points;
+      return segments.length && points2[segments[0].start];
     }
     last() {
       const segments = this.segments;
-      const points = this.points;
+      const points2 = this.points;
       const count = segments.length;
-      return count && points[segments[count - 1].end];
+      return count && points2[segments[count - 1].end];
     }
     interpolate(point, property) {
       const options = this.options;
       const value = point[property];
-      const points = this.points;
+      const points2 = this.points;
       const segments = _boundSegments(this, { property, start: value, end: value });
       if (!segments.length) {
         return;
@@ -10993,8 +10993,8 @@ var gsmViz = (() => {
       let i, ilen;
       for (i = 0, ilen = segments.length; i < ilen; ++i) {
         const { start: start2, end } = segments[i];
-        const p1 = points[start2];
-        const p2 = points[end];
+        const p1 = points2[start2];
+        const p2 = points2[end];
         if (p1 === p2) {
           result.push(p1);
           continue;
@@ -11023,8 +11023,8 @@ var gsmViz = (() => {
     }
     draw(ctx, chartArea, start2, count) {
       const options = this.options || {};
-      const points = this.points || [];
-      if (points.length && options.borderWidth) {
+      const points2 = this.points || [];
+      if (points2.length && options.borderWidth) {
         ctx.save();
         draw(ctx, this, start2, count);
         ctx.restore();
@@ -11406,17 +11406,17 @@ var gsmViz = (() => {
       cleanDecimatedDataset(dataset);
     });
   }
-  function getStartAndCountOfVisiblePointsSimplified(meta, points) {
-    const pointCount = points.length;
+  function getStartAndCountOfVisiblePointsSimplified(meta, points2) {
+    const pointCount = points2.length;
     let start2 = 0;
     let count;
     const { iScale } = meta;
     const { min: min3, max: max3, minDefined, maxDefined } = iScale.getUserBounds();
     if (minDefined) {
-      start2 = _limitValue(_lookupByKey(points, iScale.axis, min3).lo, 0, pointCount - 1);
+      start2 = _limitValue(_lookupByKey(points2, iScale.axis, min3).lo, 0, pointCount - 1);
     }
     if (maxDefined) {
-      count = _limitValue(_lookupByKey(points, iScale.axis, max3).hi + 1, start2, pointCount) - start2;
+      count = _limitValue(_lookupByKey(points2, iScale.axis, max3).hi + 1, start2, pointCount) - start2;
     } else {
       count = pointCount - start2;
     }
@@ -11491,26 +11491,26 @@ var gsmViz = (() => {
   };
   function _segments(line, target, property) {
     const segments = line.segments;
-    const points = line.points;
+    const points2 = line.points;
     const tpoints = target.points;
     const parts = [];
     for (const segment of segments) {
       let { start: start2, end } = segment;
-      end = _findSegmentEnd(start2, end, points);
-      const bounds = _getBounds(property, points[start2], points[end], segment.loop);
+      end = _findSegmentEnd(start2, end, points2);
+      const bounds = _getBounds(property, points2[start2], points2[end], segment.loop);
       if (!target.segments) {
         parts.push({
           source: segment,
           target: bounds,
-          start: points[start2],
-          end: points[end]
+          start: points2[start2],
+          end: points2[end]
         });
         continue;
       }
       const targetSegments = _boundSegments(target, bounds);
       for (const tgt of targetSegments) {
         const subBounds = _getBounds(property, tpoints[tgt.start], tpoints[tgt.end], tgt.loop);
-        const fillSources = _boundSegment(segment, points, subBounds);
+        const fillSources = _boundSegment(segment, points2, subBounds);
         for (const fillSource of fillSources) {
           parts.push({
             source: fillSource,
@@ -11542,24 +11542,24 @@ var gsmViz = (() => {
   function _pointsFromSegments(boundary, line) {
     const { x = null, y = null } = boundary || {};
     const linePoints = line.points;
-    const points = [];
+    const points2 = [];
     line.segments.forEach(({ start: start2, end }) => {
       end = _findSegmentEnd(start2, end, linePoints);
       const first = linePoints[start2];
       const last = linePoints[end];
       if (y !== null) {
-        points.push({ x: first.x, y });
-        points.push({ x: last.x, y });
+        points2.push({ x: first.x, y });
+        points2.push({ x: last.x, y });
       } else if (x !== null) {
-        points.push({ x, y: first.y });
-        points.push({ x, y: last.y });
+        points2.push({ x, y: first.y });
+        points2.push({ x, y: last.y });
       }
     });
-    return points;
+    return points2;
   }
-  function _findSegmentEnd(start2, end, points) {
+  function _findSegmentEnd(start2, end, points2) {
     for (; end > start2; end--) {
-      const point = points[end];
+      const point = points2[end];
       if (!isNaN(point.x) && !isNaN(point.y)) {
         break;
       }
@@ -11573,16 +11573,16 @@ var gsmViz = (() => {
     return a ? a[prop] : b ? b[prop] : 0;
   }
   function _createBoundaryLine(boundary, line) {
-    let points = [];
+    let points2 = [];
     let _loop = false;
     if (isArray(boundary)) {
       _loop = true;
-      points = boundary;
+      points2 = boundary;
     } else {
-      points = _pointsFromSegments(boundary, line);
+      points2 = _pointsFromSegments(boundary, line);
     }
-    return points.length ? new LineElement({
-      points,
+    return points2.length ? new LineElement({
+      points: points2,
       options: { tension: 0 },
       _loop,
       _fullLoop: _loop
@@ -11678,7 +11678,7 @@ var gsmViz = (() => {
   }
   function _buildStackLine(source) {
     const { scale, index: index3, line } = source;
-    const points = [];
+    const points2 = [];
     const segments = line.segments;
     const sourcePoints = line.points;
     const linesBelow = getLinesBelow(scale, index3);
@@ -11686,10 +11686,10 @@ var gsmViz = (() => {
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
       for (let j = segment.start; j <= segment.end; j++) {
-        addPointsBelow(points, sourcePoints[j], linesBelow);
+        addPointsBelow(points2, sourcePoints[j], linesBelow);
       }
     }
-    return new LineElement({ points, options: {} });
+    return new LineElement({ points: points2, options: {} });
   }
   function getLinesBelow(scale, index3) {
     const below = [];
@@ -11705,7 +11705,7 @@ var gsmViz = (() => {
     }
     return below;
   }
-  function addPointsBelow(points, sourcePoint, linesBelow) {
+  function addPointsBelow(points2, sourcePoint, linesBelow) {
     const postponed = [];
     for (let j = 0; j < linesBelow.length; j++) {
       const line = linesBelow[j];
@@ -11716,13 +11716,13 @@ var gsmViz = (() => {
       if (first) {
         postponed.unshift(point);
       } else {
-        points.push(point);
+        points2.push(point);
         if (!last) {
           break;
         }
       }
     }
-    points.push(...postponed);
+    points2.push(...postponed);
   }
   function findPoint(line, sourcePoint, property) {
     const point = line.interpolate(sourcePoint, property);
@@ -11857,14 +11857,14 @@ var gsmViz = (() => {
     ctx.restore();
   }
   function clipVertical(ctx, target, clipY) {
-    const { segments, points } = target;
+    const { segments, points: points2 } = target;
     let first = true;
     let lineLoop = false;
     ctx.beginPath();
     for (const segment of segments) {
       const { start: start2, end } = segment;
-      const firstPoint = points[start2];
-      const lastPoint = points[_findSegmentEnd(start2, end, points)];
+      const firstPoint = points2[start2];
+      const lastPoint = points2[_findSegmentEnd(start2, end, points2)];
       if (first) {
         ctx.moveTo(firstPoint.x, firstPoint.y);
         first = false;
@@ -14214,9 +14214,9 @@ var gsmViz = (() => {
     return y;
   }
   function drawPointLabels(scale, labelCount) {
-    const { ctx, options: { pointLabels } } = scale;
+    const { ctx, options: { pointLabels: pointLabels2 } } = scale;
     for (let i = labelCount - 1; i >= 0; i--) {
-      const optsAtIndex = pointLabels.setContext(scale.getPointLabelContext(i));
+      const optsAtIndex = pointLabels2.setContext(scale.getPointLabelContext(i));
       const plFont = toFont(optsAtIndex.font);
       const { x, y, textAlign, left, top, right, bottom } = scale._pointLabelItems[i];
       const { backdropColor } = optsAtIndex;
@@ -14363,9 +14363,9 @@ var gsmViz = (() => {
       return this.options.reverse ? this.max - scaledDistance : this.min + scaledDistance;
     }
     getPointLabelContext(index3) {
-      const pointLabels = this._pointLabels || [];
-      if (index3 >= 0 && index3 < pointLabels.length) {
-        const pointLabel = pointLabels[index3];
+      const pointLabels2 = this._pointLabels || [];
+      if (index3 >= 0 && index3 < pointLabels2.length) {
+        const pointLabel = pointLabels2[index3];
         return createPointLabelContext(this.getContext(), index3, pointLabel);
       }
     }
@@ -16869,10 +16869,10 @@ var gsmViz = (() => {
       }
     };
   }
-  function pointIsInPolygon(points, x, y, useFinalPosition) {
+  function pointIsInPolygon(points2, x, y, useFinalPosition) {
     let isInside = false;
-    let A = points[points.length - 1].getProps(["bX", "bY"], useFinalPosition);
-    for (const point of points) {
+    let A = points2[points2.length - 1].getProps(["bX", "bY"], useFinalPosition);
+    for (const point of points2) {
       const B = point.getProps(["bX", "bY"], useFinalPosition);
       if (B.bY > y !== A.bY > y && x < (A.bX - B.bX) * (y - B.bY) / (A.bY - B.bY) + B.bX) {
         isInside = !isInside;
@@ -17723,32 +17723,32 @@ var gsmViz = (() => {
     end.x = begin.x + width;
     end.y = begin.y + height;
   }
-  function applyMinMaxProps(rect, chartArea, points, { min: min3, max: max3, prop }) {
-    rect[min3] = clamp2(Math.min(points.begin[prop], points.end[prop]), chartArea[min3], chartArea[max3]);
-    rect[max3] = clamp2(Math.max(points.begin[prop], points.end[prop]), chartArea[min3], chartArea[max3]);
+  function applyMinMaxProps(rect, chartArea, points2, { min: min3, max: max3, prop }) {
+    rect[min3] = clamp2(Math.min(points2.begin[prop], points2.end[prop]), chartArea[min3], chartArea[max3]);
+    rect[max3] = clamp2(Math.max(points2.begin[prop], points2.end[prop]), chartArea[min3], chartArea[max3]);
   }
   function getRelativePoints(chart, pointEvents, maintainAspectRatio) {
-    const points = {
+    const points2 = {
       begin: getPointPosition(pointEvents.dragStart, chart),
       end: getPointPosition(pointEvents.dragEnd, chart)
     };
     if (maintainAspectRatio) {
       const aspectRatio = chart.chartArea.width / chart.chartArea.height;
-      applyAspectRatio(points, aspectRatio);
+      applyAspectRatio(points2, aspectRatio);
     }
-    return points;
+    return points2;
   }
   function computeDragRect(chart, mode, pointEvents, maintainAspectRatio) {
     const xEnabled = directionEnabled(mode, "x", chart);
     const yEnabled = directionEnabled(mode, "y", chart);
     const { top, left, right, bottom, width: chartWidth, height: chartHeight } = chart.chartArea;
     const rect = { top, left, right, bottom };
-    const points = getRelativePoints(chart, pointEvents, maintainAspectRatio && xEnabled && yEnabled);
+    const points2 = getRelativePoints(chart, pointEvents, maintainAspectRatio && xEnabled && yEnabled);
     if (xEnabled) {
-      applyMinMaxProps(rect, chart.chartArea, points, { min: "left", max: "right", prop: "x" });
+      applyMinMaxProps(rect, chart.chartArea, points2, { min: "left", max: "right", prop: "x" });
     }
     if (yEnabled) {
-      applyMinMaxProps(rect, chart.chartArea, points, { min: "top", max: "bottom", prop: "y" });
+      applyMinMaxProps(rect, chart.chartArea, points2, { min: "top", max: "bottom", prop: "y" });
     }
     const width = rect.right - rect.left;
     const height = rect.bottom - rect.top;
@@ -18420,10 +18420,10 @@ var gsmViz = (() => {
       q3: r.q3
     };
   }
-  function computeSamples(min3, max3, points) {
+  function computeSamples(min3, max3, points2) {
     const range = max3 - min3;
     const samples = [];
-    const inc = range / points;
+    const inc = range / points2;
     for (let v = min3; v <= max3 && inc > 0; v += inc) {
       samples.push(v);
     }
@@ -22507,13 +22507,13 @@ var gsmViz = (() => {
       y: cy + sin * (point.x - cx) + cos * (point.y - cy)
     };
   }
-  function projected(points, axis) {
+  function projected(points2, axis) {
     var min3 = MAX_INTEGER;
     var max3 = MIN_INTEGER;
     var origin = axis.origin;
     var i, pt, vx, vy, dp;
-    for (i = 0; i < points.length; ++i) {
-      pt = points[i];
+    for (i = 0; i < points2.length; ++i) {
+      pt = points2[i];
       vx = pt.x - origin.x;
       vy = pt.y - origin.y;
       dp = axis.vx * vx + axis.vy * vy;
@@ -23713,10 +23713,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults5, _config_, customSettings = null) {
+  function configure2(defaults6, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults5) {
-      config[key] = coalesce(config[key], defaults5[key]);
+    for (const key in defaults6) {
+      config[key] = coalesce(config[key], defaults6[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -23837,31 +23837,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults5 = {};
-    defaults5.resultTooltipKeys = [
+    const defaults6 = {};
+    defaults6.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults5.GroupLevel = "Site";
-    defaults5.groupLabelKey = "InvestigatorLastName";
-    defaults5.groupParticipantCountKey = "ParticipantCount";
-    defaults5.groupTooltipKeys = null;
-    defaults5.x = "GroupID";
-    defaults5.xType = "category";
-    defaults5.y = "Score";
-    defaults5.yType = "linear";
-    defaults5.color = "Flag";
-    defaults5.hoverCallback = (datum2) => {
+    defaults6.GroupLevel = "Site";
+    defaults6.groupLabelKey = "InvestigatorLastName";
+    defaults6.groupParticipantCountKey = "ParticipantCount";
+    defaults6.groupTooltipKeys = null;
+    defaults6.x = "GroupID";
+    defaults6.xType = "category";
+    defaults6.y = "Score";
+    defaults6.yType = "linear";
+    defaults6.color = "Flag";
+    defaults6.hoverCallback = (datum2) => {
     };
-    defaults5.clickCallback = (datum2) => {
+    defaults6.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults5.displayTitle = false;
-    defaults5.dynamicSizing = false;
-    defaults5.maintainAspectRatio = false;
-    const config = configure2(defaults5, _config_ || {}, {
+    defaults6.displayTitle = false;
+    defaults6.dynamicSizing = false;
+    defaults6.maintainAspectRatio = false;
+    const config = configure2(defaults6, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -24343,7 +24343,7 @@ var gsmViz = (() => {
 
   // src/barChart/getPlugins.js
   function getPlugins(config) {
-    const getPlugins6 = {
+    const getPlugins7 = {
       annotation: {
         annotations: annotations(config),
         clip: true
@@ -24353,7 +24353,7 @@ var gsmViz = (() => {
       title: title(config),
       tooltip: tooltip(config)
     };
-    return getPlugins6;
+    return getPlugins7;
   }
 
   // src/util/getDefaultScales.js
@@ -24686,12 +24686,12 @@ var gsmViz = (() => {
       spec.annotations?.labels?.total?.formatter,
       "spec.annotations.labels.total.formatter"
     );
-    const referenceLines2 = spec.annotations?.referenceLines;
-    if (referenceLines2 !== void 0) {
-      if (!Array.isArray(referenceLines2)) {
+    const referenceLines3 = spec.annotations?.referenceLines;
+    if (referenceLines3 !== void 0) {
+      if (!Array.isArray(referenceLines3)) {
         throw new Error("spec.annotations.referenceLines must be an array");
       }
-      referenceLines2.forEach((line, i) => {
+      referenceLines3.forEach((line, i) => {
         const prefix = `spec.annotations.referenceLines[${i}]`;
         if (line === null || typeof line !== "object" || Array.isArray(line) || Object.getPrototypeOf(line) !== Object.prototype && Object.getPrototypeOf(line) !== null) {
           throw new Error(`${prefix} must be a plain object`);
@@ -24843,6 +24843,7 @@ var gsmViz = (() => {
       animation: false,
       dynamicSizing: false,
       dynamicCategoryAxis: false,
+      dynamicValueAxis: false,
       pxPerCategory: 30
     },
     zoom: {
@@ -25162,7 +25163,7 @@ var gsmViz = (() => {
     if (!yKey) {
       datasets = aggregateCounts(activeData, xKey, fillKey, categoryIndex);
     } else {
-      const points = activeData.map((d) => ({
+      const points2 = activeData.map((d) => ({
         x: d[xKey],
         y: Number(d[yKey]) || 0,
         _fill: fillKey ? d[fillKey] : void 0,
@@ -25170,7 +25171,7 @@ var gsmViz = (() => {
       }));
       if (fillKey) {
         const groups2 = /* @__PURE__ */ new Map();
-        for (const point of points) {
+        for (const point of points2) {
           const key = point._fill;
           if (!groups2.has(key)) groups2.set(key, []);
           groups2.get(key).push(point);
@@ -25184,7 +25185,7 @@ var gsmViz = (() => {
       } else {
         datasets = [
           {
-            data: points.sort(
+            data: points2.sort(
               (a, b) => categoryIndex.get(a.x) - categoryIndex.get(b.x)
             )
           }
@@ -25242,6 +25243,11 @@ var gsmViz = (() => {
     const xLabel = specScales.x.label !== void 0 ? specScales.x.label : mapping?.x;
     const yLabel = specScales.y.label !== void 0 ? specScales.y.label : mapping?.y;
     const percentageTicks = { callback: (v) => `${v}%` };
+    const percentMax = specScales.y.max !== void 0 ? {} : spec.theme?.dynamicValueAxis ? {
+      afterDataLimits: (scale) => {
+        scale.max = Math.min(scale.max, 100);
+      }
+    } : { max: 100 };
     const specTicks = specScales.x.ticks || {};
     const categoryTicks = {};
     if (spec.theme?.dynamicSizing) {
@@ -25278,7 +25284,7 @@ var gsmViz = (() => {
       ...specScales.y.max !== void 0 ? { max: specScales.y.max } : {},
       ...stacked ? { stacked: true } : {},
       ...percent ? {
-        ...specScales.y.max === void 0 ? { max: 100 } : {},
+        ...percentMax,
         ticks: percentageTicks
       } : {}
     };
@@ -25631,7 +25637,6 @@ var gsmViz = (() => {
   function resolveFontString(font) {
     if (!font) return void 0;
     if (typeof font === "string") return font;
-    if (typeof font === "function") return void 0;
     const size = font.size ?? 12;
     const family = font.family ?? "'Helvetica Neue', Helvetica, Arial, sans-serif";
     const style = font.style ? `${font.style} ` : "";
@@ -27430,26 +27435,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults5 = {};
-    defaults5.resultTooltipKeys = [
+    const defaults6 = {};
+    defaults6.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults5.GroupLevel = "Site";
-    defaults5.groupLabelKey = null;
-    defaults5.groupParticipantCountKey = "ParticipantCount";
-    defaults5.groupTooltipKeys = null;
-    defaults5.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults5.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults5.groupClickCallback = (datum2) => {
+    defaults6.GroupLevel = "Site";
+    defaults6.groupLabelKey = null;
+    defaults6.groupParticipantCountKey = "ParticipantCount";
+    defaults6.groupTooltipKeys = null;
+    defaults6.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults6.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults6.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults5.metricClickCallback = (datum2) => {
+    defaults6.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults5, _config_);
+    const config = configure2(defaults6, _config_);
     return config;
   }
 
@@ -28111,6 +28116,2628 @@ var gsmViz = (() => {
     return table;
   }
 
+  // src/points/tooltipFormat.js
+  var STRUCTURED_FIELDS = /* @__PURE__ */ new Set(["x", "y", "color", "key", "_color", "_key"]);
+  var COLOR_FIELDS = /* @__PURE__ */ new Set(["color", "_color"]);
+  function getTokens(format2) {
+    return [...format2.matchAll(/\{([^{}]+)\}/g)].map((match) => ({
+      placeholder: match[0],
+      path: match[1].trim()
+    }));
+  }
+  function getPath(object, path) {
+    const fields = path.split(".");
+    let value = object;
+    for (const field of fields) {
+      if (value === null || value === void 0 || !Object.prototype.hasOwnProperty.call(Object(value), field)) {
+        return { found: false, value: void 0 };
+      }
+      value = value[field];
+    }
+    return { found: true, value };
+  }
+  function getDatumPath(path) {
+    if (path.startsWith("datum.")) return path.slice("datum.".length);
+    if (path.startsWith("_datum.")) return path.slice("_datum.".length);
+    return path;
+  }
+  function getStructuredValue(point, path) {
+    const field = path === "color" ? "_color" : path === "key" ? "_key" : path;
+    return getPath(point, field);
+  }
+  function validateTooltipFormat(format2, data, mapping) {
+    if (!format2) return;
+    getTokens(format2).forEach(({ placeholder, path }) => {
+      if (COLOR_FIELDS.has(path) && !mapping.color) {
+        throw new Error(
+          `spec.tooltip.format placeholder "${placeholder}" requires spec.mapping.color`
+        );
+      }
+      if (STRUCTURED_FIELDS.has(path)) return;
+      if (data.length === 0) return;
+      const datumPath = getDatumPath(path);
+      const unavailableIndex = data.findIndex(
+        (datum2) => !getPath(datum2, datumPath).found
+      );
+      if (unavailableIndex !== -1) {
+        throw new Error(
+          `spec.tooltip.format placeholder "${placeholder}" is not available in data[${unavailableIndex}]`
+        );
+      }
+    });
+  }
+  function formatTooltipPoint(format2, point) {
+    return format2.replace(/\{([^{}]+)\}/g, (placeholder, rawPath) => {
+      const path = rawPath.trim();
+      const result = STRUCTURED_FIELDS.has(path) ? getStructuredValue(point, path) : getPath(point._datum, getDatumPath(path));
+      if (!result.found) {
+        throw new Error(
+          `tooltip.format placeholder "${placeholder}" could not be resolved`
+        );
+      }
+      return result.value === null || result.value === void 0 ? "" : String(result.value);
+    });
+  }
+
+  // src/points/pointStyles.js
+  var POINT_STYLES = [
+    "circle",
+    "triangle",
+    "rect",
+    "rectRot",
+    "cross",
+    "crossRot",
+    "star",
+    "line",
+    "dash",
+    "rectRounded"
+  ];
+  var MISSING_POINT_STYLE = "cross";
+  var FALLBACK_POINT_STYLES = POINT_STYLES.filter(
+    (pointStyle) => pointStyle !== MISSING_POINT_STYLE
+  );
+
+  // src/points/validateSpec.js
+  var supportedFields = {
+    spec: [
+      "mapping",
+      "scales",
+      "labels",
+      "annotations",
+      "tooltip",
+      "callbacks",
+      "selection",
+      "zoom",
+      "theme"
+    ],
+    mapping: ["x", "y", "key", "color", "size", "opacity", "shape"],
+    scales: ["x", "y", "color", "size", "opacity", "shape"],
+    scale: ["type", "label", "range", "beginAtZero", "breaks", "labels"],
+    colorScale: ["colors", "palette", "order", "label"],
+    continuousAestheticScale: ["range"],
+    shapeScale: ["values", "order", "label"],
+    labels: ["title", "caption", "description"],
+    annotations: ["referenceLines", "lines", "labels"],
+    annotationLabels: ["point"],
+    pointLabel: [
+      "field",
+      "display",
+      "formatter",
+      "offset",
+      "align",
+      "color",
+      "font"
+    ],
+    pointLabelFont: ["family", "size", "style", "weight", "lineHeight"],
+    referenceLine: [
+      "axis",
+      "value",
+      "label",
+      "color",
+      "width",
+      "dash",
+      "labelPosition"
+    ],
+    annotationLine: [
+      "data",
+      "mapping",
+      "order",
+      "label",
+      "color",
+      "colors",
+      "palette",
+      "width",
+      "dash",
+      "tension",
+      "stepped",
+      "showInLegend"
+    ],
+    annotationLineMapping: ["x", "y", "group"],
+    tooltip: [
+      "format",
+      "formatter",
+      "enabled",
+      "external",
+      "position",
+      "mode",
+      "intersect",
+      "itemSort",
+      "filter",
+      "backgroundColor",
+      "titleColor",
+      "titleFont",
+      "titleAlign",
+      "titleSpacing",
+      "titleMarginBottom",
+      "bodyColor",
+      "bodyFont",
+      "bodyAlign",
+      "bodySpacing",
+      "footerColor",
+      "footerFont",
+      "footerAlign",
+      "footerSpacing",
+      "footerMarginTop",
+      "padding",
+      "caretPadding",
+      "caretSize",
+      "cornerRadius",
+      "multiKeyBackground",
+      "displayColors",
+      "boxWidth",
+      "boxHeight",
+      "boxPadding",
+      "usePointStyle",
+      "borderColor",
+      "borderWidth",
+      "rtl",
+      "textDirection",
+      "xAlign",
+      "yAlign",
+      "callbacks",
+      "animation",
+      "animations"
+    ],
+    tooltipCallbacks: [
+      "beforeTitle",
+      "title",
+      "afterTitle",
+      "beforeBody",
+      "beforeLabel",
+      "label",
+      "labelColor",
+      "labelTextColor",
+      "labelPointStyle",
+      "afterLabel",
+      "afterBody",
+      "beforeFooter",
+      "footer",
+      "afterFooter"
+    ],
+    callbacks: ["onClick", "onHover", "onSelect"],
+    selection: ["enabled", "opacity", "multiple"],
+    zoom: ["enabled", "mode", "pan", "wheel", "pinch"],
+    theme: ["maintainAspectRatio", "animation"]
+  };
+  function isPlainObject(value) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function validateDiscreteOrder(order, path, normalize = (value) => value) {
+    if (!Array.isArray(order)) {
+      throw new Error(`${path} must be an array`);
+    }
+    const levels = /* @__PURE__ */ new Set();
+    order.forEach((level, index3) => {
+      if (level !== null && (typeof level !== "string" || level.trim().length === 0) && (typeof level !== "number" || !Number.isFinite(level))) {
+        throw new Error(
+          `${path}[${index3}] must be a string, finite number, or null`
+        );
+      }
+      const normalizedLevel = normalize(level);
+      if (levels.has(normalizedLevel)) {
+        throw new Error(`${path} must contain unique values`);
+      }
+      levels.add(normalizedLevel);
+    });
+  }
+  function validateShapeScale(scale) {
+    if (scale === void 0) return;
+    const path = "spec.scales.shape";
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.shapeScale, path);
+    if (scale.values !== void 0) {
+      validatePlainObject(scale.values, `${path}.values`);
+      Object.entries(scale.values).forEach(([level, pointStyle]) => {
+        if (!POINT_STYLES.includes(pointStyle)) {
+          throw new Error(
+            `${path}.values.${level} must be a supported point style`
+          );
+        }
+      });
+    }
+    if (scale.order !== void 0) {
+      validateDiscreteOrder(scale.order, `${path}.order`);
+    }
+    if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
+  }
+  function validatePlainObject(value, path) {
+    if (!isPlainObject(value)) {
+      throw new Error(`${path} must be a plain object`);
+    }
+  }
+  function validateSupportedFields(value, fields, path) {
+    const unsupported = Object.keys(value).find(
+      (field) => !fields.includes(field)
+    );
+    if (unsupported !== void 0) {
+      throw new Error(`${path}.${unsupported} is not supported`);
+    }
+  }
+  function validateNonEmptyString(value, path) {
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new Error(`${path} must be a non-empty string`);
+    }
+  }
+  function validateColor(value, path) {
+    if (value !== void 0) {
+      validateRequiredColor(value, path);
+    }
+  }
+  function validateRequiredColor(value, path) {
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new Error(`${path} must be a non-empty string`);
+    }
+  }
+  function validateDash(value, path) {
+    if (value !== void 0 && (!Array.isArray(value) || !value.every((segment) => Number.isFinite(segment) && segment >= 0))) {
+      throw new Error(`${path} must contain non-negative finite numbers`);
+    }
+  }
+  function validateRequiredMapping(mapping, field) {
+    const value = mapping[field];
+    if (value === void 0) {
+      throw new Error(`spec.mapping.${field} is required`);
+    }
+    if (typeof value !== "string" || value.trim().length === 0) {
+      throw new Error(`spec.mapping.${field} must be a non-empty string`);
+    }
+  }
+  function validateReferenceLines(referenceLines3, spec) {
+    if (referenceLines3 === void 0) return;
+    if (!Array.isArray(referenceLines3)) {
+      throw new Error("spec.annotations.referenceLines must be an array");
+    }
+    referenceLines3.forEach((line, index3) => {
+      const path = `spec.annotations.referenceLines[${index3}]`;
+      validatePlainObject(line, path);
+      validateSupportedFields(line, supportedFields.referenceLine, path);
+      if (!["x", "y"].includes(line.axis)) {
+        throw new Error(`${path}.axis must be 'x' or 'y'`);
+      }
+      if (!Number.isFinite(line.value)) {
+        throw new Error(`${path}.value must be a finite number`);
+      }
+      if (spec.scales?.[line.axis]?.type === "log" && line.value <= 0) {
+        throw new Error(
+          `${path}.value must be greater than zero for a log scale`
+        );
+      }
+      if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+        throw new Error(`${path}.label must be a string or null`);
+      }
+      validateColor(line.color, `${path}.color`);
+      if (line.width !== void 0 && (!Number.isFinite(line.width) || line.width <= 0)) {
+        throw new Error(`${path}.width must be a positive finite number`);
+      }
+      validateDash(line.dash, `${path}.dash`);
+      if (line.labelPosition !== void 0 && !["start", "center", "end"].includes(line.labelPosition)) {
+        throw new Error(
+          `${path}.labelPosition must be 'start', 'center', or 'end'`
+        );
+      }
+    });
+  }
+  function validateAnnotationLine(line, index3) {
+    const path = `spec.annotations.lines[${index3}]`;
+    validatePlainObject(line, path);
+    validateSupportedFields(line, supportedFields.annotationLine, path);
+    if (!Array.isArray(line.data)) {
+      throw new Error(`${path}.data must be an array`);
+    }
+    validatePlainObject(line.mapping, `${path}.mapping`);
+    validateSupportedFields(
+      line.mapping,
+      supportedFields.annotationLineMapping,
+      `${path}.mapping`
+    );
+    ["x", "y"].forEach(
+      (axis) => validateNonEmptyString(line.mapping[axis], `${path}.mapping.${axis}`)
+    );
+    if (line.mapping.group !== void 0) {
+      validateNonEmptyString(line.mapping.group, `${path}.mapping.group`);
+    }
+    if (line.order !== void 0) {
+      validateDiscreteOrder(line.order, `${path}.order`);
+      if (line.mapping.group === void 0) {
+        throw new Error(`${path}.order requires mapping.group`);
+      }
+    }
+    if (line.label !== void 0 && line.label !== null && typeof line.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
+    validateColor(line.color, `${path}.color`);
+    if (line.colors !== void 0) {
+      validatePlainObject(line.colors, `${path}.colors`);
+      Object.entries(line.colors).forEach(
+        ([level, color3]) => validateRequiredColor(color3, `${path}.colors.${level}`)
+      );
+      if (line.mapping.group === void 0) {
+        throw new Error(`${path}.colors requires mapping.group`);
+      }
+    }
+    if (line.palette !== void 0) {
+      if (!Array.isArray(line.palette) || line.palette.length === 0) {
+        throw new Error(`${path}.palette must be a non-empty array`);
+      }
+      line.palette.forEach(
+        (color3, colorIndex) => validateRequiredColor(color3, `${path}.palette[${colorIndex}]`)
+      );
+    }
+    if (line.width !== void 0 && (!Number.isFinite(line.width) || line.width <= 0)) {
+      throw new Error(`${path}.width must be a positive finite number`);
+    }
+    validateDash(line.dash, `${path}.dash`);
+    if (line.tension !== void 0 && (!Number.isFinite(line.tension) || line.tension < 0 || line.tension > 1)) {
+      throw new Error(
+        `${path}.tension must be a finite number between 0 and 1`
+      );
+    }
+    if (line.stepped !== void 0 && typeof line.stepped !== "boolean" && !["before", "after", "middle"].includes(line.stepped)) {
+      throw new Error(
+        `${path}.stepped must be a boolean, 'before', 'after', or 'middle'`
+      );
+    }
+    if (line.showInLegend !== void 0 && typeof line.showInLegend !== "boolean") {
+      throw new Error(`${path}.showInLegend must be a boolean`);
+    }
+    if (line.showInLegend === true && line.mapping.group === void 0 && (typeof line.label !== "string" || line.label.trim().length === 0)) {
+      throw new Error(
+        `${path}.label must be a non-empty string when showInLegend is true without mapping.group`
+      );
+    }
+  }
+  function validatePointLabelFont(font, path) {
+    if (font === void 0) return;
+    validatePlainObject(font, path);
+    validateSupportedFields(font, supportedFields.pointLabelFont, path);
+    ["family", "style"].forEach((field) => {
+      if (font[field] !== void 0) {
+        validateNonEmptyString(font[field], `${path}.${field}`);
+      }
+    });
+    if (font.size !== void 0 && (!Number.isFinite(font.size) || font.size <= 0)) {
+      throw new Error(`${path}.size must be a positive finite number`);
+    }
+    if (font.weight !== void 0 && (typeof font.weight !== "string" || font.weight.trim().length === 0) && (typeof font.weight !== "number" || !Number.isFinite(font.weight))) {
+      throw new Error(
+        `${path}.weight must be a non-empty string or finite number`
+      );
+    }
+    if (font.lineHeight !== void 0 && (typeof font.lineHeight !== "string" || font.lineHeight.trim().length === 0) && (typeof font.lineHeight !== "number" || !Number.isFinite(font.lineHeight) || font.lineHeight <= 0)) {
+      throw new Error(
+        `${path}.lineHeight must be a positive finite number or non-empty string`
+      );
+    }
+  }
+  function validatePointLabels(labels, data) {
+    if (labels === void 0) return;
+    const labelsPath = "spec.annotations.labels";
+    validatePlainObject(labels, labelsPath);
+    validateSupportedFields(
+      labels,
+      supportedFields.annotationLabels,
+      labelsPath
+    );
+    const point = labels.point;
+    if (point === void 0 || point === null || point === false) return;
+    const path = `${labelsPath}.point`;
+    validatePlainObject(point, path);
+    validateSupportedFields(point, supportedFields.pointLabel, path);
+    validateNonEmptyString(point.field, `${path}.field`);
+    if (point.display !== void 0 && typeof point.display !== "boolean" && typeof point.display !== "function" && (typeof point.display !== "string" || point.display.trim().length === 0)) {
+      throw new Error(
+        `${path}.display must be a boolean, non-empty string, or function`
+      );
+    }
+    if (point.formatter !== void 0 && point.formatter !== null && typeof point.formatter !== "function") {
+      throw new Error(`${path}.formatter must be a function or null`);
+    }
+    if (point.offset !== void 0 && (!Number.isFinite(point.offset) || point.offset < 0)) {
+      throw new Error(`${path}.offset must be a non-negative finite number`);
+    }
+    const alignments = [
+      "center",
+      "start",
+      "end",
+      "right",
+      "bottom",
+      "left",
+      "top"
+    ];
+    if (point.align !== void 0 && !alignments.includes(point.align)) {
+      throw new Error(
+        `${path}.align must be 'center', 'start', 'end', 'right', 'bottom', 'left', or 'top'`
+      );
+    }
+    validateColor(point.color, `${path}.color`);
+    validatePointLabelFont(point.font, `${path}.font`);
+    data.forEach((row, index3) => {
+      const value = row?.[point.field];
+      const valid = typeof value === "string" && value.trim().length > 0 || typeof value === "number" && Number.isFinite(value);
+      if (!valid) {
+        throw new Error(
+          `data[${index3}].${point.field} mapped by ${path}.field must be a non-empty string or finite number`
+        );
+      }
+    });
+  }
+  function validateAnnotations(annotations5, spec) {
+    if (annotations5 === void 0) return;
+    validatePlainObject(annotations5, "spec.annotations");
+    validateSupportedFields(
+      annotations5,
+      supportedFields.annotations,
+      "spec.annotations"
+    );
+    validateReferenceLines(annotations5.referenceLines, spec);
+    validatePointLabels(annotations5.labels, spec.data ?? []);
+    if (annotations5.lines !== void 0) {
+      if (!Array.isArray(annotations5.lines)) {
+        throw new Error("spec.annotations.lines must be an array");
+      }
+      annotations5.lines.forEach(validateAnnotationLine);
+    }
+  }
+  function validateOptionalString(value, path) {
+    if (value !== void 0 && typeof value !== "string") {
+      throw new Error(`${path} must be a string`);
+    }
+  }
+  function validateScale(scale, axis) {
+    if (scale === void 0) {
+      return;
+    }
+    const path = `spec.scales.${axis}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.scale, path);
+    if (scale.type !== void 0 && !["linear", "log"].includes(scale.type)) {
+      throw new Error(`${path}.type must be 'linear' or 'log'`);
+    }
+    validateOptionalString(scale.label, `${path}.label`);
+    if (scale.range !== void 0) {
+      if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
+        throw new Error(`${path}.range must contain two finite numbers`);
+      }
+      if (scale.range[0] >= scale.range[1]) {
+        throw new Error(`${path}.range values must be strictly increasing`);
+      }
+    }
+    if (scale.beginAtZero !== void 0 && typeof scale.beginAtZero !== "boolean") {
+      throw new Error(`${path}.beginAtZero must be a boolean`);
+    }
+    if (scale.breaks !== void 0 && !Array.isArray(scale.breaks)) {
+      throw new Error(`${path}.breaks must be an array`);
+    }
+    if (scale.labels !== void 0 && !Array.isArray(scale.labels)) {
+      throw new Error(`${path}.labels must be an array`);
+    }
+    const breaks = scale.breaks || [];
+    const labels = scale.labels || [];
+    breaks.forEach((value, index3) => {
+      if (!Number.isFinite(value)) {
+        throw new Error(`${path}.breaks[${index3}] must be a finite number`);
+      }
+      if (index3 > 0 && value <= breaks[index3 - 1]) {
+        throw new Error(`${path}.breaks must be strictly increasing`);
+      }
+    });
+    labels.forEach((value, index3) => {
+      if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+        throw new Error(
+          `${path}.labels[${index3}] must be a string or finite number`
+        );
+      }
+    });
+    if (breaks.length !== labels.length) {
+      throw new Error(`${path}.breaks and labels must have the same length`);
+    }
+    if (scale.range !== void 0 && breaks.some((value) => value < scale.range[0] || value > scale.range[1])) {
+      throw new Error(`${path}.breaks must fall within ${path}.range`);
+    }
+    if (scale.type === "log") {
+      if (scale.beginAtZero === true) {
+        throw new Error(
+          `${path}.beginAtZero cannot be true for a log scale`
+        );
+      }
+      if (scale.range?.some((value) => value <= 0)) {
+        throw new Error(
+          `${path}.range values must be greater than zero for a log scale`
+        );
+      }
+      const invalidBreak = breaks.findIndex((value) => value <= 0);
+      if (invalidBreak !== -1) {
+        throw new Error(
+          `${path}.breaks[${invalidBreak}] must be greater than zero for a log scale`
+        );
+      }
+    }
+  }
+  function validateColorScale(scale) {
+    if (scale === void 0) {
+      return;
+    }
+    const path = "spec.scales.color";
+    validatePlainObject(scale, path);
+    validateSupportedFields(scale, supportedFields.colorScale, path);
+    if (scale.colors !== void 0) {
+      validatePlainObject(scale.colors, `${path}.colors`);
+      Object.entries(scale.colors).forEach(([level, color3]) => {
+        if (typeof color3 !== "string" || color3.trim().length === 0) {
+          throw new Error(
+            `${path}.colors.${level} must be a non-empty string`
+          );
+        }
+      });
+    }
+    if (scale.palette !== void 0) {
+      if (!Array.isArray(scale.palette) || scale.palette.length === 0) {
+        throw new Error(`${path}.palette must be a non-empty array`);
+      }
+      scale.palette.forEach((color3, index3) => {
+        if (typeof color3 !== "string" || color3.trim().length === 0) {
+          throw new Error(
+            `${path}.palette[${index3}] must be a non-empty string`
+          );
+        }
+      });
+    }
+    if (scale.order !== void 0) {
+      validateDiscreteOrder(scale.order, `${path}.order`, String);
+    }
+    if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
+      throw new Error(`${path}.label must be a string or null`);
+    }
+  }
+  function validateContinuousAestheticScale(scale, aesthetic) {
+    if (scale === void 0) return;
+    const path = `spec.scales.${aesthetic}`;
+    validatePlainObject(scale, path);
+    validateSupportedFields(
+      scale,
+      supportedFields.continuousAestheticScale,
+      path
+    );
+    if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
+      throw new Error(`${path}.range must contain two finite numbers`);
+    }
+    if (aesthetic === "size" && scale.range.some((value) => value <= 0)) {
+      throw new Error(`${path}.range values must be greater than zero`);
+    }
+    if (aesthetic === "opacity" && scale.range.some((value) => value < 0 || value > 1)) {
+      throw new Error(`${path}.range values must be between 0 and 1`);
+    }
+    if (scale.range[0] >= scale.range[1]) {
+      throw new Error(`${path}.range values must be strictly increasing`);
+    }
+  }
+  function validateCallbacks(callbacks) {
+    if (callbacks === void 0) {
+      return;
+    }
+    validatePlainObject(callbacks, "spec.callbacks");
+    validateSupportedFields(
+      callbacks,
+      supportedFields.callbacks,
+      "spec.callbacks"
+    );
+    supportedFields.callbacks.forEach((field) => {
+      const callback2 = callbacks[field];
+      if (callback2 !== void 0 && callback2 !== null && typeof callback2 !== "function") {
+        throw new Error(
+          `spec.callbacks.${field} must be a function or null`
+        );
+      }
+    });
+  }
+  function validateSelection(selection2) {
+    if (selection2 === void 0) {
+      return;
+    }
+    validatePlainObject(selection2, "spec.selection");
+    validateSupportedFields(
+      selection2,
+      supportedFields.selection,
+      "spec.selection"
+    );
+    ["enabled", "multiple"].forEach((field) => {
+      if (selection2[field] !== void 0 && typeof selection2[field] !== "boolean") {
+        throw new Error(`spec.selection.${field} must be a boolean`);
+      }
+    });
+    if (selection2.opacity !== void 0 && (!Number.isFinite(selection2.opacity) || selection2.opacity < 0 || selection2.opacity > 1)) {
+      throw new Error(
+        "spec.selection.opacity must be a finite number between 0 and 1"
+      );
+    }
+  }
+  function validateTheme(theme) {
+    if (theme === void 0) {
+      return;
+    }
+    validatePlainObject(theme, "spec.theme");
+    validateSupportedFields(theme, supportedFields.theme, "spec.theme");
+    supportedFields.theme.forEach((field) => {
+      if (theme[field] !== void 0 && typeof theme[field] !== "boolean") {
+        throw new Error(`spec.theme.${field} must be a boolean`);
+      }
+    });
+  }
+  function validateZoom(zoom2) {
+    if (zoom2 === void 0) {
+      return;
+    }
+    validatePlainObject(zoom2, "spec.zoom");
+    validateSupportedFields(zoom2, supportedFields.zoom, "spec.zoom");
+    ["enabled", "pan", "wheel", "pinch"].forEach((field) => {
+      if (zoom2[field] !== void 0 && typeof zoom2[field] !== "boolean") {
+        throw new Error(`spec.zoom.${field} must be a boolean`);
+      }
+    });
+    if (zoom2.mode !== void 0 && !["x", "y", "xy"].includes(zoom2.mode)) {
+      throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
+    }
+  }
+  function validateSpec3(data, spec) {
+    if (data === void 0 || data === null) {
+      throw new Error("data is required");
+    }
+    if (!Array.isArray(data)) {
+      throw new Error("data must be an array");
+    }
+    if (spec === void 0 || spec === null) {
+      throw new Error("spec is required");
+    }
+    validatePlainObject(spec, "spec");
+    validateSupportedFields(spec, supportedFields.spec, "spec");
+    if (spec.mapping === void 0 || spec.mapping === null) {
+      throw new Error("spec.mapping is required");
+    }
+    validatePlainObject(spec.mapping, "spec.mapping");
+    validateSupportedFields(
+      spec.mapping,
+      supportedFields.mapping,
+      "spec.mapping"
+    );
+    validateRequiredMapping(spec.mapping, "x");
+    validateRequiredMapping(spec.mapping, "y");
+    if (spec.mapping.key !== void 0) {
+      if (typeof spec.mapping.key !== "string" || spec.mapping.key.trim().length === 0) {
+        throw new Error("spec.mapping.key must be a non-empty string");
+      }
+    }
+    if (spec.mapping.color !== void 0) {
+      if (typeof spec.mapping.color !== "string" || spec.mapping.color.trim().length === 0) {
+        throw new Error("spec.mapping.color must be a non-empty string");
+      }
+    }
+    ["size", "opacity", "shape"].forEach((aesthetic) => {
+      if (spec.mapping[aesthetic] !== void 0 && (typeof spec.mapping[aesthetic] !== "string" || spec.mapping[aesthetic].trim().length === 0)) {
+        throw new Error(
+          `spec.mapping.${aesthetic} must be a non-empty string`
+        );
+      }
+    });
+    if (spec.scales !== void 0) {
+      validatePlainObject(spec.scales, "spec.scales");
+      validateSupportedFields(
+        spec.scales,
+        supportedFields.scales,
+        "spec.scales"
+      );
+      validateScale(spec.scales.x, "x");
+      validateScale(spec.scales.y, "y");
+      validateColorScale(spec.scales.color);
+      validateContinuousAestheticScale(spec.scales.size, "size");
+      validateContinuousAestheticScale(spec.scales.opacity, "opacity");
+      validateShapeScale(spec.scales.shape);
+    }
+    if (spec.labels !== void 0) {
+      validatePlainObject(spec.labels, "spec.labels");
+      validateSupportedFields(
+        spec.labels,
+        supportedFields.labels,
+        "spec.labels"
+      );
+      supportedFields.labels.forEach((field) => {
+        validateOptionalString(spec.labels[field], `spec.labels.${field}`);
+      });
+    }
+    validateAnnotations(spec.annotations, { ...spec, data });
+    if (spec.tooltip !== void 0) {
+      validatePlainObject(spec.tooltip, "spec.tooltip");
+      validateSupportedFields(
+        spec.tooltip,
+        supportedFields.tooltip,
+        "spec.tooltip"
+      );
+      validateOptionalString(spec.tooltip.format, "spec.tooltip.format");
+      if (spec.tooltip.format) {
+        validateTooltipFormat(spec.tooltip.format, data, spec.mapping);
+      }
+      if (spec.tooltip.formatter !== void 0 && spec.tooltip.formatter !== null && typeof spec.tooltip.formatter !== "function") {
+        throw new Error(
+          "spec.tooltip.formatter must be a function or null"
+        );
+      }
+      if (spec.tooltip.callbacks !== void 0) {
+        validatePlainObject(
+          spec.tooltip.callbacks,
+          "spec.tooltip.callbacks"
+        );
+        validateSupportedFields(
+          spec.tooltip.callbacks,
+          supportedFields.tooltipCallbacks,
+          "spec.tooltip.callbacks"
+        );
+        Object.entries(spec.tooltip.callbacks).forEach(
+          ([field, callback2]) => {
+            if (callback2 !== void 0 && callback2 !== null && typeof callback2 !== "function") {
+              throw new Error(
+                `spec.tooltip.callbacks.${field} must be a function or null`
+              );
+            }
+          }
+        );
+      }
+    }
+    validateCallbacks(spec.callbacks);
+    validateSelection(spec.selection);
+    validateZoom(spec.zoom);
+    validateTheme(spec.theme);
+  }
+
+  // src/points/defaults.js
+  var DEFAULT_COLOR_PALETTE = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac",
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f"
+  ];
+  var defaults5 = {
+    scales: {
+      x: {
+        type: "linear",
+        label: void 0,
+        range: void 0,
+        beginAtZero: false,
+        breaks: [],
+        labels: []
+      },
+      y: {
+        type: "linear",
+        label: void 0,
+        range: void 0,
+        beginAtZero: false,
+        breaks: [],
+        labels: []
+      },
+      color: {
+        colors: {},
+        palette: DEFAULT_COLOR_PALETTE,
+        order: [],
+        label: void 0
+      },
+      size: {
+        range: [3, 12]
+      },
+      opacity: {
+        range: [0.25, 1]
+      },
+      shape: {
+        values: {},
+        order: [],
+        label: void 0
+      }
+    },
+    labels: {
+      title: void 0,
+      caption: void 0,
+      description: void 0
+    },
+    annotations: {
+      referenceLines: [],
+      lines: [],
+      labels: {
+        point: null
+      }
+    },
+    tooltip: {
+      format: void 0,
+      formatter: void 0
+    },
+    callbacks: {
+      onClick: null,
+      onHover: null,
+      onSelect: null
+    },
+    selection: {
+      enabled: false,
+      opacity: 0.2,
+      multiple: false
+    },
+    zoom: {
+      enabled: false,
+      mode: "xy",
+      pan: false,
+      wheel: true,
+      pinch: true
+    },
+    theme: {
+      maintainAspectRatio: false,
+      animation: false
+    }
+  };
+  var defaults_default3 = defaults5;
+
+  // src/points/mergeSpec.js
+  function mergeDefaults(defaultValues, userValues = {}) {
+    return Object.keys(defaultValues).reduce((merged, field) => {
+      const value = userValues[field] === void 0 ? defaultValues[field] : userValues[field];
+      merged[field] = Array.isArray(value) ? [...value] : value !== null && typeof value === "object" ? { ...value } : value;
+      return merged;
+    }, {});
+  }
+  function mergeTooltip(tooltip5 = {}) {
+    return {
+      ...tooltip5,
+      ...mergeDefaults(defaults_default3.tooltip, tooltip5),
+      ...tooltip5.callbacks ? { callbacks: { ...tooltip5.callbacks } } : {}
+    };
+  }
+  function mergeAnnotations(annotations5 = {}) {
+    const referenceLines3 = annotations5.referenceLines === void 0 ? defaults_default3.annotations.referenceLines : annotations5.referenceLines;
+    const lines = annotations5.lines === void 0 ? defaults_default3.annotations.lines : annotations5.lines;
+    const pointLabel = annotations5.labels?.point === void 0 ? defaults_default3.annotations.labels.point : annotations5.labels.point;
+    return {
+      referenceLines: referenceLines3.map((line) => ({
+        ...line,
+        ...line.dash ? { dash: [...line.dash] } : {}
+      })),
+      lines: lines.map((line) => ({
+        ...line,
+        data: [...line.data],
+        mapping: { ...line.mapping },
+        ...line.order ? { order: [...line.order] } : {},
+        ...line.colors ? { colors: { ...line.colors } } : {},
+        ...line.palette ? { palette: [...line.palette] } : {},
+        ...line.dash ? { dash: [...line.dash] } : {}
+      })),
+      labels: {
+        point: pointLabel === null || pointLabel === false ? pointLabel : {
+          ...pointLabel,
+          ...pointLabel.font ? { font: { ...pointLabel.font } } : {}
+        }
+      }
+    };
+  }
+  function mergeSpec3(data, spec) {
+    return {
+      data,
+      mapping: { ...spec.mapping },
+      scales: {
+        x: mergeDefaults(defaults_default3.scales.x, spec.scales?.x),
+        y: mergeDefaults(defaults_default3.scales.y, spec.scales?.y),
+        color: mergeDefaults(defaults_default3.scales.color, spec.scales?.color),
+        size: mergeDefaults(defaults_default3.scales.size, spec.scales?.size),
+        opacity: mergeDefaults(
+          defaults_default3.scales.opacity,
+          spec.scales?.opacity
+        ),
+        shape: mergeDefaults(defaults_default3.scales.shape, spec.scales?.shape)
+      },
+      labels: mergeDefaults(defaults_default3.labels, spec.labels),
+      annotations: mergeAnnotations(spec.annotations),
+      tooltip: mergeTooltip(spec.tooltip),
+      callbacks: mergeDefaults(defaults_default3.callbacks, spec.callbacks),
+      selection: mergeDefaults(defaults_default3.selection, spec.selection),
+      zoom: mergeDefaults(defaults_default3.zoom, spec.zoom),
+      theme: mergeDefaults(defaults_default3.theme, spec.theme)
+    };
+  }
+
+  // src/points/styleData.js
+  function clamp3(value, minimum, maximum) {
+    return Math.min(Math.max(value, minimum), maximum);
+  }
+  function mapSizeValue(value, domain, range) {
+    if (domain[0] === domain[1]) {
+      return (range[0] + range[1]) / 2;
+    }
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
+    const minimumArea = range[0] ** 2;
+    const maximumArea = range[1] ** 2;
+    return Math.sqrt(minimumArea + proportion * (maximumArea - minimumArea));
+  }
+  function mapOpacityValue(value, domain, range) {
+    if (domain[0] === domain[1]) {
+      return (range[0] + range[1]) / 2;
+    }
+    const proportion = clamp3(
+      (value - domain[0]) / (domain[1] - domain[0]),
+      0,
+      1
+    );
+    return range[0] + proportion * (range[1] - range[0]);
+  }
+  function withOpacity(color3, opacity) {
+    const parsed = color2(color3);
+    if (!parsed) {
+      throw new Error(
+        `points could not apply opacity to color ${JSON.stringify(color3)}`
+      );
+    }
+    parsed.opacity = opacity;
+    return parsed.formatRgb();
+  }
+  function withOpacityFactor(color3, factor) {
+    const parsed = color2(color3);
+    if (!parsed) {
+      return `color-mix(in srgb, ${color3} ${factor * 100}%, transparent)`;
+    }
+    parsed.opacity = Number((parsed.opacity * factor).toFixed(6));
+    return parsed.formatRgb();
+  }
+  function getDomain(points2, field) {
+    let minimum = Infinity;
+    let maximum = -Infinity;
+    points2.forEach((point) => {
+      minimum = Math.min(minimum, point[field]);
+      maximum = Math.max(maximum, point[field]);
+    });
+    return [minimum, maximum];
+  }
+  function styleData(datasets, spec) {
+    const points2 = datasets.flatMap((dataset) => dataset.data);
+    if (points2.length === 0) return datasets;
+    const sizeDomain = spec.mapping.size ? getDomain(points2, "_size") : void 0;
+    const opacityDomain = spec.mapping.opacity ? getDomain(points2, "_opacity") : void 0;
+    datasets.forEach((dataset) => {
+      if (sizeDomain) {
+        dataset.pointRadius = dataset.data.map(
+          (point) => mapSizeValue(point._size, sizeDomain, spec.scales.size.range)
+        );
+        dataset.pointHoverRadius = dataset.pointRadius.map(
+          (radius3) => radius3 + 2
+        );
+      }
+      if (opacityDomain && dataset.data.length > 0) {
+        const baseColor = dataset.backgroundColor ?? spec.scales.color.palette[0];
+        const colors2 = dataset.data.map(
+          (point) => withOpacity(
+            baseColor,
+            mapOpacityValue(
+              point._opacity,
+              opacityDomain,
+              spec.scales.opacity.range
+            )
+          )
+        );
+        dataset._baseColor = baseColor;
+        dataset.backgroundColor = colors2;
+        dataset.borderColor = [...colors2];
+      }
+    });
+    return datasets;
+  }
+
+  // src/points/structureData.js
+  var MISSING_LEVEL_LABEL = "(Missing)";
+  var MISSING_COLOR = "#bdbdbd";
+  function getCoordinate(row, field, mapping, index3, scale) {
+    const value = row?.[field];
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${mapping} must be a finite number`
+      );
+    }
+    if (scale?.type === "log" && value <= 0) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${mapping} must be greater than zero for a log scale`
+      );
+    }
+    return value;
+  }
+  function getDiscreteLevel(row, field, aesthetic, index3) {
+    const value = row?.[field];
+    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
+      return { value: MISSING_LEVEL_LABEL, missing: true };
+    }
+    if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${aesthetic} must be a string, finite number, or missing`
+      );
+    }
+    return { value, missing: false };
+  }
+  function getNumericAesthetic(row, field, aesthetic, index3) {
+    const value = row?.[field];
+    const requirement = aesthetic === "size" ? "a finite non-negative number" : "a finite number";
+    const isValid = typeof value === "number" && Number.isFinite(value) && (aesthetic !== "size" || value >= 0);
+    if (!isValid) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.${aesthetic} must be ${requirement}`
+      );
+    }
+    return value;
+  }
+  function getLevelKey(level) {
+    return level.missing ? "missing" : `value:${typeof level.value}:${String(level.value)}`;
+  }
+  function getOrderedLevel(value) {
+    return value === null ? { value: MISSING_LEVEL_LABEL, missing: true } : { value, missing: false };
+  }
+  function resolveLevels(records, field, order = []) {
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    const observed = records.map((record) => record[field]);
+    const add = (level) => {
+      const key = getLevelKey(level);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push(level);
+      }
+    };
+    order.map(getOrderedLevel).forEach(add);
+    observed.forEach(add);
+    return levels;
+  }
+  function getLevelRanks(levels) {
+    return new Map(levels.map((level, index3) => [getLevelKey(level), index3]));
+  }
+  function getColor(level, index3, colorScale) {
+    if (level.missing) return MISSING_COLOR;
+    const namedLevel = String(level.value);
+    if (Object.prototype.hasOwnProperty.call(colorScale.colors, namedLevel)) {
+      return colorScale.colors[namedLevel];
+    }
+    return colorScale.palette[index3 % colorScale.palette.length];
+  }
+  function getShape(level, index3, shapeScale) {
+    if (level.missing) return MISSING_POINT_STYLE;
+    const namedLevel = String(level.value);
+    if (Object.prototype.hasOwnProperty.call(shapeScale.values, namedLevel)) {
+      return shapeScale.values[namedLevel];
+    }
+    return FALLBACK_POINT_STYLES[index3 % FALLBACK_POINT_STYLES.length];
+  }
+  function getCompositeLabel(level) {
+    if (level.missing) return `${MISSING_LEVEL_LABEL} (missing value)`;
+    return typeof level.value === "string" ? JSON.stringify(level.value) : String(level.value);
+  }
+  function getLevelLabel(level) {
+    return !level.missing && level.value === MISSING_LEVEL_LABEL ? JSON.stringify(level.value) : String(level.value);
+  }
+  function getKey(row, field, index3, keys) {
+    const value = row?.[field];
+    const isValid = typeof value === "string" || typeof value === "number" && Number.isFinite(value);
+    if (!isValid) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.key must be a string or finite number`
+      );
+    }
+    if (keys.has(value)) {
+      throw new Error(
+        `data[${index3}].${field} mapped by spec.mapping.key must be unique; duplicate key ${JSON.stringify(
+          value
+        )}`
+      );
+    }
+    keys.add(value);
+    return value;
+  }
+  function groupRecords(records, getGroup) {
+    const groups2 = /* @__PURE__ */ new Map();
+    records.forEach((record) => {
+      const group2 = getGroup(record);
+      if (!groups2.has(group2.key)) {
+        groups2.set(group2.key, { ...group2, records: [] });
+      }
+      groups2.get(group2.key).records.push(record);
+    });
+    return [...groups2.values()];
+  }
+  function buildDatasets(records, spec) {
+    const { mapping, scales: scales2 } = spec;
+    const hasColor = !!mapping.color;
+    const hasShape = !!mapping.shape;
+    if (!hasColor && !hasShape) {
+      return [{ data: records.map(({ point }) => point) }];
+    }
+    const hasSharedLevel = hasColor && hasShape && mapping.color === mapping.shape;
+    const sharedLevels = hasSharedLevel ? resolveLevels(records, "colorLevel", [
+      ...scales2.color.order,
+      ...scales2.shape.order
+    ]) : [];
+    const colorLevels = hasSharedLevel ? sharedLevels : hasColor ? resolveLevels(records, "colorLevel", scales2.color.order) : [];
+    const shapeLevels = hasSharedLevel ? sharedLevels : hasShape ? resolveLevels(records, "shapeLevel", scales2.shape.order) : [];
+    const colorRanks = getLevelRanks(colorLevels);
+    const shapeRanks = getLevelRanks(shapeLevels);
+    let groups2;
+    if (hasColor && !hasShape) {
+      const byColor = new Map(
+        groupRecords(records, ({ colorLevel }) => ({
+          key: getLevelKey(colorLevel),
+          colorLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = colorLevels.map((colorLevel) => {
+        const key = getLevelKey(colorLevel);
+        return byColor.get(key) || {
+          key,
+          colorLevel,
+          records: []
+        };
+      });
+    } else if (!hasColor && hasShape) {
+      const byShape = new Map(
+        groupRecords(records, ({ shapeLevel }) => ({
+          key: getLevelKey(shapeLevel),
+          shapeLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = shapeLevels.map((shapeLevel) => {
+        const key = getLevelKey(shapeLevel);
+        return byShape.get(key) || {
+          key,
+          shapeLevel,
+          records: []
+        };
+      });
+    } else if (hasSharedLevel) {
+      const byLevel = new Map(
+        groupRecords(records, ({ colorLevel, shapeLevel }) => ({
+          key: getLevelKey(colorLevel),
+          colorLevel,
+          shapeLevel
+        })).map((group2) => [group2.key, group2])
+      );
+      groups2 = sharedLevels.map((level) => {
+        const key = getLevelKey(level);
+        return byLevel.get(key) || {
+          key,
+          colorLevel: level,
+          shapeLevel: level,
+          records: []
+        };
+      });
+    } else {
+      groups2 = groupRecords(records, ({ colorLevel, shapeLevel }) => ({
+        key: JSON.stringify([
+          getLevelKey(colorLevel),
+          getLevelKey(shapeLevel)
+        ]),
+        colorLevel,
+        shapeLevel
+      })).sort((a, b) => {
+        const colorDifference = colorRanks.get(getLevelKey(a.colorLevel)) - colorRanks.get(getLevelKey(b.colorLevel));
+        return colorDifference || shapeRanks.get(getLevelKey(a.shapeLevel)) - shapeRanks.get(getLevelKey(b.shapeLevel));
+      });
+    }
+    return groups2.map((group2, groupIndex) => {
+      const colorIndex = hasColor ? colorRanks.get(getLevelKey(group2.colorLevel)) ?? groupIndex : 0;
+      const shapeIndex = hasShape ? shapeRanks.get(getLevelKey(group2.shapeLevel)) ?? groupIndex : 0;
+      const color3 = hasColor ? getColor(group2.colorLevel, colorIndex, scales2.color) : scales2.color.palette[0];
+      const colorLabel = hasColor ? getLevelLabel(group2.colorLevel) : void 0;
+      const shapeLabel = hasShape ? getLevelLabel(group2.shapeLevel) : void 0;
+      const label = hasColor && hasShape && mapping.color !== mapping.shape ? `${getCompositeLabel(group2.colorLevel)} / ${getCompositeLabel(
+        group2.shapeLevel
+      )}` : colorLabel || shapeLabel;
+      const dataset = {
+        label,
+        data: group2.records.map(({ point }) => point),
+        backgroundColor: color3,
+        borderColor: color3
+      };
+      if (hasShape) {
+        dataset.pointStyle = getShape(
+          group2.shapeLevel,
+          shapeIndex,
+          scales2.shape
+        );
+      }
+      if (hasColor) {
+        dataset._color = group2.colorLevel.value;
+        dataset._colorMissing = group2.colorLevel.missing;
+      }
+      if (hasShape) {
+        dataset._shape = group2.shapeLevel.value;
+        dataset._shapeMissing = group2.shapeLevel.missing;
+      }
+      return dataset;
+    });
+  }
+  function structureData4(spec) {
+    const { data, mapping } = spec;
+    const keys = /* @__PURE__ */ new Set();
+    const records = data.map((row, index3) => {
+      const point = {
+        x: getCoordinate(row, mapping.x, "x", index3, spec.scales?.x),
+        y: getCoordinate(row, mapping.y, "y", index3, spec.scales?.y),
+        _index: index3,
+        _key: mapping.key === void 0 ? index3 : getKey(row, mapping.key, index3, keys),
+        _datum: row
+      };
+      const colorLevel = mapping.color ? getDiscreteLevel(row, mapping.color, "color", index3) : void 0;
+      const shapeLevel = mapping.shape ? getDiscreteLevel(row, mapping.shape, "shape", index3) : void 0;
+      if (colorLevel) point._color = colorLevel.value;
+      if (shapeLevel) point._shape = shapeLevel.value;
+      if (mapping.size) {
+        point._size = getNumericAesthetic(row, mapping.size, "size", index3);
+      }
+      if (mapping.opacity) {
+        point._opacity = getNumericAesthetic(
+          row,
+          mapping.opacity,
+          "opacity",
+          index3
+        );
+      }
+      return { point, colorLevel, shapeLevel };
+    });
+    return {
+      datasets: styleData(buildDatasets(records, spec), spec)
+    };
+  }
+
+  // src/points/structureLines.js
+  var MISSING_LABEL = "(Missing)";
+  var MISSING_COLOR2 = "#bdbdbd";
+  var DEFAULT_COLOR = "#666666";
+  function getCoordinate2(row, field, axis, layerIndex, rowIndex, scale) {
+    const value = row?.[field];
+    const path = `spec.annotations.lines[${layerIndex}].data[${rowIndex}].${field} mapped by mapping.${axis}`;
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`${path} must be a finite number`);
+    }
+    if (scale.type === "log" && value <= 0) {
+      throw new Error(`${path} must be greater than zero for a log scale`);
+    }
+    return value;
+  }
+  function getGroupLevel(row, field, layerIndex, rowIndex) {
+    const value = row?.[field];
+    if (value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value)) {
+      return { value: MISSING_LABEL, missing: true };
+    }
+    if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+      throw new Error(
+        `spec.annotations.lines[${layerIndex}].data[${rowIndex}].${field} mapped by mapping.group must be a string, finite number, or missing`
+      );
+    }
+    return { value, missing: false };
+  }
+  function getLevelKey2(level) {
+    return level.missing ? "missing" : JSON.stringify([typeof level.value, level.value]);
+  }
+  function getOrderedLevel2(value) {
+    return value === null ? { value: MISSING_LABEL, missing: true } : { value, missing: false };
+  }
+  function getLevelLabel2(level) {
+    return !level.missing && level.value === MISSING_LABEL ? JSON.stringify(level.value) : String(level.value);
+  }
+  function resolveLevels2(records, order = []) {
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    const add = (level) => {
+      const key = getLevelKey2(level);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push(level);
+      }
+    };
+    order.map(getOrderedLevel2).forEach(add);
+    records.forEach(({ group: group2 }) => add(group2));
+    return levels;
+  }
+  function getColor2(level, index3, line, defaultPalette) {
+    if (level?.missing) return MISSING_COLOR2;
+    const namedLevel = String(level?.value);
+    if (level && Object.prototype.hasOwnProperty.call(line.colors || {}, namedLevel)) {
+      return line.colors[namedLevel];
+    }
+    if (line.color !== void 0) return line.color;
+    const palette = line.palette || defaultPalette;
+    return level ? palette[index3 % palette.length] : line.color ?? DEFAULT_COLOR;
+  }
+  function makeDataset(line, data, color3, label) {
+    return {
+      type: "line",
+      label,
+      data,
+      borderColor: color3,
+      backgroundColor: color3,
+      borderWidth: line.width ?? 2,
+      borderDash: line.dash ? [...line.dash] : [],
+      tension: line.tension ?? 0,
+      stepped: line.stepped ?? false,
+      fill: false,
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      pointHitRadius: 0,
+      pointStyle: "line",
+      order: 1,
+      _annotation: true,
+      _showInLegend: line.showInLegend ?? false
+    };
+  }
+  function structureLine(line, layerIndex, spec) {
+    const records = line.data.map((row, rowIndex) => ({
+      point: {
+        x: getCoordinate2(
+          row,
+          line.mapping.x,
+          "x",
+          layerIndex,
+          rowIndex,
+          spec.scales.x
+        ),
+        y: getCoordinate2(
+          row,
+          line.mapping.y,
+          "y",
+          layerIndex,
+          rowIndex,
+          spec.scales.y
+        ),
+        _datum: row
+      },
+      group: line.mapping.group ? getGroupLevel(row, line.mapping.group, layerIndex, rowIndex) : void 0
+    }));
+    if (!line.mapping.group) {
+      return [
+        makeDataset(
+          line,
+          records.map(({ point }) => point),
+          line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
+          line.label ?? ""
+        )
+      ];
+    }
+    const groups2 = /* @__PURE__ */ new Map();
+    records.forEach((record) => {
+      const key = getLevelKey2(record.group);
+      if (!groups2.has(key)) groups2.set(key, []);
+      groups2.get(key).push(record.point);
+    });
+    return resolveLevels2(records, line.order).map((level, index3) => {
+      const levelLabel = getLevelLabel2(level);
+      const label = line.label ? `${line.label}: ${levelLabel}` : levelLabel;
+      const dataset = makeDataset(
+        line,
+        groups2.get(getLevelKey2(level)) || [],
+        getColor2(level, index3, line, spec.scales.color.palette),
+        label
+      );
+      dataset._annotationGroup = level.value;
+      dataset._annotationGroupMissing = level.missing;
+      return dataset;
+    });
+  }
+  function structureLines(spec) {
+    return spec.annotations.lines.flatMap(
+      (line, index3) => structureLine(line, index3, spec)
+    );
+  }
+
+  // src/points/getScales.js
+  function getAxisScale(scale, mapping) {
+    const label = scale.label !== void 0 ? scale.label : mapping;
+    const axis = {
+      type: scale.type === "log" ? "logarithmic" : scale.type,
+      title: {
+        display: !!label,
+        text: label || ""
+      }
+    };
+    if (scale.range !== void 0) {
+      [axis.min, axis.max] = scale.range;
+    } else if (scale.type === "linear" && scale.beginAtZero) {
+      axis.beginAtZero = true;
+    }
+    if (scale.breaks?.length) {
+      const breaks = [...scale.breaks];
+      const labels = new Map(
+        breaks.map((value, index3) => [value, scale.labels[index3]])
+      );
+      axis.afterBuildTicks = (chartScale) => {
+        chartScale.ticks = breaks.map((value) => ({ value }));
+      };
+      axis.ticks = {
+        autoSkip: false,
+        callback: (value) => labels.get(Number(value)) ?? null
+      };
+      if (scale.range === void 0) {
+        axis.suggestedMin = breaks[0];
+        axis.suggestedMax = breaks[breaks.length - 1];
+      }
+    }
+    return axis;
+  }
+  function getScales3(spec) {
+    return {
+      x: getAxisScale(spec.scales.x, spec.mapping.x),
+      y: getAxisScale(spec.scales.y, spec.mapping.y)
+    };
+  }
+
+  // src/points/buildTooltip.js
+  function getPoint4(context) {
+    return context.raw ?? context.dataset?.data?.[context.dataIndex];
+  }
+  function getDetails(point) {
+    return {
+      x: point.x,
+      y: point.y,
+      color: point._color,
+      key: point._key,
+      datum: point._datum
+    };
+  }
+  function buildTooltip2(tooltip5 = {}) {
+    const { format: format2, formatter: formatter2, callbacks, ...chartJsOptions } = tooltip5;
+    const chartJsCallbacks = Object.fromEntries(
+      Object.entries(callbacks ?? {}).filter(
+        ([, callback2]) => callback2 !== null
+      )
+    );
+    const config = {
+      ...chartJsOptions,
+      ...callbacks ? { callbacks: chartJsCallbacks } : {}
+    };
+    if (config.callbacks?.label) return config;
+    if (typeof formatter2 === "function") {
+      return {
+        ...config,
+        callbacks: {
+          ...config.callbacks,
+          label: (context) => {
+            const point = getPoint4(context);
+            return formatter2(point, context, getDetails(point));
+          }
+        }
+      };
+    }
+    if (format2) {
+      return {
+        ...config,
+        callbacks: {
+          ...config.callbacks,
+          label: (context) => formatTooltipPoint(format2, getPoint4(context))
+        }
+      };
+    }
+    return config;
+  }
+
+  // src/points/buildZoom.js
+  function buildZoom2(zoom2) {
+    if (!zoom2?.enabled) {
+      return void 0;
+    }
+    return {
+      pan: {
+        enabled: zoom2.pan,
+        mode: zoom2.mode
+      },
+      zoom: {
+        mode: zoom2.mode,
+        wheel: {
+          enabled: zoom2.wheel
+        },
+        pinch: {
+          enabled: zoom2.pinch
+        }
+      }
+    };
+  }
+
+  // src/points/pointInteractionMode.js
+  var MODE_PREFIX = "gsmPoints";
+  function getPointInteractionMode(baseMode) {
+    const evaluate = Interaction.modes[baseMode];
+    if (typeof evaluate !== "function") return baseMode;
+    const mode = `${MODE_PREFIX}:${baseMode}`;
+    if (Interaction.modes[mode]) return mode;
+    Interaction.modes[mode] = (chart, event, options, useFinalPosition) => {
+      const metadata = chart.data.datasets.map(
+        (dataset, index3) => dataset._annotation ? chart.getDatasetMeta(index3) : null
+      ).filter(Boolean);
+      const visibility = metadata.map(({ visible }) => visible);
+      metadata.forEach((meta) => {
+        meta.visible = false;
+      });
+      try {
+        return evaluate(chart, event, options, useFinalPosition);
+      } finally {
+        metadata.forEach((meta, index3) => {
+          meta.visible = visibility[index3];
+        });
+      }
+    };
+    return mode;
+  }
+
+  // src/points/pointLabels.js
+  function getPoint5(context, value) {
+    return value?._datum ? value : context.dataset?.data?.[context.dataIndex];
+  }
+  function pointLabels(spec) {
+    const config = spec.annotations?.labels?.point;
+    if (!config) return { display: false };
+    const display = config.display === false ? false : (context) => {
+      if (context.dataset?._annotation) return false;
+      const point = getPoint5(context);
+      if (!point) return false;
+      if (typeof config.display === "function") {
+        return !!config.display(point, context);
+      }
+      if (typeof config.display === "string") {
+        return !!point._datum?.[config.display];
+      }
+      return true;
+    };
+    return {
+      align: config.align ?? "top",
+      color: config.color ?? "#333333",
+      offset: config.offset ?? 4,
+      font: { ...config.font || {} },
+      display,
+      formatter: (value, context) => {
+        const point = getPoint5(context, value);
+        if (!point || context.dataset?._annotation) return null;
+        return typeof config.formatter === "function" ? config.formatter(point, context) : point._datum[config.field];
+      }
+    };
+  }
+
+  // src/points/referenceLines.js
+  function referenceLines2(spec) {
+    const lines = spec.annotations?.referenceLines;
+    if (!lines?.length) return null;
+    return lines.map((line) => {
+      const color3 = line.color ?? "#666666";
+      const annotation2 = {
+        type: "line",
+        adjustScaleRange: true,
+        borderColor: color3,
+        borderWidth: line.width ?? 1,
+        borderDash: line.dash ? [...line.dash] : [],
+        [`${line.axis}Min`]: line.value,
+        [`${line.axis}Max`]: line.value
+      };
+      if (line.label) {
+        annotation2.label = {
+          display: true,
+          content: line.label,
+          color: color3,
+          backgroundColor: "white",
+          position: line.labelPosition ?? "end",
+          rotation: "auto",
+          font: { size: 12 },
+          padding: 2
+        };
+      }
+      return annotation2;
+    });
+  }
+
+  // src/points/getPlugins.js
+  function getPlugins3(spec) {
+    const { title: title4, caption } = spec.labels;
+    const hasColor = !!spec.mapping.color;
+    const hasShape = !!spec.mapping.shape;
+    const lineLayers = spec.annotations?.lines || [];
+    const hasLines = lineLayers.length > 0;
+    const hasLineLegend = lineLayers.some((line) => line.showInLegend);
+    const getScaleLabel = (aesthetic) => spec.scales[aesthetic].label !== void 0 ? spec.scales[aesthetic].label : spec.mapping[aesthetic];
+    const colorLabel = hasColor ? getScaleLabel("color") : void 0;
+    const shapeLabel = hasShape ? getScaleLabel("shape") : void 0;
+    const hasSharedLevel = hasColor && hasShape && spec.mapping.color === spec.mapping.shape;
+    const getSharedLabel = () => spec.scales.color.label !== void 0 ? spec.scales.color.label : spec.scales.shape.label !== void 0 ? spec.scales.shape.label : spec.mapping.color;
+    const legendTitle = (hasSharedLevel ? getSharedLabel() : [colorLabel, shapeLabel].filter(Boolean).join(" / ")) || "";
+    const legend5 = {
+      display: hasColor || hasShape || hasLineLegend
+    };
+    if (legend5.display) {
+      legend5.title = {
+        display: !!legendTitle,
+        text: legendTitle
+      };
+    }
+    if (hasShape) {
+      legend5.labels = { usePointStyle: true };
+    }
+    if (hasLines) {
+      legend5.labels = {
+        ...legend5.labels,
+        filter: (item, data) => {
+          const dataset = data.datasets[item.datasetIndex];
+          return dataset?._annotation ? dataset._showInLegend : hasColor || hasShape;
+        }
+      };
+    }
+    if ((hasColor || hasShape) && spec.mapping.opacity) {
+      legend5.labels = {
+        ...legend5.labels,
+        generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart).map((item) => {
+          const color3 = chart.data.datasets[item.datasetIndex]._baseColor;
+          return color3 ? { ...item, fillStyle: color3, strokeStyle: color3 } : item;
+        })
+      };
+    }
+    const tooltip5 = buildTooltip2(spec.tooltip);
+    if (hasLines) {
+      const userFilter = tooltip5.filter;
+      tooltip5.mode = getPointInteractionMode(tooltip5.mode || "point");
+      tooltip5.filter = function(item, ...args) {
+        return !item.dataset?._annotation && (!userFilter || userFilter.call(this, item, ...args));
+      };
+    }
+    const lines = referenceLines2(spec);
+    const labels = spec.annotations?.labels?.point;
+    const zoom2 = buildZoom2(spec.zoom);
+    return {
+      title: {
+        display: !!title4,
+        text: title4 || ""
+      },
+      subtitle: {
+        display: !!caption,
+        position: "bottom",
+        align: "start",
+        text: caption || ""
+      },
+      legend: legend5,
+      tooltip: tooltip5,
+      ...zoom2 ? { zoom: zoom2 } : {},
+      ...labels ? { datalabels: pointLabels(spec) } : {},
+      ...lines ? {
+        annotation: {
+          annotations: lines,
+          clip: false
+        }
+      } : {}
+    };
+  }
+
+  // src/points/accessibility.js
+  var POINT_SELECTION_INSTRUCTIONS = "Use arrow keys to move between points, Enter to select, and Escape to clear.";
+  function asSentence(value) {
+    const text = value?.trim();
+    if (!text) return "";
+    return /[.!?]$/.test(text) ? text : `${text}.`;
+  }
+  function getEncodingLabel(spec, chartData, aesthetic) {
+    if (!spec.mapping[aesthetic]) return "";
+    const levels = [];
+    const seen = /* @__PURE__ */ new Set();
+    chartData.datasets.filter((dataset) => !dataset._annotation && dataset.data.length > 0).forEach((dataset) => {
+      const value = dataset[`_${aesthetic}`];
+      const missing = dataset[`_${aesthetic}Missing`];
+      const key = missing ? "missing" : JSON.stringify([typeof value, value]);
+      if (!seen.has(key)) {
+        seen.add(key);
+        levels.push({ value, missing });
+      }
+    });
+    const values = levels.map(({ value, missing }) => {
+      const label = String(value);
+      if (missing) return `${label} (missing value)`;
+      if (typeof value === "string") {
+        return `${JSON.stringify(value)} (string)`;
+      }
+      return `${label} (${typeof value})`;
+    });
+    return levels.length ? `${aesthetic === "color" ? "Color" : "Shape"} ${spec.mapping[aesthetic]} values: ${values.join(", ")}.` : "";
+  }
+  function getAccessibleLabel(spec, chartData, pointCount) {
+    const xLabel = spec.scales.x.label || spec.mapping.x;
+    const yLabel = spec.scales.y.label || spec.mapping.y;
+    const parts = [
+      asSentence(spec.labels.title),
+      asSentence(spec.labels.description),
+      `Point chart of ${yLabel} by ${xLabel}.`,
+      pointCount === 0 ? "No data available." : `${pointCount} ${pointCount === 1 ? "point" : "points"}.`,
+      getEncodingLabel(spec, chartData, "color"),
+      getEncodingLabel(spec, chartData, "shape"),
+      spec.selection.enabled ? POINT_SELECTION_INSTRUCTIONS : ""
+    ];
+    return parts.filter(Boolean).join(" ");
+  }
+  function setAccessibleLabel(canvas, label) {
+    canvas.setAttribute("aria-label", label);
+    const textNode = [...canvas.childNodes].find(
+      (node) => node.nodeType === Node.TEXT_NODE
+    );
+    if (textNode) {
+      textNode.nodeValue = label;
+    } else {
+      canvas.insertBefore(document.createTextNode(label), canvas.firstChild);
+    }
+  }
+
+  // src/points/buildState.js
+  function buildState(data, spec, validated = false) {
+    if (!validated) validateSpec3(data, spec);
+    const merged = mergeSpec3(data, spec);
+    const chartData = structureData4(merged);
+    chartData.datasets.push(...structureLines(merged));
+    return {
+      merged,
+      chartData,
+      scales: getScales3(merged),
+      plugins: getPlugins3(merged),
+      interaction: merged.annotations.lines.length ? { mode: getPointInteractionMode("point") } : void 0,
+      accessibleLabel: getAccessibleLabel(merged, chartData, data.length)
+    };
+  }
+
+  // src/points/defaultFilename.js
+  function toFilename2(value) {
+    if (typeof value !== "string") {
+      return "";
+    }
+    return value.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+  }
+  function defaultFilename2(spec) {
+    const { labels = {}, scales: scales2 = {}, mapping = {} } = spec || {};
+    const title4 = toFilename2(labels.title);
+    if (title4) {
+      return `${title4}.png`;
+    }
+    const x = toFilename2(scales2.x?.label || mapping.x);
+    const y = toFilename2(scales2.y?.label || mapping.y);
+    return x && y ? `${y}-by-${x}.png` : "points.png";
+  }
+
+  // src/points/exportImage.js
+  function exportImage2(chart, filename) {
+    if (filename !== void 0 && (typeof filename !== "string" || filename.trim().length === 0)) {
+      throw new Error(
+        "points exportImage filename must be a non-empty string"
+      );
+    }
+    const name = filename ?? defaultFilename2(chart.data?._spec_);
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = chart.toBase64Image();
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } finally {
+      document.body.removeChild(link);
+    }
+  }
+
+  // src/points/selection.js
+  var MISSING_GROUP_VALUE = null;
+  function getMainDatasets(chart) {
+    return chart.data.datasets.map((dataset, datasetIndex) => ({ dataset, datasetIndex })).filter(({ dataset }) => !dataset._annotation);
+  }
+  function getPoints(chart) {
+    return getMainDatasets(chart).flatMap(({ dataset }) => dataset.data);
+  }
+  function ensureState(chart) {
+    chart.data._selectionState_ ||= {};
+    chart.data._selectionState_.selection ||= {
+      type: null,
+      values: []
+    };
+    return chart.data._selectionState_;
+  }
+  function normalizeValues(values, name, allowMissing = false) {
+    const normalized = Array.isArray(values) ? [...values] : [values];
+    normalized.forEach((value) => {
+      if (!(allowMissing && value === MISSING_GROUP_VALUE) && typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+        const requirement = allowMissing ? "strings, finite numbers, or null" : "strings or finite numbers";
+        throw new Error(`points ${name} values must be ${requirement}`);
+      }
+    });
+    return [...new Set(normalized)];
+  }
+  function validateKnownValues(values, knownValues, name, valueName) {
+    values.forEach((value) => {
+      if (!knownValues.has(value)) {
+        throw new Error(
+          `points ${name} could not find ${valueName} ${JSON.stringify(
+            value
+          )}`
+        );
+      }
+    });
+  }
+  function getResolvedColor(chart, datasetIndex, pointIndex, property) {
+    return chart.getDatasetMeta(datasetIndex).data[pointIndex]?.options?.[property];
+  }
+  function prepareResolvedStyles(chart) {
+    const needsUpdate = getMainDatasets(chart).some(
+      ({ dataset, datasetIndex }) => dataset.data.length > 0 && (!chart.getDatasetMeta(datasetIndex).controller || chart.getDatasetMeta(datasetIndex).data.length < dataset.data.length)
+    );
+    if (needsUpdate) chart.update("none");
+  }
+  function getPointColor(pointIndex, original, property, fallback) {
+    const raw = original[property];
+    const value = Array.isArray(raw) ? raw[pointIndex] : raw;
+    return value ?? original.resolved[property][pointIndex] ?? fallback;
+  }
+  function storeOriginalStyles(chart) {
+    const state = ensureState(chart);
+    if (state.originalStyles) return;
+    prepareResolvedStyles(chart);
+    state.originalStyles = chart.data.datasets.map(
+      (dataset, datasetIndex) => dataset._annotation ? null : {
+        backgroundColor: dataset.backgroundColor,
+        borderColor: dataset.borderColor,
+        resolved: {
+          backgroundColor: dataset.data.map(
+            (_point, pointIndex) => getResolvedColor(
+              chart,
+              datasetIndex,
+              pointIndex,
+              "backgroundColor"
+            )
+          ),
+          borderColor: dataset.data.map(
+            (_point, pointIndex) => getResolvedColor(
+              chart,
+              datasetIndex,
+              pointIndex,
+              "borderColor"
+            )
+          )
+        }
+      }
+    );
+    const fallback = chart.data._spec_.scales.color.palette[0];
+    state.legendStyles = /* @__PURE__ */ new Map();
+    getMainDatasets(chart).forEach(({ datasetIndex }) => {
+      const original = state.originalStyles[datasetIndex];
+      state.legendStyles.set(datasetIndex, {
+        fillStyle: getPointColor(0, original, "backgroundColor", fallback),
+        strokeStyle: getPointColor(0, original, "borderColor", fallback)
+      });
+    });
+    (chart.legend?.legendItems || []).forEach((item) => {
+      state.legendStyles.set(item.datasetIndex, {
+        fillStyle: item.fillStyle,
+        strokeStyle: item.strokeStyle
+      });
+    });
+  }
+  function getGroupValue(dataset) {
+    return dataset._colorMissing ? MISSING_GROUP_VALUE : dataset._color;
+  }
+  function getGroupValues(chart) {
+    const orderedValues = chart.data._spec_.scales.color.order || [];
+    const renderedValues = getMainDatasets(chart).map(({ dataset }) => dataset).filter(
+      (dataset) => Object.prototype.hasOwnProperty.call(dataset, "_color")
+    ).map(getGroupValue);
+    return [.../* @__PURE__ */ new Set([...orderedValues, ...renderedValues])];
+  }
+  function isSelected(point, dataset, selection2, selectedValues) {
+    const value = selection2.type === "point" ? point._key : getGroupValue(dataset);
+    return selectedValues.has(value);
+  }
+  function applySelectionStyles(chart) {
+    const state = ensureState(chart);
+    const opacity = chart.data._spec_.selection.opacity;
+    const fallback = chart.data._spec_.scales.color.palette[0];
+    const selectedValues = new Set(state.selection.values);
+    getMainDatasets(chart).forEach(({ dataset, datasetIndex }) => {
+      const original = state.originalStyles[datasetIndex];
+      dataset.backgroundColor = dataset.data.map((point, pointIndex) => {
+        const color3 = getPointColor(
+          pointIndex,
+          original,
+          "backgroundColor",
+          fallback
+        );
+        return isSelected(point, dataset, state.selection, selectedValues) ? color3 : withOpacityFactor(color3, opacity);
+      });
+      dataset.borderColor = dataset.data.map((point, pointIndex) => {
+        const color3 = getPointColor(
+          pointIndex,
+          original,
+          "borderColor",
+          fallback
+        );
+        return isSelected(point, dataset, state.selection, selectedValues) ? color3 : withOpacityFactor(color3, opacity);
+      });
+    });
+  }
+  function restoreOriginalStyles(chart) {
+    const state = ensureState(chart);
+    if (!state.originalStyles) return;
+    getMainDatasets(chart).forEach(({ dataset, datasetIndex }) => {
+      const original = state.originalStyles[datasetIndex];
+      dataset.backgroundColor = original.backgroundColor;
+      dataset.borderColor = original.borderColor;
+    });
+    delete state.originalStyles;
+    delete state.legendStyles;
+  }
+  function findPointLocation(chart, key) {
+    for (const { dataset, datasetIndex } of getMainDatasets(chart)) {
+      const index3 = dataset.data.findIndex((point) => point._key === key);
+      if (index3 !== -1) return { datasetIndex, index: index3 };
+    }
+    return void 0;
+  }
+  function getElementPosition(chart, location) {
+    const element = chart.getDatasetMeta(location.datasetIndex).data[location.index];
+    if (typeof element?.getCenterPoint === "function") {
+      return element.getCenterPoint();
+    }
+    return { x: element?.x ?? 0, y: element?.y ?? 0 };
+  }
+  function setActivePoint(chart, key, chartActive = true) {
+    const location = findPointLocation(chart, key);
+    if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
+      return void 0;
+    }
+    const meta = chart.getDatasetMeta(location.datasetIndex);
+    if (!meta.controller || !meta.data[location.index]) return location;
+    if (chartActive) chart.setActiveElements([location]);
+    chart.tooltip?.setActiveElements(
+      [location],
+      getElementPosition(chart, location)
+    );
+    return location;
+  }
+  function clearTooltip(chart) {
+    chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+  }
+  function clearActivePoint(chart) {
+    chart.setActiveElements([]);
+    clearTooltip(chart);
+  }
+  function setKeyboardIndex(chart, key) {
+    const location = findPointLocation(chart, key);
+    if (!location) return;
+    const point = chart.data.datasets[location.datasetIndex].data[location.index];
+    ensureState(chart).keyboardIndex = point._index;
+  }
+  function formatValues(values) {
+    return values.map((value) => `${String(value)} (${typeof value})`).join(", ");
+  }
+  function announce(chart, message) {
+    const liveRegion = chart.data._selectionState_?.liveRegion;
+    if (liveRegion) liveRegion.textContent = message;
+  }
+  function announceSelection(chart, selection2) {
+    if (selection2.type === null) {
+      announce(chart, "Selection cleared.");
+      return;
+    }
+    const noun = selection2.type === "point" ? "point" : "group";
+    const label = selection2.values.length === 1 ? noun : `${noun}s`;
+    announce(chart, `Selected ${label} ${formatValues(selection2.values)}.`);
+  }
+  function fireOnSelect2(chart, selection2, event) {
+    const callback2 = chart.data._spec_.callbacks.onSelect;
+    if (callback2) callback2(selection2, event);
+  }
+  function setSelection(chart, type2, values, event, options) {
+    storeOriginalStyles(chart);
+    const state = ensureState(chart);
+    state.selection = { type: type2, values: [...values] };
+    applySelectionStyles(chart);
+    const activeKey = options?._activeKey;
+    const fromKeyboard = event?.type === "keydown" && activeKey !== void 0;
+    if (fromKeyboard) {
+      if (activeKey !== void 0) setKeyboardIndex(chart, activeKey);
+      if (type2 === "point" && values.length === 1) {
+        if (!setActivePoint(chart, values[0], false)) clearTooltip(chart);
+      }
+    } else if (activeKey !== void 0) {
+      setKeyboardIndex(chart, activeKey);
+      if (!setActivePoint(chart, activeKey)) clearActivePoint(chart);
+    } else if (type2 === "point" && values.length === 1) {
+      setKeyboardIndex(chart, values[0]);
+      if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
+    } else {
+      clearActivePoint(chart);
+      delete state.keyboardIndex;
+    }
+    chart.update("none");
+    const selection2 = getSelection2(chart);
+    announceSelection(chart, selection2);
+    if (!options?._silent) fireOnSelect2(chart, selection2, event);
+  }
+  function selectPoint(chart, values, event, options) {
+    const normalized = normalizeValues(values, "selectPoint");
+    if (normalized.length === 0) {
+      clearSelection2(chart, event, options);
+      return;
+    }
+    validateKnownValues(
+      normalized,
+      new Set(getPoints(chart).map((point) => point._key)),
+      "selectPoint",
+      "key"
+    );
+    setSelection(chart, "point", normalized, event, options);
+  }
+  function selectGroup(chart, values, event, options) {
+    if (!chart.data._spec_.mapping.color) {
+      throw new Error(
+        "points selectGroup requires spec.mapping.color to be configured"
+      );
+    }
+    const normalized = normalizeValues(values, "selectGroup", true);
+    if (normalized.length === 0) {
+      clearSelection2(chart, event, options);
+      return;
+    }
+    validateKnownValues(
+      normalized,
+      new Set(getGroupValues(chart)),
+      "selectGroup",
+      "group"
+    );
+    setSelection(chart, "group", normalized, event, options);
+  }
+  function clearSelection2(chart, event, options) {
+    const state = chart.data._selectionState_;
+    if (!state?.selection || state.selection.type === null) return;
+    state.selection = { type: null, values: [] };
+    restoreOriginalStyles(chart);
+    if (event?.type === "keydown" && event.key === "Enter") {
+      clearTooltip(chart);
+    } else {
+      clearActivePoint(chart);
+      delete state.keyboardIndex;
+    }
+    chart.update("none");
+    const selection2 = getSelection2(chart);
+    announceSelection(chart, selection2);
+    if (!options?._silent) fireOnSelect2(chart, selection2, event);
+  }
+  function getSelection2(chart) {
+    const selection2 = chart.data._selectionState_?.selection;
+    return selection2 ? { type: selection2.type, values: [...selection2.values] } : { type: null, values: [] };
+  }
+  function togglePointSelection(chart, key, event) {
+    const current = getSelection2(chart);
+    const multiple = chart.data._spec_.selection.multiple;
+    const options = { _activeKey: key };
+    if (current.type === "point" && current.values.includes(key)) {
+      const remaining = current.values.filter((value) => value !== key);
+      if (!multiple || remaining.length === 0) {
+        clearSelection2(chart, event);
+      } else {
+        selectPoint(chart, remaining, event, options);
+      }
+    } else if (multiple && current.type === "point") {
+      selectPoint(chart, [...current.values, key], event, options);
+    } else {
+      selectPoint(chart, key, event, options);
+    }
+  }
+  function dismissActivePoint(chart) {
+    const state = ensureState(chart);
+    clearActivePoint(chart);
+    delete state.keyboardIndex;
+    chart.update("none");
+    announce(chart, "Active point cleared.");
+  }
+  function resetSelectionForUpdate(chart) {
+    const state = chart.data._selectionState_;
+    const hadSelection = state?.selection?.type !== null;
+    const hadKeyboardPoint = state?.keyboardIndex !== void 0;
+    const hadActivePoint = chart.getActiveElements().length > 0 || (chart.tooltip?.getActiveElements().length || 0) > 0;
+    chart.setActiveElements([]);
+    clearTooltip(chart);
+    if (!state) return;
+    state.selection = { type: null, values: [] };
+    delete state.originalStyles;
+    delete state.legendStyles;
+    delete state.keyboardIndex;
+    if (hadSelection) {
+      announce(chart, "Selection cleared.");
+    } else if (hadKeyboardPoint || hadActivePoint) {
+      announce(chart, "Active point cleared.");
+    }
+  }
+  function selectionLegendPlugin2() {
+    const restoreLegend = (chart) => {
+      const state = chart.data._selectionState_;
+      if (!state?.legendStyles || !chart.legend?.legendItems) return;
+      chart.legend.legendItems.forEach((item) => {
+        const original = state.legendStyles.get(item.datasetIndex);
+        if (!original) return;
+        item.fillStyle = original.fillStyle;
+        item.strokeStyle = original.strokeStyle;
+      });
+    };
+    return {
+      id: "pointsSelectionLegend",
+      afterUpdate: restoreLegend,
+      beforeDraw: restoreLegend
+    };
+  }
+  function hasLocation(elements2, location) {
+    return elements2.length === 1 && elements2[0].datasetIndex === location.datasetIndex && elements2[0].index === location.index;
+  }
+  function reconcileSelectedPoint(chart, forcePosition = false, preserveKeyboardCursor = false) {
+    const selection2 = getSelection2(chart);
+    if (selection2.type !== "point" || selection2.values.length !== 1) {
+      return false;
+    }
+    const location = findPointLocation(chart, selection2.values[0]);
+    if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
+      const selectedIsActive = hasLocation(chart.getActiveElements(), location) || hasLocation(chart.tooltip?.getActiveElements() || [], location);
+      if (selectedIsActive) clearActivePoint(chart);
+      return selectedIsActive;
+    }
+    const chartActive = chart.getActiveElements();
+    const tooltipActive = chart.tooltip?.getActiveElements() || [];
+    if (!forcePosition && hasLocation(chartActive, location) && hasLocation(tooltipActive, location)) {
+      return false;
+    }
+    const state = ensureState(chart);
+    const selectedPoint = chart.data.datasets[location.datasetIndex].data[location.index];
+    const activePoint = chartActive.length === 1 ? chart.data.datasets[chartActive[0].datasetIndex]?.data[chartActive[0].index] : void 0;
+    const keyboardIsActive = preserveKeyboardCursor && activePoint?._index === state.keyboardIndex && state.keyboardIndex !== selectedPoint._index;
+    setActivePoint(chart, selection2.values[0], !keyboardIsActive);
+    return true;
+  }
+  function selectionInteractionPlugin() {
+    return {
+      id: "pointsSelectionInteraction",
+      afterUpdate(chart) {
+        reconcileSelectedPoint(chart, true, true);
+      },
+      afterEvent(chart, args) {
+        if (reconcileSelectedPoint(chart)) args.changed = true;
+      }
+    };
+  }
+  function announceActivePoint(chart, point) {
+    announce(
+      chart,
+      `Active point ${String(point._key)} (${typeof point._key}): x ${point.x}, y ${point.y}.`
+    );
+  }
+
+  // src/points/onClick.js
+  function onClick3(event, activeElements, chart) {
+    const spec = chart.data._spec_;
+    if (!activeElements.length) {
+      if (spec.selection.enabled && getSelection2(chart).type !== null) {
+        clearSelection2(chart, event);
+      }
+      return;
+    }
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const dataset = chart.data.datasets[datasetIndex];
+    if (dataset?._annotation) return;
+    const point = dataset?.data[index3];
+    if (point && spec.callbacks.onClick) spec.callbacks.onClick(point, event);
+    if (chart.data._spec_ !== spec) return;
+    if (point && spec.selection.enabled) {
+      togglePointSelection(chart, point._key, event);
+    }
+  }
+
+  // src/points/onHover.js
+  function onHover3(event, activeElements, chart) {
+    const callbacks = chart.data._spec_.callbacks;
+    const target = event?.native?.target;
+    const isInteractive = !!(callbacks.onClick || callbacks.onHover || chart.data._spec_.selection.enabled);
+    if (!isInteractive) {
+      if (target?.style?.cursor === "pointer") {
+        target.style.cursor = "default";
+      }
+      return;
+    }
+    if (!activeElements.length) {
+      if (target) target.style.cursor = "default";
+      return;
+    }
+    const { datasetIndex, index: index3 } = activeElements[0];
+    const dataset = chart.data.datasets[datasetIndex];
+    if (dataset?._annotation) {
+      if (target) target.style.cursor = "default";
+      return;
+    }
+    if (target) target.style.cursor = "pointer";
+    if (callbacks.onHover) {
+      const point = dataset?.data[index3];
+      if (point) callbacks.onHover(point, event);
+    }
+  }
+
+  // src/points/keyboardSelection.js
+  var statusId = 0;
+  function isPointInRange2(point, scale) {
+    return !scale || point[scale.axis] >= scale.min && point[scale.axis] <= scale.max;
+  }
+  function getPointLocations(chart) {
+    return chart.data.datasets.flatMap(
+      (dataset, datasetIndex) => dataset._annotation ? [] : dataset.data.map((point, index3) => ({
+        datasetIndex,
+        index: index3,
+        point
+      }))
+    ).filter(({ datasetIndex }) => chart.isDatasetVisible(datasetIndex)).filter(
+      ({ point }) => isPointInRange2(point, chart.scales.x) && isPointInRange2(point, chart.scales.y)
+    ).sort((a, b) => a.point._index - b.point._index);
+  }
+  function getPosition(chart, location) {
+    const element = chart.getDatasetMeta(location.datasetIndex).data[location.index];
+    return typeof element?.getCenterPoint === "function" ? element.getCenterPoint() : { x: element?.x ?? 0, y: element?.y ?? 0 };
+  }
+  function activate(chart, location) {
+    const descriptor = {
+      datasetIndex: location.datasetIndex,
+      index: location.index
+    };
+    chart.setActiveElements([descriptor]);
+    chart.tooltip?.setActiveElements(
+      [descriptor],
+      getPosition(chart, location)
+    );
+    chart.data._selectionState_.keyboardIndex = location.point._index;
+    chart.update("none");
+    announceActivePoint(chart, location.point);
+  }
+  function move(chart, direction) {
+    const locations = getPointLocations(chart);
+    if (locations.length === 0) return false;
+    const state = chart.data._selectionState_;
+    const current = locations.findIndex(
+      ({ point }) => point._index === state.keyboardIndex
+    );
+    const next = current === -1 ? direction > 0 ? 0 : locations.length - 1 : (current + direction + locations.length) % locations.length;
+    activate(chart, locations[next]);
+    return true;
+  }
+  function getActiveLocation(chart) {
+    const locations = getPointLocations(chart);
+    const state = chart.data._selectionState_;
+    return locations.find(({ point }) => point._index === state.keyboardIndex);
+  }
+  function visuallyHide(element) {
+    Object.assign(element.style, {
+      position: "absolute",
+      width: "1px",
+      height: "1px",
+      padding: "0",
+      margin: "-1px",
+      overflow: "hidden",
+      clip: "rect(0, 0, 0, 0)",
+      whiteSpace: "nowrap",
+      border: "0"
+    });
+  }
+  function addStatus(canvas) {
+    const status = document.createElement("span");
+    status.id = `gsm-points-status-${++statusId}`;
+    status.className = "gsm-points-live-status";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.setAttribute("aria-atomic", "true");
+    visuallyHide(status);
+    if (canvas.parentNode) {
+      canvas.parentNode.insertBefore(status, canvas.nextSibling);
+    } else {
+      canvas.appendChild(status);
+    }
+    return status;
+  }
+  function setupKeyboardSelection(chart) {
+    if (!chart.data._spec_.selection.enabled) return;
+    const { canvas } = chart;
+    const state = chart.data._selectionState_ ||= {};
+    state.selection ||= { type: null, values: [] };
+    const previous = {
+      tabindex: canvas.getAttribute("tabindex"),
+      role: canvas.getAttribute("role"),
+      roledescription: canvas.getAttribute("aria-roledescription"),
+      keyshortcuts: canvas.getAttribute("aria-keyshortcuts")
+    };
+    const liveRegion = addStatus(canvas);
+    canvas.tabIndex = 0;
+    canvas.setAttribute("role", "application");
+    canvas.setAttribute("aria-roledescription", "interactive point chart");
+    canvas.setAttribute(
+      "aria-keyshortcuts",
+      "ArrowLeft ArrowRight ArrowUp ArrowDown Enter Escape"
+    );
+    state.liveRegion = liveRegion;
+    const onKeyDown = (event) => {
+      const directions = {
+        ArrowLeft: -1,
+        ArrowUp: -1,
+        ArrowRight: 1,
+        ArrowDown: 1
+      };
+      if (Object.prototype.hasOwnProperty.call(directions, event.key)) {
+        if (move(chart, directions[event.key])) event.preventDefault();
+        return;
+      }
+      if (event.key === "Enter") {
+        let active = getActiveLocation(chart);
+        if (!active) {
+          const [first] = getPointLocations(chart);
+          if (!first) return;
+          activate(chart, first);
+          active = first;
+        }
+        event.preventDefault();
+        togglePointSelection(chart, active.point._key, event);
+        return;
+      }
+      if (event.key === "Escape") {
+        if (state.selection?.type !== null) {
+          event.preventDefault();
+          clearSelection2(chart, event);
+        } else if (state.keyboardIndex !== void 0) {
+          event.preventDefault();
+          dismissActivePoint(chart);
+        }
+      }
+    };
+    canvas.addEventListener("keydown", onKeyDown);
+    state.cleanupKeyboard = () => {
+      canvas.removeEventListener("keydown", onKeyDown);
+      liveRegion.remove();
+      Object.entries(previous).forEach(([attribute, value]) => {
+        const name = ["tabindex", "role"].includes(attribute) ? attribute : `aria-${attribute}`;
+        if (value === null) canvas.removeAttribute(name);
+        else canvas.setAttribute(name, value);
+      });
+      delete state.liveRegion;
+      delete state.cleanupKeyboard;
+    };
+  }
+  function syncKeyboardSelection(chart) {
+    const state = chart.data._selectionState_;
+    if (chart.data._spec_.selection.enabled) {
+      if (!state?.cleanupKeyboard) setupKeyboardSelection(chart);
+    } else {
+      state?.cleanupKeyboard?.();
+    }
+  }
+  function selectionAccessibilityPlugin() {
+    return {
+      id: "pointsSelectionAccessibility",
+      afterDestroy(chart) {
+        chart.data?._selectionState_?.cleanupKeyboard?.();
+      }
+    };
+  }
+
+  // src/points/getStoredInputs.js
+  function getStoredInputs(chart) {
+    const { data, ...spec } = chart.data._spec_;
+    return { data, spec };
+  }
+
+  // src/points/rebuildChart.js
+  function encodeLevel(value, missing) {
+    return missing ? ["missing"] : ["value", typeof value, String(value)];
+  }
+  function getDatasetIdentity(dataset, spec) {
+    if (dataset._annotation) return void 0;
+    return JSON.stringify([
+      "points",
+      spec.mapping.color ? [
+        spec.mapping.color,
+        ...encodeLevel(dataset._color, dataset._colorMissing)
+      ] : null,
+      spec.mapping.shape ? [
+        spec.mapping.shape,
+        ...encodeLevel(dataset._shape, dataset._shapeMissing)
+      ] : null
+    ]);
+  }
+  function getHiddenDatasetIdentities(chart) {
+    const identities = /* @__PURE__ */ new Set();
+    chart.data.datasets.forEach((dataset, index3) => {
+      if (!chart.isDatasetVisible(index3)) {
+        const identity4 = getDatasetIdentity(dataset, chart.data._spec_);
+        if (identity4 !== void 0) identities.add(identity4);
+      }
+    });
+    return identities;
+  }
+  function syncDataLabelsPlugin(chart, enabled) {
+    const plugins2 = chart.config.plugins;
+    const index3 = plugins2.findIndex((plugin3) => plugin3.id === "datalabels");
+    if (enabled && index3 === -1) {
+      plugin2.beforeInit(chart);
+      plugins2.unshift(plugin2);
+    }
+    if (!enabled && index3 !== -1) {
+      plugins2.splice(index3, 1);
+      delete chart.$datalabels;
+    }
+  }
+  function applyOptions(chart, state) {
+    const options = chart.config.options;
+    options.animation = state.merged.theme.animation;
+    options.maintainAspectRatio = state.merged.theme.maintainAspectRatio;
+    options.plugins = state.plugins;
+    options.scales = state.scales;
+    if (state.interaction) {
+      options.interaction = state.interaction;
+    } else {
+      delete options.interaction;
+    }
+  }
+  function resetZoomForUpdate(chart) {
+    if (chart.isZoomedOrPanned?.()) {
+      chart.resetZoom("none");
+    }
+  }
+  function rebuildChart(chart, data, spec) {
+    const state = buildState(data, spec);
+    const hiddenIdentities = getHiddenDatasetIdentities(chart);
+    resetZoomForUpdate(chart);
+    resetSelectionForUpdate(chart);
+    chart.data.datasets = state.chartData.datasets;
+    chart.data._spec_ = state.merged;
+    applyOptions(chart, state);
+    syncDataLabelsPlugin(chart, !!state.merged.annotations.labels.point);
+    setAccessibleLabel(chart.canvas, state.accessibleLabel);
+    state.chartData.datasets.forEach((dataset, index3) => {
+      const identity4 = getDatasetIdentity(dataset, state.merged);
+      chart.setDatasetVisibility(
+        index3,
+        identity4 === void 0 || !hiddenIdentities.has(identity4)
+      );
+    });
+    chart.update("none");
+    syncKeyboardSelection(chart);
+    return chart;
+  }
+
+  // src/points/updateData.js
+  function updateData3(chart, data, spec) {
+    return rebuildChart(
+      chart,
+      data,
+      spec === void 0 ? getStoredInputs(chart).spec : spec
+    );
+  }
+
+  // src/points/updateSpec.js
+  function isPlainObject2(value) {
+    if (value === null || typeof value !== "object") return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+  function mergePartial(existing, partial) {
+    return Object.keys(partial).reduce(
+      (merged, key) => {
+        merged[key] = isPlainObject2(existing[key]) && isPlainObject2(partial[key]) ? mergePartial(existing[key], partial[key]) : partial[key];
+        return merged;
+      },
+      { ...existing }
+    );
+  }
+  function updateSpec2(chart, spec) {
+    if (!isPlainObject2(spec)) {
+      throw new Error("points updateSpec spec must be a plain object");
+    }
+    const stored = getStoredInputs(chart);
+    return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
+  }
+
+  // src/points.js
+  auto_default.register(annotation, plugin);
+  function points(element = "body", data = [], spec = {}) {
+    validateSpec3(data, spec);
+    let el = element;
+    if (typeof el === "string") {
+      el = document.querySelector(el);
+      if (!el) {
+        throw new Error(
+          `points: could not find element matching "${element}"`
+        );
+      }
+    }
+    const { merged, chartData, scales: scales2, plugins: plugins2, interaction: interaction2, accessibleLabel } = buildState(data, spec, true);
+    el._gsmVizPointsHoverCallbackWrapper ??= () => {
+    };
+    el._gsmVizPointsClickCallbackWrapper ??= () => {
+    };
+    const canvas = addCanvas(el, {
+      maintainAspectRatio: merged.theme.maintainAspectRatio,
+      hoverCallbackWrapper: el._gsmVizPointsHoverCallbackWrapper,
+      clickCallbackWrapper: el._gsmVizPointsClickCallbackWrapper
+    });
+    canvas.setAttribute("role", "img");
+    setAccessibleLabel(canvas, accessibleLabel);
+    const chart = new auto_default(canvas, {
+      type: "scatter",
+      data: {
+        ...chartData,
+        _spec_: merged
+      },
+      options: {
+        animation: merged.theme.animation,
+        ...interaction2 ? { interaction: interaction2 } : {},
+        maintainAspectRatio: merged.theme.maintainAspectRatio,
+        onClick: onClick3,
+        onHover: onHover3,
+        responsive: true,
+        plugins: plugins2,
+        scales: scales2
+      },
+      plugins: [
+        ...merged.annotations.labels.point ? [plugin2] : [],
+        displayWhiteBackground(),
+        selectionLegendPlugin2(),
+        selectionInteractionPlugin(),
+        selectionAccessibilityPlugin()
+      ]
+    });
+    canvas.chart = chart;
+    chart.helpers = {
+      selectPoint,
+      selectGroup,
+      clearSelection: clearSelection2,
+      getSelection: getSelection2,
+      updateData: updateData3,
+      updateSpec: updateSpec2,
+      exportImage: exportImage2
+    };
+    setupKeyboardSelection(chart);
+    return chart;
+  }
+
   // src/scatterPlot/checkInputs.js
   function checkInputs3(_results_, _config_, _bounds_, _groupMetadata_) {
     checkInput({
@@ -28145,34 +30772,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults5 = {};
-    defaults5.resultTooltipKeys = [
+    const defaults6 = {};
+    defaults6.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults5.GroupLevel = "Site";
-    defaults5.groupLabelKey = "InvestigatorLastName";
-    defaults5.groupParticipantCountKey = "ParticipantCount";
-    defaults5.groupTooltipKeys = null;
-    defaults5.x = "Denominator";
-    defaults5[defaults5.x] = defaults5.x;
-    defaults5.xType = "logarithmic";
-    defaults5.y = "Numerator";
-    defaults5[defaults5.y] = defaults5.y;
-    defaults5.yType = "linear";
-    defaults5.color = "Flag";
-    defaults5.hoverCallback = (datum2) => {
+    defaults6.GroupLevel = "Site";
+    defaults6.groupLabelKey = "InvestigatorLastName";
+    defaults6.groupParticipantCountKey = "ParticipantCount";
+    defaults6.groupTooltipKeys = null;
+    defaults6.x = "Denominator";
+    defaults6[defaults6.x] = defaults6.x;
+    defaults6.xType = "logarithmic";
+    defaults6.y = "Numerator";
+    defaults6[defaults6.y] = defaults6.y;
+    defaults6.yType = "linear";
+    defaults6.color = "Flag";
+    defaults6.hoverCallback = (datum2) => {
     };
-    defaults5.clickCallback = (datum2) => {
+    defaults6.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults5.displayTitle = false;
-    defaults5.displayLegend = true;
-    defaults5.displayTrendLine = false;
-    defaults5.maintainAspectRatio = false;
-    const config = configure2(defaults5, _config_, {
+    defaults6.displayTitle = false;
+    defaults6.displayLegend = true;
+    defaults6.displayTrendLine = false;
+    defaults6.maintainAspectRatio = false;
+    const config = configure2(defaults6, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -28428,7 +31055,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/structureData.js
-  function structureData4(_results_, config, _bounds_, _groupMetadata_ = null) {
+  function structureData5(_results_, config, _bounds_, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const data = mutate2(_results_, config, groupMetadata);
     let datasets = [
@@ -28548,7 +31175,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getPlugins.js
-  function getPlugins3(config) {
+  function getPlugins4(config) {
     const plugins2 = {
       legend: legend2(config),
       title: title2(config),
@@ -28558,7 +31185,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/getScales.js
-  function getScales3(config) {
+  function getScales4(config) {
     const scales2 = getDefaultScales();
     scales2.x.grid.display = true;
     scales2.x.ticks = {
@@ -28581,8 +31208,8 @@ var gsmViz = (() => {
       chart.data.datasets.find((dataset) => dataset.type === "scatter").data
     );
     chart.canvas.riskSignalSelected.data = config.selectedGroupDatum;
-    const plugins2 = getPlugins3(config);
-    const scales2 = getScales3(config);
+    const plugins2 = getPlugins4(config);
+    const scales2 = getScales4(config);
     chart.data.config = config;
     chart.options.plugins = plugins2;
     chart.options.scales = scales2;
@@ -28592,9 +31219,9 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/updateData.js
-  function updateData3(chart, _results_, _config_, _bounds_, _groupMetadata_) {
+  function updateData4(chart, _results_, _config_, _bounds_, _groupMetadata_) {
     const config = updateConfig2(chart, _config_, false, false);
-    const datasets = structureData4(
+    const datasets = structureData5(
       _results_,
       config,
       _bounds_,
@@ -28611,7 +31238,7 @@ var gsmViz = (() => {
     checkInputs3(_results_, _config_, _bounds_, _groupMetadata_);
     const config = configure5(_config_, _results_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData4(
+    const datasets = structureData5(
       _results_,
       config,
       _bounds_,
@@ -28622,8 +31249,8 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins3(config),
-      scales: getScales3(config)
+      plugins: getPlugins4(config),
+      scales: getScales4(config)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -28641,7 +31268,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig2,
-      updateData: updateData3,
+      updateData: updateData4,
       updateOption,
       triggerTooltip
     };
@@ -28674,21 +31301,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults5 = {};
-    defaults5.x = "SnapshotDate";
-    defaults5.xType = "category";
-    defaults5.y = "Score";
-    defaults5.yType = "linear";
-    defaults5.color = "Flag";
-    defaults5.hoverCallback = (datum2) => {
+    const defaults6 = {};
+    defaults6.x = "SnapshotDate";
+    defaults6.xType = "category";
+    defaults6.y = "Score";
+    defaults6.yType = "linear";
+    defaults6.color = "Flag";
+    defaults6.hoverCallback = (datum2) => {
     };
-    defaults5.clickCallback = (datum2) => {
+    defaults6.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults5.maintainAspectRatio = false;
-    defaults5.nSnapshots = 5;
-    defaults5.displayThresholds = false;
-    const config = configure2(defaults5, _config_, {
+    defaults6.maintainAspectRatio = false;
+    defaults6.nSnapshots = 5;
+    defaults6.displayThresholds = false;
+    const config = configure2(defaults6, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -28746,7 +31373,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/structureData.js
-  function structureData5(_data_, config) {
+  function structureData6(_data_, config) {
     const data = mutate3(_data_, config);
     const labels = data.map((d) => d.SnapshotDate);
     const pointBackgroundColor = data.map((d, i) => {
@@ -28870,7 +31497,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getPlugins.js
-  function getPlugins4(config, _data_) {
+  function getPlugins5(config, _data_) {
     const plugins2 = {
       annotation: annotations3(config, _data_),
       legend: legend3(config),
@@ -28880,7 +31507,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/getScales.js
-  function getScales4(config, data) {
+  function getScales5(config, data) {
     const scales2 = getDefaultScales();
     scales2.x.display = false;
     scales2.x.type = config.xType;
@@ -28903,14 +31530,14 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/updateData.js
-  function updateData4(chart, _data_, _config_) {
+  function updateData5(chart, _data_, _config_) {
     chart.data.config = updateConfig3(chart, _config_);
-    chart.data.datasets = structureData5(_data_, chart.data.config);
-    chart.options.plugins = getPlugins4(
+    chart.data.datasets = structureData6(_data_, chart.data.config);
+    chart.options.plugins = getPlugins5(
       chart.data.config,
       chart.data.datasets[0].data
     );
-    chart.options.scales = getScales4(
+    chart.options.scales = getScales5(
       chart.data.config,
       chart.data.datasets[0].data
     );
@@ -28922,7 +31549,7 @@ var gsmViz = (() => {
     checkInputs4(_results_, _config_, _thresholds_);
     const config = configure6(_config_, _results_, _thresholds_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData5(_results_, config);
+    const datasets = structureData6(_results_, config);
     const options = {
       animation: false,
       layout: {
@@ -28931,8 +31558,8 @@ var gsmViz = (() => {
         }
       },
       maintainAspectRatio: config.maintainAspectRatio,
-      plugins: getPlugins4(config, datasets[0].data),
-      scales: getScales4(config, datasets[0].data)
+      plugins: getPlugins5(config, datasets[0].data),
+      scales: getScales5(config, datasets[0].data)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -28951,7 +31578,7 @@ var gsmViz = (() => {
     canvas.chart = chart;
     chart.helpers = {
       updateConfig: updateConfig3,
-      updateData: updateData4,
+      updateData: updateData5,
       updateOption
     };
     return chart;
@@ -28996,39 +31623,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults5 = {};
-    defaults5.resultTooltipKeys = [
+    const defaults6 = {};
+    defaults6.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults5.GroupLevel = "Site";
-    defaults5.groupLabelKey = "InvestigatorLastName";
-    defaults5.groupParticipantCountKey = "ParticipantCount";
-    defaults5.groupTooltipKeys = null;
-    defaults5.dataType = "continuous";
-    defaults5.discreteUnit = null;
-    defaults5.distributionDisplay = "boxplot";
-    defaults5.x = "SnapshotDate";
-    defaults5.xType = "category";
-    defaults5.y = "Score";
-    defaults5.yType = "linear";
-    defaults5.color = "Flag";
-    defaults5.hoverCallback = (datum2) => {
+    defaults6.GroupLevel = "Site";
+    defaults6.groupLabelKey = "InvestigatorLastName";
+    defaults6.groupParticipantCountKey = "ParticipantCount";
+    defaults6.groupTooltipKeys = null;
+    defaults6.dataType = "continuous";
+    defaults6.discreteUnit = null;
+    defaults6.distributionDisplay = "boxplot";
+    defaults6.x = "SnapshotDate";
+    defaults6.xType = "category";
+    defaults6.y = "Score";
+    defaults6.yType = "linear";
+    defaults6.color = "Flag";
+    defaults6.hoverCallback = (datum2) => {
     };
-    defaults5.clickCallback = (datum2) => {
+    defaults6.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults5.aggregateLabel = "Study";
-    defaults5.annotateThreshold = _thresholds_ !== null;
-    defaults5.displayTitle = false;
-    defaults5.maintainAspectRatio = false;
+    defaults6.aggregateLabel = "Study";
+    defaults6.annotateThreshold = _thresholds_ !== null;
+    defaults6.displayTitle = false;
+    defaults6.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults5, _config_, {
+    const config = configure2(defaults6, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -29041,7 +31668,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults5.dataType === "discrete")
+    if (defaults6.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -29449,7 +32076,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/structureData.js
-  function structureData6(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function structureData7(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const { results, labels, thresholds: thresholds2, intervals } = mutate4(
       _results_,
@@ -29735,16 +32362,16 @@ var gsmViz = (() => {
         const datum2 = data.dataset.data[data.dataIndex];
         const isAnnotation = data.dataset.purpose === "annotation";
         const isObject2 = typeof datum2 === "object";
-        const isSelected = config.selectedGroupIDs.includes(datum2.GroupID);
+        const isSelected2 = config.selectedGroupIDs.includes(datum2.GroupID);
         const isScatter = data.dataset.type === "scatter";
-        return !isAnnotation && isObject2 && !(isSelected && isScatter);
+        return !isAnnotation && isObject2 && !(isSelected2 && isScatter);
       },
       ...tooltipAesthetics
     };
   }
 
   // src/timeSeries/getPlugins.js
-  function getPlugins5(config) {
+  function getPlugins6(config) {
     return {
       annotation: {
         annotations: annotations4(config)
@@ -29756,7 +32383,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/getScales.js
-  function getScales5(config) {
+  function getScales6(config) {
     const scales2 = getDefaultScales();
     scales2.x.title.text = config.xLabel;
     scales2.x.type = config.xType;
@@ -29766,9 +32393,9 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/updateData.js
-  function updateData5(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function updateData6(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
-    const datasets = structureData6(
+    const datasets = structureData7(
       _results_,
       config,
       _thresholds_,
@@ -29785,8 +32412,8 @@ var gsmViz = (() => {
       _intervals_,
       _groupMetadata_
     };
-    chart.options.scales = getScales5(config);
-    chart.options.plugins = getPlugins5(config);
+    chart.options.scales = getScales6(config);
+    chart.options.plugins = getPlugins6(config);
     chart.update();
   }
 
@@ -29801,7 +32428,7 @@ var gsmViz = (() => {
       this.data.config.selectedGroupIDs
     );
     this.canvas.riskSignalSelected.data = this.data.config.selectedGroupDatum;
-    this.data.datasets = structureData6(
+    this.data.datasets = structureData7(
       this.data._results_,
       this.data.config,
       this.data._thresholds_,
@@ -29822,7 +32449,7 @@ var gsmViz = (() => {
     );
     const config = configure7(_config_, _results_, _thresholds_, _intervals_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData6(
+    const datasets = structureData7(
       _results_,
       config,
       _thresholds_,
@@ -29834,9 +32461,9 @@ var gsmViz = (() => {
       maintainAspectRatio: config.maintainAspectRatio,
       onClick,
       onHover,
-      plugins: getPlugins5(config),
+      plugins: getPlugins6(config),
       responsive: true,
-      scales: getScales5(config, _results_)
+      scales: getScales6(config, _results_)
     };
     const chart = new auto_default(canvas, {
       data: {
@@ -29857,7 +32484,7 @@ var gsmViz = (() => {
     });
     canvas.chart = chart;
     chart.helpers = {
-      updateData: updateData5.bind(chart),
+      updateData: updateData6.bind(chart),
       updateSelectedGroupIDs: updateSelectedGroupIDs.bind(chart)
     };
     return chart;
@@ -29879,6 +32506,7 @@ var gsmViz = (() => {
     bars,
     facetBars,
     groupOverview,
+    points,
     scatterPlot,
     sparkline,
     timeSeries

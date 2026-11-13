@@ -5,6 +5,7 @@
     -   Generics
         -   [Bar Chart](bars/ ':ignore')
         -   [Bar Chart Builder](bars/builder.html ':ignore')
+        -   [Points](points/ ':ignore')
     -   Metrics
         -   [Bar Chart](barChart/ ':ignore')
         -   [Group Overview — Country](groupOverview/country ':ignore')
@@ -17,6 +18,7 @@
 -   **API Reference**
     -   Generics
         -   [bars](docs/bars)
+        -   [points](docs/points)
     -   Metrics
         -   [barChart](docs/barChart)
         -   [groupOverview](docs/groupOverview)

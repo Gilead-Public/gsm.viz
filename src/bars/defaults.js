@@ -89,6 +89,7 @@ const defaults = {
         animation: false,
         dynamicSizing: false,
         dynamicCategoryAxis: false,
+        dynamicValueAxis: false,
         pxPerCategory: 30,
     },
     zoom: {

@@ -150,8 +150,12 @@ facet: {
 }
 ```
 
-> **Note:** `position: 'fill'` always uses a fixed 0–100 % scale regardless of
-> the `free` setting.
+> **Note:** by default `position: 'fill'` uses a fixed 0–100 % scale regardless
+> of the `free` setting.
+
+> `theme.dynamicValueAxis` only rescales facets when `facet.scales.y.free` is
+> `true`. With a constant value axis, every facet keeps the shared range
+> (0–100% in percent modes) so facets stay comparable.
 
 ---
 

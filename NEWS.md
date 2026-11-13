@@ -1,14 +1,24 @@
 # NEWS
 
-## gsm.viz 2.4.1
+## gsm.viz 2.5.0 (Development)
 
-### Bug Fixes
+### New: `points` Module
 
-- **bars**: Apply segment label `minSize` guards to both the value-axis length and category-axis thickness, preventing labels from overflowing thin bars (#547)
+- Add the generic `points(element, data, spec)` entry point with strict numeric x/y mappings, optional stable row keys, responsive Chart.js scatter rendering, linear axis labels, chart title/caption labels, and an accessible canvas text alternative (#559, #567, #568, #569).
+- Add ordered categorical color mappings, named and fallback palettes, legend titles, stable empty ordered groups, and a neutral missing-value level to `points` (#570).
+- Add linear/logarithmic point axes with fixed ranges, automatic begin-at-zero behavior, explicit breaks and labels, and strict positive log-domain validation (#571).
+- Add row-aware tooltip templates and formatters, Chart.js tooltip callback precedence, and point-only click/hover callbacks with source-row payloads (#572).
+- Add continuous point size and opacity mappings with area-correct radius scaling, clamped alpha ranges, equal-domain handling, and deterministic hover radii (#573).
+- Add discrete point shapes, named and ordered shape scales, actual color/shape combination legends, neutral missing markers, and encoded-value accessibility text (#574).
+- Add x/y reference lines and strict external auxiliary line layers with grouped styling, automatic-domain participation, and interaction-safe legend controls (#575).
+- Add selective point labels with source-field text, static/field/predicate filtering, formatter payloads, and configurable positioning and typography (#576).
+- Add keyed point and color-group selection with click/multiple modes, programmatic helpers, persistent tooltip identity, undimmed legends, and keyboard/live-status accessibility (#577).
+- Add in-place `updateData` and deep partial `updateSpec` helpers with full-pipeline rebuilds, typed hidden-group restoration, dynamic plugin/keyboard lifecycle handling, and deliberate stale-selection cleanup (#578).
+- Add optional x/y zoom and pan controls plus an opaque PNG export helper with deterministic title- or axis-derived filenames to `points` (#579).
 
-### Infrastructure & Chores
+### `bars`
 
-- Consolidate `AGENTS.md` guidance into `.github/copilot-instructions.md` and keep `CLAUDE.md` linked to the shared instructions (#549)
+- Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).
 
 ## gsm.viz 2.4.0 (Release Candidate)
 
