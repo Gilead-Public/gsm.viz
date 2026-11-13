@@ -26,6 +26,18 @@ describe('deriveGroupMetrics site risk score handling', () => {
         SiteRiskScoreMetricID: 'srs0001',
     };
 
+    test.each([0, 1, 2])('excludes score rows from flag counts (%s)', (flag) => {
+        const results = deriveGroupMetrics(mockGroupMetadata, [
+            { GroupID: 'Site001', MetricID: 'kri0001', Flag: 2, Score: 2 },
+            { GroupID: 'Site001', MetricID: 'srs0001', Flag: flag, Score: 100 },
+            { GroupID: 'Site001', MetricID: 'adjusted', Flag: flag, Score: 50 },
+        ], { ...mockConfig, ComparisonRiskScoreMetricID: 'adjusted' });
+        expect(results[0]).toMatchObject({
+            nRedFlags: 1, nAmberFlags: 0, nGreenFlags: 0,
+            siteRiskScore: 100, comparisonRiskScore: 50,
+        });
+    });
+
     test('sets siteRiskScore when metric exists in results', () => {
         const mockResults = [
             { GroupID: 'Site001', MetricID: 'kri0001', Flag: 0, Score: 0.5 },

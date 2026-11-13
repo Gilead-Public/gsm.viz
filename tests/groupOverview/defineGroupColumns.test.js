@@ -3,6 +3,7 @@
  */
 
 import defineGroupColumns from '../../src/groupOverview/defineColumns/defineGroupColumns.js';
+import defineRiskScoreTooltip from '../../src/groupOverview/defineColumns/defineRiskScoreTooltip.js';
 
 describe('defineGroupColumns site risk score column', () => {
     const mockGroupMetadata = [
@@ -58,6 +59,35 @@ describe('defineGroupColumns site risk score column', () => {
         { MetricID: 'kri0001', GroupLevel: 'Site' },
         { MetricID: 'srs0001', GroupLevel: 'Site' },
     ];
+
+    test('keeps score columns when filtering removes their result rows', () => {
+        const config = {
+            ...mockConfig, ComparisonRiskScoreMetricID: 'adjusted',
+            ComparisonRiskScoreLabel: 'Review Priority',
+        };
+        const initial = [
+            { GroupID: 'Site001', MetricID: 'srs0001', Score: 100 },
+            { GroupID: 'Site001', MetricID: 'adjusted', Score: 50 },
+        ];
+        const columns = defineGroupColumns(mockGroupMetadata, config, [], [], initial);
+        expect(columns.slice(-2).map((column) => column.valueKey)).toEqual([
+            'siteRiskScore', 'comparisonRiskScore',
+        ]);
+        expect(columns[columns.length - 1].label).toBe('Review Priority');
+        expect(defineGroupColumns(mockGroupMetadata, config, [], [])
+            .some((column) => column.valueKey === 'comparisonRiskScore')).toBe(false);
+    });
+
+    test('excludes comparison score from baseline tooltip signals', () => {
+        const tooltip = defineRiskScoreTooltip({}, { GroupID: 'Site001' }, {
+            ...mockConfig, ComparisonRiskScoreMetricID: 'adjusted',
+        }, [
+            { GroupID: 'Site001', MetricID: 'kri0001', Flag: 2 },
+            { GroupID: 'Site001', MetricID: 'adjusted', Flag: 2 },
+        ]);
+        expect(tooltip).toContain('Red Flags (1)');
+        expect(tooltip).not.toContain('adjusted');
+    });
 
     test('includes Risk Score column when site risk metric exists in results', () => {
         const mockResults = [

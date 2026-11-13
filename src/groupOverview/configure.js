@@ -14,8 +14,10 @@ export default function configure(_config_) {
     defaults.groupParticipantCountKey = 'ParticipantCount';
     defaults.groupTooltipKeys = null;
     defaults.SiteRiskScoreMetricID = 'Analysis_srs0001';
+    defaults.ComparisonRiskScoreMetricID = null;
+    defaults.ComparisonRiskScoreLabel = 'Adjusted Risk Score';
     defaults.SiteRiskScoreURL =
-        'https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html';
+        'https://gilead-public.github.io/gsm.kri/articles/SiteRiskScore.html';
 
     // callbacks
     defaults.groupClickCallback = (datum) => {

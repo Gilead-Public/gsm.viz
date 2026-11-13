@@ -9,6 +9,8 @@ describe('configuration', () => {
         expect(settings).toEqual(
             [
                 'GroupLevel',
+                'ComparisonRiskScoreMetricID',
+                'ComparisonRiskScoreLabel',
                 'SiteRiskScoreMetricID',
                 'SiteRiskScoreURL',
                 'groupLabelKey',

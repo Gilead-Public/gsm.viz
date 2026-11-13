@@ -22,7 +22,8 @@ export default function updateTable(_results_) {
         groupMetadata,
         this._metricMetadata_,
         _results_,
-        this.config
+        this.config,
+        this._results_
     );
     const rows = structureData(_results_, columns, groupMetadata, this.config);
 
