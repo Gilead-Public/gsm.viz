@@ -18,7 +18,8 @@ export default function defineGroupColumns(
     groupMetadata,
     config,
     results = null,
-    metricMetadata = null
+    metricMetadata = null,
+    scoreResults = results
 ) {
     let columns = [
         {
@@ -83,8 +84,8 @@ export default function defineGroupColumns(
 
     // Only add Risk Score column for Site-level data when the site risk score metric exists in the data
     const hasSiteRiskScoreData =
-        results &&
-        results.some(
+        scoreResults &&
+        scoreResults.some(
             (result) => result.MetricID === config.SiteRiskScoreMetricID
         );
 
@@ -121,6 +122,26 @@ export default function defineGroupColumns(
         }
 
         columns.push(riskScoreColumn);
+    }
+    const hasComparisonRiskScoreData =
+        scoreResults &&
+        config.ComparisonRiskScoreMetricID &&
+        scoreResults.some(
+            (result) => result.MetricID === config.ComparisonRiskScoreMetricID
+        );
+    if (config.GroupLevel === 'Site' && hasComparisonRiskScoreData) {
+        columns.push({
+            label: config.ComparisonRiskScoreLabel,
+            data: groupMetadata,
+            filterKey: 'GroupID',
+            valueKey: 'comparisonRiskScore',
+            headerTooltip: 'Action-weighted site risk score.',
+            sort: sortNumber,
+            tooltip: false,
+            type: 'group',
+            dataType: 'number',
+            defineTooltip: defineGroupTooltip,
+        });
     }
     return columns;
 }

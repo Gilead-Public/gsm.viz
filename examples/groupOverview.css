@@ -28,6 +28,9 @@
 }
 .group-overview th.group-overview--siteRiskScore {
 }
+.group-overview th.group-overview--comparisonRiskScore {
+    border-left: 2px solid #999;
+}
 .group-overview th.group-overview--metric {
     font-size: 0.8em;
 }
@@ -51,6 +54,11 @@
     font-weight: bold;
     color: #000; /* Black text for better contrast */
     text-shadow: 0 0 3px #fff, 0 0 3px #fff; /* White text shadow for readability */
+}
+.group-overview td.group-overview--comparisonRiskScore {
+    border-left: 2px solid #ccc;
+    color: black;
+    text-shadow: 1px 1px 1px white;
 }
 .group-overview td.group-overview--metric {
     width: 3em;

@@ -27,12 +27,18 @@ export default function defineRiskScoreTooltip(
     );
 
     // Get amber and red flagged metrics for this group
-    const amberFlags = groupResults
-        .filter((result) => Math.abs(parseInt(result.Flag)) === 1)
-        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
-    const redFlags = groupResults
-        .filter((result) => Math.abs(parseInt(result.Flag)) === 2)
-        .filter((result) => result.MetricID !== config.SiteRiskScoreMetricID);
+    const signalResults = groupResults.filter(
+        (result) => ![
+            config.SiteRiskScoreMetricID,
+            config.ComparisonRiskScoreMetricID,
+        ].includes(result.MetricID)
+    );
+    const amberFlags = signalResults.filter(
+        (result) => Math.abs(parseInt(result.Flag)) === 1
+    );
+    const redFlags = signalResults.filter(
+        (result) => Math.abs(parseInt(result.Flag)) === 2
+    );
 
     // Create a lookup for metric names
     const metricLookup = metricMetadata
@@ -95,7 +101,7 @@ export default function defineRiskScoreTooltip(
     tooltipLines.push('For more information, see:');
     tooltipLines.push(
         config.SiteRiskScoreURL ||
-            'https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html'
+            'https://gilead-public.github.io/gsm.kri/articles/SiteRiskScore.html'
     );
 
     return tooltipLines.join('\n');

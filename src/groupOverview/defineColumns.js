@@ -22,13 +22,15 @@ export default function defineColumns(
     groupMetadata,
     metricMetadata,
     results,
-    config
+    config,
+    scoreResults = results
 ) {
     const groupColumns = defineGroupColumns(
         groupMetadata,
         config,
         results,
-        metricMetadata
+        metricMetadata,
+        scoreResults
     );
     const metricColumns = defineMetricColumns(metricMetadata, results, config);
     const columns = [...groupColumns, ...metricColumns];

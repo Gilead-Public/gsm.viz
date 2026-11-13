@@ -46,19 +46,25 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
         const groupResults = _results_.filter(
             (result) => result.GroupID === group.GroupID
         );
+        const signalResults = groupResults.filter(
+            (result) => ![
+                config.SiteRiskScoreMetricID,
+                config.ComparisonRiskScoreMetricID,
+            ].includes(result.MetricID)
+        );
 
         // count red flags
-        group.nRedFlags = groupResults.filter(
+        group.nRedFlags = signalResults.filter(
             (result) => Math.abs(parseInt(result.Flag)) === 2
         ).length;
 
         // count amber flags
-        group.nAmberFlags = groupResults.filter(
+        group.nAmberFlags = signalResults.filter(
             (result) => Math.abs(parseInt(result.Flag)) === 1
         ).length;
 
         // count green flags
-        group.nGreenFlags = groupResults.filter(
+        group.nGreenFlags = signalResults.filter(
             (result) => Math.abs(parseInt(result.Flag)) === 0
         ).length;
 
@@ -72,6 +78,12 @@ export default function deriveGroupMetrics(_groupMetadata_, _results_, config) {
 
             if (riskScoreResult) {
                 group.siteRiskScore = parseFloat(riskScoreResult.Score);
+            }
+            const comparisonRiskScoreResult = groupResults.find(
+                (result) => result.MetricID === config.ComparisonRiskScoreMetricID
+            );
+            if (comparisonRiskScoreResult) {
+                group.comparisonRiskScore = parseFloat(comparisonRiskScoreResult.Score);
             }
         }
     });
