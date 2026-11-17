@@ -32773,8 +32773,12 @@ var gsmViz = (() => {
       templates: datasets.map(makeTemplate),
       colorOrder,
       shapeOrder,
-      ...spec.mapping.size ? { sizeDomain: getRange(datasets, "_size") } : {},
-      ...spec.mapping.opacity ? { opacityDomain: getRange(datasets, "_opacity") } : {}
+      ...spec.mapping.size ? {
+        sizeDomain: spec.scales.size.domain ?? getRange(datasets, "_size")
+      } : {},
+      ...spec.mapping.opacity ? {
+        opacityDomain: spec.scales.opacity.domain ?? getRange(datasets, "_opacity")
+      } : {}
     };
   }
   function cloneGhost(template) {
@@ -33029,7 +33033,7 @@ var gsmViz = (() => {
         if (!sync) return;
         const visible = chart.isDatasetVisible(legendItem.datasetIndex);
         charts.forEach((sibling) => {
-          if (sibling === chart) return;
+          if (sibling === chart || !sibling.canvas) return;
           const index3 = sibling.data.datasets.findIndex(
             (_dataset, datasetIndex) => getIdentity(sibling, datasetIndex) === identity4
           );
@@ -33062,7 +33066,7 @@ var gsmViz = (() => {
   }
   function synchronizeSelection(charts, origin, selection2) {
     charts.forEach((sibling) => {
-      if (sibling === origin) return;
+      if (sibling === origin || !sibling.canvas) return;
       if (selection2.type === null) {
         clearSibling(sibling);
         return;
@@ -33127,9 +33131,10 @@ var gsmViz = (() => {
   function decorateChart(chart, charts, templates, legend5, hidden) {
     chart.options.plugins.legend.display = legend5.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
-    syncHover(charts);
-    syncSelection2(charts);
-    syncLegendClicks2(charts, { sync: legend5.sync });
+    const activeCharts = charts.filter((sibling) => sibling.canvas);
+    syncHover(activeCharts);
+    syncSelection2(activeCharts);
+    syncLegendClicks2(activeCharts, { sync: legend5.sync });
   }
   var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
   function withScale(scales2, name, key, value) {
