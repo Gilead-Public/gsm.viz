@@ -33137,12 +33137,23 @@ var gsmViz = (() => {
     syncLegendClicks2(activeCharts, { sync: legend5.sync });
   }
   var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
+  function isPlainObject3(value) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
   function withScale(scales2, name, key, value) {
-    if (value === void 0 || scales2[name]?.[key] !== void 0) return;
-    scales2[name] = { ...scales2[name], [key]: [...value] };
+    if (value === void 0 || !isPlainObject3(scales2)) return;
+    const scale = scales2[name];
+    if (scale !== void 0 && !isPlainObject3(scale)) return;
+    if (scale?.[key] !== void 0) return;
+    scales2[name] = { ...scale, [key]: [...value] };
   }
   function injectSharedScales(spec, globalStyles, globalScales, mapping) {
-    if (!spec || typeof spec !== "object") return spec;
+    if (!isPlainObject3(spec)) return spec;
+    if (spec.scales !== void 0 && !isPlainObject3(spec.scales)) return spec;
     const scales2 = { ...spec.scales };
     const sameField = (aesthetic) => mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
     if (globalScales.xMin !== void 0) {
@@ -33166,7 +33177,7 @@ var gsmViz = (() => {
     return { ...spec, scales: scales2 };
   }
   function wrapSpecCallbacks(spec, facetValue) {
-    if (!spec?.callbacks) return spec;
+    if (!isPlainObject3(spec) || !isPlainObject3(spec.callbacks)) return spec;
     const callbacks = { ...spec.callbacks };
     CALLBACK_NAMES.forEach((name) => {
       if (typeof callbacks[name] === "function") {
@@ -33219,7 +33230,7 @@ var gsmViz = (() => {
     axis: ["free"],
     legend: ["display", "sync"]
   };
-  function isPlainObject3(value) {
+  function isPlainObject4(value) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       return false;
     }
@@ -33227,7 +33238,7 @@ var gsmViz = (() => {
     return prototype === Object.prototype || prototype === null;
   }
   function validatePlainObject2(value, path) {
-    if (!isPlainObject3(value)) {
+    if (!isPlainObject4(value)) {
       throw new Error(`${path} must be a plain object`);
     }
   }
@@ -33322,7 +33333,7 @@ var gsmViz = (() => {
     });
   }
   function validateSpec4(data, spec) {
-    if (!isPlainObject3(spec)) {
+    if (!isPlainObject4(spec)) {
       validateSpec3(data, spec);
       return;
     }
