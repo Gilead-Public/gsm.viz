@@ -30387,7 +30387,7 @@ var gsmViz = (() => {
     if (dataset?._annotation) return;
     const point = dataset?.data[index3];
     if (point && spec.callbacks.onClick) spec.callbacks.onClick(point, event);
-    if (chart.data._spec_ !== spec) return;
+    if (!chart.canvas || chart.data._spec_ !== spec) return;
     if (point && spec.selection.enabled) {
       togglePointSelection(chart, point._key, event);
     }
@@ -33141,10 +33141,16 @@ var gsmViz = (() => {
     if (value === void 0 || scales2[name]?.[key] !== void 0) return;
     scales2[name] = { ...scales2[name], [key]: [...value] };
   }
-  function injectGlobalStyles(spec, globalStyles, mapping) {
+  function injectSharedScales(spec, globalStyles, globalScales, mapping) {
     if (!spec || typeof spec !== "object") return spec;
     const scales2 = { ...spec.scales };
     const sameField = (aesthetic) => mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
+    if (globalScales.xMin !== void 0) {
+      withScale(scales2, "x", "range", [globalScales.xMin, globalScales.xMax]);
+    }
+    if (globalScales.yMin !== void 0) {
+      withScale(scales2, "y", "range", [globalScales.yMin, globalScales.yMax]);
+    }
     if (sameField("color")) {
       withScale(scales2, "color", "order", globalStyles.colorOrder);
     }
@@ -33169,7 +33175,7 @@ var gsmViz = (() => {
     });
     return { ...spec, callbacks };
   }
-  function syncUpdates(charts, globalStyles, legend5, facetValues, mapping) {
+  function syncUpdates(charts, globalStyles, globalScales, legend5, facetValues, mapping) {
     const { templates } = globalStyles;
     charts.forEach((chart, chartIndex) => {
       const specIndex = { updateData: 1, updateSpec: 0 };
@@ -33178,9 +33184,10 @@ var gsmViz = (() => {
         chart.helpers[name] = function(chartInstance, ...args) {
           const hidden = getHiddenIdentities(chartInstance);
           if (name === "updateData") {
-            args[1] = injectGlobalStyles(
+            args[1] = injectSharedScales(
               args[1],
               globalStyles,
+              globalScales,
               mapping
             );
           }
@@ -33391,6 +33398,7 @@ var gsmViz = (() => {
       syncUpdates(
         charts,
         globalStyles,
+        globalScales,
         merged.facet.legend,
         facetValues,
         merged.mapping
