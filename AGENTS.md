@@ -4,7 +4,7 @@ This file guides AI agents working in this repository: GitHub Copilot CLI, the C
 
 ## Project Overview
 
-**gsm.viz** (v2.4.0) is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — generic spec-driven bars and points (each with a faceted small-multiples variant), plus legacy KRI scatter plots, bar charts, time series, sparklines, and group/country overviews — built on **Chart.js 3** and **D3 7**.
+**gsm.viz** (v2.4.0) is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — generic spec-driven bars and points (bars with a faceted small-multiples variant; the public `facetPoints` renderer is pending in #597), plus legacy KRI scatter plots, bar charts, time series, sparklines, and group/country overviews — built on **Chart.js 3** and **D3 7**.
 
 | Layer | Technology |
 |---|---|
@@ -40,7 +40,7 @@ src/
 ├── bars.js · bars/        → Generic spec-driven bars
 ├── facetBars.js · facetBars/     → Bars small multiples
 ├── points.js · points/    → Generic spec-driven points
-├── facetPoints.js · facetPoints/ → Points small multiples
+├── facetPoints/           → Points small-multiples primitives (public `facetPoints.js` entry pending in #597)
 ├── barChart.js            → Bar chart entry (legacy)
 ├── barChart/              → Bar chart module internals
 ├── scatterPlot.js         → Scatter plot entry
@@ -70,7 +70,7 @@ Each chart type follows a consistent pattern:
 - **Chart renderers** — functions that render charts to canvas/SVG via Chart.js or D3
 - **Documentation** — module docs in `examples/docs/` must be updated whenever new functionality, configuration options, mappings, helpers, or public behavior are added to a module
 
-Generic modules (`bars`, `points`, and their `facet*` compositors) take `(element, data, spec)` with a ggplot2-inspired spec. They validate and merge it through `defaults.js`, `validateSpec.js`, and `mergeSpec.js`; `points` and `facetPoints` also reject unsupported spec fields instead of ignoring them. Legacy modules (`scatterPlot`, `barChart`, `timeSeries`, `sparkline`, `groupOverview`) validate KRI-specific schemas through `src/data/`. Put new generic charting behavior in the generic modules, not the legacy ones.
+Generic modules (`bars`, `points`, and their `facet*` compositors) take `(element, data, spec)` with a ggplot2-inspired spec. They validate and merge it through `defaults.js`, `validateSpec.js`, and `mergeSpec.js`; `points` and the `facetPoints` validator also reject unsupported spec fields instead of ignoring them. Legacy modules (`scatterPlot`, `barChart`, `timeSeries`, `sparkline`, `groupOverview`) validate KRI-specific schemas through `src/data/`. Put new generic charting behavior in the generic modules, not the legacy ones.
 
 ### Chart Modules
 
@@ -79,7 +79,7 @@ Generic modules (`bars`, `points`, and their `facet*` compositors) take `(elemen
 | Bars (generic) | `src/bars.js` | `src/bars/` |
 | Facet bars | `src/facetBars.js` | `src/facetBars/` |
 | Points (generic) | `src/points.js` | `src/points/` |
-| Facet points | `src/facetPoints.js` | `src/facetPoints/` |
+| Facet points (primitives only; public entry pending in #597) | `src/facetPoints.js` (pending) | `src/facetPoints/` |
 | Scatter plot (legacy) | `src/scatterPlot.js` | `src/scatterPlot/` |
 | Bar chart (legacy) | `src/barChart.js` | `src/barChart/` |
 | Time series | `src/timeSeries.js` | `src/timeSeries/` |
@@ -476,5 +476,5 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue the PR addresses
 - Remove failing tests without approval
 - Skip TDD for any code change
 - Push to `main` without review
-- Open PRs targeting `main`, except the release-candidate PR from `dev`
+- Open PRs targeting `main`, except release-candidate PRs from `dev` or an `rc-vX.Y.Z` branch
 - Merge your own PR, or continue the Copilot review loop past 3 rounds
