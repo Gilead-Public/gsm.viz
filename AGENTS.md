@@ -1,10 +1,10 @@
-# Copilot Instructions for gsm.viz
+# Agent Instructions for gsm.viz
 
-This file provides guidance to AI agents (GitHub Copilot CLI, coding agent, and PR code review) working with code in this repository. `CLAUDE.md` is a symlink to this file so Claude Code shares the same instructions.
+This file guides AI agents working in this repository: GitHub Copilot CLI, the Copilot cloud agent, Copilot PR code review, and any other agent that reads `AGENTS.md`. It is the single source of agent instructions. There is no `.github/copilot-instructions.md` or `CLAUDE.md`.
 
 ## Project Overview
 
-**gsm.viz** (v2.4.0) is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — scatter plots, bar charts, time series, sparklines, site overviews, and group/country overviews — built on **Chart.js 3** and **D3 7**.
+**gsm.viz** (v2.4.0) is a web-based JavaScript data-visualization library by Gilead BioStats for clinical trial risk-based monitoring (RBM). It renders interactive charts — generic spec-driven bars and points (each with a faceted small-multiples variant), plus legacy KRI scatter plots, bar charts, time series, sparklines, and group/country overviews — built on **Chart.js 3** and **D3 7**.
 
 | Layer | Technology |
 |---|---|
@@ -37,7 +37,11 @@ npm run deploy         # Deploy examples to gh-pages
 ```
 src/
 ├── main.js                → entry point; re-exports all public modules
-├── barChart.js            → Bar chart entry
+├── bars.js · bars/        → Generic spec-driven bars
+├── facetBars.js · facetBars/     → Bars small multiples
+├── points.js · points/    → Generic spec-driven points
+├── facetPoints.js · facetPoints/ → Points small multiples
+├── barChart.js            → Bar chart entry (legacy)
 ├── barChart/              → Bar chart module internals
 ├── scatterPlot.js         → Scatter plot entry
 ├── scatterPlot/           → Scatter plot module internals
@@ -66,13 +70,18 @@ Each chart type follows a consistent pattern:
 - **Chart renderers** — functions that render charts to canvas/SVG via Chart.js or D3
 - **Documentation** — module docs in `examples/docs/` must be updated whenever new functionality, configuration options, mappings, helpers, or public behavior are added to a module
 
+Generic modules (`bars`, `points`, and their `facet*` compositors) take `(element, data, spec)` with a ggplot2-inspired spec. They validate and merge it through `defaults.js`, `validateSpec.js`, and `mergeSpec.js`; `points` and `facetPoints` also reject unsupported spec fields instead of ignoring them. Legacy modules (`scatterPlot`, `barChart`, `timeSeries`, `sparkline`, `groupOverview`) validate KRI-specific schemas through `src/data/`. Put new generic charting behavior in the generic modules, not the legacy ones.
+
 ### Chart Modules
 
 | Module | Entry file | Internal directory |
 |---|---|---|
-| Scatter plot | `src/scatterPlot.js` | `src/scatterPlot/` |
+| Bars (generic) | `src/bars.js` | `src/bars/` |
+| Facet bars | `src/facetBars.js` | `src/facetBars/` |
+| Points (generic) | `src/points.js` | `src/points/` |
+| Facet points | `src/facetPoints.js` | `src/facetPoints/` |
+| Scatter plot (legacy) | `src/scatterPlot.js` | `src/scatterPlot/` |
 | Bar chart (legacy) | `src/barChart.js` | `src/barChart/` |
-| Bars (current) | `src/bars.js` | `src/bars/` |
 | Time series | `src/timeSeries.js` | `src/timeSeries/` |
 | Sparkline | `src/sparkline.js` | `src/sparkline/` |
 | Group overview | `src/groupOverview.js` | `src/groupOverview/` |
@@ -109,6 +118,16 @@ When reviewing a PR, **limit findings to the modules the PR actually touches**. 
 - Review: spec validation (`validateSpec`, `mergeSpec`); dynamic category logic in `getPlugins/`; data aggregation and axis-swap in `structureData/`; export functionality.
 - Expect tests in: `tests/bars/`
 - Flag: any change to `defaults.js` that could silently alter existing chart behaviour.
+
+### `src/points*` · `tests/points*`
+- Review: spec validation and immutable merging (`validateSpec`, `mergeSpec`, `defaults`); coordinate/log-scale validation in `structureData`; aesthetic styling (color, size, opacity, shape) and legends; tooltips and callbacks receiving the full source row; annotations and point labels; keyed selection, `updateData`/`updateSpec`, zoom, and export helpers; accessibility.
+- Expect tests in: `tests/points/`
+- Flag: invalid coordinates silently dropped instead of failing; new spec fields accepted without implemented behavior; changes to `defaults.js` that could alter existing charts.
+- Do not flag: legacy `scatterPlot` behaviour (`points` intentionally leaves it untouched).
+
+### `src/facetBars*` · `src/facetPoints*` · `tests/facet*`
+- Review: facet validation, ordering, and grid rendering; shared (fixed) vs free scale domains; global legend/style domains; synchronized legend, hover, and selection across child charts (mirrored updates must be silent); child helper updates after facet composition.
+- Expect tests in: `tests/facetBars/` and `tests/facetPoints/`
 
 ### `src/timeSeries*` · `tests/timeSeries*`
 - Review: line/point/distribution data structuring; threshold and interval line logic; scale and plugin (annotation, tooltip, legend, title) config; selected-group update path.
@@ -228,6 +247,8 @@ DEFINE ──→ PLAN ──→ BUILD (TDD) ──→ VERIFY ──→ REVIEW �
                                                  quality   versioning
 ```
 
+Mapping to the Development Workflow: DEFINE and PLAN are Design and Issues; BUILD and VERIFY happen on each issue's branch; REVIEW is the Copilot review loop followed by human review; SHIP is merging the stack into `dev` and, later, the release candidate to `main`.
+
 ### Skill Location
 
 All skills are in `.agent/skills/<skill-name>/SKILL.md`:
@@ -274,14 +295,115 @@ These apply at all times, across all tasks:
 
 ---
 
-## Pull Requests
+## Development Workflow
 
-### Opening a PR
+Features ship through a fixed pipeline. The `points` / `facetPoints` work is the reference example: epic #559, sub-issues #567–#582, and stacked PRs #583–#598.
 
-- **Target branch:** Always target `dev` (the default branch). Never open PRs against `main`.
-- Use `gh pr create --base dev` or set the base branch explicitly in the GitHub UI.
+```
+DESIGN ─→ ISSUES ─→ BRANCH + PR per issue ─→ PR STACK ─→ COPILOT REVIEW (≤ 3 rounds)
+       ─→ HUMAN REVIEW ─→ MERGE to dev ─→ RELEASE CANDIDATE (dev → main)
+```
 
-### PR Description Structure
+Small fixes and isolated changes can skip Design and the PR stack: open one issue, one branch from `dev`, and one PR. They still go through the Copilot review loop and human review.
+
+### Model Tiers
+
+- **Design and decomposition** (steps 1–2): use a heavier, high-reasoning model. This model owns the API contract, sequencing, and acceptance criteria that every later step depends on.
+- **Implementation and review response** (steps 3–5): use lighter, faster models, one issue per session. They implement against the issue's acceptance criteria and handle the Copilot review back-and-forth.
+- **Escalate** to the heavier tier when implementation exposes a design flaw, such as a contract change, a new cross-issue dependency, or a scope change. Update the epic and affected issues instead of improvising in a PR.
+
+### 1. Design
+
+- Write an epic issue covering:
+  - The problem and the consumers it blocks.
+  - The proposed public API, with the spec shape and example usage.
+  - The progressive scope.
+  - What is out of scope or deferred.
+- A human approves the design before sub-issues are created.
+
+### 2. Issues
+
+Break the epic into small, ordered, independently reviewable sub-issues with this structure:
+
+```
+<!-- <epic>-plan-id: P<n> -->
+
+## Summary
+<One-sentence outcome.>
+
+## Proposed Solution
+- <Modules/files touched and approach. Accept new public fields only in the issue that implements them — no no-op config.>
+
+## Dependencies
+- Depends on #<issue> (P<k>)        <!-- or "None" -->
+
+## Acceptance Criteria
+- [ ] <Observable, testable behavior>
+- [ ] Docs (`examples/docs/`), examples, and NEWS updated where public behavior changes.
+- [ ] Failing tests are observed before implementation; targeted tests, `npm test`, and `npm run bundle` pass.
+
+## QC Approach
+<Standard QC (code review + automated checks) plus any issue-specific qualification.>
+```
+
+### 3. Branch and PR per Issue
+
+- One issue → one branch → one PR. Name branches `feature/<issue#>-<slug>` (e.g. `feature/577-points-selection`) or `fix-<issue#>`.
+- Branch from `dev`, or from the previous issue's branch when the work depends on it before it merges (see PR Stack).
+- Implement with TDD (see TDD Compliance) in atomic commits, then run `npm test` and `npm run bundle`.
+- Open the PR with `gh pr create --base <base-branch>` using the PR Description Template below.
+
+### 4. PR Stack
+
+When sub-issues depend on each other, stack their PRs. Each PR targets the previous PR's branch, and the first one targets `dev`. Add this block to each PR description:
+
+```
+<!-- <epic>-stack:start -->
+## Stack
+
+**Part <N> of <M>** for #<epic>.
+
+- **Base:** `<base-branch>`
+- **Head:** `<this-branch>`
+- **Previous:** #<pr>                 <!-- or "Start of stack" -->
+- **Next:** #<pr>                     <!-- or "End of stack" -->
+- Review this PR against its listed base and merge the stack in order.
+<!-- <epic>-stack:end -->
+```
+
+- Merge the stack in order. After a PR merges into `dev`:
+  1. Retarget the next PR to `dev` with `gh pr edit <n> --base dev`.
+  2. Bring `dev` into its branch (merge or rebase) and resolve conflicts.
+  3. Rerun `npm test` and `npm run bundle`.
+  4. Update the stack blocks on the affected PRs.
+- Fix problems on the lowest PR they belong to, then propagate the fix up the stack. Do not patch them in a later PR.
+
+### 5. Copilot Review Loop (required before ending a session)
+
+An agent session that opens or updates a PR must run this loop before it ends:
+
+1. **Request** a review with `gh pr edit <n> --add-reviewer "@copilot"` (keep the quotes; a bare `@copilot` is splatting syntax in PowerShell). Wait for `copilot-pull-request-reviewer[bot]` to post; poll `gh pr view <n> --json reviews` to check.
+2. **Triage** every finding:
+   - **Valid:** a bug, logic error, missing or incorrect test, contract or docs mismatch, accessibility gap, or security concern within this PR's scope.
+   - **Not valid:** style-only, out of scope (it belongs to another issue in the stack), or factually wrong. Use the Per-Module Scoping Rules and Do Not Flag lists to decide.
+3. **Fix** valid findings test-first, run `npm test` and `npm run bundle`, then commit and push.
+4. **Reply** to every review thread with the fix commit SHA or the reason no change was made, then resolve the thread. Reply through the REST endpoint `repos/{owner}/{repo}/pulls/<n>/comments/<id>/replies`, and resolve through the GraphQL `resolveReviewThread` mutation.
+5. **Re-request** a review (step 1) and repeat.
+
+**Stop after 3 Copilot review rounds total** (the initial request plus at most two re-requests), or sooner if a round returns no valid findings. Then post one PR comment for the human reviewer that summarizes the rounds, the fixes made, the findings dismissed and why, and anything still open. Do not loop beyond 3 rounds; leave the remaining judgment calls to the human reviewer.
+
+### 6. Human Review
+
+- A human reviews and approves every PR. Agents never merge their own PRs.
+- Human review feedback overrides Copilot findings. A session that addresses human feedback ends with a new Copilot review loop, which gets a fresh 3-round budget.
+
+### 7. Release Candidate
+
+- When `dev` is ready to release, open a release-candidate PR targeting `main`, either from `dev` directly or from an `rc-vX.Y.Z` branch cut from `dev`. Title it `vX.Y.Z` or `Release Candidate: gsm.viz vX.Y.Z`.
+- The RC bumps the `package.json` version, finalizes `NEWS.md`, and regenerates bundles. It is the **only** kind of PR that targets `main`.
+- After the release, merge `main` back into `dev` so the branches don't diverge.
+
+### PR Description Template
 
 ```
 ## Summary
@@ -292,19 +414,14 @@ These apply at all times, across all tasks:
 
 - <Bullet list of notable changes>
 
+<Stack block, if the PR is part of a stack>
+
 ## Resolved Issues
 
 - Resolves #<issue-number>
-- Closes #<issue-number>
 ```
 
-Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresses so GitHub auto-closes them on merge.
-
-### After Opening
-
-- Monitor Copilot's review comments on the PR.
-- Address any meaningful findings (bugs, logic errors, missing tests, security concerns).
-- Dismiss or note findings that are style-only or out of scope, but do not silently ignore substantive feedback.
+Include a `Resolves #NNN` or `Closes #NNN` line for every issue the PR addresses. GitHub closes issues automatically only when the PR merges into `dev`, the default branch, so retarget stacked PRs to `dev` before merging.
 
 ---
 
@@ -312,7 +429,8 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 
 | Violation | Why |
 |---|---|
-| PR targets `main` instead of `dev` | All PRs must target the `dev` branch |
+| PR targets `main` instead of `dev` (other than a release-candidate PR from `dev` / `rc-vX.Y.Z`) | Only release candidates target `main` |
+| Stacked PR includes changes that belong to a different issue in the stack | One issue per PR; fix on the lowest applicable branch |
 | New `npm` dependency added without discussion | Requires team approval; check for prior issue/comment |
 | Implementation change with no test | Violates the mandatory TDD rule |
 | Failing test removed or permanently skipped | Masks regressions |
@@ -339,6 +457,8 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 - Use Prettier formatting (single quotes, tab width 4)
 - Write descriptive commit messages with type prefixes
 - Keep changes small (~100 lines per commit)
+- Follow the Development Workflow: one issue → one branch → one PR, stacked when dependent
+- Run the Copilot review loop (up to 3 rounds) before ending any session that opened or updated a PR
 
 ### Ask First
 
@@ -347,6 +467,7 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 - Modifying shared utilities (`src/util/`, `src/data/`)
 - Changing the Jest configuration
 - Creating new chart type modules
+- Changing an approved design or issue's acceptance criteria mid-implementation (escalate instead)
 
 ### Never Do
 
@@ -355,4 +476,5 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue this PR addresse
 - Remove failing tests without approval
 - Skip TDD for any code change
 - Push to `main` without review
-- Open PRs targeting `main` directly (always use `dev`)
+- Open PRs targeting `main`, except the release-candidate PR from `dev`
+- Merge your own PR, or continue the Copilot review loop past 3 rounds
