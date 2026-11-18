@@ -24,6 +24,33 @@
                 padding: 12px 16px;
             }
 
+            /* Suggested metricOverview header styles; the module ships none. */
+            .gsm-metric-header {
+                align-items: baseline;
+                column-gap: 12px;
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            .gsm-metric-header__name {
+                font-weight: 600;
+            }
+
+            .gsm-metric-header__value {
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            .gsm-metric-header__fraction {
+                color: #59636e;
+            }
+
+            .gsm-metric-header [data-state='unavailable'],
+            .gsm-metric-header__empty {
+                color: #6e7781;
+                font-weight: 400;
+            }
+
             .distribution-panel h2 {
                 color: #5f6368;
                 font-size: 12px;

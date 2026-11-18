@@ -27,6 +27,11 @@ describe('validateSpec', () => {
                     percentOfDenominator: '% Enrolled',
                 },
                 topN: 3,
+                header: {
+                    labels: { Numerator: 'Discontinued' },
+                    format: { Metric: ',.2f' },
+                    unavailable: { value: 'n/a' },
+                },
                 colors: { Ongoing: '#4e79a7' },
                 theme: { barColor: '#4e79a7', neutralColor: '#bab0ac' },
             })
@@ -49,6 +54,15 @@ describe('validateSpec', () => {
                 ],
             })
         ).toThrow('spec.sections[0].color is not supported');
+    });
+
+    test('limits spec.header to the header’s labels, format, and unavailable text', () => {
+        expect(() => validateSpec({ header: 'percent' })).toThrow(
+            'spec.header must be a plain object'
+        );
+        expect(() => validateSpec({ header: { layout: 'list' } })).toThrow(
+            'spec.header.layout is not supported'
+        );
     });
 
     test('requires sections to be an array of source and variable pairs', () => {

@@ -26,8 +26,8 @@ function resolveElement(element) {
 
 /**
  * Display one metric's categorical breakdowns (Reporting_Distributions) as
- * horizontal bars, under a header with the metric's name, percent, and
- * numerator / denominator. Nothing is aggregated: the rows must already be
+ * horizontal bars, under the metric overview header (the metric's name,
+ * value, and numerator / denominator). Nothing is aggregated: the rows must already be
  * one metric at one group.
  *
  * @param {(Node|string)} element - DOM element or CSS selector
@@ -51,6 +51,7 @@ export default function metricDistribution(
 
     const el = resolveElement(element);
     const display = { ...data, result: normalizeResult(data.result) };
+    const header = makeHeader(display, spec.header);
     const model = structureData(display, mergeSpec(spec));
 
     [...el.children]
@@ -69,7 +70,7 @@ export default function metricDistribution(
         .style('color', TEXT_COLORS.primary)
         .node();
 
-    makeHeader(root, display);
+    root.append(header);
 
     if (model.state === 'ok') {
         model.sections.forEach((section) => makeSection(root, section));

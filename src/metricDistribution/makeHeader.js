@@ -1,58 +1,54 @@
-import { select } from 'd3';
+import metricOverview from '../metricOverview.js';
+import isPlainObject from './isPlainObject.js';
 
-import { formatCount, formatPercent } from './format.js';
+// Stand-ins for a metric row without business labels, so the header never
+// falls back to the column names "Numerator" and "Denominator". They match
+// the bars' "n of N" hover text.
+const FALLBACK_LABELS = { Numerator: 'n', Denominator: 'N' };
 
-// The metric overview header (metric name, percent, numerator / denominator).
-// It is kept to this one file so it can be replaced by the metricOverview
-// module (#618) once that module is available.
+function isNamed(label) {
+    return typeof label === 'string' && label.trim() !== '' && label !== 'NA';
+}
 
-function describeCounts(metric, result) {
-    if (!metric.Numerator || !metric.Denominator) return null;
-    return `${metric.Numerator}: ${formatCount(result.Numerator)}; ${
-        metric.Denominator
-    }: ${formatCount(result.Denominator)}`;
+function fallbackLabels(metric) {
+    return Object.fromEntries(
+        Object.entries(FALLBACK_LABELS).filter(
+            ([field]) => !isNamed(metric[field])
+        )
+    );
 }
 
 /**
- * Append the header to the widget root.
+ * Build the header: the metric overview (#618) in its header layout, showing
+ * the metric's name, value, and numerator / denominator.
  *
- * @param {Node} root - widget root element
  * @param {Object} data - { metric, result }
- * @returns {Object} D3 selection of the header
+ * @param {Object} [header] - spec.header: labels, format, and unavailable
+ * @returns {HTMLElement} the overview root, not yet attached
+ * @throws {Error} if a header option is invalid
  */
-export default function makeHeader(root, { metric, result }) {
-    const header = select(root)
-        .append('div')
-        .classed('metric-distribution--header', true)
-        .style('display', 'flex')
-        .style('flex-wrap', 'wrap')
-        .style('align-items', 'baseline')
-        .style('gap', '8px');
+export default function makeHeader({ metric, result }, header = {}) {
+    // Merging the stand-ins would turn a malformed labels value into an
+    // object, so it is checked here rather than by metricOverview.
+    if (header.labels !== undefined && !isPlainObject(header.labels)) {
+        throw new Error('spec.header.labels must be a plain object');
+    }
 
-    header
-        .append('span')
-        .classed('metric-distribution--name', true)
-        .style('font-weight', '600')
-        .text(metric.Metric);
-
-    if (result === undefined || result === null) return header;
-
-    header
-        .append('strong')
-        .classed('metric-distribution--percent', true)
-        .style('font-size', '1.5em')
-        .text(formatPercent(result.Metric));
-
-    header
-        .append('span')
-        .classed('metric-distribution--fraction', true)
-        .style('font-variant-numeric', 'tabular-nums')
-        .attr('title', describeCounts(metric, result))
-        .text(
-            `${formatCount(result.Numerator)} / ${formatCount(
-                result.Denominator
-            )}`
+    try {
+        return metricOverview(
+            document.createElement('div'),
+            {
+                results:
+                    result === undefined || result === null ? [] : [result],
+                metric,
+            },
+            {
+                ...header,
+                layout: 'header',
+                labels: { ...fallbackLabels(metric), ...header.labels },
+            }
         );
-
-    return header;
+    } catch (error) {
+        throw new Error(error.message.replace(/^spec\./, 'spec.header.'));
+    }
 }

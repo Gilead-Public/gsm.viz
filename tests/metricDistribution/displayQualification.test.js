@@ -203,14 +203,12 @@ describe('metricDistribution display qualification', () => {
         (name, { data, spec }) => {
             test('header shows the result’s metric name, percent, and counts', () => {
                 const root = metricDistribution(container, data, spec);
-                const header = root.querySelector(
-                    '.metric-distribution--header'
-                );
+                const header = root.querySelector('.gsm-metric-header');
                 const part = (cls) =>
-                    header.querySelector(`.metric-distribution--${cls}`)
+                    header.querySelector(`.gsm-metric-header__${cls}`)
                         .textContent;
                 expect(part('name')).toBe(data.metric.Metric);
-                expect(part('percent')).toBe(
+                expect(part('value')).toBe(
                     showShare(data.result.Numerator, data.result.Denominator)
                 );
                 expect(part('fraction')).toBe(

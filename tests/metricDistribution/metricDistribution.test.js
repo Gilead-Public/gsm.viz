@@ -116,8 +116,9 @@ describe('metricDistribution', () => {
             result,
         });
         const children = [...root.children].map((child) => child.className);
+        expect(root.firstElementChild.dataset.layout).toBe('header');
         expect(children).toEqual([
-            'metric-distribution--header',
+            'gsm-metric-overview',
             'metric-distribution--section',
             'metric-distribution--section',
         ]);
@@ -231,14 +232,14 @@ describe('metricDistribution', () => {
         );
         expect(typeof published.Denominator).toBe('string');
         expect(
-            root.querySelector('.metric-distribution--fraction').textContent
+            root.querySelector('.gsm-metric-header__fraction').textContent
         ).toBe(
             `${Number(published.Numerator).toLocaleString(
                 'en-US'
             )} / ${total.toLocaleString('en-US')}`
         );
         expect(
-            root.querySelector('.metric-distribution--percent').textContent
+            root.querySelector('.gsm-metric-header__value').textContent
         ).toBe(`${(Number(published.Metric) * 100).toFixed(1)}%`);
         expect(root.querySelector('tbody td').textContent).toBe(
             `${((1 / total) * 100).toFixed(1)}%`
@@ -257,19 +258,62 @@ describe('metricDistribution', () => {
             },
         });
         expect(
-            root.querySelector('.metric-distribution--percent').textContent
+            root.querySelector('.gsm-metric-header__value').textContent
         ).toBe('—');
         expect(
-            root.querySelector('.metric-distribution--fraction').textContent
+            root.querySelector('.gsm-metric-header__fraction').textContent
         ).toBe('— / —');
+    });
+
+    test('formats the header as spec.header asks, for a metric that is not a percentage', () => {
+        const root = metricDistribution(
+            container,
+            { distributions, metric, result },
+            { header: { format: { Metric: ',.2f' } } }
+        );
+        expect(
+            root.querySelector('.gsm-metric-header__value').textContent
+        ).toBe('0.25');
+    });
+
+    test('rejects an invalid header spec before replacing the previous render', () => {
+        const first = metricDistribution(container, {
+            distributions,
+            metric,
+            result,
+        });
+        expect(() =>
+            metricDistribution(
+                container,
+                { distributions, metric, result },
+                { header: { format: { Metric: 'not a format' } } }
+            )
+        ).toThrow('spec.header.format.Metric must be a d3-format specifier');
+        expect(container.firstElementChild).toBe(first);
+    });
+
+    test('rejects malformed header labels and keeps the previous render', () => {
+        const first = metricDistribution(container, {
+            distributions,
+            metric,
+            result,
+        });
+        [null, [], 42].forEach((labels) => {
+            expect(() =>
+                metricDistribution(
+                    container,
+                    { distributions, metric, result },
+                    { header: { labels } }
+                )
+            ).toThrow('spec.header.labels must be a plain object');
+            expect([...container.children]).toEqual([first]);
+        });
     });
 
     test('shows the header and a message in the missing state', () => {
         const root = metricDistribution(container, { metric, result });
         expect(root.dataset.state).toBe('missing');
-        expect(
-            root.querySelector('.metric-distribution--header')
-        ).not.toBeNull();
+        expect(root.querySelector('.gsm-metric-header')).not.toBeNull();
         expect(root.querySelector('.metric-distribution--section')).toBeNull();
         expect(
             root.querySelector('.metric-distribution--message').textContent
@@ -283,9 +327,7 @@ describe('metricDistribution', () => {
             result,
         });
         expect(root.dataset.state).toBe('empty');
-        expect(
-            root.querySelector('.metric-distribution--header')
-        ).not.toBeNull();
+        expect(root.querySelector('.gsm-metric-header')).not.toBeNull();
         expect(
             root.querySelector('.metric-distribution--message').textContent
         ).toBe('There are no records to break down.');

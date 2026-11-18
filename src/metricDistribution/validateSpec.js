@@ -2,7 +2,8 @@ import isPlainObject from './isPlainObject.js';
 import { VALUES } from './defaults.js';
 
 const supportedFields = {
-    spec: ['sections', 'values', 'labels', 'topN', 'colors', 'theme'],
+    spec: ['sections', 'values', 'labels', 'topN', 'colors', 'theme', 'header'],
+    header: ['labels', 'format', 'unavailable'],
     section: [
         'source',
         'variable',
@@ -100,7 +101,8 @@ function validateSections(sections) {
 }
 
 /**
- * Validate the metricDistribution spec.
+ * Validate the metricDistribution spec. The contents of spec.header are
+ * validated by the metric overview when the header is built.
  *
  * @param {Object} [spec] - widget specification
  * @throws {Error} if an option is unsupported or has the wrong type
@@ -115,6 +117,9 @@ export default function validateSpec(spec) {
     if (spec.colors !== undefined) {
         validatePlainObject(spec.colors, 'spec.colors');
         validateStrings(spec.colors, 'spec.colors');
+    }
+    if (spec.header !== undefined) {
+        validatePlainObject(spec.header, 'spec.header', supportedFields.header);
     }
     if (spec.theme !== undefined) {
         validatePlainObject(spec.theme, 'spec.theme', supportedFields.theme);
