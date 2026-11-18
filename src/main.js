@@ -14,6 +14,7 @@ import barChart from './barChart.js';
 import bars from './bars.js';
 import facetBars from './facetBars.js';
 import groupOverview from './groupOverview.js';
+import metricDistribution from './metricDistribution.js';
 import metricOverview from './metricOverview.js';
 import points from './points.js';
 import scatterPlot from './scatterPlot.js';
@@ -37,6 +38,7 @@ const gsmViz = {
     bars,
     facetBars,
     groupOverview,
+    metricDistribution,
     metricOverview,
     points,
     scatterPlot,

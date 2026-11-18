@@ -3546,8 +3546,8 @@ var gsmViz = (() => {
       }
     });
   }
-  function _descriptors(proxy, defaults7 = { scriptable: true, indexable: true }) {
-    const { _scriptable = defaults7.scriptable, _indexable = defaults7.indexable, _allKeys = defaults7.allKeys } = proxy;
+  function _descriptors(proxy, defaults8 = { scriptable: true, indexable: true }) {
+    const { _scriptable = defaults8.scriptable, _indexable = defaults8.indexable, _allKeys = defaults8.allKeys } = proxy;
     return {
       allKeys: _allKeys,
       scriptable: _scriptable,
@@ -23713,10 +23713,10 @@ var gsmViz = (() => {
   }
 
   // src/util/configure.js
-  function configure2(defaults7, _config_, customSettings = null) {
+  function configure2(defaults8, _config_, customSettings = null) {
     const config = { ..._config_ };
-    for (const key in defaults7) {
-      config[key] = coalesce(config[key], defaults7[key]);
+    for (const key in defaults8) {
+      config[key] = coalesce(config[key], defaults8[key]);
     }
     if (customSettings !== null) {
       for (const key in customSettings) {
@@ -23837,31 +23837,31 @@ var gsmViz = (() => {
 
   // src/barChart/configure.js
   function configure3(_config_, _results_, _thresholds_) {
-    const defaults7 = {};
-    defaults7.resultTooltipKeys = [
+    const defaults8 = {};
+    defaults8.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults7.GroupLevel = "Site";
-    defaults7.groupLabelKey = "InvestigatorLastName";
-    defaults7.groupParticipantCountKey = "ParticipantCount";
-    defaults7.groupTooltipKeys = null;
-    defaults7.x = "GroupID";
-    defaults7.xType = "category";
-    defaults7.y = "Score";
-    defaults7.yType = "linear";
-    defaults7.color = "Flag";
-    defaults7.hoverCallback = (datum2) => {
+    defaults8.GroupLevel = "Site";
+    defaults8.groupLabelKey = "InvestigatorLastName";
+    defaults8.groupParticipantCountKey = "ParticipantCount";
+    defaults8.groupTooltipKeys = null;
+    defaults8.x = "GroupID";
+    defaults8.xType = "category";
+    defaults8.y = "Score";
+    defaults8.yType = "linear";
+    defaults8.color = "Flag";
+    defaults8.hoverCallback = (datum2) => {
     };
-    defaults7.clickCallback = (datum2) => {
+    defaults8.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults7.displayTitle = false;
-    defaults7.dynamicSizing = false;
-    defaults7.maintainAspectRatio = false;
-    const config = configure2(defaults7, _config_ || {}, {
+    defaults8.displayTitle = false;
+    defaults8.dynamicSizing = false;
+    defaults8.maintainAspectRatio = false;
+    const config = configure2(defaults8, _config_ || {}, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -27435,26 +27435,26 @@ var gsmViz = (() => {
 
   // src/groupOverview/configure.js
   function configure4(_config_) {
-    const defaults7 = {};
-    defaults7.resultTooltipKeys = [
+    const defaults8 = {};
+    defaults8.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults7.GroupLevel = "Site";
-    defaults7.groupLabelKey = null;
-    defaults7.groupParticipantCountKey = "ParticipantCount";
-    defaults7.groupTooltipKeys = null;
-    defaults7.SiteRiskScoreMetricID = "Analysis_srs0001";
-    defaults7.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
-    defaults7.groupClickCallback = (datum2) => {
+    defaults8.GroupLevel = "Site";
+    defaults8.groupLabelKey = null;
+    defaults8.groupParticipantCountKey = "ParticipantCount";
+    defaults8.groupTooltipKeys = null;
+    defaults8.SiteRiskScoreMetricID = "Analysis_srs0001";
+    defaults8.SiteRiskScoreURL = "https://gilead-biostats.github.io/gsm.kri/articles/SiteRiskScore.html";
+    defaults8.groupClickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults7.metricClickCallback = (datum2) => {
+    defaults8.metricClickCallback = (datum2) => {
       console.log(datum2);
     };
-    const config = configure2(defaults7, _config_);
+    const config = configure2(defaults8, _config_);
     return config;
   }
 
@@ -28116,12 +28116,607 @@ var gsmViz = (() => {
     return table;
   }
 
+  // src/metricDistribution/isPlainObject.js
+  function isPlainObject(value) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+
+  // src/metricDistribution/normalizeResult.js
+  var RESULT_VALUES = ["Numerator", "Denominator", "Metric"];
+  var UNAVAILABLE = ["", "NA"];
+  function parseResultValue(value) {
+    if (value === null || value === void 0) return null;
+    if (typeof value === "number") return value;
+    if (typeof value !== "string") return NaN;
+    const text = value.trim();
+    return UNAVAILABLE.includes(text) ? null : Number(text);
+  }
+  function normalizeResult(result) {
+    if (result === void 0 || result === null) return result;
+    const values = RESULT_VALUES.map((field) => [
+      field,
+      parseResultValue(result[field])
+    ]);
+    return { ...result, ...Object.fromEntries(values) };
+  }
+
+  // src/metricDistribution/validateData.js
+  function isSet(value) {
+    return value !== void 0 && value !== null;
+  }
+  function isCount(value) {
+    return typeof value === "number" && Number.isFinite(value) && value >= 0;
+  }
+  function isOptionalNumber(value) {
+    return value === null || value === void 0 || typeof value === "number" && Number.isFinite(value);
+  }
+  function validateRow(row, path) {
+    if (!isPlainObject(row)) {
+      throw new Error(`${path} must be a plain object`);
+    }
+    ["Source", "Variable"].forEach((field) => {
+      if (typeof row[field] !== "string" || row[field] === "") {
+        throw new Error(`${path}.${field} must be a non-empty string`);
+      }
+    });
+    if (row.Category !== void 0 && row.Category !== null && typeof row.Category !== "string") {
+      throw new Error(`${path}.Category must be a string or null`);
+    }
+    ["Count", "Total"].forEach((field) => {
+      if (!isCount(row[field])) {
+        throw new Error(
+          `${path}.${field} must be a non-negative finite number`
+        );
+      }
+    });
+    if (!isOptionalNumber(row.Percent) || typeof row.Percent === "number" && (row.Percent < 0 || row.Percent > 1)) {
+      throw new Error(
+        `${path}.Percent must be a number between 0 and 1, or null`
+      );
+    }
+  }
+  function categoryName(category) {
+    return category === null || category === void 0 ? "blank" : JSON.stringify(category);
+  }
+  function validateRows(rows) {
+    if (!Array.isArray(rows)) {
+      throw new Error("data.distributions must be an array");
+    }
+    const totals = /* @__PURE__ */ new Map();
+    const categories = /* @__PURE__ */ new Set();
+    const groups2 = /* @__PURE__ */ new Set();
+    const metrics = /* @__PURE__ */ new Set();
+    const studies = /* @__PURE__ */ new Set();
+    const snapshots = /* @__PURE__ */ new Set();
+    rows.forEach((row, i) => {
+      validateRow(row, `data.distributions[${i}]`);
+      const section = `${row.Source} / ${row.Variable}`;
+      const category = `${section} / ${categoryName(row.Category)}`;
+      if (categories.has(category)) {
+        throw new Error(
+          `data.distributions has more than one row for ${category}; sum rows to one group before display`
+        );
+      }
+      categories.add(category);
+      if (totals.has(section) && totals.get(section) !== row.Total) {
+        throw new Error(
+          `data.distributions has more than one Total for ${section}`
+        );
+      }
+      totals.set(section, row.Total);
+      if (row.GroupLevel !== void 0 || row.GroupID !== void 0) {
+        groups2.add(`${row.GroupLevel} ${row.GroupID}`);
+      }
+      if (row.MetricID !== void 0) metrics.add(row.MetricID);
+      if (isSet(row.StudyID)) studies.add(String(row.StudyID));
+      if (isSet(row.SnapshotDate)) snapshots.add(String(row.SnapshotDate));
+    });
+    if (groups2.size > 1) {
+      throw new Error("data.distributions must contain rows for one group");
+    }
+    if (metrics.size > 1) {
+      throw new Error("data.distributions must contain rows for one metric");
+    }
+    if (studies.size > 1) {
+      throw new Error("data.distributions must contain rows for one study");
+    }
+    if (snapshots.size > 1) {
+      throw new Error(
+        "data.distributions must contain rows for one snapshot"
+      );
+    }
+    return {
+      group: [...groups2][0],
+      metricId: [...metrics][0],
+      studyId: [...studies][0],
+      snapshotDate: [...snapshots][0]
+    };
+  }
+  function validateResultScope(result, field, name, expected) {
+    if (isSet(expected) && isSet(result[field]) && String(result[field]) !== String(expected)) {
+      throw new Error(
+        `data.result is for ${name} ${result[field]} but the rows are for ${expected}`
+      );
+    }
+  }
+  function validateResult(result, metricId, rowScope) {
+    const { group: group2 } = rowScope;
+    if (!isPlainObject(result)) {
+      throw new Error("data.result must be a plain object");
+    }
+    RESULT_VALUES.forEach((field) => {
+      const value = parseResultValue(result[field]);
+      if (value !== null && !Number.isFinite(value)) {
+        throw new Error(
+          `data.result.${field} must be a finite number, a numeric string, or unavailable (null, '' or 'NA')`
+        );
+      }
+    });
+    if (metricId !== void 0 && result.MetricID !== void 0 && result.MetricID !== metricId) {
+      throw new Error(
+        `data.result is for ${result.MetricID} but data.metric is ${metricId}`
+      );
+    }
+    const resultGroup = `${result.GroupLevel} ${result.GroupID}`;
+    if (group2 !== void 0 && result.GroupID !== void 0 && resultGroup !== group2) {
+      throw new Error(
+        `data.result is for ${resultGroup} but the rows are for ${group2}`
+      );
+    }
+    validateResultScope(result, "MetricID", "metric", rowScope.metricId);
+    validateResultScope(result, "StudyID", "study", rowScope.studyId);
+    validateResultScope(
+      result,
+      "SnapshotDate",
+      "snapshot",
+      rowScope.snapshotDate
+    );
+  }
+  function validateData(data) {
+    if (!isPlainObject(data)) {
+      throw new Error("data must be a plain object");
+    }
+    const { distributions, metric, result } = data;
+    if (!isPlainObject(metric)) {
+      throw new Error("data.metric must be a plain object");
+    }
+    if (typeof metric.Metric !== "string" || metric.Metric === "") {
+      throw new Error("data.metric.Metric must be a non-empty string");
+    }
+    let rowScope = {};
+    if (distributions !== void 0 && distributions !== null) {
+      rowScope = validateRows(distributions);
+    }
+    if (rowScope.metricId !== void 0 && metric.MetricID !== void 0 && rowScope.metricId !== metric.MetricID) {
+      throw new Error(
+        `data.distributions rows are for ${rowScope.metricId} but data.metric is ${metric.MetricID}`
+      );
+    }
+    if (result !== void 0 && result !== null) {
+      validateResult(result, metric.MetricID, rowScope);
+    }
+  }
+
+  // src/metricDistribution/defaults.js
+  var VALUES = ["count", "percent", "percentOfDenominator"];
+  var NOT_RECORDED = "Not recorded";
+  var defaults5 = {
+    topN: Infinity,
+    theme: {
+      // The first and the grey colour of the library's categorical palette
+      // (see src/bars/defaults.js).
+      barColor: "#4e79a7",
+      neutralColor: "#bab0ac"
+    }
+  };
+  var defaults_default3 = defaults5;
+  var MESSAGES = {
+    missing: "Breakdowns are not available for this metric.",
+    empty: "There are no records to break down.",
+    emptySection: "There are no records in this breakdown."
+  };
+  var TEXT_COLORS = {
+    primary: "#222222",
+    muted: "#5f6368"
+  };
+
+  // src/metricDistribution/validateSpec.js
+  var supportedFields = {
+    spec: ["sections", "values", "labels", "topN", "colors", "theme"],
+    section: [
+      "source",
+      "variable",
+      "title",
+      "status",
+      "topN",
+      "values",
+      "labels"
+    ],
+    theme: ["barColor", "neutralColor"]
+  };
+  function validatePlainObject(value, path, fields) {
+    if (!isPlainObject(value)) {
+      throw new Error(`${path} must be a plain object`);
+    }
+    if (fields) {
+      const unsupported = Object.keys(value).find(
+        (key) => !fields.includes(key)
+      );
+      if (unsupported !== void 0) {
+        throw new Error(`${path}.${unsupported} is not supported`);
+      }
+    }
+  }
+  function validateStrings(object, path) {
+    Object.entries(object).forEach(([key, value]) => {
+      if (typeof value !== "string") {
+        throw new Error(`${path}.${key} must be a string`);
+      }
+    });
+  }
+  function validateTopN(topN, path) {
+    if (topN !== void 0 && !(Number.isInteger(topN) && topN > 0)) {
+      throw new Error(`${path} must be a positive integer`);
+    }
+  }
+  function validateValues(values, path) {
+    if (values === void 0) return;
+    if (!Array.isArray(values) || values.length === 0 || !values.every((value) => VALUES.includes(value))) {
+      throw new Error(
+        `${path} must be a non-empty array of 'count', 'percent', or 'percentOfDenominator'`
+      );
+    }
+    if (new Set(values).size !== values.length) {
+      throw new Error(`${path} must contain unique values`);
+    }
+  }
+  function validateLabels(labels, path) {
+    if (labels === void 0) return;
+    validatePlainObject(labels, path, VALUES);
+    validateStrings(labels, path);
+  }
+  function validateSection(section, path) {
+    validatePlainObject(section, path, supportedFields.section);
+    ["source", "variable"].forEach((field) => {
+      if (typeof section[field] !== "string" || section[field] === "") {
+        throw new Error(`${path}.${field} must be a non-empty string`);
+      }
+    });
+    if (section.title !== void 0 && typeof section.title !== "string") {
+      throw new Error(`${path}.title must be a string`);
+    }
+    if (section.status !== void 0 && typeof section.status !== "boolean") {
+      throw new Error(`${path}.status must be a boolean`);
+    }
+    validateTopN(section.topN, `${path}.topN`);
+    validateValues(section.values, `${path}.values`);
+    validateLabels(section.labels, `${path}.labels`);
+  }
+  function validateSections(sections) {
+    if (sections === void 0) return;
+    if (!Array.isArray(sections)) {
+      throw new Error("spec.sections must be an array");
+    }
+    const seen = /* @__PURE__ */ new Set();
+    sections.forEach((section, i) => {
+      validateSection(section, `spec.sections[${i}]`);
+      const key = `${section.source} / ${section.variable}`;
+      if (seen.has(key)) {
+        throw new Error(`spec.sections lists ${key} more than once`);
+      }
+      seen.add(key);
+    });
+  }
+  function validateSpec3(spec) {
+    if (spec === void 0) return;
+    validatePlainObject(spec, "spec", supportedFields.spec);
+    validateSections(spec.sections);
+    validateValues(spec.values, "spec.values");
+    validateLabels(spec.labels, "spec.labels");
+    validateTopN(spec.topN, "spec.topN");
+    if (spec.colors !== void 0) {
+      validatePlainObject(spec.colors, "spec.colors");
+      validateStrings(spec.colors, "spec.colors");
+    }
+    if (spec.theme !== void 0) {
+      validatePlainObject(spec.theme, "spec.theme", supportedFields.theme);
+      validateStrings(spec.theme, "spec.theme");
+    }
+  }
+
+  // src/metricDistribution/mergeSpec.js
+  function mergeSpec3(spec = {}) {
+    return {
+      sections: spec.sections,
+      values: spec.values,
+      labels: { ...spec.labels },
+      topN: spec.topN ?? defaults_default3.topN,
+      colors: { ...spec.colors },
+      theme: { ...defaults_default3.theme, ...spec.theme }
+    };
+  }
+
+  // src/metricDistribution/format.js
+  var UNAVAILABLE2 = "\u2014";
+  function isAvailable(value) {
+    return typeof value === "number" && Number.isFinite(value);
+  }
+  function formatCount(value) {
+    return isAvailable(value) ? value.toLocaleString("en-US") : UNAVAILABLE2;
+  }
+  function formatPercent(proportion) {
+    return isAvailable(proportion) ? `${(proportion * 100).toFixed(1)}%` : UNAVAILABLE2;
+  }
+
+  // src/metricDistribution/orderCategories.js
+  function isBlank(row) {
+    return row.Category === null || row.Category === void 0;
+  }
+  function orderCategories(rows, topN = Infinity) {
+    const sorted = rows.filter((row) => !isBlank(row)).sort((a, b) => b.Count - a.Count);
+    const blank = rows.find(isBlank);
+    return {
+      shown: sorted.slice(0, topN),
+      collapsed: sorted.slice(topN),
+      notRecorded: blank && blank.Count > 0 ? blank : null
+    };
+  }
+
+  // src/metricDistribution/structureSection.js
+  var FOOTNOTES = {
+    multipleCategories: (total) => `Some records fall in more than one category, so the counts add up to more than ${formatCount(
+      total
+    )}.`,
+    notRecorded: () => `${NOT_RECORDED}: the source value was blank.`
+  };
+  function populationLabel(population) {
+    return population ? `% of ${population}` : "%";
+  }
+  function defaultLabel(value, source, metric) {
+    if (value === "count") return "n";
+    if (value === "percent" && source === "Numerator") {
+      return populationLabel(metric.Numerator);
+    }
+    if (value === "percent" && source !== "Denominator") return "%";
+    return populationLabel(metric.Denominator);
+  }
+  function defaultValues(source) {
+    return source === "Denominator" ? ["percent"] : ["count"];
+  }
+  function sumPercent(rows) {
+    return rows.some((row) => typeof row.Percent !== "number") ? null : rows.reduce((sum, row) => sum + row.Percent, 0);
+  }
+  function categoryColor(category, status, spec) {
+    if (!status) return spec.theme.barColor;
+    return Object.prototype.hasOwnProperty.call(spec.colors, category) ? spec.colors[category] : spec.theme.neutralColor;
+  }
+  function structureSection(rows, section, spec, { metric, result }) {
+    const { source, variable } = section;
+    const values = section.values ?? spec.values ?? defaultValues(source);
+    const columns = values.map((value) => ({
+      value,
+      label: section.labels?.[value] ?? spec.labels[value] ?? defaultLabel(value, source, metric)
+    }));
+    const total = rows.length ? rows[0].Total : null;
+    const denominator = result?.Denominator > 0 ? result.Denominator : null;
+    const bar2 = (kind, label, count, percent, color3, tooltip5) => ({
+      kind,
+      label,
+      count,
+      percent,
+      percentOfDenominator: denominator === null ? null : count / denominator,
+      color: color3,
+      tooltip: tooltip5 ?? `${label}: ${formatCount(count)} of ${formatCount(total)}`
+    });
+    const { shown, collapsed, notRecorded } = orderCategories(
+      rows,
+      section.topN ?? spec.topN
+    );
+    const bars2 = shown.map(
+      (row) => bar2(
+        "category",
+        row.Category,
+        row.Count,
+        row.Percent ?? null,
+        categoryColor(row.Category, section.status === true, spec)
+      )
+    );
+    if (collapsed.length) {
+      const label = `+ ${collapsed.length} more`;
+      const count = collapsed.reduce((sum, row) => sum + row.Count, 0);
+      const detail = collapsed.map((row) => `${row.Category}: ${formatCount(row.Count)}`).join(", ");
+      bars2.push(
+        bar2(
+          "more",
+          label,
+          count,
+          sumPercent(collapsed),
+          spec.theme.neutralColor,
+          `${label}: ${formatCount(count)} of ${formatCount(
+            total
+          )} (${detail})`
+        )
+      );
+    }
+    if (notRecorded) {
+      bars2.push(
+        bar2(
+          "notRecorded",
+          NOT_RECORDED,
+          notRecorded.Count,
+          notRecorded.Percent ?? null,
+          spec.theme.neutralColor
+        )
+      );
+    }
+    const maxCount = Math.max(0, ...bars2.map((b) => b.count));
+    bars2.forEach((b) => {
+      b.width = maxCount > 0 ? b.count / maxCount : 0;
+    });
+    const footnotes = [];
+    if (rows.reduce((sum, row) => sum + row.Count, 0) > total) {
+      footnotes.push(FOOTNOTES.multipleCategories(total));
+    }
+    if (notRecorded) footnotes.push(FOOTNOTES.notRecorded());
+    return {
+      source,
+      variable,
+      title: section.title ?? variable,
+      total,
+      empty: rows.length === 0,
+      columns,
+      bars: bars2,
+      footnotes
+    };
+  }
+
+  // src/metricDistribution/structureData.js
+  var SOURCE_ORDER = ["Numerator", "Denominator"];
+  function sourceRank(source) {
+    const rank = SOURCE_ORDER.indexOf(source);
+    return rank === -1 ? SOURCE_ORDER.length : rank;
+  }
+  function sectionKey(source, variable) {
+    return JSON.stringify([source, variable]);
+  }
+  function groupRows(rows) {
+    const groups2 = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const key = sectionKey(row.Source, row.Variable);
+      if (!groups2.has(key)) {
+        groups2.set(key, {
+          section: { source: row.Source, variable: row.Variable },
+          rows: []
+        });
+      }
+      groups2.get(key).rows.push(row);
+    });
+    return groups2;
+  }
+  function defaultSections(groups2) {
+    return [...groups2.values()].map(({ section }, index3) => ({ section, index: index3 })).sort(
+      (a, b) => sourceRank(a.section.source) - sourceRank(b.section.source) || a.index - b.index
+    ).map(({ section }) => section);
+  }
+  function structureData4(data, spec) {
+    if (data.distributions === void 0 || data.distributions === null) {
+      return { state: "missing", sections: [] };
+    }
+    const groups2 = groupRows(data.distributions);
+    const sections = (spec.sections ?? defaultSections(groups2)).map(
+      (section) => structureSection(
+        groups2.get(sectionKey(section.source, section.variable))?.rows ?? [],
+        section,
+        spec,
+        data
+      )
+    );
+    if (sections.every((section) => section.empty)) {
+      return { state: "empty", sections: [] };
+    }
+    return { state: "ok", sections };
+  }
+
+  // src/metricDistribution/makeHeader.js
+  function describeCounts(metric, result) {
+    if (!metric.Numerator || !metric.Denominator) return null;
+    return `${metric.Numerator}: ${formatCount(result.Numerator)}; ${metric.Denominator}: ${formatCount(result.Denominator)}`;
+  }
+  function makeHeader(root2, { metric, result }) {
+    const header = select_default2(root2).append("div").classed("metric-distribution--header", true).style("display", "flex").style("flex-wrap", "wrap").style("align-items", "baseline").style("gap", "8px");
+    header.append("span").classed("metric-distribution--name", true).style("font-weight", "600").text(metric.Metric);
+    if (result === void 0 || result === null) return header;
+    header.append("strong").classed("metric-distribution--percent", true).style("font-size", "1.5em").text(formatPercent(result.Metric));
+    header.append("span").classed("metric-distribution--fraction", true).style("font-variant-numeric", "tabular-nums").attr("title", describeCounts(metric, result)).text(
+      `${formatCount(result.Numerator)} / ${formatCount(
+        result.Denominator
+      )}`
+    );
+    return header;
+  }
+
+  // src/metricDistribution/makeSection.js
+  var FORMATTERS = {
+    count: formatCount,
+    percent: formatPercent,
+    percentOfDenominator: formatPercent
+  };
+  var BAR_HEIGHT = "8px";
+  function appendMessage(parent, text) {
+    return parent.append("p").classed("metric-distribution--message", true).style("margin", "0").style("color", TEXT_COLORS.muted).text(text);
+  }
+  function appendHeaderRow(table, columns) {
+    const row = table.append("thead").append("tr");
+    row.append("th").attr("scope", "col");
+    columns.forEach(({ label }) => {
+      row.append("th").attr("scope", "col").style("padding-left", "12px").style("text-align", "right").style("font-weight", "normal").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(label);
+    });
+  }
+  function appendBarRow(tbody, bar2, columns) {
+    const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", bar2.tooltip);
+    const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic");
+    labelCell.append("span").text(bar2.label);
+    labelCell.append("div").classed("metric-distribution--track", true).attr("aria-hidden", "true").style("margin-top", "2px").style("background", "#f0f0f0").style("border-radius", "0 4px 4px 0").append("div").classed("metric-distribution--bar", true).style("width", `${Number((bar2.width * 100).toFixed(2))}%`).style("height", BAR_HEIGHT).style("border-radius", "0 4px 4px 0").style("background-color", bar2.color);
+    columns.forEach(({ value }) => {
+      row.append("td").attr("data-value", value).style("padding", "3px 0 3px 12px").style("vertical-align", "top").style("text-align", "right").style("white-space", "nowrap").style("font-variant-numeric", "tabular-nums").text(FORMATTERS[value](bar2[value]));
+    });
+  }
+  function makeSection(root2, section) {
+    const container = select_default2(root2).append("div").classed("metric-distribution--section", true).attr("data-source", section.source).attr("data-variable", section.variable);
+    container.append("div").classed("metric-distribution--title", true).style("font-weight", "600").style("margin-bottom", "4px").text(section.title);
+    if (section.empty) {
+      appendMessage(container, MESSAGES.emptySection);
+      return container;
+    }
+    const table = container.append("table").attr("aria-label", section.title).style("width", "100%").style("border-collapse", "collapse").style("color", TEXT_COLORS.primary);
+    appendHeaderRow(table, section.columns);
+    const tbody = table.append("tbody");
+    section.bars.forEach((bar2) => appendBarRow(tbody, bar2, section.columns));
+    section.footnotes.forEach((footnote) => {
+      container.append("p").classed("metric-distribution--footnote", true).style("margin", "4px 0 0").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(footnote);
+    });
+    return container;
+  }
+
+  // src/metricDistribution.js
+  var ROOT_CLASS = "metric-distribution";
+  function resolveElement(element) {
+    if (typeof element !== "string") return element;
+    const el = document.querySelector(element);
+    if (!el) {
+      throw new Error(
+        `metricDistribution: could not find element matching "${element}"`
+      );
+    }
+    return el;
+  }
+  function metricDistribution(element = "body", data = {}, spec = {}) {
+    validateData(data);
+    validateSpec3(spec);
+    const el = resolveElement(element);
+    const display = { ...data, result: normalizeResult(data.result) };
+    const model = structureData4(display, mergeSpec3(spec));
+    [...el.children].filter((child) => child.classList.contains(ROOT_CLASS)).forEach((child) => child.remove());
+    const root2 = select_default2(el).append("div").classed(ROOT_CLASS, true).attr("role", "group").attr("aria-label", `${data.metric.Metric} breakdowns`).attr("data-state", model.state).style("display", "flex").style("flex-direction", "column").style("gap", "12px").style("color", TEXT_COLORS.primary).node();
+    makeHeader(root2, display);
+    if (model.state === "ok") {
+      model.sections.forEach((section) => makeSection(root2, section));
+    } else {
+      appendMessage(select_default2(root2), MESSAGES[model.state]);
+    }
+    return root2;
+  }
+
   // src/metricOverview/columns.js
   var resultsColumns = results_default.items.required;
   var columnTitle = (column) => results_default.items.properties[column].title;
 
   // src/metricOverview/validateSpec.js
-  var supportedFields = {
+  var supportedFields2 = {
     spec: [
       "groupId",
       "snapshotDate",
@@ -28134,7 +28729,7 @@ var gsmViz = (() => {
     unavailable: ["value", "empty"]
   };
   var layouts2 = ["list", "header"];
-  function isPlainObject(value) {
+  function isPlainObject2(value) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       return false;
     }
@@ -28144,8 +28739,8 @@ var gsmViz = (() => {
   function isNonEmptyString(value) {
     return typeof value === "string" && value.trim().length > 0;
   }
-  function validatePlainObject(value, path) {
-    if (!isPlainObject(value)) {
+  function validatePlainObject2(value, path) {
+    if (!isPlainObject2(value)) {
       throw new Error(`${path} must be a plain object`);
     }
   }
@@ -28168,19 +28763,19 @@ var gsmViz = (() => {
       throw new Error(`${path} must be a non-empty string or a number`);
     }
   }
-  function validateData(data) {
-    if (!isPlainObject(data)) {
+  function validateData2(data) {
+    if (!isPlainObject2(data)) {
       throw new Error("data must be a plain object with results and metric");
     }
     if (!Array.isArray(data.results)) {
       throw new Error("data.results must be an array");
     }
     data.results.forEach((row, index3) => {
-      if (!isPlainObject(row)) {
+      if (!isPlainObject2(row)) {
         throw new Error(`data.results[${index3}] must be a plain object`);
       }
     });
-    if (!isPlainObject(data.metric)) {
+    if (!isPlainObject2(data.metric)) {
       throw new Error("data.metric must be a plain object");
     }
     const metricIds = new Set(
@@ -28206,9 +28801,9 @@ var gsmViz = (() => {
       throw new Error("spec.fields must not repeat a field");
     }
   }
-  function validateLabels(labels) {
+  function validateLabels2(labels) {
     if (labels === void 0) return;
-    validatePlainObject(labels, "spec.labels");
+    validatePlainObject2(labels, "spec.labels");
     Object.entries(labels).forEach(([column, label]) => {
       validateColumn(column, `spec.labels.${column}`);
       if (!isNonEmptyString(label)) {
@@ -28218,7 +28813,7 @@ var gsmViz = (() => {
   }
   function validateFormat(format2) {
     if (format2 === void 0) return;
-    validatePlainObject(format2, "spec.format");
+    validatePlainObject2(format2, "spec.format");
     Object.entries(format2).forEach(([column, specifier]) => {
       validateColumn(column, `spec.format.${column}`);
       try {
@@ -28233,10 +28828,10 @@ var gsmViz = (() => {
   }
   function validateUnavailable(unavailable) {
     if (unavailable === void 0) return;
-    validatePlainObject(unavailable, "spec.unavailable");
+    validatePlainObject2(unavailable, "spec.unavailable");
     validateSupportedFields(
       unavailable,
-      supportedFields.unavailable,
+      supportedFields2.unavailable,
       "spec.unavailable"
     );
     Object.entries(unavailable).forEach(([state, text]) => {
@@ -28247,23 +28842,23 @@ var gsmViz = (() => {
       }
     });
   }
-  function validateSpec3(data, spec) {
-    validateData(data);
-    validatePlainObject(spec, "spec");
-    validateSupportedFields(spec, supportedFields.spec, "spec");
+  function validateSpec4(data, spec) {
+    validateData2(data);
+    validatePlainObject2(spec, "spec");
+    validateSupportedFields(spec, supportedFields2.spec, "spec");
     validateSelector(spec.groupId, "spec.groupId");
     validateSelector(spec.snapshotDate, "spec.snapshotDate");
     if (spec.layout !== void 0 && !layouts2.includes(spec.layout)) {
       throw new Error("spec.layout must be 'list' or 'header'");
     }
     validateFields(spec.fields);
-    validateLabels(spec.labels);
+    validateLabels2(spec.labels);
     validateFormat(spec.format);
     validateUnavailable(spec.unavailable);
   }
 
   // src/metricOverview/defaults.js
-  var defaults5 = {
+  var defaults6 = {
     layout: "list",
     fields: ["Metric", "Numerator", "Denominator"],
     // d3-format specifiers, all grouping thousands. The metric reads as a
@@ -28282,18 +28877,18 @@ var gsmViz = (() => {
       empty: "No data"
     }
   };
-  var defaults_default3 = defaults5;
+  var defaults_default4 = defaults6;
 
   // src/metricOverview/mergeSpec.js
-  function mergeSpec3(spec) {
+  function mergeSpec4(spec) {
     return {
       groupId: spec.groupId,
       snapshotDate: spec.snapshotDate,
-      layout: spec.layout ?? defaults_default3.layout,
-      fields: [...spec.fields ?? defaults_default3.fields],
+      layout: spec.layout ?? defaults_default4.layout,
+      fields: [...spec.fields ?? defaults_default4.fields],
       labels: { ...spec.labels },
-      format: { ...defaults_default3.format, ...spec.format },
-      unavailable: { ...defaults_default3.unavailable, ...spec.unavailable }
+      format: { ...defaults_default4.format, ...spec.format },
+      unavailable: { ...defaults_default4.unavailable, ...spec.unavailable }
     };
   }
 
@@ -28313,16 +28908,16 @@ var gsmViz = (() => {
 
   // src/metricOverview/describeField.js
   var metricLabelColumns = ["Metric", "Numerator", "Denominator", "Score"];
-  var isBlank = (value) => typeof value === "string" && value.trim() === "";
+  var isBlank2 = (value) => typeof value === "string" && value.trim() === "";
   function resolveLabel(field, metric, spec) {
     if (spec.labels[field] !== void 0) return spec.labels[field];
     const label = metric[field];
-    const named2 = metricLabelColumns.includes(field) && typeof label === "string" && !isBlank(label) && label !== "NA";
+    const named2 = metricLabelColumns.includes(field) && typeof label === "string" && !isBlank2(label) && label !== "NA";
     return named2 ? label : columnTitle(field);
   }
   function toNumber2(value) {
     if (typeof value === "number") return value;
-    if (typeof value === "string" && !isBlank(value)) return Number(value);
+    if (typeof value === "string" && !isBlank2(value)) return Number(value);
     return NaN;
   }
   function formatValue(value, specifier) {
@@ -28333,7 +28928,7 @@ var gsmViz = (() => {
     if (typeof value === "number") {
       return Number.isFinite(value) ? String(value) : null;
     }
-    return typeof value === "string" && !isBlank(value) ? value : null;
+    return typeof value === "string" && !isBlank2(value) ? value : null;
   }
   function describeField(field, row, metric, spec) {
     const text = formatValue(row[field], spec.format[field]);
@@ -28445,7 +29040,7 @@ var gsmViz = (() => {
   // src/metricOverview.js
   var block3 = "gsm-metric-overview";
   function metricOverview(element = "body", data, spec = {}) {
-    validateSpec3(data, spec);
+    validateSpec4(data, spec);
     let el = element;
     if (typeof el === "string") {
       el = document.querySelector(el);
@@ -28455,7 +29050,7 @@ var gsmViz = (() => {
         );
       }
     }
-    const merged = mergeSpec3(spec);
+    const merged = mergeSpec4(spec);
     const row = selectRow(data.results, merged);
     const root2 = makeElement("div", block3);
     root2.dataset.layout = merged.layout;
@@ -28560,7 +29155,7 @@ var gsmViz = (() => {
   );
 
   // src/points/validateSpec.js
-  var supportedFields2 = {
+  var supportedFields3 = {
     spec: [
       "mapping",
       "scales",
@@ -28681,7 +29276,7 @@ var gsmViz = (() => {
     zoom: ["enabled", "mode", "pan", "wheel", "pinch"],
     theme: ["maintainAspectRatio", "animation"]
   };
-  function isPlainObject2(value) {
+  function isPlainObject3(value) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
       return false;
     }
@@ -28709,10 +29304,10 @@ var gsmViz = (() => {
   function validateShapeScale(scale) {
     if (scale === void 0) return;
     const path = "spec.scales.shape";
-    validatePlainObject2(scale, path);
-    validateSupportedFields2(scale, supportedFields2.shapeScale, path);
+    validatePlainObject3(scale, path);
+    validateSupportedFields2(scale, supportedFields3.shapeScale, path);
     if (scale.values !== void 0) {
-      validatePlainObject2(scale.values, `${path}.values`);
+      validatePlainObject3(scale.values, `${path}.values`);
       Object.entries(scale.values).forEach(([level, pointStyle]) => {
         if (!POINT_STYLES.includes(pointStyle)) {
           throw new Error(
@@ -28728,8 +29323,8 @@ var gsmViz = (() => {
       throw new Error(`${path}.label must be a string or null`);
     }
   }
-  function validatePlainObject2(value, path) {
-    if (!isPlainObject2(value)) {
+  function validatePlainObject3(value, path) {
+    if (!isPlainObject3(value)) {
       throw new Error(`${path} must be a plain object`);
     }
   }
@@ -28777,8 +29372,8 @@ var gsmViz = (() => {
     }
     referenceLines3.forEach((line, index3) => {
       const path = `spec.annotations.referenceLines[${index3}]`;
-      validatePlainObject2(line, path);
-      validateSupportedFields2(line, supportedFields2.referenceLine, path);
+      validatePlainObject3(line, path);
+      validateSupportedFields2(line, supportedFields3.referenceLine, path);
       if (!["x", "y"].includes(line.axis)) {
         throw new Error(`${path}.axis must be 'x' or 'y'`);
       }
@@ -28807,15 +29402,15 @@ var gsmViz = (() => {
   }
   function validateAnnotationLine(line, index3) {
     const path = `spec.annotations.lines[${index3}]`;
-    validatePlainObject2(line, path);
-    validateSupportedFields2(line, supportedFields2.annotationLine, path);
+    validatePlainObject3(line, path);
+    validateSupportedFields2(line, supportedFields3.annotationLine, path);
     if (!Array.isArray(line.data)) {
       throw new Error(`${path}.data must be an array`);
     }
-    validatePlainObject2(line.mapping, `${path}.mapping`);
+    validatePlainObject3(line.mapping, `${path}.mapping`);
     validateSupportedFields2(
       line.mapping,
-      supportedFields2.annotationLineMapping,
+      supportedFields3.annotationLineMapping,
       `${path}.mapping`
     );
     ["x", "y"].forEach(
@@ -28835,7 +29430,7 @@ var gsmViz = (() => {
     }
     validateColor(line.color, `${path}.color`);
     if (line.colors !== void 0) {
-      validatePlainObject2(line.colors, `${path}.colors`);
+      validatePlainObject3(line.colors, `${path}.colors`);
       Object.entries(line.colors).forEach(
         ([level, color3]) => validateRequiredColor(color3, `${path}.colors.${level}`)
       );
@@ -28876,8 +29471,8 @@ var gsmViz = (() => {
   }
   function validatePointLabelFont(font, path) {
     if (font === void 0) return;
-    validatePlainObject2(font, path);
-    validateSupportedFields2(font, supportedFields2.pointLabelFont, path);
+    validatePlainObject3(font, path);
+    validateSupportedFields2(font, supportedFields3.pointLabelFont, path);
     ["family", "style"].forEach((field) => {
       if (font[field] !== void 0) {
         validateNonEmptyString(font[field], `${path}.${field}`);
@@ -28900,17 +29495,17 @@ var gsmViz = (() => {
   function validatePointLabels(labels, data) {
     if (labels === void 0) return;
     const labelsPath = "spec.annotations.labels";
-    validatePlainObject2(labels, labelsPath);
+    validatePlainObject3(labels, labelsPath);
     validateSupportedFields2(
       labels,
-      supportedFields2.annotationLabels,
+      supportedFields3.annotationLabels,
       labelsPath
     );
     const point = labels.point;
     if (point === void 0 || point === null || point === false) return;
     const path = `${labelsPath}.point`;
-    validatePlainObject2(point, path);
-    validateSupportedFields2(point, supportedFields2.pointLabel, path);
+    validatePlainObject3(point, path);
+    validateSupportedFields2(point, supportedFields3.pointLabel, path);
     validateNonEmptyString(point.field, `${path}.field`);
     if (point.display !== void 0 && typeof point.display !== "boolean" && typeof point.display !== "function" && (typeof point.display !== "string" || point.display.trim().length === 0)) {
       throw new Error(
@@ -28951,10 +29546,10 @@ var gsmViz = (() => {
   }
   function validateAnnotations(annotations5, spec) {
     if (annotations5 === void 0) return;
-    validatePlainObject2(annotations5, "spec.annotations");
+    validatePlainObject3(annotations5, "spec.annotations");
     validateSupportedFields2(
       annotations5,
-      supportedFields2.annotations,
+      supportedFields3.annotations,
       "spec.annotations"
     );
     validateReferenceLines(annotations5.referenceLines, spec);
@@ -28976,8 +29571,8 @@ var gsmViz = (() => {
       return;
     }
     const path = `spec.scales.${axis}`;
-    validatePlainObject2(scale, path);
-    validateSupportedFields2(scale, supportedFields2.scale, path);
+    validatePlainObject3(scale, path);
+    validateSupportedFields2(scale, supportedFields3.scale, path);
     if (scale.type !== void 0 && !["linear", "log"].includes(scale.type)) {
       throw new Error(`${path}.type must be 'linear' or 'log'`);
     }
@@ -29046,10 +29641,10 @@ var gsmViz = (() => {
       return;
     }
     const path = "spec.scales.color";
-    validatePlainObject2(scale, path);
-    validateSupportedFields2(scale, supportedFields2.colorScale, path);
+    validatePlainObject3(scale, path);
+    validateSupportedFields2(scale, supportedFields3.colorScale, path);
     if (scale.colors !== void 0) {
-      validatePlainObject2(scale.colors, `${path}.colors`);
+      validatePlainObject3(scale.colors, `${path}.colors`);
       Object.entries(scale.colors).forEach(([level, color3]) => {
         if (typeof color3 !== "string" || color3.trim().length === 0) {
           throw new Error(
@@ -29080,10 +29675,10 @@ var gsmViz = (() => {
   function validateContinuousAestheticScale(scale, aesthetic) {
     if (scale === void 0) return;
     const path = `spec.scales.${aesthetic}`;
-    validatePlainObject2(scale, path);
+    validatePlainObject3(scale, path);
     validateSupportedFields2(
       scale,
-      supportedFields2.continuousAestheticScale,
+      supportedFields3.continuousAestheticScale,
       path
     );
     if (!Array.isArray(scale.range) || scale.range.length !== 2 || !scale.range.every(Number.isFinite)) {
@@ -29103,13 +29698,13 @@ var gsmViz = (() => {
     if (callbacks === void 0) {
       return;
     }
-    validatePlainObject2(callbacks, "spec.callbacks");
+    validatePlainObject3(callbacks, "spec.callbacks");
     validateSupportedFields2(
       callbacks,
-      supportedFields2.callbacks,
+      supportedFields3.callbacks,
       "spec.callbacks"
     );
-    supportedFields2.callbacks.forEach((field) => {
+    supportedFields3.callbacks.forEach((field) => {
       const callback2 = callbacks[field];
       if (callback2 !== void 0 && callback2 !== null && typeof callback2 !== "function") {
         throw new Error(
@@ -29122,10 +29717,10 @@ var gsmViz = (() => {
     if (selection2 === void 0) {
       return;
     }
-    validatePlainObject2(selection2, "spec.selection");
+    validatePlainObject3(selection2, "spec.selection");
     validateSupportedFields2(
       selection2,
-      supportedFields2.selection,
+      supportedFields3.selection,
       "spec.selection"
     );
     ["enabled", "multiple"].forEach((field) => {
@@ -29143,9 +29738,9 @@ var gsmViz = (() => {
     if (theme === void 0) {
       return;
     }
-    validatePlainObject2(theme, "spec.theme");
-    validateSupportedFields2(theme, supportedFields2.theme, "spec.theme");
-    supportedFields2.theme.forEach((field) => {
+    validatePlainObject3(theme, "spec.theme");
+    validateSupportedFields2(theme, supportedFields3.theme, "spec.theme");
+    supportedFields3.theme.forEach((field) => {
       if (theme[field] !== void 0 && typeof theme[field] !== "boolean") {
         throw new Error(`spec.theme.${field} must be a boolean`);
       }
@@ -29155,8 +29750,8 @@ var gsmViz = (() => {
     if (zoom2 === void 0) {
       return;
     }
-    validatePlainObject2(zoom2, "spec.zoom");
-    validateSupportedFields2(zoom2, supportedFields2.zoom, "spec.zoom");
+    validatePlainObject3(zoom2, "spec.zoom");
+    validateSupportedFields2(zoom2, supportedFields3.zoom, "spec.zoom");
     ["enabled", "pan", "wheel", "pinch"].forEach((field) => {
       if (zoom2[field] !== void 0 && typeof zoom2[field] !== "boolean") {
         throw new Error(`spec.zoom.${field} must be a boolean`);
@@ -29166,7 +29761,7 @@ var gsmViz = (() => {
       throw new Error("spec.zoom.mode must be 'x', 'y', or 'xy'");
     }
   }
-  function validateSpec4(data, spec) {
+  function validateSpec5(data, spec) {
     if (data === void 0 || data === null) {
       throw new Error("data is required");
     }
@@ -29176,15 +29771,15 @@ var gsmViz = (() => {
     if (spec === void 0 || spec === null) {
       throw new Error("spec is required");
     }
-    validatePlainObject2(spec, "spec");
-    validateSupportedFields2(spec, supportedFields2.spec, "spec");
+    validatePlainObject3(spec, "spec");
+    validateSupportedFields2(spec, supportedFields3.spec, "spec");
     if (spec.mapping === void 0 || spec.mapping === null) {
       throw new Error("spec.mapping is required");
     }
-    validatePlainObject2(spec.mapping, "spec.mapping");
+    validatePlainObject3(spec.mapping, "spec.mapping");
     validateSupportedFields2(
       spec.mapping,
-      supportedFields2.mapping,
+      supportedFields3.mapping,
       "spec.mapping"
     );
     validateRequiredMapping(spec.mapping, "x");
@@ -29207,10 +29802,10 @@ var gsmViz = (() => {
       }
     });
     if (spec.scales !== void 0) {
-      validatePlainObject2(spec.scales, "spec.scales");
+      validatePlainObject3(spec.scales, "spec.scales");
       validateSupportedFields2(
         spec.scales,
-        supportedFields2.scales,
+        supportedFields3.scales,
         "spec.scales"
       );
       validateScale(spec.scales.x, "x");
@@ -29221,22 +29816,22 @@ var gsmViz = (() => {
       validateShapeScale(spec.scales.shape);
     }
     if (spec.labels !== void 0) {
-      validatePlainObject2(spec.labels, "spec.labels");
+      validatePlainObject3(spec.labels, "spec.labels");
       validateSupportedFields2(
         spec.labels,
-        supportedFields2.labels,
+        supportedFields3.labels,
         "spec.labels"
       );
-      supportedFields2.labels.forEach((field) => {
+      supportedFields3.labels.forEach((field) => {
         validateOptionalString(spec.labels[field], `spec.labels.${field}`);
       });
     }
     validateAnnotations(spec.annotations, { ...spec, data });
     if (spec.tooltip !== void 0) {
-      validatePlainObject2(spec.tooltip, "spec.tooltip");
+      validatePlainObject3(spec.tooltip, "spec.tooltip");
       validateSupportedFields2(
         spec.tooltip,
-        supportedFields2.tooltip,
+        supportedFields3.tooltip,
         "spec.tooltip"
       );
       validateOptionalString(spec.tooltip.format, "spec.tooltip.format");
@@ -29249,13 +29844,13 @@ var gsmViz = (() => {
         );
       }
       if (spec.tooltip.callbacks !== void 0) {
-        validatePlainObject2(
+        validatePlainObject3(
           spec.tooltip.callbacks,
           "spec.tooltip.callbacks"
         );
         validateSupportedFields2(
           spec.tooltip.callbacks,
-          supportedFields2.tooltipCallbacks,
+          supportedFields3.tooltipCallbacks,
           "spec.tooltip.callbacks"
         );
         Object.entries(spec.tooltip.callbacks).forEach(
@@ -29300,7 +29895,7 @@ var gsmViz = (() => {
     "#ccebc5",
     "#ffed6f"
   ];
-  var defaults6 = {
+  var defaults7 = {
     scales: {
       x: {
         type: "linear",
@@ -29374,12 +29969,12 @@ var gsmViz = (() => {
       animation: false
     }
   };
-  var defaults_default4 = defaults6;
+  var defaults_default5 = defaults7;
 
   // src/points/mergeSpec.js
-  function mergeDefaults(defaultValues, userValues = {}) {
-    return Object.keys(defaultValues).reduce((merged, field) => {
-      const value = userValues[field] === void 0 ? defaultValues[field] : userValues[field];
+  function mergeDefaults(defaultValues2, userValues = {}) {
+    return Object.keys(defaultValues2).reduce((merged, field) => {
+      const value = userValues[field] === void 0 ? defaultValues2[field] : userValues[field];
       merged[field] = Array.isArray(value) ? [...value] : value !== null && typeof value === "object" ? { ...value } : value;
       return merged;
     }, {});
@@ -29387,14 +29982,14 @@ var gsmViz = (() => {
   function mergeTooltip(tooltip5 = {}) {
     return {
       ...tooltip5,
-      ...mergeDefaults(defaults_default4.tooltip, tooltip5),
+      ...mergeDefaults(defaults_default5.tooltip, tooltip5),
       ...tooltip5.callbacks ? { callbacks: { ...tooltip5.callbacks } } : {}
     };
   }
   function mergeAnnotations(annotations5 = {}) {
-    const referenceLines3 = annotations5.referenceLines === void 0 ? defaults_default4.annotations.referenceLines : annotations5.referenceLines;
-    const lines = annotations5.lines === void 0 ? defaults_default4.annotations.lines : annotations5.lines;
-    const pointLabel = annotations5.labels?.point === void 0 ? defaults_default4.annotations.labels.point : annotations5.labels.point;
+    const referenceLines3 = annotations5.referenceLines === void 0 ? defaults_default5.annotations.referenceLines : annotations5.referenceLines;
+    const lines = annotations5.lines === void 0 ? defaults_default5.annotations.lines : annotations5.lines;
+    const pointLabel = annotations5.labels?.point === void 0 ? defaults_default5.annotations.labels.point : annotations5.labels.point;
     return {
       referenceLines: referenceLines3.map((line) => ({
         ...line,
@@ -29417,28 +30012,28 @@ var gsmViz = (() => {
       }
     };
   }
-  function mergeSpec4(data, spec) {
+  function mergeSpec5(data, spec) {
     return {
       data,
       mapping: { ...spec.mapping },
       scales: {
-        x: mergeDefaults(defaults_default4.scales.x, spec.scales?.x),
-        y: mergeDefaults(defaults_default4.scales.y, spec.scales?.y),
-        color: mergeDefaults(defaults_default4.scales.color, spec.scales?.color),
-        size: mergeDefaults(defaults_default4.scales.size, spec.scales?.size),
+        x: mergeDefaults(defaults_default5.scales.x, spec.scales?.x),
+        y: mergeDefaults(defaults_default5.scales.y, spec.scales?.y),
+        color: mergeDefaults(defaults_default5.scales.color, spec.scales?.color),
+        size: mergeDefaults(defaults_default5.scales.size, spec.scales?.size),
         opacity: mergeDefaults(
-          defaults_default4.scales.opacity,
+          defaults_default5.scales.opacity,
           spec.scales?.opacity
         ),
-        shape: mergeDefaults(defaults_default4.scales.shape, spec.scales?.shape)
+        shape: mergeDefaults(defaults_default5.scales.shape, spec.scales?.shape)
       },
-      labels: mergeDefaults(defaults_default4.labels, spec.labels),
+      labels: mergeDefaults(defaults_default5.labels, spec.labels),
       annotations: mergeAnnotations(spec.annotations),
       tooltip: mergeTooltip(spec.tooltip),
-      callbacks: mergeDefaults(defaults_default4.callbacks, spec.callbacks),
-      selection: mergeDefaults(defaults_default4.selection, spec.selection),
-      zoom: mergeDefaults(defaults_default4.zoom, spec.zoom),
-      theme: mergeDefaults(defaults_default4.theme, spec.theme)
+      callbacks: mergeDefaults(defaults_default5.callbacks, spec.callbacks),
+      selection: mergeDefaults(defaults_default5.selection, spec.selection),
+      zoom: mergeDefaults(defaults_default5.zoom, spec.zoom),
+      theme: mergeDefaults(defaults_default5.theme, spec.theme)
     };
   }
 
@@ -29757,7 +30352,7 @@ var gsmViz = (() => {
       return dataset;
     });
   }
-  function structureData4(spec) {
+  function structureData5(spec) {
     const { data, mapping } = spec;
     const keys = /* @__PURE__ */ new Set();
     const records = data.map((row, index3) => {
@@ -30269,9 +30864,9 @@ var gsmViz = (() => {
 
   // src/points/buildState.js
   function buildState(data, spec, validated = false) {
-    if (!validated) validateSpec4(data, spec);
-    const merged = mergeSpec4(data, spec);
-    const chartData = structureData4(merged);
+    if (!validated) validateSpec5(data, spec);
+    const merged = mergeSpec5(data, spec);
+    const chartData = structureData5(merged);
     chartData.datasets.push(...structureLines(merged));
     return {
       merged,
@@ -31015,7 +31610,7 @@ var gsmViz = (() => {
   }
 
   // src/points/updateSpec.js
-  function isPlainObject3(value) {
+  function isPlainObject4(value) {
     if (value === null || typeof value !== "object") return false;
     const prototype = Object.getPrototypeOf(value);
     return prototype === Object.prototype || prototype === null;
@@ -31023,14 +31618,14 @@ var gsmViz = (() => {
   function mergePartial(existing, partial) {
     return Object.keys(partial).reduce(
       (merged, key) => {
-        merged[key] = isPlainObject3(existing[key]) && isPlainObject3(partial[key]) ? mergePartial(existing[key], partial[key]) : partial[key];
+        merged[key] = isPlainObject4(existing[key]) && isPlainObject4(partial[key]) ? mergePartial(existing[key], partial[key]) : partial[key];
         return merged;
       },
       { ...existing }
     );
   }
   function updateSpec2(chart, spec) {
-    if (!isPlainObject3(spec)) {
+    if (!isPlainObject4(spec)) {
       throw new Error("points updateSpec spec must be a plain object");
     }
     const stored = getStoredInputs(chart);
@@ -31040,7 +31635,7 @@ var gsmViz = (() => {
   // src/points.js
   auto_default.register(annotation, plugin);
   function points(element = "body", data = [], spec = {}) {
-    validateSpec4(data, spec);
+    validateSpec5(data, spec);
     let el = element;
     if (typeof el === "string") {
       el = document.querySelector(el);
@@ -31134,34 +31729,34 @@ var gsmViz = (() => {
 
   // src/scatterPlot/configure.js
   function configure5(_config_, _results_) {
-    const defaults7 = {};
-    defaults7.resultTooltipKeys = [
+    const defaults8 = {};
+    defaults8.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults7.GroupLevel = "Site";
-    defaults7.groupLabelKey = "InvestigatorLastName";
-    defaults7.groupParticipantCountKey = "ParticipantCount";
-    defaults7.groupTooltipKeys = null;
-    defaults7.x = "Denominator";
-    defaults7[defaults7.x] = defaults7.x;
-    defaults7.xType = "logarithmic";
-    defaults7.y = "Numerator";
-    defaults7[defaults7.y] = defaults7.y;
-    defaults7.yType = "linear";
-    defaults7.color = "Flag";
-    defaults7.hoverCallback = (datum2) => {
+    defaults8.GroupLevel = "Site";
+    defaults8.groupLabelKey = "InvestigatorLastName";
+    defaults8.groupParticipantCountKey = "ParticipantCount";
+    defaults8.groupTooltipKeys = null;
+    defaults8.x = "Denominator";
+    defaults8[defaults8.x] = defaults8.x;
+    defaults8.xType = "logarithmic";
+    defaults8.y = "Numerator";
+    defaults8[defaults8.y] = defaults8.y;
+    defaults8.yType = "linear";
+    defaults8.color = "Flag";
+    defaults8.hoverCallback = (datum2) => {
     };
-    defaults7.clickCallback = (datum2) => {
+    defaults8.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults7.displayTitle = false;
-    defaults7.displayLegend = true;
-    defaults7.displayTrendLine = false;
-    defaults7.maintainAspectRatio = false;
-    const config = configure2(defaults7, _config_, {
+    defaults8.displayTitle = false;
+    defaults8.displayLegend = true;
+    defaults8.displayTrendLine = false;
+    defaults8.maintainAspectRatio = false;
+    const config = configure2(defaults8, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -31417,7 +32012,7 @@ var gsmViz = (() => {
   }
 
   // src/scatterPlot/structureData.js
-  function structureData5(_results_, config, _bounds_, _groupMetadata_ = null) {
+  function structureData6(_results_, config, _bounds_, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const data = mutate2(_results_, config, groupMetadata);
     let datasets = [
@@ -31583,7 +32178,7 @@ var gsmViz = (() => {
   // src/scatterPlot/updateData.js
   function updateData4(chart, _results_, _config_, _bounds_, _groupMetadata_) {
     const config = updateConfig2(chart, _config_, false, false);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _bounds_,
@@ -31600,7 +32195,7 @@ var gsmViz = (() => {
     checkInputs3(_results_, _config_, _bounds_, _groupMetadata_);
     const config = configure5(_config_, _results_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData5(
+    const datasets = structureData6(
       _results_,
       config,
       _bounds_,
@@ -31663,21 +32258,21 @@ var gsmViz = (() => {
 
   // src/sparkline/configure.js
   function configure6(_config_, _data_, _thresholds_) {
-    const defaults7 = {};
-    defaults7.x = "SnapshotDate";
-    defaults7.xType = "category";
-    defaults7.y = "Score";
-    defaults7.yType = "linear";
-    defaults7.color = "Flag";
-    defaults7.hoverCallback = (datum2) => {
+    const defaults8 = {};
+    defaults8.x = "SnapshotDate";
+    defaults8.xType = "category";
+    defaults8.y = "Score";
+    defaults8.yType = "linear";
+    defaults8.color = "Flag";
+    defaults8.hoverCallback = (datum2) => {
     };
-    defaults7.clickCallback = (datum2) => {
+    defaults8.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults7.maintainAspectRatio = false;
-    defaults7.nSnapshots = 5;
-    defaults7.displayThresholds = false;
-    const config = configure2(defaults7, _config_, {
+    defaults8.maintainAspectRatio = false;
+    defaults8.nSnapshots = 5;
+    defaults8.displayThresholds = false;
+    const config = configure2(defaults8, _config_, {
       thresholds: checkThresholds.bind(null, _config_, _thresholds_)
     });
     config.annotation = ["Metric", "Score"].includes(config.y) ? "Numerator" : config.y;
@@ -31735,7 +32330,7 @@ var gsmViz = (() => {
   }
 
   // src/sparkline/structureData.js
-  function structureData6(_data_, config) {
+  function structureData7(_data_, config) {
     const data = mutate3(_data_, config);
     const labels = data.map((d) => d.SnapshotDate);
     const pointBackgroundColor = data.map((d, i) => {
@@ -31894,7 +32489,7 @@ var gsmViz = (() => {
   // src/sparkline/updateData.js
   function updateData5(chart, _data_, _config_) {
     chart.data.config = updateConfig3(chart, _config_);
-    chart.data.datasets = structureData6(_data_, chart.data.config);
+    chart.data.datasets = structureData7(_data_, chart.data.config);
     chart.options.plugins = getPlugins5(
       chart.data.config,
       chart.data.datasets[0].data
@@ -31911,7 +32506,7 @@ var gsmViz = (() => {
     checkInputs4(_results_, _config_, _thresholds_);
     const config = configure6(_config_, _results_, _thresholds_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData6(_results_, config);
+    const datasets = structureData7(_results_, config);
     const options = {
       animation: false,
       layout: {
@@ -31985,39 +32580,39 @@ var gsmViz = (() => {
 
   // src/timeSeries/configure.js
   function configure7(_config_, _results_, _thresholds_, _intervals_) {
-    const defaults7 = {};
-    defaults7.resultTooltipKeys = [
+    const defaults8 = {};
+    defaults8.resultTooltipKeys = [
       "Score",
       "Metric",
       "Numerator",
       "Denominator"
     ];
-    defaults7.GroupLevel = "Site";
-    defaults7.groupLabelKey = "InvestigatorLastName";
-    defaults7.groupParticipantCountKey = "ParticipantCount";
-    defaults7.groupTooltipKeys = null;
-    defaults7.dataType = "continuous";
-    defaults7.discreteUnit = null;
-    defaults7.distributionDisplay = "boxplot";
-    defaults7.x = "SnapshotDate";
-    defaults7.xType = "category";
-    defaults7.y = "Score";
-    defaults7.yType = "linear";
-    defaults7.color = "Flag";
-    defaults7.hoverCallback = (datum2) => {
+    defaults8.GroupLevel = "Site";
+    defaults8.groupLabelKey = "InvestigatorLastName";
+    defaults8.groupParticipantCountKey = "ParticipantCount";
+    defaults8.groupTooltipKeys = null;
+    defaults8.dataType = "continuous";
+    defaults8.discreteUnit = null;
+    defaults8.distributionDisplay = "boxplot";
+    defaults8.x = "SnapshotDate";
+    defaults8.xType = "category";
+    defaults8.y = "Score";
+    defaults8.yType = "linear";
+    defaults8.color = "Flag";
+    defaults8.hoverCallback = (datum2) => {
     };
-    defaults7.clickCallback = (datum2) => {
+    defaults8.clickCallback = (datum2) => {
       console.log(datum2);
     };
-    defaults7.aggregateLabel = "Study";
-    defaults7.annotateThreshold = _thresholds_ !== null;
-    defaults7.displayTitle = false;
-    defaults7.maintainAspectRatio = false;
+    defaults8.aggregateLabel = "Study";
+    defaults8.annotateThreshold = _thresholds_ !== null;
+    defaults8.displayTitle = false;
+    defaults8.maintainAspectRatio = false;
     if (_config_ !== null)
       _config_.variableThresholds = Array.isArray(_thresholds_) ? _thresholds_.some(
         (Threshold) => Threshold.SnapshotDate !== _thresholds_[0].SnapshotDate
       ) : false;
-    const config = configure2(defaults7, _config_, {
+    const config = configure2(defaults8, _config_, {
       selectedGroupIDs: checkSelectedGroupIDs.bind(
         null,
         _config_?.selectedGroupIDs,
@@ -32030,7 +32625,7 @@ var gsmViz = (() => {
       config.selectedGroupIDs
     );
     config.dataType = /flag|risk/.test(config.y) ? "discrete" : "continuous";
-    if (defaults7.dataType === "discrete")
+    if (defaults8.dataType === "discrete")
       config.discreteUnit = Object.keys(_results_[0]).includes("GroupID") ? "Metric" : "Site";
     config.xLabel = coalesce(_config_?.xLabel, "Snapshot Date");
     const discreteUnits = config.dataType === "discrete" ? `${config.discreteUnit.replace(/y$/, "ie")}s` : "";
@@ -32438,7 +33033,7 @@ var gsmViz = (() => {
   }
 
   // src/timeSeries/structureData.js
-  function structureData7(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
+  function structureData8(_results_, config, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const groupMetadata = structureGroupMetadata(_groupMetadata_, config);
     const { results, labels, thresholds: thresholds2, intervals } = mutate4(
       _results_,
@@ -32757,7 +33352,7 @@ var gsmViz = (() => {
   // src/timeSeries/updateData.js
   function updateData6(chart, _results_, _config_, _thresholds_ = null, _intervals_ = null, _groupMetadata_ = null) {
     const config = configure7(_config_, _results_, _thresholds_);
-    const datasets = structureData7(
+    const datasets = structureData8(
       _results_,
       config,
       _thresholds_,
@@ -32790,7 +33385,7 @@ var gsmViz = (() => {
       this.data.config.selectedGroupIDs
     );
     this.canvas.riskSignalSelected.data = this.data.config.selectedGroupDatum;
-    this.data.datasets = structureData7(
+    this.data.datasets = structureData8(
       this.data._results_,
       this.data.config,
       this.data._thresholds_,
@@ -32811,7 +33406,7 @@ var gsmViz = (() => {
     );
     const config = configure7(_config_, _results_, _thresholds_, _intervals_);
     const canvas = addCanvas(_element_, config);
-    const datasets = structureData7(
+    const datasets = structureData8(
       _results_,
       config,
       _thresholds_,
@@ -32868,6 +33463,7 @@ var gsmViz = (() => {
     bars,
     facetBars,
     groupOverview,
+    metricDistribution,
     metricOverview,
     points,
     scatterPlot,

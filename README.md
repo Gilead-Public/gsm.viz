@@ -16,6 +16,7 @@ and development examples [here](https://gilead-public.github.io/gsm.viz/dev/).
 - [bar chart](https://gilead-public.github.io/gsm.viz/barChart/)
 - [group overview — country](https://gilead-public.github.io/gsm.viz/groupOverview/country/)
 - [group overview — site](https://gilead-public.github.io/gsm.viz/groupOverview/site/)
+- [metric distribution](https://gilead-public.github.io/gsm.viz/metricDistribution/)
 - [metric overview](https://gilead-public.github.io/gsm.viz/metricOverview/)
 - [scatter plot](https://gilead-public.github.io/gsm.viz/scatterPlot/)
 - [sparkline](https://gilead-public.github.io/gsm.viz/sparkline/)
