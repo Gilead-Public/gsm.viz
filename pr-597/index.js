@@ -30213,8 +30213,10 @@ var gsmViz = (() => {
     }
     chart.update("none");
     const selection2 = getSelection2(chart);
-    announceSelection(chart, selection2);
-    if (!options?._silent) fireOnSelect2(chart, selection2, event);
+    if (!options?._silent) {
+      announceSelection(chart, selection2);
+      fireOnSelect2(chart, selection2, event);
+    }
   }
   function selectPoint(chart, values, event, options) {
     const normalized = normalizeValues(values, "selectPoint");
@@ -30262,8 +30264,10 @@ var gsmViz = (() => {
     }
     chart.update("none");
     const selection2 = getSelection2(chart);
-    announceSelection(chart, selection2);
-    if (!options?._silent) fireOnSelect2(chart, selection2, event);
+    if (!options?._silent) {
+      announceSelection(chart, selection2);
+      fireOnSelect2(chart, selection2, event);
+    }
   }
   function getSelection2(chart) {
     const selection2 = chart.data._selectionState_?.selection;
@@ -33112,8 +33116,16 @@ var gsmViz = (() => {
     charts.forEach((chart) => {
       const current = chart.data._spec_.callbacks.onSelect;
       const callback2 = current === chart._facetPointsSelectionSyncWrapper ? chart._facetPointsSelectionOriginal : current;
+      let previousSelectionType = getSelection2(chart).type;
+      let previousHasKey = Boolean(chart.data._spec_.mapping.key);
       const wrapper = (selection2, event) => {
-        synchronizeSelection(charts, chart, selection2);
+        const hasKey = Boolean(chart.data._spec_.mapping.key);
+        const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previousSelectionType === "point" && !previousHasKey;
+        previousSelectionType = selection2.type;
+        previousHasKey = hasKey;
+        if (!skipPointSync) {
+          synchronizeSelection(charts, chart, selection2);
+        }
         callback2?.(selection2, event);
       };
       chart._facetPointsSelectionOriginal = callback2;

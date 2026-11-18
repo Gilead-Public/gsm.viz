@@ -220,11 +220,13 @@ are not coerced. Without a mapped key, source-row indexes are facet-local and
 hover is not linked.
 
 Point selection is also linked only when `mapping.key` is present in both
-charts. A sibling selects the subset of requested keys that it contains and
+charts. Without a mapped key, point selections and their clears remain
+facet-local. A sibling selects the subset of requested keys that it contains and
 clears when it has no match. Sibling selections never open or pin a tooltip;
-only the originating chart shows one. Color-group selection synchronizes by typed group
-identity. Sibling updates are silent, so `onSelect` runs once on the originating
-facet. Pointer, keyboard, and programmatic selection all use the same path.
+only the originating chart shows one. Color-group selection synchronizes by
+typed group identity. Sibling updates are silent, so `onSelect` and selection
+announcements run only on the originating facet. Pointer, keyboard, and
+programmatic selection all use the same path.
 
 Callbacks add the typed facet value to the normal points signatures:
 
