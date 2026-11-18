@@ -28709,7 +28709,7 @@ var gsmViz = (() => {
       });
     }
     if (scale.order !== void 0) {
-      validateDiscreteOrder(scale.order, `${path}.order`, String);
+      validateDiscreteOrder(scale.order, `${path}.order`);
     }
     if (scale.label !== void 0 && scale.label !== null && typeof scale.label !== "string") {
       throw new Error(`${path}.label must be a string or null`);
@@ -30693,12 +30693,16 @@ var gsmViz = (() => {
       { ...existing }
     );
   }
-  function updateSpec2(chart, spec) {
+  function getUpdateSpec(chart, spec) {
     if (!isPlainObject2(spec)) {
       throw new Error("points updateSpec spec must be a plain object");
     }
     const stored = getStoredInputs(chart);
-    return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
+    return { data: stored.data, spec: mergePartial(stored.spec, spec) };
+  }
+  function updateSpec2(chart, spec) {
+    const update = getUpdateSpec(chart, spec);
+    return rebuildChart(chart, update.data, update.spec);
   }
 
   // src/points.js
@@ -33136,6 +33140,34 @@ var gsmViz = (() => {
     syncSelection2(activeCharts);
     syncLegendClicks2(activeCharts, { sync: legend5.sync });
   }
+  function validateUpdate(chart, name, args, templates, mapping) {
+    let data;
+    let spec;
+    if (name === "updateData") {
+      const { data: _data, ...storedSpec } = chart.data._spec_;
+      data = args[0];
+      spec = args[1] === void 0 ? storedSpec : args[1];
+    } else {
+      ({ data, spec } = getUpdateSpec(chart, args[0]));
+    }
+    const state = buildState(data, spec);
+    if (["color", "shape"].some(
+      (aesthetic) => spec.mapping?.[aesthetic] !== mapping[aesthetic]
+    )) {
+      throw new Error(
+        "facetPoints child updates cannot change color or shape mappings"
+      );
+    }
+    const templateIdentities = new Set(
+      templates.map((template) => getDatasetIdentity(template, state.merged))
+    );
+    const unexpected = state.chartData.datasets.filter((dataset) => !dataset._annotation).map((dataset) => getDatasetIdentity(dataset, state.merged)).find((identity4) => !templateIdentities.has(identity4));
+    if (unexpected !== void 0) {
+      throw new Error(
+        `facetPoints could not resolve point dataset identity ${unexpected}`
+      );
+    }
+  }
   var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
   function isPlainObject3(value) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -33193,7 +33225,6 @@ var gsmViz = (() => {
       ["updateData", "updateSpec"].forEach((name) => {
         const update = chart.helpers[name];
         chart.helpers[name] = function(chartInstance, ...args) {
-          const hidden = getHiddenIdentities(chartInstance);
           if (name === "updateData") {
             args[1] = injectSharedScales(
               args[1],
@@ -33202,6 +33233,8 @@ var gsmViz = (() => {
               mapping
             );
           }
+          validateUpdate(chartInstance, name, args, templates, mapping);
+          const hidden = getHiddenIdentities(chartInstance);
           args[specIndex[name]] = wrapSpecCallbacks(
             args[specIndex[name]],
             facetValues[chartIndex]

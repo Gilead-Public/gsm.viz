@@ -282,6 +282,8 @@ Set `mapping.color` to create one dataset and legend entry per categorical level
 Levels use first-seen order unless `scales.color.order` is provided. Ordered
 levels with no matching rows remain as empty datasets so legend identity and
 palette positions stay stable as data changes; new observed levels are appended.
+Numeric and string levels remain distinct even when their string representations
+match, so `1` and `'1'` may both appear in an explicit order.
 
 `scales.color.colors` maps level names to CSS colors. Levels without a named
 color use the default palette, or the non-empty `scales.color.palette` supplied by
