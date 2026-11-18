@@ -10,6 +10,7 @@
         -   [Bar Chart](barChart/ ':ignore')
         -   [Group Overview — Country](groupOverview/country ':ignore')
         -   [Group Overview — Site](groupOverview/site ':ignore')
+        -   [Metric Overview](metricOverview/ ':ignore')
         -   [Scatter Plot](scatterPlot/ ':ignore')
         -   [Sparkline](sparkline/ ':ignore')
         -   [Time Series](timeSeriesContinuous/ ':ignore')
@@ -22,6 +23,7 @@
     -   Metrics
         -   [barChart](docs/barChart)
         -   [groupOverview](docs/groupOverview)
+        -   [metricOverview](docs/metricOverview)
         -   [scatterPlot](docs/scatterPlot)
         -   [sparkline](docs/sparkline)
         -   [timeSeries](docs/timeSeries)
