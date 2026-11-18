@@ -33276,7 +33276,10 @@ var gsmViz = (() => {
           );
           validateUpdate(chartInstance, name, args, templates, mapping);
           const hidden = getHiddenIdentities(chartInstance);
-          args[index3] = wrapSpecCallbacks(args[index3], facetValues[chartIndex]);
+          args[index3] = wrapSpecCallbacks(
+            args[index3],
+            facetValues[chartIndex]
+          );
           const result = update.call(this, chartInstance, ...args);
           decorateChart(chartInstance, charts, templates, legend5, hidden);
           return result;
