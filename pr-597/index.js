@@ -32669,6 +32669,19 @@ var gsmViz = (() => {
     return result;
   }
 
+  // src/facetPoints/legendIdentity.js
+  function getAnnotationOrdinal(datasets, index3) {
+    return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
+  }
+  function getLegendIdentity(chart, index3) {
+    const dataset = chart.data.datasets[index3];
+    const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
+    return pointIdentity === void 0 ? JSON.stringify([
+      "annotation",
+      getAnnotationOrdinal(chart.data.datasets, index3)
+    ]) : pointIdentity;
+  }
+
   // src/facetPoints/splitData.js
   var MISSING_LABEL2 = "(Missing)";
   function normalizeFacetValue(value) {
@@ -32833,12 +32846,10 @@ var gsmViz = (() => {
       return byIdentity.get(identity4) || cloneGhost(template);
     });
     chart.data.datasets = [...orderedPointDatasets, ...annotationDatasets];
-    orderedPointDatasets.forEach((dataset, index3) => {
+    chart.data.datasets.forEach((_dataset, index3) => {
       chart.setDatasetVisibility(
         index3,
-        !hiddenIdentities.has(
-          getDatasetIdentity(dataset, chart.data._spec_)
-        )
+        !hiddenIdentities.has(getLegendIdentity(chart, index3))
       );
     });
     chart.update("none");
@@ -33020,30 +33031,19 @@ var gsmViz = (() => {
   }
 
   // src/facetPoints/syncLegendClicks.js
-  function getAnnotationOrdinal(datasets, index3) {
-    return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
-  }
-  function getIdentity(chart, index3) {
-    const dataset = chart.data.datasets[index3];
-    const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
-    return pointIdentity === void 0 ? JSON.stringify([
-      "annotation",
-      getAnnotationOrdinal(chart.data.datasets, index3)
-    ]) : pointIdentity;
-  }
   function syncLegendClicks2(charts, { sync = true } = {}) {
     charts.forEach((chart) => {
       const current = chart.options.plugins.legend.onClick;
       const original = current === chart._facetPointsLegendSyncWrapper ? chart._facetPointsLegendOriginal : current ?? Chart.defaults.plugins.legend.onClick;
       const wrapper = function(event, legendItem, legend5) {
-        const identity4 = getIdentity(chart, legendItem.datasetIndex);
+        const identity4 = getLegendIdentity(chart, legendItem.datasetIndex);
         original.call(this, event, legendItem, legend5);
         if (!sync) return;
         const visible = chart.isDatasetVisible(legendItem.datasetIndex);
         charts.forEach((sibling) => {
           if (sibling === chart || !sibling.canvas) return;
           const index3 = sibling.data.datasets.findIndex(
-            (_dataset, datasetIndex) => getIdentity(sibling, datasetIndex) === identity4
+            (_dataset, datasetIndex) => getLegendIdentity(sibling, datasetIndex) === identity4
           );
           if (index3 === -1) return;
           sibling.setDatasetVisibility(index3, visible);
@@ -33146,10 +33146,10 @@ var gsmViz = (() => {
   // src/facetPoints/syncUpdates.js
   function getHiddenIdentities(chart) {
     const hidden = /* @__PURE__ */ new Set();
-    chart.data.datasets.forEach((dataset, index3) => {
-      if (dataset._annotation || chart.isDatasetVisible(index3)) return;
-      const identity4 = getDatasetIdentity(dataset, chart.data._spec_);
-      if (identity4 !== void 0) hidden.add(identity4);
+    chart.data.datasets.forEach((_dataset, index3) => {
+      if (!chart.isDatasetVisible(index3)) {
+        hidden.add(getLegendIdentity(chart, index3));
+      }
     });
     return hidden;
   }
@@ -33222,7 +33222,7 @@ var gsmViz = (() => {
   function isSameField(spec, mapping, aesthetic) {
     return mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
   }
-  function alignSharedScales(spec, resolved, sharedScales, mapping) {
+  function alignSharedScales(spec, resolved, current, sharedScales, mapping) {
     if (!isPlainObject3(spec)) return spec;
     if (spec.scales !== void 0 && !isPlainObject3(spec.scales)) return spec;
     const scales2 = { ...spec.scales };
@@ -33234,7 +33234,7 @@ var gsmViz = (() => {
         if (resolved.scales?.[aesthetic]?.[key] === void 0) {
           scales2[aesthetic] = { ...scale, [key]: [...value] };
         }
-      } else if (resolved.scales?.[aesthetic]?.[key] !== void 0) {
+      } else if (current !== void 0 && isSameField(current, mapping, aesthetic) && resolved.scales?.[aesthetic]?.[key] !== void 0) {
         scales2[aesthetic] = { ...scale, [key]: void 0 };
       }
     });
@@ -33242,11 +33242,17 @@ var gsmViz = (() => {
   }
   function withSharedScales(chart, name, spec, sharedScales, mapping) {
     if (name === "updateData") {
-      return alignSharedScales(spec, spec, sharedScales, mapping);
+      return alignSharedScales(spec, spec, void 0, sharedScales, mapping);
     }
     if (!isPlainObject3(spec)) return spec;
     const { spec: resolved } = getUpdateSpec(chart, spec);
-    return alignSharedScales(spec, resolved, sharedScales, mapping);
+    return alignSharedScales(
+      spec,
+      resolved,
+      chart.data._spec_,
+      sharedScales,
+      mapping
+    );
   }
   function wrapSpecCallbacks(spec, facetValue) {
     if (!isPlainObject3(spec) || !isPlainObject3(spec.callbacks)) return spec;

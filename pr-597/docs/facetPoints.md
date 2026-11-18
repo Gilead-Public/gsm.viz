@@ -256,17 +256,19 @@ first.helpers.updateSpec(first, { labels: { title: 'Updated panel' } });
 ```
 
 A child `updateData` or `updateSpec` is local to that chart. It preserves the
-initial global point-dataset templates, facet legend display, hidden semantic
-groups, and synchronization wrappers when the original color/shape domain is
-retained. Callback functions supplied through a child's `updateSpec` or through
-the `spec` argument of `updateData` also receive the facet value, so their
-signatures match the callbacks above. Shared fixed x/y ranges, color/shape
-orders, and size/opacity domains follow the field they were computed from: a
-child `updateSpec`, or a complete replacement `spec` passed to `updateData`,
-keeps them for any aesthetic still mapped to the original field and drops them
-when the update remaps that aesthetic (x, y, size, or opacity), so the remapped
-aesthetic uses a local automatic domain. A `range`, `order`, or `domain` set
-explicitly by the update always takes precedence.
+initial global point-dataset templates, facet legend display, hidden point
+groups and auxiliary lines (matched by layer order), and synchronization
+wrappers when the original color/shape domain is retained. Callback functions
+supplied through a child's `updateSpec` or through the `spec` argument of
+`updateData` also receive the facet value, so their signatures match the
+callbacks above. Shared fixed x/y ranges, color/shape orders, and size/opacity
+domains follow the field they were computed from: a child `updateSpec`, or a
+complete replacement `spec` passed to `updateData`, keeps them for any
+aesthetic still mapped to the original field and drops them when the update
+remaps that aesthetic (x, y, size, or opacity), so the remapped aesthetic uses
+a local automatic domain. A `range`, `order`, or `domain` set explicitly by an
+update always takes precedence and persists through later unrelated
+`updateSpec` calls.
 
 Reinvoke `facetPoints(element, completeData, completeSpec)` whenever an update
 changes facet membership/order, shared x/y domains, color/shape mappings or
