@@ -260,10 +260,13 @@ initial global point-dataset templates, facet legend display, hidden semantic
 groups, and synchronization wrappers when the original color/shape domain is
 retained. Callback functions supplied through a child's `updateSpec` or through
 the `spec` argument of `updateData` also receive the facet value, so their
-signatures match the callbacks above. A complete replacement `spec` passed to
-`updateData` also inherits the shared fixed x/y ranges and the shared
-color/shape orders and size/opacity domains for any aesthetic still mapped to
-the original field, unless that spec sets its own `range`, `order`, or `domain`.
+signatures match the callbacks above. Shared fixed x/y ranges, color/shape
+orders, and size/opacity domains follow the field they were computed from: a
+child `updateSpec`, or a complete replacement `spec` passed to `updateData`,
+keeps them for any aesthetic still mapped to the original field and drops them
+when the update remaps that aesthetic (x, y, size, or opacity), so the remapped
+aesthetic uses a local automatic domain. A `range`, `order`, or `domain` set
+explicitly by the update always takes precedence.
 
 Reinvoke `facetPoints(element, completeData, completeSpec)` whenever an update
 changes facet membership/order, shared x/y domains, color/shape mappings or

@@ -33072,57 +33072,66 @@ var gsmViz = (() => {
   function clearSibling(sibling) {
     clearSelection2(sibling, void 0, { _silent: true });
   }
-  function synchronizeSelection(charts, origin, selection2) {
-    charts.forEach((sibling) => {
-      if (sibling === origin || !sibling.canvas) return;
-      if (selection2.type === null) {
+  function rememberSelection(chart) {
+    chart._facetPointsSelectionMemory = {
+      type: getSelection2(chart).type,
+      hasKey: Boolean(chart.data._spec_.mapping.key)
+    };
+  }
+  function mirrorSelection(sibling, origin, selection2) {
+    if (selection2.type === null) {
+      clearSibling(sibling);
+      return;
+    }
+    if (selection2.type === "point") {
+      if (!origin.data._spec_.mapping.key || !sibling.data._spec_.mapping.key) {
         clearSibling(sibling);
         return;
       }
-      if (selection2.type === "point") {
-        if (!origin.data._spec_.mapping.key || !sibling.data._spec_.mapping.key) {
-          clearSibling(sibling);
-          return;
-        }
-        const known = getPointKeys(sibling);
-        const values = selection2.values.filter((value) => known.has(value));
-        if (values.length) {
-          selectPoint(sibling, values, void 0, { _silent: true });
-        } else {
-          clearSibling(sibling);
-        }
+      const known = getPointKeys(sibling);
+      const values = selection2.values.filter((value) => known.has(value));
+      if (values.length) {
+        selectPoint(sibling, values, void 0, { _silent: true });
+      } else {
+        clearSibling(sibling);
+      }
+      return;
+    }
+    if (selection2.type === "group") {
+      if (!sibling.data._spec_.mapping.color) {
+        clearSibling(sibling);
         return;
       }
-      if (selection2.type === "group") {
-        if (!sibling.data._spec_.mapping.color) {
-          clearSibling(sibling);
-          return;
-        }
-        const known = getGroupValues2(sibling);
-        const values = selection2.values.filter((value) => known.has(value));
-        if (values.length) {
-          selectGroup(sibling, values, void 0, { _silent: true });
-        } else {
-          clearSibling(sibling);
-        }
-        return;
+      const known = getGroupValues2(sibling);
+      const values = selection2.values.filter((value) => known.has(value));
+      if (values.length) {
+        selectGroup(sibling, values, void 0, { _silent: true });
+      } else {
+        clearSibling(sibling);
       }
-      throw new Error(
-        `facetPoints cannot synchronize selection type ${selection2.type}`
-      );
+      return;
+    }
+    throw new Error(
+      `facetPoints cannot synchronize selection type ${selection2.type}`
+    );
+  }
+  function synchronizeSelection(charts, origin, selection2) {
+    charts.forEach((sibling) => {
+      if (sibling === origin || !sibling.canvas) return;
+      mirrorSelection(sibling, origin, selection2);
+      rememberSelection(sibling);
     });
   }
   function syncSelection2(charts) {
     charts.forEach((chart) => {
       const current = chart.data._spec_.callbacks.onSelect;
       const callback2 = current === chart._facetPointsSelectionSyncWrapper ? chart._facetPointsSelectionOriginal : current;
-      let previousSelectionType = getSelection2(chart).type;
-      let previousHasKey = Boolean(chart.data._spec_.mapping.key);
+      rememberSelection(chart);
       const wrapper = (selection2, event) => {
+        const previous = chart._facetPointsSelectionMemory;
         const hasKey = Boolean(chart.data._spec_.mapping.key);
-        const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previousSelectionType === "point" && !previousHasKey;
-        previousSelectionType = selection2.type;
-        previousHasKey = hasKey;
+        const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previous.type === "point" && !previous.hasKey;
+        rememberSelection(chart);
         if (!skipPointSync) {
           synchronizeSelection(charts, chart, selection2);
         }
@@ -33188,37 +33197,56 @@ var gsmViz = (() => {
     const prototype = Object.getPrototypeOf(value);
     return prototype === Object.prototype || prototype === null;
   }
-  function withScale(scales2, name, key, value) {
-    if (value === void 0 || !isPlainObject3(scales2)) return;
-    const scale = scales2[name];
-    if (scale !== void 0 && !isPlainObject3(scale)) return;
-    if (scale?.[key] !== void 0) return;
-    scales2[name] = { ...scale, [key]: [...value] };
+  function getSharedScales(globalStyles, globalScales) {
+    return [
+      globalScales.xMin !== void 0 && {
+        aesthetic: "x",
+        key: "range",
+        value: [globalScales.xMin, globalScales.xMax]
+      },
+      globalScales.yMin !== void 0 && {
+        aesthetic: "y",
+        key: "range",
+        value: [globalScales.yMin, globalScales.yMax]
+      },
+      { aesthetic: "color", key: "order", value: globalStyles.colorOrder },
+      { aesthetic: "shape", key: "order", value: globalStyles.shapeOrder },
+      { aesthetic: "size", key: "domain", value: globalStyles.sizeDomain },
+      {
+        aesthetic: "opacity",
+        key: "domain",
+        value: globalStyles.opacityDomain
+      }
+    ].filter((shared) => shared && shared.value !== void 0);
   }
-  function injectSharedScales(spec, globalStyles, globalScales, mapping) {
+  function isSameField(spec, mapping, aesthetic) {
+    return mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
+  }
+  function alignSharedScales(spec, resolved, sharedScales, mapping) {
     if (!isPlainObject3(spec)) return spec;
     if (spec.scales !== void 0 && !isPlainObject3(spec.scales)) return spec;
     const scales2 = { ...spec.scales };
-    const sameField = (aesthetic) => mapping[aesthetic] !== void 0 && spec.mapping?.[aesthetic] === mapping[aesthetic];
-    if (globalScales.xMin !== void 0) {
-      withScale(scales2, "x", "range", [globalScales.xMin, globalScales.xMax]);
-    }
-    if (globalScales.yMin !== void 0) {
-      withScale(scales2, "y", "range", [globalScales.yMin, globalScales.yMax]);
-    }
-    if (sameField("color")) {
-      withScale(scales2, "color", "order", globalStyles.colorOrder);
-    }
-    if (sameField("shape")) {
-      withScale(scales2, "shape", "order", globalStyles.shapeOrder);
-    }
-    if (sameField("size")) {
-      withScale(scales2, "size", "domain", globalStyles.sizeDomain);
-    }
-    if (sameField("opacity")) {
-      withScale(scales2, "opacity", "domain", globalStyles.opacityDomain);
-    }
+    sharedScales.forEach(({ aesthetic, key, value }) => {
+      const scale = scales2[aesthetic];
+      if (scale !== void 0 && !isPlainObject3(scale)) return;
+      if (scale?.[key] !== void 0) return;
+      if (isSameField(resolved, mapping, aesthetic)) {
+        if (resolved.scales?.[aesthetic]?.[key] === void 0) {
+          scales2[aesthetic] = { ...scale, [key]: [...value] };
+        }
+      } else if (resolved.scales?.[aesthetic]?.[key] !== void 0) {
+        scales2[aesthetic] = { ...scale, [key]: void 0 };
+      }
+    });
     return { ...spec, scales: scales2 };
+  }
+  function withSharedScales(chart, name, spec, sharedScales, mapping) {
+    if (name === "updateData") {
+      return alignSharedScales(spec, spec, sharedScales, mapping);
+    }
+    if (!isPlainObject3(spec)) return spec;
+    const { spec: resolved } = getUpdateSpec(chart, spec);
+    return alignSharedScales(spec, resolved, sharedScales, mapping);
   }
   function wrapSpecCallbacks(spec, facetValue) {
     if (!isPlainObject3(spec) || !isPlainObject3(spec.callbacks)) return spec;
@@ -33232,25 +33260,23 @@ var gsmViz = (() => {
   }
   function syncUpdates(charts, globalStyles, globalScales, legend5, facetValues, mapping) {
     const { templates } = globalStyles;
+    const sharedScales = getSharedScales(globalStyles, globalScales);
     charts.forEach((chart, chartIndex) => {
       const specIndex = { updateData: 1, updateSpec: 0 };
       ["updateData", "updateSpec"].forEach((name) => {
         const update = chart.helpers[name];
         chart.helpers[name] = function(chartInstance, ...args) {
-          if (name === "updateData") {
-            args[1] = injectSharedScales(
-              args[1],
-              globalStyles,
-              globalScales,
-              mapping
-            );
-          }
+          const index3 = specIndex[name];
+          args[index3] = withSharedScales(
+            chartInstance,
+            name,
+            args[index3],
+            sharedScales,
+            mapping
+          );
           validateUpdate(chartInstance, name, args, templates, mapping);
           const hidden = getHiddenIdentities(chartInstance);
-          args[specIndex[name]] = wrapSpecCallbacks(
-            args[specIndex[name]],
-            facetValues[chartIndex]
-          );
+          args[index3] = wrapSpecCallbacks(args[index3], facetValues[chartIndex]);
           const result = update.call(this, chartInstance, ...args);
           decorateChart(chartInstance, charts, templates, legend5, hidden);
           return result;
