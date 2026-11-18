@@ -28327,7 +28327,8 @@ var gsmViz = (() => {
 
   // src/metricDistribution/validateSpec.js
   var supportedFields = {
-    spec: ["sections", "values", "labels", "topN", "colors", "theme"],
+    spec: ["sections", "values", "labels", "topN", "colors", "theme", "header"],
+    header: ["labels", "format", "unavailable"],
     section: [
       "source",
       "variable",
@@ -28422,6 +28423,9 @@ var gsmViz = (() => {
     if (spec.colors !== void 0) {
       validatePlainObject(spec.colors, "spec.colors");
       validateStrings(spec.colors, "spec.colors");
+    }
+    if (spec.header !== void 0) {
+      validatePlainObject(spec.header, "spec.header", supportedFields.header);
     }
     if (spec.theme !== void 0) {
       validatePlainObject(spec.theme, "spec.theme", supportedFields.theme);
@@ -28620,96 +28624,6 @@ var gsmViz = (() => {
       return { state: "empty", sections: [] };
     }
     return { state: "ok", sections };
-  }
-
-  // src/metricDistribution/makeHeader.js
-  function describeCounts(metric, result) {
-    if (!metric.Numerator || !metric.Denominator) return null;
-    return `${metric.Numerator}: ${formatCount(result.Numerator)}; ${metric.Denominator}: ${formatCount(result.Denominator)}`;
-  }
-  function makeHeader(root2, { metric, result }) {
-    const header = select_default2(root2).append("div").classed("metric-distribution--header", true).style("display", "flex").style("flex-wrap", "wrap").style("align-items", "baseline").style("gap", "8px");
-    header.append("span").classed("metric-distribution--name", true).style("font-weight", "600").text(metric.Metric);
-    if (result === void 0 || result === null) return header;
-    header.append("strong").classed("metric-distribution--percent", true).style("font-size", "1.5em").text(formatPercent(result.Metric));
-    header.append("span").classed("metric-distribution--fraction", true).style("font-variant-numeric", "tabular-nums").attr("title", describeCounts(metric, result)).text(
-      `${formatCount(result.Numerator)} / ${formatCount(
-        result.Denominator
-      )}`
-    );
-    return header;
-  }
-
-  // src/metricDistribution/makeSection.js
-  var FORMATTERS = {
-    count: formatCount,
-    percent: formatPercent,
-    percentOfDenominator: formatPercent
-  };
-  var BAR_HEIGHT = "8px";
-  function appendMessage(parent, text) {
-    return parent.append("p").classed("metric-distribution--message", true).style("margin", "0").style("color", TEXT_COLORS.muted).text(text);
-  }
-  function appendHeaderRow(table, columns) {
-    const row = table.append("thead").append("tr");
-    row.append("th").attr("scope", "col");
-    columns.forEach(({ label }) => {
-      row.append("th").attr("scope", "col").style("padding-left", "12px").style("text-align", "right").style("font-weight", "normal").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(label);
-    });
-  }
-  function appendBarRow(tbody, bar2, columns) {
-    const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", bar2.tooltip);
-    const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic");
-    labelCell.append("span").text(bar2.label);
-    labelCell.append("div").classed("metric-distribution--track", true).attr("aria-hidden", "true").style("margin-top", "2px").style("background", "#f0f0f0").style("border-radius", "0 4px 4px 0").append("div").classed("metric-distribution--bar", true).style("width", `${Number((bar2.width * 100).toFixed(2))}%`).style("height", BAR_HEIGHT).style("border-radius", "0 4px 4px 0").style("background-color", bar2.color);
-    columns.forEach(({ value }) => {
-      row.append("td").attr("data-value", value).style("padding", "3px 0 3px 12px").style("vertical-align", "top").style("text-align", "right").style("white-space", "nowrap").style("font-variant-numeric", "tabular-nums").text(FORMATTERS[value](bar2[value]));
-    });
-  }
-  function makeSection(root2, section) {
-    const container = select_default2(root2).append("div").classed("metric-distribution--section", true).attr("data-source", section.source).attr("data-variable", section.variable);
-    container.append("div").classed("metric-distribution--title", true).style("font-weight", "600").style("margin-bottom", "4px").text(section.title);
-    if (section.empty) {
-      appendMessage(container, MESSAGES.emptySection);
-      return container;
-    }
-    const table = container.append("table").attr("aria-label", section.title).style("width", "100%").style("border-collapse", "collapse").style("color", TEXT_COLORS.primary);
-    appendHeaderRow(table, section.columns);
-    const tbody = table.append("tbody");
-    section.bars.forEach((bar2) => appendBarRow(tbody, bar2, section.columns));
-    section.footnotes.forEach((footnote) => {
-      container.append("p").classed("metric-distribution--footnote", true).style("margin", "4px 0 0").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(footnote);
-    });
-    return container;
-  }
-
-  // src/metricDistribution.js
-  var ROOT_CLASS = "metric-distribution";
-  function resolveElement(element) {
-    if (typeof element !== "string") return element;
-    const el = document.querySelector(element);
-    if (!el) {
-      throw new Error(
-        `metricDistribution: could not find element matching "${element}"`
-      );
-    }
-    return el;
-  }
-  function metricDistribution(element = "body", data = {}, spec = {}) {
-    validateData(data);
-    validateSpec3(spec);
-    const el = resolveElement(element);
-    const display = { ...data, result: normalizeResult(data.result) };
-    const model = structureData4(display, mergeSpec3(spec));
-    [...el.children].filter((child) => child.classList.contains(ROOT_CLASS)).forEach((child) => child.remove());
-    const root2 = select_default2(el).append("div").classed(ROOT_CLASS, true).attr("role", "group").attr("aria-label", `${data.metric.Metric} breakdowns`).attr("data-state", model.state).style("display", "flex").style("flex-direction", "column").style("gap", "12px").style("color", TEXT_COLORS.primary).node();
-    makeHeader(root2, display);
-    if (model.state === "ok") {
-      model.sections.forEach((section) => makeSection(root2, section));
-    } else {
-      appendMessage(select_default2(root2), MESSAGES[model.state]);
-    }
-    return root2;
   }
 
   // src/metricOverview/columns.js
@@ -29101,6 +29015,113 @@ var gsmViz = (() => {
     );
     if (previous) previous.replaceWith(root2);
     else el.append(root2);
+    return root2;
+  }
+
+  // src/metricDistribution/makeHeader.js
+  var FALLBACK_LABELS = { Numerator: "n", Denominator: "N" };
+  function isNamed(label) {
+    return typeof label === "string" && label.trim() !== "" && label !== "NA";
+  }
+  function fallbackLabels(metric) {
+    return Object.fromEntries(
+      Object.entries(FALLBACK_LABELS).filter(
+        ([field]) => !isNamed(metric[field])
+      )
+    );
+  }
+  function makeHeader({ metric, result }, header = {}) {
+    if (header.labels !== void 0 && !isPlainObject(header.labels)) {
+      throw new Error("spec.header.labels must be a plain object");
+    }
+    try {
+      return metricOverview(
+        document.createElement("div"),
+        {
+          results: result === void 0 || result === null ? [] : [result],
+          metric
+        },
+        {
+          ...header,
+          layout: "header",
+          labels: { ...fallbackLabels(metric), ...header.labels }
+        }
+      );
+    } catch (error) {
+      throw new Error(error.message.replace(/^spec\./, "spec.header."));
+    }
+  }
+
+  // src/metricDistribution/makeSection.js
+  var FORMATTERS = {
+    count: formatCount,
+    percent: formatPercent,
+    percentOfDenominator: formatPercent
+  };
+  var BAR_HEIGHT = "8px";
+  function appendMessage(parent, text) {
+    return parent.append("p").classed("metric-distribution--message", true).style("margin", "0").style("color", TEXT_COLORS.muted).text(text);
+  }
+  function appendHeaderRow(table, columns) {
+    const row = table.append("thead").append("tr");
+    row.append("th").attr("scope", "col");
+    columns.forEach(({ label }) => {
+      row.append("th").attr("scope", "col").style("padding-left", "12px").style("text-align", "right").style("font-weight", "normal").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(label);
+    });
+  }
+  function appendBarRow(tbody, bar2, columns) {
+    const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", bar2.tooltip);
+    const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic");
+    labelCell.append("span").text(bar2.label);
+    labelCell.append("div").classed("metric-distribution--track", true).attr("aria-hidden", "true").style("margin-top", "2px").style("background", "#f0f0f0").style("border-radius", "0 4px 4px 0").append("div").classed("metric-distribution--bar", true).style("width", `${Number((bar2.width * 100).toFixed(2))}%`).style("height", BAR_HEIGHT).style("border-radius", "0 4px 4px 0").style("background-color", bar2.color);
+    columns.forEach(({ value }) => {
+      row.append("td").attr("data-value", value).style("padding", "3px 0 3px 12px").style("vertical-align", "top").style("text-align", "right").style("white-space", "nowrap").style("font-variant-numeric", "tabular-nums").text(FORMATTERS[value](bar2[value]));
+    });
+  }
+  function makeSection(root2, section) {
+    const container = select_default2(root2).append("div").classed("metric-distribution--section", true).attr("data-source", section.source).attr("data-variable", section.variable);
+    container.append("div").classed("metric-distribution--title", true).style("font-weight", "600").style("margin-bottom", "4px").text(section.title);
+    if (section.empty) {
+      appendMessage(container, MESSAGES.emptySection);
+      return container;
+    }
+    const table = container.append("table").attr("aria-label", section.title).style("width", "100%").style("border-collapse", "collapse").style("color", TEXT_COLORS.primary);
+    appendHeaderRow(table, section.columns);
+    const tbody = table.append("tbody");
+    section.bars.forEach((bar2) => appendBarRow(tbody, bar2, section.columns));
+    section.footnotes.forEach((footnote) => {
+      container.append("p").classed("metric-distribution--footnote", true).style("margin", "4px 0 0").style("font-size", "0.85em").style("color", TEXT_COLORS.muted).text(footnote);
+    });
+    return container;
+  }
+
+  // src/metricDistribution.js
+  var ROOT_CLASS = "metric-distribution";
+  function resolveElement(element) {
+    if (typeof element !== "string") return element;
+    const el = document.querySelector(element);
+    if (!el) {
+      throw new Error(
+        `metricDistribution: could not find element matching "${element}"`
+      );
+    }
+    return el;
+  }
+  function metricDistribution(element = "body", data = {}, spec = {}) {
+    validateData(data);
+    validateSpec3(spec);
+    const el = resolveElement(element);
+    const display = { ...data, result: normalizeResult(data.result) };
+    const header = makeHeader(display, spec.header);
+    const model = structureData4(display, mergeSpec3(spec));
+    [...el.children].filter((child) => child.classList.contains(ROOT_CLASS)).forEach((child) => child.remove());
+    const root2 = select_default2(el).append("div").classed(ROOT_CLASS, true).attr("role", "group").attr("aria-label", `${data.metric.Metric} breakdowns`).attr("data-state", model.state).style("display", "flex").style("flex-direction", "column").style("gap", "12px").style("color", TEXT_COLORS.primary).node();
+    root2.append(header);
+    if (model.state === "ok") {
+      model.sections.forEach((section) => makeSection(root2, section));
+    } else {
+      appendMessage(select_default2(root2), MESSAGES[model.state]);
+    }
     return root2;
   }
 

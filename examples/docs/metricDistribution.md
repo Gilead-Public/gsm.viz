@@ -1,8 +1,9 @@
 # metricDistribution
 
 Displays one metric's categorical breakdowns (`Reporting_Distributions`) as
-horizontal bars, one section per `Source` × `Variable`, under a header with the
-metric's name, percent, and numerator / denominator.
+horizontal bars, one section per `Source` × `Variable`, under the
+[metricOverview](docs/metricOverview) header: the metric's name, value, and
+numerator / denominator.
 
 The widget only displays. It doesn't sum, filter, or recalculate rows: the
 rows must already be one metric at one group (the study, or one site) in one
@@ -94,15 +95,16 @@ When the row carries `MetricID`, `GroupLevel` and `GroupID`, `StudyID`, or
 
 ## Spec
 
-| Option               | Type       | Default                   | Description                                                      |
-| -------------------- | ---------- | ------------------------- | ---------------------------------------------------------------- |
-| `sections`           | `Array`    | every section in the rows | Sections to show, in order. See [Sections](#sections)            |
-| `values`             | `string[]` | by section source         | Values per bar: `'count'`, `'percent'`, `'percentOfDenominator'` |
-| `labels`             | `Object`   | from `metric`             | Column labels keyed by value                                     |
-| `topN`               | `number`   | all categories            | Recorded categories to show before collapsing into "+ k more"    |
-| `colors`             | `Object`   | `{}`                      | Status category → colour                                         |
-| `theme.barColor`     | `string`   | `'#4e79a7'`               | Colour of reason (non-status) bars                               |
-| `theme.neutralColor` | `string`   | `'#bab0ac'`               | Fallback status colour; "+ k more" and "Not recorded" bars       |
+| Option               | Type       | Default                   | Description                                                         |
+| -------------------- | ---------- | ------------------------- | ------------------------------------------------------------------- |
+| `sections`           | `Array`    | every section in the rows | Sections to show, in order. See [Sections](#sections)               |
+| `values`             | `string[]` | by section source         | Values per bar: `'count'`, `'percent'`, `'percentOfDenominator'`    |
+| `labels`             | `Object`   | from `metric`             | Column labels keyed by value                                        |
+| `topN`               | `number`   | all categories            | Recorded categories to show before collapsing into "+ k more"       |
+| `colors`             | `Object`   | `{}`                      | Status category → colour                                            |
+| `header`             | `Object`   | `{}`                      | Header `labels`, `format`, and `unavailable`. See [Header](#header) |
+| `theme.barColor`     | `string`   | `'#4e79a7'`               | Colour of reason (non-status) bars                                  |
+| `theme.neutralColor` | `string`   | `'#bab0ac'`               | Fallback status colour; "+ k more" and "Not recorded" bars          |
 
 Unknown options throw, so a misspelt option isn't silently ignored.
 
@@ -187,12 +189,38 @@ Shown automatically below a section:
 
 ## Header
 
-The header shows `metric.Metric`, `result.Metric` as a percent, and
-`result.Numerator / result.Denominator`; hovering the counts names them with
-the metric's labels. Without a `result`, only the name is shown. The header is
-a minimal metric overview kept in one file
-(`src/metricDistribution/makeHeader.js`) so it can be replaced by a shared
-metric overview component.
+The header is the [metricOverview](docs/metricOverview) widget in its `header`
+layout, given `data.metric` and `data.result`. It shows `metric.Metric`,
+`result.Metric` (as a percent by default), and
+`result.Numerator / result.Denominator`; hovering a count names it with the
+metric's label. Values are displayed as given, never recalculated. Without a
+`result`, it shows the name and "No data".
+
+`spec.header` passes these metricOverview options through:
+
+| Option        | Type     | Description                                                                              |
+| ------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `labels`      | `Object` | Label per `Reporting_Results` column, e.g. `{ Numerator: 'Discontinued' }`               |
+| `format`      | `Object` | d3-format specifier per column. Set `format.Metric` for a metric that isn't a percentage |
+| `unavailable` | `Object` | `value`: text for an unavailable value; `empty`: text shown without a `result`           |
+
+```js
+gsmViz.default.metricDistribution(
+    el,
+    { distributions, metric, result },
+    {
+        header: { format: { Metric: ',.2f' } },
+    }
+);
+```
+
+When the metric row has no `Numerator` or `Denominator` label, the header
+names the counts "n" and "N" rather than showing the column names.
+
+The header ships no styles of its own. It uses metricOverview's
+`gsm-metric-overview` and `gsm-metric-header__*` classes; see the suggested
+styles in [metricOverview](docs/metricOverview), which the
+[example page](metricDistribution/ ':ignore') includes.
 
 ## Data rules
 
@@ -205,6 +233,7 @@ Invalid inputs throw a descriptive error before anything is rendered:
 -   a `result` for a different metric (than `data.metric` or the rows), group,
     study, or snapshot;
 -   different `Total` values within one section;
+-   an invalid `spec.header` option;
 -   `Count` or `Total` that isn't a non-negative number, a `Percent` outside
     0–1, or a `result` value that is neither numeric nor unavailable. `Count`,
     `Total`, and `Percent` are not coerced from strings.

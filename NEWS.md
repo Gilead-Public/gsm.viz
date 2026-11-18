@@ -22,7 +22,7 @@
 
 ### New: `metricDistribution` Module
 
-- Add the `metricDistribution(element, data, spec)` widget, which displays one metric's `Reporting_Distributions` rows at one group as Layout A horizontal bars under a metric header: sections per source and variable (numerator first by default), bars by descending count with "Not recorded" last, a top-N limit collapsing the rest into "+ k more", one value per bar by default (counts for reason sections, one percentage of a named population for status sections) with business labels, status colours with a neutral fallback, automatic footnotes, and empty and missing states. The widget never sums rows (#619).
+- Add the `metricDistribution(element, data, spec)` widget, which displays one metric's `Reporting_Distributions` rows at one group as Layout A horizontal bars under the `metricOverview` header (configurable through `spec.header`): sections per source and variable (numerator first by default), bars by descending count with "Not recorded" last, a top-N limit collapsing the rest into "+ k more", one value per bar by default (counts for reason sections, one percentage of a named population for status sections) with business labels, status colours with a neutral fallback, automatic footnotes, and empty and missing states. The widget never sums rows (#619).
 
 ### `bars`
 
