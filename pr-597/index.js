@@ -32983,10 +32983,16 @@ var gsmViz = (() => {
       (element, index3) => element.datasetIndex === next[index3].datasetIndex && element.index === next[index3].index
     );
   }
+  function hasMappedKey(chart) {
+    return Boolean(chart.data._spec_.mapping.key);
+  }
   function synchronizeHover(charts, origin, key) {
+    if (!hasMappedKey(origin)) return;
     charts.forEach((sibling) => {
-      if (sibling === origin || isDestroyed(sibling)) return;
-      const point = key !== void 0 && sibling.data._spec_.mapping.key ? findPoint2(sibling, key) : void 0;
+      if (sibling === origin || isDestroyed(sibling) || !hasMappedKey(sibling)) {
+        return;
+      }
+      const point = key !== void 0 ? findPoint2(sibling, key) : void 0;
       const active = point ? [point] : [];
       if (isSameActive(sibling.getActiveElements(), active)) return;
       sibling.setActiveElements(active);

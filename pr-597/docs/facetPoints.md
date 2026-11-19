@@ -217,7 +217,8 @@ array index. Auxiliary lines are matched by their consistent layer order.
 With `mapping.key`, hovering a visible point highlights the exact matching key
 in sibling charts. Sibling tooltips are not opened, and numeric and string keys
 are not coerced. Without a mapped key, source-row indexes are facet-local and
-hover is not linked.
+hover is not linked: hovering or leaving an unkeyed facet never changes
+highlights in other facets, and keyed facets never change unkeyed ones.
 
 Point selection is also linked only when `mapping.key` is present in both
 charts. Without a mapped key, point selections and their clears remain
