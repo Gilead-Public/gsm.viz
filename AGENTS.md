@@ -1,6 +1,6 @@
 # Agent Instructions for gsm.viz
 
-This file guides AI agents working in this repository: GitHub Copilot CLI, the Copilot cloud agent, Copilot PR code review, and any other agent that reads `AGENTS.md`. It is the single source of agent instructions. There is no `.github/copilot-instructions.md` or `CLAUDE.md`.
+This file guides AI agents working in this repository: GitHub Copilot CLI, the Copilot cloud agent, Copilot PR code review, and any other agent that reads `AGENTS.md`. It is the single source of agent instructions. `CLAUDE.md` is a symlink to this file so Claude Code shares the same instructions. There is no `.github/copilot-instructions.md`.
 
 ## Project Overview
 
