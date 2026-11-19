@@ -222,7 +222,9 @@ highlights in other facets, and keyed facets never change unkeyed ones.
 
 Point selection is also linked only when `mapping.key` is present in both
 charts. Without a mapped key, point selections and their clears remain
-facet-local. A sibling selects the subset of requested keys that it contains and
+facet-local, and keyed point selections and clears leave an unkeyed facet's
+local point selection in place (they only replace a mirrored group selection).
+A sibling selects the subset of requested keys that it contains and
 clears when it has no match. Sibling selections never open or pin a tooltip;
 only the originating chart shows one. Color-group selection synchronizes by
 typed group identity. Sibling updates are silent, so `onSelect` and selection

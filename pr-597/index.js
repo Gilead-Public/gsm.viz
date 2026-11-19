@@ -33121,10 +33121,15 @@ var gsmViz = (() => {
       `facetPoints cannot synchronize selection type ${selection2.type}`
     );
   }
-  function synchronizeSelection(charts, origin, selection2) {
+  function synchronizeSelection(charts, origin, selection2, previous) {
+    const pointSync = selection2.type === "point" || selection2.type === null && previous.type === "point";
     charts.forEach((sibling) => {
       if (sibling === origin || !sibling.canvas) return;
-      mirrorSelection(sibling, origin, selection2);
+      if (pointSync && !sibling.data._spec_.mapping.key) {
+        if (getSelection2(sibling).type === "group") clearSibling(sibling);
+      } else {
+        mirrorSelection(sibling, origin, selection2);
+      }
       rememberSelection(sibling);
     });
   }
@@ -33139,7 +33144,7 @@ var gsmViz = (() => {
         const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previous.type === "point" && !previous.hasKey;
         rememberSelection(chart);
         if (!skipPointSync) {
-          synchronizeSelection(charts, chart, selection2);
+          synchronizeSelection(charts, chart, selection2, previous);
         }
         callback2?.(selection2, event);
       };
