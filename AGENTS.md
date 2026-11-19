@@ -191,6 +191,7 @@ When reviewing a PR, **limit findings to the modules the PR actually touches**. 
 - Tests live in `tests/<module>/` and mirror `src/` paths.
 - Test framework: Jest with jsdom environment and jest-canvas-mock.
 - **Flag** any implementation change (new function, modified logic, bug fix) that has no corresponding change in `tests/`.
+- **Scope:** TDD applies to `src/`. `examples/` are demonstrations only and do not need tests.
 - **Flag** any removed or skipped test (`test.skip`, `xit`, deleted file) without explanation.
 - **Tests are evidence.** "It works" is not sufficient — a passing test suite is required proof. Run `npm test` after every change.
 
@@ -442,6 +443,7 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue the PR addresses
 - Comment style or quantity — only flag if a comment is actively misleading.
 - Variable name micro-choices that are within camelCase convention.
 - Changes in `examples/` that are purely cosmetic demo updates with no API impact.
+- Missing tests for `examples/` code — examples are demonstrations and are not tested.
 
 ---
 
