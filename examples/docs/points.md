@@ -523,8 +523,9 @@ setting.
 `callbacks.onSelect(selection, event)` runs after click, keyboard, or
 programmatic selection changes. The callback receives a defensive
 `{ type, values }` object. For linked-chart synchronization, mutating helpers
-accept an event as their third argument and `{ _silent: true }` as their fourth
-argument:
+`selectPoint` and `selectGroup` accept an event as their third argument and
+`{ _silent: true }` as their fourth argument. `clearSelection` accepts the event
+as its second argument and the options as its third argument:
 
 ```js
 chart.helpers.selectPoint(chart, ['Site 01'], event, { _silent: true });
@@ -842,7 +843,8 @@ Every `points` chart, including each child returned by `facetPoints`, exposes:
 | Reset zoom      | `chart.resetZoom()`                                                 | Restores the configured x/y limits                              |
 
 The internal facet synchronization option is `{ _silent: true }` as the fourth
-argument to a mutating selection helper. Application code normally omits it.
+argument to `selectPoint` or `selectGroup`, or the third argument to
+`clearSelection`. Application code normally omits it.
 `facetPoints` itself intentionally has no batch helper; reinvoke it to recompute
 facet membership, shared domains, and global styles.
 
