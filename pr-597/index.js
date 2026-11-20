@@ -28717,7 +28717,7 @@ var gsmViz = (() => {
   }
   function validateDomain(scale, aesthetic, path) {
     if (scale.domain === void 0) return;
-    if (!Array.isArray(scale.domain) || scale.domain.length !== 2 || !scale.domain.every(Number.isFinite)) {
+    if (!Array.isArray(scale.domain) || scale.domain.length !== 2 || !Number.isFinite(scale.domain[0]) || !Number.isFinite(scale.domain[1])) {
       throw new Error(`${path}.domain must contain two finite numbers`);
     }
     if (aesthetic === "size" && scale.domain.some((value) => value < 0)) {

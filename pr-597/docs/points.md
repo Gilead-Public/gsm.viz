@@ -311,6 +311,7 @@ points. An optional two-number `scales.size.domain` or `scales.opacity.domain`
 (non-decreasing; non-negative for size) fixes that input domain instead, so the
 same value always maps to the same radius or alpha. Values outside the domain
 are clamped to the range ends. `facetPoints` sets these automatically.
+Both domain endpoints must be present and finite; sparse arrays are rejected.
 
 ## Discrete shape
 
