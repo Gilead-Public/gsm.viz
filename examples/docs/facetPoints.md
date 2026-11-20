@@ -82,7 +82,7 @@ const result = gsmViz.default.facetPoints(element, data, {
 });
 ```
 
-See the [interactive example](../facetPoints/) for fixed/free scales, an
+See the [interactive example](facetPoints/ ':ignore') for fixed/free scales, an
 explicit empty facet, global legends, keyed interaction, and full-grid
 rerendering.
 
