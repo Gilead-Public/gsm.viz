@@ -1,11 +1,13 @@
 import points from './points.js';
 
+import { setFacetAccessibleLabel } from './facetPoints/accessibility.js';
 import buildSubSpec from './facetPoints/buildSubSpec.js';
 import computeGlobalScales from './facetPoints/computeGlobalScales.js';
 import {
     applyGlobalStyles,
     getGlobalStyles,
 } from './facetPoints/globalStyles.js';
+import prepareFacetLines from './facetPoints/facetLines.js';
 import mergeSpec from './facetPoints/mergeSpec.js';
 import renderGrid from './facetPoints/renderGrid.js';
 import splitData from './facetPoints/splitData.js';
@@ -38,9 +40,10 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
 
     const merged = mergeSpec(data, spec);
     const facets = splitData(data, merged.facet.field, merged.facet.order);
-    const globalScales = computeGlobalScales(facets, merged);
-    const globalStyles = getGlobalStyles(facets, merged);
     const facetValues = [...facets.keys()];
+    const preparedLines = prepareFacetLines(merged, facetValues);
+    const globalScales = computeGlobalScales(facets, merged, preparedLines);
+    const globalStyles = getGlobalStyles(facets, merged);
     const { containers, labels, grid } = renderGrid(
         parent,
         facetValues,
@@ -53,7 +56,13 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
             const chart = points(
                 containers.get(facetValue),
                 facets.get(facetValue),
-                buildSubSpec(facetValue, merged, globalScales, globalStyles)
+                buildSubSpec(
+                    facetValue,
+                    merged,
+                    globalScales,
+                    globalStyles,
+                    preparedLines
+                )
             );
             charts.push(chart);
             chart.canvas.setAttribute(
@@ -65,6 +74,7 @@ export default function facetPoints(element = 'body', data = [], spec = {}) {
                 merged.facet.legend.display &&
                 chart.options.plugins.legend.display;
             applyGlobalStyles(chart, globalStyles.templates);
+            setFacetAccessibleLabel(chart, merged.facet.field, facetValue);
         });
 
         syncHover(charts);

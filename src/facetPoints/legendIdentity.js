@@ -5,8 +5,30 @@ function getAnnotationOrdinal(datasets, index) {
         .length;
 }
 
+function getAnnotationIdentity(dataset, datasets, index) {
+    if (!Number.isInteger(dataset._annotationLayer)) {
+        return JSON.stringify([
+            'annotation',
+            getAnnotationOrdinal(datasets, index),
+        ]);
+    }
+
+    const hasGroup = Object.prototype.hasOwnProperty.call(
+        dataset,
+        '_annotationGroup'
+    );
+    const group = !hasGroup
+        ? ['ungrouped']
+        : dataset._annotationGroupMissing
+        ? ['group', 'missing']
+        : ['group', typeof dataset._annotationGroup, dataset._annotationGroup];
+
+    return JSON.stringify(['annotation', dataset._annotationLayer, group]);
+}
+
 /**
- * Identify a legend dataset by typed point identity or annotation order.
+ * Identify a legend dataset by typed point identity or semantic annotation
+ * identity (line layer and typed group), falling back to annotation order.
  *
  * @param {Object} chart - Child points chart.
  * @param {number} index - Dataset index.
@@ -17,9 +39,6 @@ export default function getLegendIdentity(chart, index) {
     const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
 
     return pointIdentity === undefined
-        ? JSON.stringify([
-              'annotation',
-              getAnnotationOrdinal(chart.data.datasets, index),
-          ])
+        ? getAnnotationIdentity(dataset, chart.data.datasets, index)
         : pointIdentity;
 }

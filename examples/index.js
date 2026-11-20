@@ -29510,7 +29510,7 @@ var gsmViz = (() => {
     const palette = line.palette || defaultPalette;
     return level ? palette[index3 % palette.length] : line.color ?? DEFAULT_COLOR;
   }
-  function makeDataset(line, data, color3, label) {
+  function makeDataset(line, data, color3, label, layerIndex) {
     return {
       type: "line",
       label,
@@ -29528,6 +29528,7 @@ var gsmViz = (() => {
       pointStyle: "line",
       order: 1,
       _annotation: true,
+      _annotationLayer: layerIndex,
       _showInLegend: line.showInLegend ?? false
     };
   }
@@ -29560,7 +29561,8 @@ var gsmViz = (() => {
           line,
           records.map(({ point }) => point),
           line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
-          line.label ?? ""
+          line.label ?? "",
+          layerIndex
         )
       ];
     }
@@ -29577,7 +29579,8 @@ var gsmViz = (() => {
         line,
         groups2.get(getLevelKey2(level)) || [],
         getColor2(level, index3, line, spec.scales.color.palette),
-        label
+        label,
+        layerIndex
       );
       dataset._annotationGroup = level.value;
       dataset._annotationGroupMissing = level.missing;
@@ -32525,6 +32528,130 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/facetPoints/splitData.js
+  var MISSING_LABEL2 = "(Missing)";
+  function normalizeFacetValue(value) {
+    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
+  }
+  function formatFacetValue(value) {
+    if (value === null) return MISSING_LABEL2;
+    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
+  }
+  function splitData2(data, field, order) {
+    const facets = /* @__PURE__ */ new Map();
+    const ordered = order !== void 0;
+    if (ordered) {
+      order.forEach((value) => {
+        facets.set(normalizeFacetValue(value), []);
+      });
+    }
+    data.forEach((row) => {
+      const value = normalizeFacetValue(row?.[field]);
+      if (ordered && !facets.has(value)) return;
+      if (!facets.has(value)) facets.set(value, []);
+      facets.get(value).push(row);
+    });
+    return facets;
+  }
+
+  // src/facetPoints/accessibility.js
+  function applyFacetContext(chart, state) {
+    const currentLabel = chart.canvas.getAttribute("aria-label") || "";
+    const baseLabel = currentLabel === state.label ? state.baseLabel : currentLabel;
+    const formattedFacetValue = typeof state.value === "string" ? JSON.stringify(state.value) : formatFacetValue(state.value);
+    const facetLabel = `Facet ${state.field}: ${formattedFacetValue}.`;
+    const label = baseLabel ? `${facetLabel} ${baseLabel}` : facetLabel;
+    setAccessibleLabel(chart.canvas, label);
+    chart._facetPointsAccessibility = {
+      ...state,
+      baseLabel,
+      label
+    };
+  }
+  function setFacetAccessibleLabel(chart, field, value) {
+    applyFacetContext(chart, { field, value });
+  }
+  function refreshFacetAccessibleLabel(chart) {
+    if (chart._facetPointsAccessibility) {
+      applyFacetContext(chart, chart._facetPointsAccessibility);
+    }
+  }
+
+  // src/facetPoints/facetLines.js
+  function isMissingGroup(value) {
+    return value === null || value === void 0 || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value);
+  }
+  function isFacetAware(line, facetField) {
+    return line.data.some(
+      (row) => row !== null && row !== void 0 && Object.prototype.hasOwnProperty.call(row, facetField)
+    );
+  }
+  function validateFacetLines(lines, facetField) {
+    lines.forEach((line, lineIndex) => {
+      if (!isFacetAware(line, facetField)) return;
+      line.data.forEach((row, rowIndex) => {
+        const value = normalizeFacetValue(row?.[facetField]);
+        if (value !== null && typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+          throw new Error(
+            `spec.annotations.lines[${lineIndex}].data[${rowIndex}].${facetField} mapped by spec.facet.field must be a string, finite number, or missing`
+          );
+        }
+      });
+    });
+  }
+  function addGroup(order, seen, value) {
+    const normalized = isMissingGroup(value) ? null : value;
+    const key = getGroupKey(normalized);
+    if (!seen.has(key)) {
+      seen.add(key);
+      order.push(normalized);
+    }
+  }
+  function getGroupKey(value) {
+    return value === null ? "missing" : JSON.stringify([typeof value, value]);
+  }
+  function prepareFacetLines(spec, facetValues) {
+    const { lines } = spec.annotations;
+    const { field } = spec.facet;
+    validateFacetLines(lines, field);
+    structureLines(spec);
+    const byFacet = new Map(facetValues.map((value) => [value, []]));
+    const facetAwareByFacet = new Map(facetValues.map((value) => [value, []]));
+    const common = [];
+    lines.forEach((line) => {
+      const facetAware = isFacetAware(line, field);
+      const partitions = facetAware ? new Map(facetValues.map((value) => [value, []])) : void 0;
+      const order = line.mapping.group ? [...line.order || []] : void 0;
+      const seenGroups = order ? new Set((line.order || []).map((value) => getGroupKey(value))) : void 0;
+      line.data.forEach((row) => {
+        if (order) addGroup(order, seenGroups, row?.[line.mapping.group]);
+        if (facetAware) {
+          const facetValue = normalizeFacetValue(row?.[field]);
+          partitions.get(facetValue)?.push(row);
+        }
+      });
+      const makeLine = (data) => ({
+        ...line,
+        ...order ? { order } : {},
+        data
+      });
+      if (facetAware) {
+        facetValues.forEach((facetValue) => {
+          const prepared = makeLine(partitions.get(facetValue));
+          byFacet.get(facetValue).push(prepared);
+          facetAwareByFacet.get(facetValue).push(prepared);
+        });
+      } else {
+        const prepared = makeLine([...line.data]);
+        common.push(prepared);
+        facetValues.forEach(
+          (facetValue) => byFacet.get(facetValue).push(prepared)
+        );
+      }
+    });
+    return { byFacet, facetAwareByFacet, common };
+  }
+
   // src/facetPoints/buildSubSpec.js
   function getScale(scale) {
     return {
@@ -32547,7 +32674,13 @@ var gsmViz = (() => {
     wrappedCallbacks.add(wrapped);
     return wrapped;
   }
-  function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles) {
+  function getAnnotations(annotations5, preparedLines, facetValue) {
+    return {
+      ...annotations5,
+      lines: preparedLines.byFacet.get(facetValue)
+    };
+  }
+  function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles, preparedLines = prepareFacetLines(mergedSpec, [facetValue])) {
     const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
     const scales2 = Object.fromEntries(
       Object.entries(mergedSpec.scales).map(([name, scale]) => [
@@ -32571,6 +32704,11 @@ var gsmViz = (() => {
     }
     return {
       ...pointsSpec,
+      annotations: getAnnotations(
+        pointsSpec.annotations,
+        preparedLines,
+        facetValue
+      ),
       scales: scales2,
       callbacks: {
         onClick: wrapCallback(callbacks.onClick, facetValue),
@@ -32650,19 +32788,39 @@ var gsmViz = (() => {
   }
   function addDomain(result, axis, values, spec) {
     if (spec.facet.scales[axis].free) return;
-    const domain = getDomain2(values, spec.scales[axis]);
+    const scale = spec.scales[axis];
+    const domain = getDomain2([...values, ...scale.breaks], scale);
     if (domain !== void 0) {
       result[`${axis}Min`] = domain[0];
       result[`${axis}Max`] = domain[1];
     }
   }
-  function computeGlobalScales2(facetDataMap, spec) {
+  function computeGlobalScales2(facetDataMap, spec, preparedLines = prepareFacetLines(spec, [...facetDataMap.keys()])) {
     const domains = { x: [], y: [] };
-    facetDataMap.forEach((facetData) => {
+    facetDataMap.forEach((facetData, facetValue) => {
       const pointData = structureData4({ ...spec, data: facetData });
       collectDatasetValues(domains, pointData.datasets);
+      const lines = preparedLines.facetAwareByFacet.get(facetValue);
+      collectDatasetValues(
+        domains,
+        structureLines({
+          ...spec,
+          annotations: { ...spec.annotations, lines }
+        })
+      );
     });
-    collectDatasetValues(domains, structureLines(spec));
+    if (facetDataMap.size > 0) {
+      collectDatasetValues(
+        domains,
+        structureLines({
+          ...spec,
+          annotations: {
+            ...spec.annotations,
+            lines: preparedLines.common
+          }
+        })
+      );
+    }
     collectReferenceValues(domains, spec);
     const result = {};
     addDomain(result, "x", domains.x, spec);
@@ -32674,39 +32832,24 @@ var gsmViz = (() => {
   function getAnnotationOrdinal(datasets, index3) {
     return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
   }
+  function getAnnotationIdentity(dataset, datasets, index3) {
+    if (!Number.isInteger(dataset._annotationLayer)) {
+      return JSON.stringify([
+        "annotation",
+        getAnnotationOrdinal(datasets, index3)
+      ]);
+    }
+    const hasGroup = Object.prototype.hasOwnProperty.call(
+      dataset,
+      "_annotationGroup"
+    );
+    const group2 = !hasGroup ? ["ungrouped"] : dataset._annotationGroupMissing ? ["group", "missing"] : ["group", typeof dataset._annotationGroup, dataset._annotationGroup];
+    return JSON.stringify(["annotation", dataset._annotationLayer, group2]);
+  }
   function getLegendIdentity(chart, index3) {
     const dataset = chart.data.datasets[index3];
     const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
-    return pointIdentity === void 0 ? JSON.stringify([
-      "annotation",
-      getAnnotationOrdinal(chart.data.datasets, index3)
-    ]) : pointIdentity;
-  }
-
-  // src/facetPoints/splitData.js
-  var MISSING_LABEL2 = "(Missing)";
-  function normalizeFacetValue(value) {
-    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
-  }
-  function formatFacetValue(value) {
-    if (value === null) return MISSING_LABEL2;
-    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
-  }
-  function splitData2(data, field, order) {
-    const facets = /* @__PURE__ */ new Map();
-    const ordered = order !== void 0;
-    if (ordered) {
-      order.forEach((value) => {
-        facets.set(normalizeFacetValue(value), []);
-      });
-    }
-    data.forEach((row) => {
-      const value = normalizeFacetValue(row?.[field]);
-      if (ordered && !facets.has(value)) return;
-      if (!facets.has(value)) facets.set(value, []);
-      facets.get(value).push(row);
-    });
-    return facets;
+    return pointIdentity === void 0 ? getAnnotationIdentity(dataset, chart.data.datasets, index3) : pointIdentity;
   }
 
   // src/facetPoints/globalStyles.js
@@ -33189,6 +33332,7 @@ var gsmViz = (() => {
   function decorateChart(chart, charts, templates, legend5, hidden) {
     chart.options.plugins.legend.display = legend5.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
+    refreshFacetAccessibleLabel(chart);
     const activeCharts = charts.filter((sibling) => sibling.canvas);
     syncHover(activeCharts);
     syncSelection2(activeCharts);
@@ -33519,9 +33663,10 @@ var gsmViz = (() => {
     }
     const merged = mergeSpec4(data, spec);
     const facets = splitData2(data, merged.facet.field, merged.facet.order);
-    const globalScales = computeGlobalScales2(facets, merged);
-    const globalStyles = getGlobalStyles(facets, merged);
     const facetValues = [...facets.keys()];
+    const preparedLines = prepareFacetLines(merged, facetValues);
+    const globalScales = computeGlobalScales2(facets, merged, preparedLines);
+    const globalStyles = getGlobalStyles(facets, merged);
     const { containers, labels, grid } = renderGrid2(
       parent,
       facetValues,
@@ -33533,7 +33678,13 @@ var gsmViz = (() => {
         const chart = points(
           containers.get(facetValue),
           facets.get(facetValue),
-          buildSubSpec2(facetValue, merged, globalScales, globalStyles)
+          buildSubSpec2(
+            facetValue,
+            merged,
+            globalScales,
+            globalStyles,
+            preparedLines
+          )
         );
         charts.push(chart);
         chart.canvas.setAttribute(
@@ -33542,6 +33693,7 @@ var gsmViz = (() => {
         );
         chart.options.plugins.legend.display = merged.facet.legend.display && chart.options.plugins.legend.display;
         applyGlobalStyles(chart, globalStyles.templates);
+        setFacetAccessibleLabel(chart, merged.facet.field, facetValue);
       });
       syncHover(charts);
       syncSelection2(charts);

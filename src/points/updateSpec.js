@@ -20,13 +20,6 @@ function mergePartial(existing, partial) {
     );
 }
 
-/**
- * Deep-merge a partial spec and run the complete rendering pipeline in place.
- *
- * @param {Object} chart - Chart.js chart instance.
- * @param {Object} spec - Partial public points specification.
- * @returns {Object} The updated chart instance.
- */
 export function getUpdateSpec(chart, spec) {
     if (!isPlainObject(spec)) {
         throw new Error('points updateSpec spec must be a plain object');
@@ -36,6 +29,13 @@ export function getUpdateSpec(chart, spec) {
     return { data: stored.data, spec: mergePartial(stored.spec, spec) };
 }
 
+/**
+ * Deep-merge a partial spec and run the complete rendering pipeline in place.
+ *
+ * @param {Object} chart - Chart.js chart instance.
+ * @param {Object} spec - Partial public points specification.
+ * @returns {Object} The updated chart instance.
+ */
 export default function updateSpec(chart, spec) {
     const update = getUpdateSpec(chart, spec);
     return rebuildChart(chart, update.data, update.spec);

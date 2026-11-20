@@ -208,6 +208,65 @@ describe('facetPoints', () => {
         });
     });
 
+    test('includes typed facet context in each child accessible summary', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: "Baseline".'
+        );
+        expect(charts[1].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: "Week 4".'
+        );
+        expect(charts[0].canvas.textContent).toBe(
+            charts[0].canvas.getAttribute('aria-label')
+        );
+    });
+
+    test('distinguishes numeric and string facet values in accessible summaries', () => {
+        const { charts } = facetPoints(
+            parent,
+            [
+                { phase: 1, id: 'A', x: 1, y: 2 },
+                { phase: '1', id: 'A', x: 1, y: 2 },
+            ],
+            {
+                mapping: { x: 'x', y: 'y', key: 'id' },
+                facet: { field: 'phase' },
+            }
+        );
+
+        const labels = charts.map((chart) =>
+            chart.canvas.getAttribute('aria-label')
+        );
+        expect(labels[0]).toContain('Facet phase: 1.');
+        expect(labels[1]).toContain('Facet phase: "1".');
+        expect(labels[0]).not.toBe(labels[1]);
+    });
+
+    test('keeps missing and literal facet labels distinct for assistive technology', () => {
+        const { charts } = facetPoints(
+            parent,
+            [
+                { phase: null, id: 'A', x: 1, y: 2 },
+                { phase: '(Missing)', id: 'B', x: 3, y: 4 },
+            ],
+            {
+                mapping: { x: 'x', y: 'y', key: 'id' },
+                facet: {
+                    field: 'phase',
+                    order: [null, '(Missing)'],
+                },
+            }
+        );
+
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: (Missing).'
+        );
+        expect(charts[1].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: "(Missing)".'
+        );
+    });
+
     test('applies default fixed x/y domains including annotations', () => {
         const { charts } = facetPoints(parent, data, {
             ...baseSpec,
@@ -295,6 +354,279 @@ describe('facetPoints', () => {
 
         expect(charts[0].isDatasetVisible(index)).toBe(false);
         expect(charts[1].isDatasetVisible(index)).toBe(false);
+    });
+
+    test('does not synchronize different facet-aware line groups', () => {
+        const lineData = [
+            { phase: 'Baseline', threshold: 'Low', x: 1, y: 5 },
+            { phase: 'Baseline', threshold: 'Low', x: 8, y: 15 },
+            { phase: 'Baseline', threshold: 'High', x: 1, y: 25 },
+            { phase: 'Baseline', threshold: 'High', x: 8, y: 35 },
+            { phase: 'Week 4', threshold: 'High', x: 1, y: 20 },
+            { phase: 'Week 4', threshold: 'High', x: 8, y: 40 },
+        ];
+        const { charts } = facetPoints(parent, data, {
+            ...baseSpec,
+            annotations: {
+                lines: [
+                    {
+                        data: lineData,
+                        mapping: {
+                            x: 'x',
+                            y: 'y',
+                            group: 'threshold',
+                        },
+                        showInLegend: true,
+                    },
+                ],
+            },
+        });
+        const lowIndex = charts[0].data.datasets.findIndex(
+            (dataset) =>
+                dataset._annotation && dataset._annotationGroup === 'Low'
+        );
+        const siblingHighIndex = charts[1].data.datasets.findIndex(
+            (dataset) =>
+                dataset._annotation && dataset._annotationGroup === 'High'
+        );
+        const lowItem = charts[0].legend.legendItems.find(
+            ({ datasetIndex }) => datasetIndex === lowIndex
+        );
+
+        charts[0].options.plugins.legend.onClick.call(
+            charts[0].legend,
+            {},
+            lowItem,
+            charts[0].legend
+        );
+
+        expect(charts[0].isDatasetVisible(lowIndex)).toBe(false);
+        expect(charts[1].isDatasetVisible(siblingHighIndex)).toBe(true);
+    });
+
+    test('preserves grouped auxiliary-line order and colors across facets', () => {
+        const lineData = [
+            { phase: 'Baseline', threshold: 'Low', x: 1, y: 5 },
+            { phase: 'Baseline', threshold: 'High', x: 8, y: 15 },
+            { phase: 'Baseline', threshold: null, x: 4, y: 20 },
+            { phase: 'Week 4', threshold: 'High', x: 1, y: 25 },
+        ];
+        const { charts } = facetPoints(parent, data, {
+            ...baseSpec,
+            annotations: {
+                lines: [
+                    {
+                        data: lineData,
+                        mapping: {
+                            x: 'x',
+                            y: 'y',
+                            group: 'threshold',
+                        },
+                        showInLegend: true,
+                    },
+                ],
+            },
+        });
+        const groups = charts.map((chart) =>
+            chart.data.datasets
+                .filter((dataset) => dataset._annotation)
+                .map((dataset) => [
+                    dataset._annotationGroup,
+                    dataset.borderColor,
+                ])
+        );
+
+        expect(groups[0].map(([group]) => group)).toEqual([
+            'Low',
+            'High',
+            '(Missing)',
+        ]);
+        expect(groups[1].map(([group]) => group)).toEqual([
+            'Low',
+            'High',
+            '(Missing)',
+        ]);
+        expect(groups[0][1][1]).toBe(groups[1][1][1]);
+        expect(
+            charts[1].data.datasets.filter((dataset) => dataset._annotation)[0]
+                .data
+        ).toEqual([]);
+    });
+
+    test('prepares auxiliary line partitions and shared bounds once per grid', () => {
+        let facetReads = 0;
+        let groupReads = 0;
+        let commonXReads = 0;
+        const lineData = ['A', 'B', 'C', 'D'].map((phase, index) => {
+            const row = { x: index + 1, y: index + 10 };
+            Object.defineProperties(row, {
+                phase: {
+                    enumerable: true,
+                    get() {
+                        facetReads += 1;
+                        return phase;
+                    },
+                },
+                threshold: {
+                    enumerable: true,
+                    get() {
+                        groupReads += 1;
+                        return `Group ${index}`;
+                    },
+                },
+            });
+            return row;
+        });
+        const commonLineData = [
+            {
+                get x() {
+                    commonXReads += 1;
+                    return 10;
+                },
+                y: 20,
+            },
+        ];
+        const facetData = ['A', 'B', 'C', 'D'].map((phase, index) => ({
+            ...data[0],
+            phase,
+            id: `point-${index}`,
+            x: index + 1,
+            y: index + 2,
+        }));
+
+        const { charts } = facetPoints(parent, facetData, {
+            ...baseSpec,
+            annotations: {
+                lines: [
+                    {
+                        data: lineData,
+                        mapping: { x: 'x', y: 'y', group: 'threshold' },
+                    },
+                    {
+                        data: commonLineData,
+                        mapping: { x: 'x', y: 'y' },
+                    },
+                ],
+            },
+        });
+
+        expect(charts).toHaveLength(4);
+        expect(facetReads).toBe(lineData.length * 2);
+        expect(groupReads).toBe(lineData.length * 4);
+        expect(commonXReads).toBe(charts.length + 2);
+    });
+
+    test.each(['updateData', 'updateSpec'])(
+        'preserves chart state when a facet %s would add an unknown style',
+        (updateName) => {
+            const { charts } = facetPoints(parent, data, {
+                ...baseSpec,
+                selection: { enabled: true },
+                zoom: { enabled: true },
+            });
+            const chart = charts[0];
+            const datasets = chart.data.datasets;
+            const spec = chart.data._spec_;
+
+            chart.helpers.selectPoint(chart, 'A');
+            chart.zoomScale('x', { min: 2, max: 3 }, 'none');
+            const selection = chart.helpers.getSelection(chart);
+            const zoom = [chart.scales.x.min, chart.scales.x.max];
+            const update =
+                updateName === 'updateData'
+                    ? () =>
+                          chart.helpers.updateData(chart, [
+                              { ...data[0], status: 'Triangle' },
+                          ])
+                    : () =>
+                          chart.helpers.updateSpec(chart, {
+                              mapping: { color: 'status' },
+                          });
+
+            expect(update).toThrow(
+                updateName === 'updateSpec'
+                    ? 'facetPoints child updates cannot change color or shape mappings'
+                    : 'facetPoints could not resolve point dataset identity'
+            );
+            expect(chart.data.datasets).toBe(datasets);
+            expect(chart.data._spec_).toBe(spec);
+            expect(chart.helpers.getSelection(chart)).toEqual(selection);
+            expect([chart.scales.x.min, chart.scales.x.max]).toEqual(zoom);
+        }
+    );
+
+    test('preserves chart state when a replacement spec removes a shape mapping', () => {
+        const rows = [
+            {
+                phase: 'Baseline',
+                id: 'A',
+                x: 1,
+                y: 10,
+                group: 'Control',
+                status: 'Circle',
+            },
+            {
+                phase: 'Baseline',
+                id: 'B',
+                x: 4,
+                y: 20,
+                group: 'Control',
+                status: 'Triangle',
+            },
+            {
+                phase: 'Week 4',
+                id: 'C',
+                x: 8,
+                y: 30,
+                group: 'Control',
+                status: 'Circle',
+            },
+        ];
+        const { charts } = facetPoints(parent, rows, {
+            ...baseSpec,
+            selection: { enabled: true },
+            zoom: { enabled: true },
+        });
+        const chart = charts[0];
+        const datasets = chart.data.datasets;
+        const spec = chart.data._spec_;
+
+        chart.helpers.selectPoint(chart, 'A');
+        chart.zoomScale('x', { min: 2, max: 3 }, 'none');
+        const selection = chart.helpers.getSelection(chart);
+        const zoom = [chart.scales.x.min, chart.scales.x.max];
+        let error;
+
+        try {
+            chart.helpers.updateData(
+                chart,
+                rows.filter(({ phase }) => phase === 'Baseline'),
+                {
+                    mapping: {
+                        x: 'x',
+                        y: 'y',
+                        key: 'id',
+                        color: 'group',
+                    },
+                }
+            );
+        } catch (caught) {
+            error = caught;
+        }
+
+        expect({
+            error: error?.message,
+            datasetsRetained: chart.data.datasets === datasets,
+            specRetained: chart.data._spec_ === spec,
+            selection: chart.helpers.getSelection(chart),
+            zoom: [chart.scales.x.min, chart.scales.x.max],
+        }).toEqual({
+            error: 'facetPoints child updates cannot change color or shape mappings',
+            datasetsRetained: true,
+            specRetained: true,
+            selection,
+            zoom,
+        });
     });
 
     test('can keep legend visibility local or hide every legend', () => {
@@ -515,6 +847,36 @@ describe('facetPoints', () => {
         }
     );
 
+    test('preflights replacement specs after injecting shared size and opacity domains', () => {
+        const rows = [
+            { phase: 'Baseline', id: 'A', x: 1, y: 10, n: 10, o: 0.2 },
+            { phase: 'Week 4', id: 'B', x: 2, y: 20, n: 20, o: 0.4 },
+        ];
+        const mapping = {
+            x: 'x',
+            y: 'y',
+            key: 'id',
+            size: 'n',
+            opacity: 'o',
+        };
+        const { charts } = facetPoints(parent, rows, {
+            mapping,
+            scales: {
+                size: { domain: [0, 20] },
+                opacity: { domain: [0, 1] },
+            },
+            facet: { field: 'phase' },
+        });
+
+        charts[0].helpers.updateData(charts[0], rows.slice(0, 1), {
+            mapping,
+            scales: { size: {}, opacity: {} },
+        });
+
+        expect(charts[0].data._spec_.scales.size.domain).toEqual([0, 20]);
+        expect(charts[0].data._spec_.scales.opacity.domain).toEqual([0, 1]);
+    });
+
     test('updates a live child after a sibling has been destroyed', () => {
         const { charts } = facetPoints(parent, data, baseSpec);
         charts[1].destroy();
@@ -549,6 +911,14 @@ describe('facetPoints', () => {
         expect(
             charts[0].data.datasets.filter((dataset) => !dataset._annotation)
         ).toHaveLength(3);
+        expect(charts[0].canvas.getAttribute('aria-label')).toContain(
+            'Facet phase: "Baseline".'
+        );
+        expect(
+            charts[0].canvas
+                .getAttribute('aria-label')
+                .match(/Facet phase: "Baseline"\./g)
+        ).toHaveLength(1);
     });
 
     test('does not introduce legends into ungrouped child updates', () => {

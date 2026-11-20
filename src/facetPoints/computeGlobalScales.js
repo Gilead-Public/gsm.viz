@@ -1,5 +1,6 @@
 import structureData from '../points/structureData.js';
 import structureLines from '../points/structureLines.js';
+import prepareFacetLines from './facetLines.js';
 
 function collectDatasetValues(domains, datasets) {
     datasets.forEach((dataset) => {
@@ -85,7 +86,8 @@ function getDomain(values, scale) {
 function addDomain(result, axis, values, spec) {
     if (spec.facet.scales[axis].free) return;
 
-    const domain = getDomain(values, spec.scales[axis]);
+    const scale = spec.scales[axis];
+    const domain = getDomain([...values, ...scale.breaks], scale);
     if (domain !== undefined) {
         result[`${axis}Min`] = domain[0];
         result[`${axis}Max`] = domain[1];
@@ -99,14 +101,37 @@ function addDomain(result, axis, values, spec) {
  * @param {Object} spec - Merged facet points spec.
  * @returns {{xMin?: number, xMax?: number, yMin?: number, yMax?: number}}
  */
-export default function computeGlobalScales(facetDataMap, spec) {
+export default function computeGlobalScales(
+    facetDataMap,
+    spec,
+    preparedLines = prepareFacetLines(spec, [...facetDataMap.keys()])
+) {
     const domains = { x: [], y: [] };
 
-    facetDataMap.forEach((facetData) => {
+    facetDataMap.forEach((facetData, facetValue) => {
         const pointData = structureData({ ...spec, data: facetData });
         collectDatasetValues(domains, pointData.datasets);
+        const lines = preparedLines.facetAwareByFacet.get(facetValue);
+        collectDatasetValues(
+            domains,
+            structureLines({
+                ...spec,
+                annotations: { ...spec.annotations, lines },
+            })
+        );
     });
-    collectDatasetValues(domains, structureLines(spec));
+    if (facetDataMap.size > 0) {
+        collectDatasetValues(
+            domains,
+            structureLines({
+                ...spec,
+                annotations: {
+                    ...spec.annotations,
+                    lines: preparedLines.common,
+                },
+            })
+        );
+    }
     collectReferenceValues(domains, spec);
 
     const result = {};
