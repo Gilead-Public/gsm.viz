@@ -1,8 +1,52 @@
-import {
+import styleData, {
     mapSizeValue,
     mapOpacityValue,
     withOpacity,
 } from '../../src/points/styleData.js';
+
+describe('points/styleData explicit domains', () => {
+    const makeSpec = (scales = {}) => ({
+        mapping: { size: 'n', opacity: 'o' },
+        scales: {
+            color: { palette: ['#123456'] },
+            size: { range: [2, 10], ...scales.size },
+            opacity: { range: [0.2, 0.8], ...scales.opacity },
+        },
+    });
+    const makeDatasets = () => [
+        {
+            data: [
+                { _size: 10, _opacity: 10 },
+                { _size: 20, _opacity: 20 },
+            ],
+        },
+    ];
+
+    test('derives domains from the points when none is configured', () => {
+        const [dataset] = styleData(makeDatasets(), makeSpec());
+
+        expect(dataset.pointRadius).toEqual([2, 10]);
+    });
+
+    test('uses configured size and opacity domains when present', () => {
+        const [dataset] = styleData(
+            makeDatasets(),
+            makeSpec({
+                size: { domain: [10, 500] },
+                opacity: { domain: [0, 20] },
+            })
+        );
+
+        expect(dataset.pointRadius[0]).toBeCloseTo(
+            mapSizeValue(10, [10, 500], [2, 10])
+        );
+        expect(dataset.pointRadius[1]).toBeCloseTo(
+            mapSizeValue(20, [10, 500], [2, 10])
+        );
+        expect(dataset.backgroundColor[0]).toBe('rgba(18, 52, 86, 0.5)');
+        expect(dataset.backgroundColor[1]).toBe('rgba(18, 52, 86, 0.8)');
+    });
+});
 
 describe('points/styleData transforms', () => {
     test('maps size by point area rather than radius', () => {

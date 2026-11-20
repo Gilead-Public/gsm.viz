@@ -357,8 +357,8 @@ describe('points/validateSpec', () => {
                 'spec.scales.color.order must contain unique values',
             ],
             [
-                'string-normalized duplicate order value',
-                { order: [1, '1'] },
+                'duplicate number order value',
+                { order: [1, 1] },
                 'spec.scales.color.order must contain unique values',
             ],
             [
@@ -377,6 +377,19 @@ describe('points/validateSpec', () => {
                     scales: { color: colorScale },
                 })
             ).toThrow(message);
+        });
+
+        test('allows typed color levels with the same string representation', () => {
+            expect(() =>
+                validateSpec(data, {
+                    mapping: {
+                        x: 'xValue',
+                        y: 'yValue',
+                        color: 'group',
+                    },
+                    scales: { color: { order: [1, '1'] } },
+                })
+            ).not.toThrow();
         });
     });
 
