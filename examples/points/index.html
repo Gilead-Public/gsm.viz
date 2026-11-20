@@ -81,15 +81,61 @@
     </head>
 
     <body>
-        <nav class="tab-nav">
-            <button class="active" data-tab="kri-scatter">Scatter</button>
-            <button data-tab="kri-facet">Faceted</button>
-            <button data-tab="gapminder">Bubble</button>
-            <button data-tab="selection">Selection &amp; Zoom</button>
+        <nav class="tab-nav" role="tablist" aria-label="Point chart examples">
+            <button
+                id="tab-kri-scatter"
+                type="button"
+                class="active"
+                role="tab"
+                data-tab="kri-scatter"
+                aria-controls="kri-scatter"
+                aria-selected="true"
+                tabindex="0"
+            >
+                Scatter
+            </button>
+            <button
+                id="tab-kri-facet"
+                type="button"
+                role="tab"
+                data-tab="kri-facet"
+                aria-controls="kri-facet"
+                aria-selected="false"
+                tabindex="-1"
+            >
+                Faceted
+            </button>
+            <button
+                id="tab-gapminder"
+                type="button"
+                role="tab"
+                data-tab="gapminder"
+                aria-controls="gapminder"
+                aria-selected="false"
+                tabindex="-1"
+            >
+                Bubble
+            </button>
+            <button
+                id="tab-selection"
+                type="button"
+                role="tab"
+                data-tab="selection"
+                aria-controls="selection"
+                aria-selected="false"
+                tabindex="-1"
+            >
+                Selection &amp; Zoom
+            </button>
         </nav>
 
         <!-- KRI scatter tab -->
-        <div id="kri-scatter" class="tab-panel active gsm-viz--example">
+        <div
+            id="kri-scatter"
+            class="tab-panel active gsm-viz--example"
+            role="tabpanel"
+            aria-labelledby="tab-kri-scatter"
+        >
             <div class="points-controls">
                 <label>
                     Metric
@@ -116,7 +162,13 @@
         </div>
 
         <!-- KRI facet tab -->
-        <div id="kri-facet" class="tab-panel gsm-viz--example">
+        <div
+            id="kri-facet"
+            class="tab-panel gsm-viz--example"
+            role="tabpanel"
+            aria-labelledby="tab-kri-facet"
+            hidden
+        >
             <div class="points-controls">
                 <label>
                     Highlighted Site
@@ -162,7 +214,13 @@
         </div>
 
         <!-- Gapminder bubble tab -->
-        <div id="gapminder" class="tab-panel gsm-viz--example">
+        <div
+            id="gapminder"
+            class="tab-panel gsm-viz--example"
+            role="tabpanel"
+            aria-labelledby="tab-gapminder"
+            hidden
+        >
             <div class="points-controls">
                 <label>
                     Year: <output id="gapminder-year-label"></output>
@@ -185,7 +243,13 @@
         </div>
 
         <!-- Selection and zoom tab -->
-        <div id="selection" class="tab-panel gsm-viz--example">
+        <div
+            id="selection"
+            class="tab-panel gsm-viz--example"
+            role="tabpanel"
+            aria-labelledby="tab-selection"
+            hidden
+        >
             <div class="selection-controls">
                 <p>
                     Click points or focus the chart and use the arrow keys plus
@@ -207,17 +271,47 @@
         </div>
 
         <script>
-            // Tab switching
             const tabButtons = document.querySelectorAll('.tab-nav button');
             const tabPanels = document.querySelectorAll('.tab-panel');
-            tabButtons.forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    tabButtons.forEach((b) => b.classList.remove('active'));
-                    tabPanels.forEach((p) => p.classList.remove('active'));
-                    btn.classList.add('active');
-                    document
-                        .getElementById(btn.dataset.tab)
-                        .classList.add('active');
+            function activateTab(tab) {
+                tabButtons.forEach((button) => {
+                    const selected = button === tab;
+                    button.classList.toggle('active', selected);
+                    button.setAttribute('aria-selected', String(selected));
+                    button.tabIndex = selected ? 0 : -1;
+                });
+                tabPanels.forEach((panel) => {
+                    const selected = panel.id === tab.dataset.tab;
+                    panel.classList.toggle('active', selected);
+                    panel.hidden = !selected;
+                });
+            }
+            tabButtons.forEach((btn, index) => {
+                btn.addEventListener('click', () => activateTab(btn));
+                btn.addEventListener('keydown', (event) => {
+                    let nextIndex;
+                    switch (event.key) {
+                        case 'ArrowRight':
+                            nextIndex = (index + 1) % tabButtons.length;
+                            break;
+                        case 'ArrowLeft':
+                            nextIndex =
+                                (index + tabButtons.length - 1) %
+                                tabButtons.length;
+                            break;
+                        case 'Home':
+                            nextIndex = 0;
+                            break;
+                        case 'End':
+                            nextIndex = tabButtons.length - 1;
+                            break;
+                        default:
+                            return;
+                    }
+                    event.preventDefault();
+                    const nextTab = tabButtons[nextIndex];
+                    activateTab(nextTab);
+                    nextTab.focus();
                 });
             });
         </script>
