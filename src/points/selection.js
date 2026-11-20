@@ -280,6 +280,8 @@ function setSelection(chart, type, values, event, options) {
     storeOriginalStyles(chart);
     const state = ensureState(chart);
     state.selection = { type, values: [...values] };
+    // Silent updates mirror a linked selection and must not pin a tooltip.
+    state.tooltipSuppressed = Boolean(options?._silent);
     applySelectionStyles(chart);
     const activeKey = options?._activeKey;
     const fromKeyboard = event?.type === 'keydown' && activeKey !== undefined;
@@ -294,7 +296,8 @@ function setSelection(chart, type, values, event, options) {
         if (!setActivePoint(chart, activeKey)) clearActivePoint(chart);
     } else if (type === 'point' && values.length === 1) {
         setKeyboardIndex(chart, values[0]);
-        if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
+        if (state.tooltipSuppressed) clearActivePoint(chart);
+        else if (!setActivePoint(chart, values[0])) clearActivePoint(chart);
     } else {
         clearActivePoint(chart);
         delete state.keyboardIndex;
@@ -302,8 +305,10 @@ function setSelection(chart, type, values, event, options) {
 
     chart.update('none');
     const selection = getSelection(chart);
-    announceSelection(chart, selection);
-    if (!options?._silent) fireOnSelect(chart, selection, event);
+    if (!options?._silent) {
+        announceSelection(chart, selection);
+        fireOnSelect(chart, selection, event);
+    }
 }
 
 /**
@@ -313,7 +318,7 @@ function setSelection(chart, type, values, event, options) {
  * @param {string|number|Array<string|number>} values - Point keys.
  * @param {Object} [event] - Event that triggered the selection.
  * @param {Object} [options] - Internal synchronization options.
- * @param {boolean} [options._silent] - Suppress the onSelect callback.
+ * @param {boolean} [options._silent] - Suppress callbacks and announcements.
  */
 export function selectPoint(chart, values, event, options) {
     const normalized = normalizeValues(values, 'selectPoint');
@@ -337,7 +342,7 @@ export function selectPoint(chart, values, event, options) {
  * @param {string|number|null|Array<string|number|null>} values - Color-group values.
  * @param {Object} [event] - Event that triggered the selection.
  * @param {Object} [options] - Internal synchronization options.
- * @param {boolean} [options._silent] - Suppress the onSelect callback.
+ * @param {boolean} [options._silent] - Suppress callbacks and announcements.
  */
 export function selectGroup(chart, values, event, options) {
     if (!chart.data._spec_.mapping.color) {
@@ -366,7 +371,7 @@ export function selectGroup(chart, values, event, options) {
  * @param {Object} chart - Chart.js chart instance.
  * @param {Object} [event] - Event that triggered the clear.
  * @param {Object} [options] - Internal synchronization options.
- * @param {boolean} [options._silent] - Suppress the onSelect callback.
+ * @param {boolean} [options._silent] - Suppress callbacks and announcements.
  */
 export function clearSelection(chart, event, options) {
     const state = chart.data._selectionState_;
@@ -382,8 +387,10 @@ export function clearSelection(chart, event, options) {
     }
     chart.update('none');
     const selection = getSelection(chart);
-    announceSelection(chart, selection);
-    if (!options?._silent) fireOnSelect(chart, selection, event);
+    if (!options?._silent) {
+        announceSelection(chart, selection);
+        fireOnSelect(chart, selection, event);
+    }
 }
 
 /**
@@ -508,6 +515,7 @@ function reconcileSelectedPoint(
     if (selection.type !== 'point' || selection.values.length !== 1) {
         return false;
     }
+    if (chart.data._selectionState_?.tooltipSuppressed) return false;
 
     const location = findPointLocation(chart, selection.values[0]);
     if (!location || !chart.isDatasetVisible(location.datasetIndex)) {
