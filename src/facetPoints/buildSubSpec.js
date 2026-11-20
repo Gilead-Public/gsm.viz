@@ -1,3 +1,5 @@
+import prepareFacetLines from './facetLines.js';
+
 function getScale(scale) {
     return {
         ...scale,
@@ -24,6 +26,13 @@ export function wrapCallback(callback, facetValue) {
     return wrapped;
 }
 
+function getAnnotations(annotations, preparedLines, facetValue) {
+    return {
+        ...annotations,
+        lines: preparedLines.byFacet.get(facetValue),
+    };
+}
+
 /**
  * Build one complete points spec from merged facet state.
  *
@@ -37,7 +46,8 @@ export default function buildSubSpec(
     facetValue,
     mergedSpec,
     globalScales,
-    globalStyles
+    globalStyles,
+    preparedLines = prepareFacetLines(mergedSpec, [facetValue])
 ) {
     const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
     const scales = Object.fromEntries(
@@ -65,6 +75,11 @@ export default function buildSubSpec(
 
     return {
         ...pointsSpec,
+        annotations: getAnnotations(
+            pointsSpec.annotations,
+            preparedLines,
+            facetValue
+        ),
         scales,
         callbacks: {
             onClick: wrapCallback(callbacks.onClick, facetValue),

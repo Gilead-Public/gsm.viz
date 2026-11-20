@@ -17,6 +17,7 @@
 - Add optional x/y zoom and pan controls plus an opaque PNG export helper with deterministic title- or axis-derived filenames to `points` (#579).
 - Add `facetPoints(element, data, spec)` for ordered and explicitly empty point-chart small multiples with independently fixed/free numeric axes, global composite legends, typed legend synchronization, keyed hover/selection, facet-aware callbacks, and safe full-grid rerendering (#580, #581).
 - Add optional `scales.size.domain` and `scales.opacity.domain` to `points` for fixed continuous aesthetic domains, and keep numeric and string color levels such as `1` and `'1'` distinct in explicit color orders (#581).
+- Qualify Status Tracker, Premature Deaths, and `Visualize_Scatter` migration contracts; add facet-specific auxiliary curves, explicit facet context in accessible summaries, combined edge regressions, and a non-thresholded 10,000-point render/update benchmark (#582).
 
 ### `bars`
 

@@ -2,7 +2,7 @@ import { Chart } from 'chart.js';
 import getIdentity from './legendIdentity.js';
 
 /**
- * Synchronize legend visibility using point identity or annotation order.
+ * Synchronize legend visibility using semantic point or annotation identity.
  *
  * @param {Object[]} charts - Child points charts.
  * @param {Object} [options] - Synchronization options.

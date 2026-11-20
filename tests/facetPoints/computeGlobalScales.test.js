@@ -78,6 +78,121 @@ describe('facetPoints/computeGlobalScales', () => {
         });
     });
 
+    test('structures shared auxiliary curves once for global domains', () => {
+        let xReads = 0;
+        let yReads = 0;
+        const lineRow = {};
+        Object.defineProperties(lineRow, {
+            lineX: {
+                get() {
+                    xReads += 1;
+                    return 20;
+                },
+            },
+            lineY: {
+                get() {
+                    yReads += 1;
+                    return 30;
+                },
+            },
+        });
+        const facetData = ['A', 'B', 'C', 'D'].map((region, index) => ({
+            x: index + 1,
+            y: index + 2,
+            region,
+        }));
+        const { facets, merged } = prepare(facetData, {
+            annotations: {
+                lines: [
+                    {
+                        data: [lineRow],
+                        mapping: { x: 'lineX', y: 'lineY' },
+                    },
+                ],
+            },
+        });
+
+        expect(computeGlobalScales(facets, merged)).toEqual({
+            xMin: 1,
+            xMax: 20,
+            yMin: 2,
+            yMax: 30,
+        });
+        expect(xReads).toBe(2);
+        expect(yReads).toBe(2);
+    });
+
+    test('excludes facet-aware line rows for unrendered facets', () => {
+        expect(
+            compute(data, {
+                facet: { order: ['North'] },
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                { region: 'North', lineX: -10, lineY: 20 },
+                                { region: 'South', lineX: 100, lineY: 200 },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toEqual({
+            xMin: -10,
+            xMax: 4,
+            yMin: 3,
+            yMax: 20,
+        });
+    });
+
+    test('validates auxiliary coordinates in unrendered facets', () => {
+        expect(() =>
+            compute(data, {
+                facet: { order: ['North'] },
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                {
+                                    region: 'South',
+                                    lineX: 'invalid',
+                                    lineY: 200,
+                                },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toThrow(
+            'spec.annotations.lines[0].data[0].lineX mapped by mapping.x must be a finite number'
+        );
+    });
+
+    test('rejects unsupported auxiliary facet identities', () => {
+        expect(() =>
+            compute(data, {
+                annotations: {
+                    lines: [
+                        {
+                            data: [
+                                {
+                                    region: { nested: true },
+                                    lineX: 1,
+                                    lineY: 2,
+                                },
+                            ],
+                            mapping: { x: 'lineX', y: 'lineY' },
+                        },
+                    ],
+                },
+            })
+        ).toThrow(
+            'spec.annotations.lines[0].data[0].region mapped by spec.facet.field must be a string, finite number, or missing'
+        );
+    });
+
     test('includes reference-line values on their corresponding axes', () => {
         expect(
             compute(data, {
@@ -101,7 +216,11 @@ describe('facetPoints/computeGlobalScales', () => {
         const yRange = [0, 50];
         const { facets, merged } = prepare(data, {
             scales: {
-                x: { range: xRange },
+                x: {
+                    range: xRange,
+                    breaks: [0, 25, 50],
+                    labels: ['0', '25', '50'],
+                },
                 y: { range: yRange },
             },
             annotations: {
@@ -119,6 +238,32 @@ describe('facetPoints/computeGlobalScales', () => {
         expect(merged.scales.y.range).not.toBe(yRange);
         expect(xRange).toEqual([-100, 100]);
         expect(yRange).toEqual([0, 50]);
+    });
+
+    test('includes explicit breaks in automatic shared domains, including empty facets', () => {
+        const scales = {
+            x: {
+                type: 'log',
+                breaks: [1, 10, 100],
+                labels: ['1', '10', '100'],
+            },
+        };
+
+        expect(
+            compute(
+                [
+                    { x: 10, y: 1, region: 'North' },
+                    { x: 20, y: 2, region: 'South' },
+                ],
+                { scales }
+            )
+        ).toEqual({ xMin: 1, xMax: 100, yMin: 1, yMax: 2 });
+        expect(
+            compute([], {
+                facet: { order: ['Empty'] },
+                scales,
+            })
+        ).toEqual({ xMin: 1, xMax: 100 });
     });
 
     test.each([
