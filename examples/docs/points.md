@@ -20,6 +20,10 @@ gsmViz.default.points(element, data, spec);
 
 Returns a Chart.js chart instance.
 
+See the [interactive examples](points/ ':ignore') for a KRI scatter plot modeled on
+`scatterPlot`, a faceted scatter plot split by `MetricID`, a Gapminder-style
+bubble chart (`mapping.size`), and a selection and zoom demo.
+
 ---
 
 ## Basic example
