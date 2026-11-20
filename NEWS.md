@@ -20,6 +20,16 @@
 
 - Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).
 
+## gsm.viz 2.4.1
+
+### Bug Fixes
+
+- **bars**: Apply segment label `minSize` guards to both the value-axis length and category-axis thickness, preventing labels from overflowing thin bars (#547)
+
+### Infrastructure & Chores
+
+- Consolidate `AGENTS.md` guidance into `.github/copilot-instructions.md` and keep `CLAUDE.md` linked to the shared instructions (#549)
+
 ## gsm.viz 2.4.0 (Release Candidate)
 
 ### New: `bars` Module
