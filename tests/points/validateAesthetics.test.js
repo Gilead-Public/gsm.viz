@@ -87,6 +87,28 @@ describe('points continuous aesthetic validation', () => {
         ).toThrow(`spec.scales.${aesthetic}.domain ${suffix}`);
     });
 
+    test.each([
+        ['size', 0],
+        ['size', 1],
+        ['opacity', 0],
+        ['opacity', 1],
+    ])(
+        'rejects a sparse %s domain with only endpoint %i',
+        (aesthetic, endpoint) => {
+            const domain = Array(2);
+            domain[endpoint] = endpoint;
+
+            expect(() =>
+                validateSpec(data, {
+                    ...minimalSpec,
+                    scales: { [aesthetic]: { domain } },
+                })
+            ).toThrow(
+                `spec.scales.${aesthetic}.domain must contain two finite numbers`
+            );
+        }
+    );
+
     test.each(['size', 'opacity'])(
         'rejects unsupported %s scale fields',
         (aesthetic) => {
