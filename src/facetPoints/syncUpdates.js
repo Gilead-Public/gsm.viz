@@ -3,6 +3,7 @@ import { wrapCallback } from './buildSubSpec.js';
 import getLegendIdentity from './legendIdentity.js';
 import buildState from '../points/buildState.js';
 import { getUpdateSpec } from '../points/updateSpec.js';
+import { refreshFacetAccessibleLabel } from './accessibility.js';
 import { applyGlobalStyles } from './globalStyles.js';
 import syncHover from './syncHover.js';
 import syncLegendClicks from './syncLegendClicks.js';
@@ -24,6 +25,7 @@ function decorateChart(chart, charts, templates, legend, hidden) {
     chart.options.plugins.legend.display =
         legend.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
+    refreshFacetAccessibleLabel(chart);
     const activeCharts = charts.filter((sibling) => sibling.canvas);
     syncHover(activeCharts);
     syncSelection(activeCharts);
