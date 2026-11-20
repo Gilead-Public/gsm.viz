@@ -83,24 +83,32 @@ git commit -m "refactor and add confidence interval"
 ## Branching Strategy
 
 ```
-main (always deployable)
+main (releases only — updated via release-candidate PRs from dev)
   │
-  ├── feature/new-chart-type    ← One feature per branch
-  ├── feature/tooltip-redesign  ← Parallel work
-  └── fix/scatter-plot-crash    ← Bug fixes
+dev (default / integration branch)
+  │
+  ├── feature/567-points-spec           ← One issue per branch, PR → dev
+  │     └── feature/568-point-data      ← Stacked: depends on 567, PR → feature/567-points-spec
+  │           └── feature/569-...       ← Retarget to dev after the PR below it merges
+  └── fix-547                           ← Independent fix, PR → dev
 ```
 
-- Branch from `main`
-- Keep branches short-lived (merge within 1-3 days)
+- Branch from `dev`, or from the previous issue's branch when stacking dependent work
+- Never branch from or open PRs against `main`, except release candidates (`rc-vX.Y.Z` or `dev` → `main`)
+- Keep each branch and PR scoped to one issue and small enough for focused review
 - Delete branches after merge
+
+See the Development Workflow section in `AGENTS.md` for PR stacks, the Copilot review loop, and releases.
 
 ### Branch Naming
 
 ```
-feature/<short-description>   → feature/box-plot-module
-fix/<short-description>       → fix/bar-chart-null-data
+feature/<issue#>-<slug>       → feature/577-points-selection
+fix-<issue#>                  → fix-547
+docs/<short-description>      → docs/agents-md-workflow
 chore/<short-description>     → chore/update-chartjs
 refactor/<short-description>  → refactor/data-pipeline
+rc-v<X.Y.Z>                   → rc-v2.4.1
 ```
 
 ## The TDD Save Point Pattern
