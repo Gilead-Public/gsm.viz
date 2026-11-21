@@ -20,6 +20,10 @@
 
 - Add `metricOverview(element, data, spec)`: one metric's value, numerator and denominator for one group, labelled from its `Reporting_Metrics` row and shown as given in its `Reporting_Results` row, never recalculated. The spec chooses the group and snapshot, the list fields, labels, d3-format number formats and the text for unavailable values and the empty state. A `header` layout gives the bar-chart header (metric name, percent, numerator / denominator), and its builder is exported for reuse by other widgets (#618).
 
+### New: `metricDistribution` Module
+
+- Add the `metricDistribution(element, data, spec)` widget, which displays one metric's `Reporting_Distributions` rows at one group as Layout A horizontal bars under the `metricOverview` header (configurable through `spec.header`): sections per source and variable (numerator first by default), bars by descending count with "Not recorded" last, a top-N limit collapsing the rest into "+ k more", one value per bar by default (counts for reason sections, one percentage of a named population for status sections) with business labels, status colours with a neutral fallback, automatic footnotes, and empty and missing states. The widget never sums rows (#619).
+
 ### `bars`
 
 - Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).
