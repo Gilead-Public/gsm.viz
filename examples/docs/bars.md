@@ -335,7 +335,8 @@ useful on charts with many categories, where bars become too thin to hold
 their label without overlapping neighbouring bars. The label text is measured
 with the canvas (`chart.ctx.measureText`) against the bar's rendered
 thickness, so no manual tuning is required; this is a best-effort heuristic
-against the currently active canvas font. Set `avoidCategoryOverlap: false`
+using a static `font` option when provided, or the currently active canvas
+font for scriptable font callbacks. Set `avoidCategoryOverlap: false`
 on `segment` or `total` to disable it for that label mode.
 
 ```js

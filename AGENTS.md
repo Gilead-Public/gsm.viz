@@ -376,9 +376,9 @@ When sub-issues depend on each other, stack their PRs. Each PR targets the previ
   4. Update the stack blocks on the affected PRs.
 - Fix problems on the lowest PR they belong to, then propagate the fix up the stack. Do not patch them in a later PR.
 
-### 5. Copilot Review Loop (required before ending a session)
+### 5. Copilot Review Loop (initial PR creation only)
 
-An agent session that opens or updates a PR must run this loop before it ends:
+An agent session that first opens a PR must run this loop before it ends. The loop is a one-time initial review cycle per PR, not a requirement for every commit or session:
 
 1. **Request** a review with `gh pr edit <n> --add-reviewer "@copilot"` (keep the quotes; a bare `@copilot` is splatting syntax in PowerShell). Wait for `copilot-pull-request-reviewer[bot]` to post; poll `gh pr view <n> --json reviews` to check.
 2. **Triage** every finding:
@@ -390,10 +390,12 @@ An agent session that opens or updates a PR must run this loop before it ends:
 
 **Stop after 3 Copilot review rounds total** (the initial request plus at most two re-requests), or sooner if a round returns no valid findings. Then post one PR comment for the human reviewer that summarizes the rounds, the fixes made, the findings dismissed and why, and anything still open. Do not loop beyond 3 rounds; leave the remaining judgment calls to the human reviewer.
 
+Fix commits made during that initial cycle count toward the same 3-round budget; a new session does not reset it. After the cycle ends, do not request additional Copilot reviews for later commits, rebases, conflict resolution, stack maintenance, or human-review responses unless the user explicitly asks. Continue running the applicable tests and build checks for those changes.
+
 ### 6. Human Review
 
 - A human reviews and approves every PR. Agents never merge their own PRs.
-- Human review feedback overrides Copilot findings. A session that addresses human feedback ends with a new Copilot review loop, which gets a fresh 3-round budget.
+- Human review feedback overrides Copilot findings. Address it with the applicable tests and build checks; do not start a new Copilot review cycle unless the user explicitly asks.
 
 ### 7. Release Candidate
 
@@ -457,7 +459,7 @@ Include a `Resolves #NNN` or `Closes #NNN` line for every issue the PR addresses
 - Write descriptive commit messages with type prefixes
 - Keep changes small (~100 lines per commit)
 - Follow the Development Workflow: one issue → one branch → one PR, stacked when dependent
-- Run the Copilot review loop (up to 3 rounds) before ending any session that opened or updated a PR
+- Run the one-time initial Copilot review loop (up to 3 rounds per PR) when first opening a PR; do not restart it for later updates unless the user explicitly asks
 
 ### Ask First
 
