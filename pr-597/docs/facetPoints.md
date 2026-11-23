@@ -224,6 +224,8 @@ Point selection is also linked only when `mapping.key` is present in both
 charts. Without a mapped key, point selections and their clears remain
 facet-local, and keyed point selections and clears leave an unkeyed facet's
 local point selection in place (they only replace a mirrored group selection).
+An unkeyed point selection also drops a group selection that the originating
+facet had mirrored into its siblings.
 A sibling selects the subset of requested keys that it contains and
 clears when it has no match. Sibling selections never open or pin a tooltip;
 only the originating chart shows one. Color-group selection synchronizes by
@@ -269,9 +271,16 @@ domains follow the field they were computed from: a child `updateSpec`, or a
 complete replacement `spec` passed to `updateData`, keeps them for any
 aesthetic still mapped to the original field and drops them when the update
 remaps that aesthetic (x, y, size, or opacity), so the remapped aesthetic uses
-a local automatic domain. A `range`, `order`, or `domain` set explicitly by an
-update always takes precedence and persists through later unrelated
-`updateSpec` calls.
+a local automatic domain. A `range` or `domain` set explicitly by an update
+always takes precedence and persists through later unrelated `updateSpec`
+calls. Because ghost datasets and legend order come from the global templates,
+a child update that would change any point group's color, shape, or legend
+order (for example through `scales.color.order`, `scales.color.palette`, or
+`scales.shape.order`) throws before the chart is modified; restating the shared
+order is allowed.
+
+When a child update clears that chart's selection, the clear is propagated to
+siblings using the same rules as a programmatic `clearSelection`.
 
 Reinvoke `facetPoints(element, completeData, completeSpec)` whenever an update
 changes facet membership/order, shared x/y domains, color/shape mappings or
