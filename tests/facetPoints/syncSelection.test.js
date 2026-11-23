@@ -216,6 +216,33 @@ describe('facetPoints/syncSelection', () => {
         expect(second.helpers.getSelection(second).type).toBeNull();
     });
 
+    test('drops a mirrored group when the origin makes an unkeyed point selection', () => {
+        const settings = { mapping: { key: undefined, color: 'group' } };
+        const first = add(
+            [
+                { x: 1, y: 2, group: 'G' },
+                { x: 3, y: 4, group: 'H' },
+            ],
+            settings
+        );
+        const second = add([{ x: 5, y: 6, group: 'G' }], settings);
+
+        syncSelection([first, second]);
+        first.helpers.selectGroup(first, 'G');
+        expect(second.helpers.getSelection(second)).toEqual({
+            type: 'group',
+            values: ['G'],
+        });
+
+        first.helpers.selectPoint(first, 1);
+
+        expect(first.helpers.getSelection(first)).toEqual({
+            type: 'point',
+            values: [1],
+        });
+        expect(second.helpers.getSelection(second).type).toBeNull();
+    });
+
     test('keyed point selection and clearing preserve unkeyed local selections', () => {
         const origin = add([
             { x: 1, y: 2, id: 'shared' },

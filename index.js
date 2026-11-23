@@ -33134,6 +33134,31 @@ var gsmViz = (() => {
       rememberSelection(sibling);
     });
   }
+  function dropMirroredGroups(charts, origin) {
+    charts.forEach((sibling) => {
+      if (sibling === origin || !sibling.canvas) return;
+      if (getSelection2(sibling).type === "group") {
+        clearSibling(sibling);
+        rememberSelection(sibling);
+      }
+    });
+  }
+  function propagateSelection(charts, chart, selection2, previous) {
+    const hasKey = Boolean(chart.data._spec_.mapping.key);
+    const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previous.type === "point" && !previous.hasKey;
+    if (!skipPointSync) {
+      synchronizeSelection(charts, chart, selection2, previous);
+    } else if (previous.type === "group") {
+      dropMirroredGroups(charts, chart);
+    }
+  }
+  function propagateDroppedSelection(charts, chart) {
+    const previous = chart._facetPointsSelectionMemory;
+    if (!previous || previous.type === null) return;
+    if (getSelection2(chart).type !== null) return;
+    rememberSelection(chart);
+    propagateSelection(charts, chart, { type: null, values: [] }, previous);
+  }
   function syncSelection2(charts) {
     charts.forEach((chart) => {
       const current = chart.data._spec_.callbacks.onSelect;
@@ -33141,12 +33166,8 @@ var gsmViz = (() => {
       rememberSelection(chart);
       const wrapper = (selection2, event) => {
         const previous = chart._facetPointsSelectionMemory;
-        const hasKey = Boolean(chart.data._spec_.mapping.key);
-        const skipPointSync = selection2.type === "point" && !hasKey || selection2.type === null && previous.type === "point" && !previous.hasKey;
         rememberSelection(chart);
-        if (!skipPointSync) {
-          synchronizeSelection(charts, chart, selection2, previous);
-        }
+        propagateSelection(charts, chart, selection2, previous);
         callback2?.(selection2, event);
       };
       chart._facetPointsSelectionOriginal = callback2;
@@ -33191,15 +33212,41 @@ var gsmViz = (() => {
         "facetPoints child updates cannot change color or shape mappings"
       );
     }
-    const templateIdentities = new Set(
-      templates.map((template) => getDatasetIdentity(template, state.merged))
+    const templatesByIdentity = new Map(
+      templates.map((template) => [
+        getDatasetIdentity(template, state.merged),
+        template
+      ])
     );
-    const unexpected = state.chartData.datasets.filter((dataset) => !dataset._annotation).map((dataset) => getDatasetIdentity(dataset, state.merged)).find((identity4) => !templateIdentities.has(identity4));
+    const pointDatasets = state.chartData.datasets.filter(
+      (dataset) => !dataset._annotation
+    );
+    const identities = pointDatasets.map(
+      (dataset) => getDatasetIdentity(dataset, state.merged)
+    );
+    const unexpected = identities.find(
+      (identity4) => !templatesByIdentity.has(identity4)
+    );
     if (unexpected !== void 0) {
       throw new Error(
         `facetPoints could not resolve point dataset identity ${unexpected}`
       );
     }
+    const templateOrder = [...templatesByIdentity.keys()];
+    const ranks = identities.map((identity4) => templateOrder.indexOf(identity4));
+    const reordered = ranks.some((rank, index3) => rank < ranks[index3 - 1]);
+    const restyled = pointDatasets.some((dataset, index3) => {
+      const template = templatesByIdentity.get(identities[index3]);
+      return getBaseColor(dataset) !== getBaseColor(template) || dataset.pointStyle !== template.pointStyle;
+    });
+    if (reordered || restyled) {
+      throw new Error(
+        "facetPoints child updates cannot change shared color or shape styles or order; reinvoke facetPoints to restyle the grid"
+      );
+    }
+  }
+  function getBaseColor(dataset) {
+    return dataset._baseColor ?? dataset.backgroundColor;
   }
   var CALLBACK_NAMES = ["onClick", "onHover", "onSelect"];
   function isPlainObject3(value) {
@@ -33299,6 +33346,7 @@ var gsmViz = (() => {
             facetValues[chartIndex]
           );
           const result = update.call(this, chartInstance, ...args);
+          propagateDroppedSelection(charts, chartInstance);
           decorateChart(chartInstance, charts, templates, legend5, hidden);
           return result;
         };

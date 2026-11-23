@@ -104,6 +104,47 @@ function synchronizeSelection(charts, origin, selection, previous) {
     });
 }
 
+function dropMirroredGroups(charts, origin) {
+    charts.forEach((sibling) => {
+        if (sibling === origin || !sibling.canvas) return;
+        if (getSelection(sibling).type === 'group') {
+            clearSibling(sibling);
+            rememberSelection(sibling);
+        }
+    });
+}
+
+function propagateSelection(charts, chart, selection, previous) {
+    const hasKey = Boolean(chart.data._spec_.mapping.key);
+    const skipPointSync =
+        (selection.type === 'point' && !hasKey) ||
+        (selection.type === null &&
+            previous.type === 'point' &&
+            !previous.hasKey);
+
+    if (!skipPointSync) {
+        synchronizeSelection(charts, chart, selection, previous);
+    } else if (previous.type === 'group') {
+        dropMirroredGroups(charts, chart);
+    }
+}
+
+/**
+ * Propagate a selection that a chart rebuild cleared without onSelect.
+ * Must run before syncSelection re-records the chart's selection memory.
+ *
+ * @param {Object[]} charts - Child points charts.
+ * @param {Object} chart - Updated child chart.
+ */
+export function propagateDroppedSelection(charts, chart) {
+    const previous = chart._facetPointsSelectionMemory;
+    if (!previous || previous.type === null) return;
+    if (getSelection(chart).type !== null) return;
+
+    rememberSelection(chart);
+    propagateSelection(charts, chart, { type: null, values: [] }, previous);
+}
+
 /**
  * Synchronize helper, pointer, and keyboard selection through onSelect.
  *
@@ -120,17 +161,8 @@ export default function syncSelection(charts) {
 
         const wrapper = (selection, event) => {
             const previous = chart._facetPointsSelectionMemory;
-            const hasKey = Boolean(chart.data._spec_.mapping.key);
-            const skipPointSync =
-                (selection.type === 'point' && !hasKey) ||
-                (selection.type === null &&
-                    previous.type === 'point' &&
-                    !previous.hasKey);
             rememberSelection(chart);
-
-            if (!skipPointSync) {
-                synchronizeSelection(charts, chart, selection, previous);
-            }
+            propagateSelection(charts, chart, selection, previous);
             callback?.(selection, event);
         };
         chart._facetPointsSelectionOriginal = callback;

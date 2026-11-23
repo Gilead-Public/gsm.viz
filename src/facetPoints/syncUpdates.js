@@ -6,7 +6,7 @@ import { getUpdateSpec } from '../points/updateSpec.js';
 import { applyGlobalStyles } from './globalStyles.js';
 import syncHover from './syncHover.js';
 import syncLegendClicks from './syncLegendClicks.js';
-import syncSelection from './syncSelection.js';
+import syncSelection, { propagateDroppedSelection } from './syncSelection.js';
 
 function getHiddenIdentities(chart) {
     const hidden = new Set();
@@ -53,19 +53,50 @@ function validateUpdate(chart, name, args, templates, mapping) {
         );
     }
 
-    const templateIdentities = new Set(
-        templates.map((template) => getDatasetIdentity(template, state.merged))
+    const templatesByIdentity = new Map(
+        templates.map((template) => [
+            getDatasetIdentity(template, state.merged),
+            template,
+        ])
     );
-    const unexpected = state.chartData.datasets
-        .filter((dataset) => !dataset._annotation)
-        .map((dataset) => getDatasetIdentity(dataset, state.merged))
-        .find((identity) => !templateIdentities.has(identity));
+    const pointDatasets = state.chartData.datasets.filter(
+        (dataset) => !dataset._annotation
+    );
+    const identities = pointDatasets.map((dataset) =>
+        getDatasetIdentity(dataset, state.merged)
+    );
+    const unexpected = identities.find(
+        (identity) => !templatesByIdentity.has(identity)
+    );
 
     if (unexpected !== undefined) {
         throw new Error(
             `facetPoints could not resolve point dataset identity ${unexpected}`
         );
     }
+
+    // Ghosts and legend order come from the templates, so a local restyle or
+    // reorder would give distinct groups the same style across panels.
+    const templateOrder = [...templatesByIdentity.keys()];
+    const ranks = identities.map((identity) => templateOrder.indexOf(identity));
+    const reordered = ranks.some((rank, index) => rank < ranks[index - 1]);
+    const restyled = pointDatasets.some((dataset, index) => {
+        const template = templatesByIdentity.get(identities[index]);
+        return (
+            getBaseColor(dataset) !== getBaseColor(template) ||
+            dataset.pointStyle !== template.pointStyle
+        );
+    });
+
+    if (reordered || restyled) {
+        throw new Error(
+            'facetPoints child updates cannot change shared color or shape styles or order; reinvoke facetPoints to restyle the grid'
+        );
+    }
+}
+
+function getBaseColor(dataset) {
+    return dataset._baseColor ?? dataset.backgroundColor;
 }
 
 const CALLBACK_NAMES = ['onClick', 'onHover', 'onSelect'];
@@ -209,6 +240,7 @@ export default function syncUpdates(
                     facetValues[chartIndex]
                 );
                 const result = update.call(this, chartInstance, ...args);
+                propagateDroppedSelection(charts, chartInstance);
                 decorateChart(chartInstance, charts, templates, legend, hidden);
                 return result;
             };

@@ -1065,6 +1065,87 @@ describe('facetPoints', () => {
         expect(onSelect).toHaveBeenCalledTimes(1);
     });
 
+    test.each([
+        [
+            'updateData',
+            (chart) =>
+                chart.helpers.updateData(
+                    chart,
+                    data.filter((row) => row.phase === 'Baseline')
+                ),
+        ],
+        [
+            'updateSpec',
+            (chart) =>
+                chart.helpers.updateSpec(chart, {
+                    labels: { title: 'Updated' },
+                }),
+        ],
+    ])(
+        'propagates a selection cleared by a child %s to siblings',
+        (_name, update) => {
+            const { charts } = facetPoints(parent, data, {
+                ...baseSpec,
+                selection: { enabled: true },
+            });
+
+            charts[0].helpers.selectPoint(charts[0], 'A');
+            expect(charts[1].helpers.getSelection(charts[1]).values).toEqual([
+                'A',
+            ]);
+            update(charts[0]);
+
+            expect(charts[0].helpers.getSelection(charts[0]).type).toBeNull();
+            expect(charts[1].helpers.getSelection(charts[1]).type).toBeNull();
+
+            charts[1].helpers.selectGroup(charts[1], 'Control');
+            update(charts[0]);
+
+            expect(charts[1].helpers.getSelection(charts[1]).type).toBeNull();
+        }
+    );
+
+    test.each([
+        [
+            'color order',
+            { color: { order: ['Other', 'Treatment', 'Control'] } },
+        ],
+        [
+            'color palette',
+            { color: { palette: ['#111111', '#222222', '#333333'] } },
+        ],
+        ['shape order', { shape: { order: ['Rect', 'Triangle', 'Circle'] } }],
+    ])('rejects a child update that changes the shared %s', (_name, scales) => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+        const chart = charts[1];
+        const before = {
+            datasets: chart.data.datasets,
+            spec: chart.data._spec_,
+        };
+
+        expect(() => chart.helpers.updateSpec(chart, { scales })).toThrow(
+            'facetPoints child updates cannot change shared color or shape styles'
+        );
+        expect(chart.data.datasets).toBe(before.datasets);
+        expect(chart.data._spec_).toBe(before.spec);
+    });
+
+    test('accepts a child update that restates the shared color order', () => {
+        const { charts } = facetPoints(parent, data, baseSpec);
+        const chart = charts[1];
+        const colors = chart.data.datasets.map(
+            ({ backgroundColor }) => backgroundColor
+        );
+
+        chart.helpers.updateSpec(chart, {
+            scales: { color: { order: ['Control', 'Treatment', 'Other'] } },
+        });
+
+        expect(
+            chart.data.datasets.map(({ backgroundColor }) => backgroundColor)
+        ).toEqual(colors);
+    });
+
     test('reinvocation destroys prior charts and leaves one grid', () => {
         const first = facetPoints(parent, data, baseSpec);
         const destroy = first.charts.map((chart) =>
