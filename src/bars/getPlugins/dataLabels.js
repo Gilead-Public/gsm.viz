@@ -259,6 +259,7 @@ function getCategoryThickness(context, element) {
 function resolveFontString(font) {
     if (!font) return undefined;
     if (typeof font === 'string') return font;
+    if (typeof font === 'function') return undefined;
 
     const size = font.size ?? 12;
     const family =
