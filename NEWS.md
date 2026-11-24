@@ -16,6 +16,10 @@
 - Add in-place `updateData` and deep partial `updateSpec` helpers with full-pipeline rebuilds, typed hidden-group restoration, dynamic plugin/keyboard lifecycle handling, and deliberate stale-selection cleanup (#578).
 - Add optional x/y zoom and pan controls plus an opaque PNG export helper with deterministic title- or axis-derived filenames to `points` (#579).
 
+### New: `metricOverview` Module
+
+- Add `metricOverview(element, data, spec)`: one metric's value, numerator and denominator for one group, labelled from its `Reporting_Metrics` row and shown as given in its `Reporting_Results` row, never recalculated. The spec chooses the study, group level, group and snapshot, the list fields, labels, d3-format number formats and the text for unavailable values and the empty state. A `header` layout gives the bar-chart header (metric name, percent, numerator / denominator), and its builder is exported for reuse by other widgets. The header takes keyboard focus and shows the numerator and denominator labels while focused (#618).
+
 ### `bars`
 
 - Add `theme.dynamicValueAxis` so the value axis of `fill` and percent bar charts fits the visible categories instead of a fixed 0–100% (#606).

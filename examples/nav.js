@@ -31,6 +31,7 @@
                 { label: 'Bar Chart', href: root + 'barChart/' },
                 { label: 'Group Overview — Country', href: root + 'groupOverview/country/' },
                 { label: 'Group Overview — Site', href: root + 'groupOverview/site/' },
+                { label: 'Metric Overview', href: root + 'metricOverview/' },
                 { label: 'Scatter Plot', href: root + 'scatterPlot/' },
                 { label: 'Sparkline', href: root + 'sparkline/' },
                 { label: 'Time Series', href: root + 'timeSeriesContinuous/' },
@@ -52,6 +53,7 @@
             items: [
                 { label: 'barChart', href: root + '#/docs/barChart' },
                 { label: 'groupOverview', href: root + '#/docs/groupOverview' },
+                { label: 'metricOverview', href: root + '#/docs/metricOverview' },
                 { label: 'scatterPlot', href: root + '#/docs/scatterPlot' },
                 { label: 'sparkline', href: root + '#/docs/sparkline' },
                 { label: 'timeSeries', href: root + '#/docs/timeSeries' },
