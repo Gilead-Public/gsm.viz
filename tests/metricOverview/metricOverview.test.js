@@ -143,6 +143,34 @@ describe('metricOverview entry point', () => {
         }
     );
 
+    test('shows the row of the requested study and group level when group IDs overlap', () => {
+        const shared = {
+            ...results[0],
+            GroupID: 'AA-1',
+            Numerator: '3',
+            Denominator: '30',
+            Metric: '0.1',
+        };
+        const overlapping = [
+            { ...shared, StudyID: 'AA-1', GroupLevel: 'Study' },
+            { ...shared, StudyID: 'AA-1', GroupLevel: 'Site', Metric: '0.2' },
+            { ...shared, StudyID: 'BB-2', GroupLevel: 'Site', Metric: '0.3' },
+        ];
+        const show = (spec) =>
+            metricOverview(
+                container,
+                { results: overlapping, metric },
+                { ...latest, groupId: 'AA-1', layout: 'header', ...spec }
+            ).querySelector('.gsm-metric-header__value').textContent;
+
+        expect(show({ studyId: 'AA-1', groupLevel: 'Study' })).toBe('10.0%');
+        expect(show({ studyId: 'AA-1', groupLevel: 'Site' })).toBe('20.0%');
+        expect(show({ studyId: 'BB-2', groupLevel: 'Site' })).toBe('30.0%');
+        expect(() => show({ groupLevel: 'Site' })).toThrow(
+            '2 results rows match'
+        );
+    });
+
     test('renders the empty state when there are no results', () => {
         const root = metricOverview(container, { results: [], metric });
 

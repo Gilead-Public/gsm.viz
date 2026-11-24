@@ -141,6 +141,14 @@ describe('metricOverview validateSpec', () => {
             { snapshotDate: ' ' },
             'spec.snapshotDate must be a non-empty string or a number',
         ],
+        [
+            { studyId: '' },
+            'spec.studyId must be a non-empty string or a number',
+        ],
+        [
+            { groupLevel: [] },
+            'spec.groupLevel must be a non-empty string or a number',
+        ],
     ])('rejects invalid spec %#', (spec, message) => {
         expect(() => validateSpec(data, spec)).toThrow(message);
     });
@@ -148,6 +156,8 @@ describe('metricOverview validateSpec', () => {
     test('accepts every supported option', () => {
         expect(() =>
             validateSpec(data, {
+                studyId: 'Study 01',
+                groupLevel: 'Study',
                 groupId: 'Study 01',
                 snapshotDate: '2024-01-01',
                 layout: 'header',

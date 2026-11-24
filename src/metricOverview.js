@@ -14,9 +14,11 @@ const block = 'gsm-metric-overview';
  *
  * @param {(Node|string)} element - DOM element or CSS selector
  * @param {Object} data - inputs
- * @param {Array}  data.results - one metric's Reporting_Results rows at the requested group level
+ * @param {Array}  data.results - one metric's Reporting_Results rows
  * @param {Object} data.metric - the metric's Reporting_Metrics row
  * @param {Object} [spec] - overview specification
+ * @param {(string|number)} [spec.studyId] - StudyID of the row to show
+ * @param {(string|number)} [spec.groupLevel] - GroupLevel of the row to show
  * @param {(string|number)} [spec.groupId] - GroupID of the row to show
  * @param {(string|number)} [spec.snapshotDate] - SnapshotDate of the row to show
  * @param {string} [spec.layout='list'] - 'list' or 'header'

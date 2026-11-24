@@ -7,6 +7,8 @@ describe('metricOverview mergeSpec', () => {
         expect(merged.layout).toBe('list');
         expect(merged.fields).toEqual(['Metric', 'Numerator', 'Denominator']);
         expect(merged.labels).toEqual({});
+        expect(merged.studyId).toBeUndefined();
+        expect(merged.groupLevel).toBeUndefined();
         expect(merged.groupId).toBeUndefined();
         expect(merged.snapshotDate).toBeUndefined();
     });
@@ -30,6 +32,8 @@ describe('metricOverview mergeSpec', () => {
 
     test('lets user options override the defaults key by key', () => {
         const merged = mergeSpec({
+            studyId: 'Study 01',
+            groupLevel: 'Site',
             groupId: 'Site 01',
             snapshotDate: '2024-01-01',
             layout: 'header',
@@ -40,6 +44,8 @@ describe('metricOverview mergeSpec', () => {
         });
 
         expect(merged).toMatchObject({
+            studyId: 'Study 01',
+            groupLevel: 'Site',
             groupId: 'Site 01',
             snapshotDate: '2024-01-01',
             layout: 'header',

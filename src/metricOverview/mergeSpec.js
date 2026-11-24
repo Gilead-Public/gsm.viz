@@ -8,6 +8,8 @@ import defaults from './defaults.js';
  */
 export default function mergeSpec(spec) {
     return {
+        studyId: spec.studyId,
+        groupLevel: spec.groupLevel,
         groupId: spec.groupId,
         snapshotDate: spec.snapshotDate,
         layout: spec.layout ?? defaults.layout,

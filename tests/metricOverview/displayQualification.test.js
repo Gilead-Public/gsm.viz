@@ -192,6 +192,8 @@ describe('metricOverview display qualification against example data', () => {
 
                 metricRows.forEach((row) => {
                     const select = {
+                        studyId: row.StudyID,
+                        groupLevel: row.GroupLevel,
                         groupId: row.GroupID,
                         snapshotDate: row.SnapshotDate,
                     };

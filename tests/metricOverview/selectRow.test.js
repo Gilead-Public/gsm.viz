@@ -7,6 +7,14 @@ const rows = [
     { GroupID: 101, SnapshotDate: '2024-02-01', Metric: 0.4 },
 ];
 
+// One GroupID shared by two group levels of one study and by a site of
+// another study.
+const overlapping = [
+    { StudyID: 'AA-1', GroupLevel: 'Site', GroupID: '01', Metric: 0.1 },
+    { StudyID: 'AA-1', GroupLevel: 'Country', GroupID: '01', Metric: 0.2 },
+    { StudyID: 'BB-2', GroupLevel: 'Site', GroupID: '01', Metric: 0.3 },
+].map((row) => ({ ...row, SnapshotDate: '2024-02-01' }));
+
 describe('metricOverview selectRow', () => {
     test('returns the only row without selectors', () => {
         expect(selectRow([rows[2]], {})).toBe(rows[2]);
@@ -40,9 +48,36 @@ describe('metricOverview selectRow', () => {
         ).toBeNull();
     });
 
+    test('selects by study and group level when group IDs overlap', () => {
+        const group = { groupId: '01', snapshotDate: '2024-02-01' };
+        const pick = (spec) => selectRow(overlapping, { ...group, ...spec });
+
+        expect(pick({ studyId: 'AA-1', groupLevel: 'Site' })).toBe(
+            overlapping[0]
+        );
+        expect(pick({ studyId: 'AA-1', groupLevel: 'Country' })).toBe(
+            overlapping[1]
+        );
+        expect(pick({ groupLevel: 'Country' })).toBe(overlapping[1]);
+        expect(pick({ studyId: 'BB-2' })).toBe(overlapping[2]);
+        expect(pick({ studyId: 'BB-2', groupLevel: 'Country' })).toBeNull();
+    });
+
+    test('refuses to choose between rows that share a group ID across studies or group levels', () => {
+        expect(() =>
+            selectRow(overlapping, {
+                groupId: '01',
+                snapshotDate: '2024-02-01',
+            })
+        ).toThrow('3 results rows match');
+        expect(() =>
+            selectRow(overlapping, { groupId: '01', studyId: 'AA-1' })
+        ).toThrow('2 results rows match');
+    });
+
     test('refuses to choose between several matching rows', () => {
         expect(() => selectRow(rows, {})).toThrow(
-            '4 results rows match; set spec.groupId and/or spec.snapshotDate to choose one'
+            '4 results rows match; set spec.studyId, spec.groupLevel, spec.groupId and/or spec.snapshotDate to choose one'
         );
         expect(() => selectRow(rows, { groupId: 'Site 01' })).toThrow(
             '2 results rows match'

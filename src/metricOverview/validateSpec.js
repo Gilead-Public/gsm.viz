@@ -3,6 +3,8 @@ import { resultsColumns } from './columns.js';
 
 const supportedFields = {
     spec: [
+        'studyId',
+        'groupLevel',
         'groupId',
         'snapshotDate',
         'layout',
@@ -173,6 +175,8 @@ export default function validateSpec(data, spec) {
     validateData(data);
     validatePlainObject(spec, 'spec');
     validateSupportedFields(spec, supportedFields.spec, 'spec');
+    validateSelector(spec.studyId, 'spec.studyId');
+    validateSelector(spec.groupLevel, 'spec.groupLevel');
     validateSelector(spec.groupId, 'spec.groupId');
     validateSelector(spec.snapshotDate, 'spec.snapshotDate');
 
