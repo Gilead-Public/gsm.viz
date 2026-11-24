@@ -60,19 +60,24 @@ function appendBarRow(tbody, bar, columns) {
         .style('padding', '3px 0')
         .style('text-align', 'left')
         .style('font-weight', 'normal')
-        .style('font-style', bar.kind === 'category' ? null : 'italic');
+        .style('font-style', bar.kind === 'category' ? null : 'italic')
+        .attr('tabindex', 0);
     labelCell
         .append('span')
         .classed('metric-distribution--label', true)
         .text(bar.label);
-    // A title is reachable only by mouse, so the row header repeats it.
+    // A title is reachable only by mouse, so the row header repeats it:
+    // hidden for screen readers, and shown while the header has focus.
     const description = labelCell
         .append('span')
         .classed('metric-distribution--description', true)
         .text(`: ${bar.description}`);
-    Object.entries(VISUALLY_HIDDEN).forEach(([property, value]) =>
-        description.style(property, value)
-    );
+    const hide = (hidden) =>
+        Object.entries(VISUALLY_HIDDEN).forEach(([property, value]) =>
+            description.style(property, hidden ? value : null)
+        );
+    hide(true);
+    labelCell.on('focus', () => hide(false)).on('blur', () => hide(true));
     labelCell
         .append('div')
         .classed('metric-distribution--track', true)
@@ -127,7 +132,10 @@ export default function makeSection(root, section) {
 
     const table = container
         .append('table')
-        .attr('aria-label', section.title)
+        .attr(
+            'aria-label',
+            section.title.trim() === '' ? section.variable : section.title
+        )
         .style('width', '100%')
         .style('border-collapse', 'collapse')
         .style('color', TEXT_COLORS.primary);

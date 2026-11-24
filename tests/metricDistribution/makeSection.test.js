@@ -78,6 +78,18 @@ describe('makeSection', () => {
         );
     });
 
+    test('names the table by its variable when the title is blank', () => {
+        ['', '   '].forEach((title) => {
+            const el = render(model({ title }));
+            expect(
+                el.querySelector('.metric-distribution--title').textContent
+            ).toBe(title);
+            expect(el.querySelector('table').getAttribute('aria-label')).toBe(
+                'compreas'
+            );
+        });
+    });
+
     test('heads each value column with its label', () => {
         const headers = [
             ...render(model()).querySelectorAll('thead th[scope="col"]'),
@@ -182,6 +194,28 @@ describe('makeSection', () => {
             '+ 2 more: 900 of 4,000 (Death: 600, Other: 300)',
             'Not recorded: 40 of 4,000',
         ]);
+    });
+
+    test('shows a row’s "n of N" while its row header has keyboard focus', () => {
+        const el = render(model());
+        document.body.append(el);
+        const [header, other] = rows(el).map((tr) =>
+            tr.querySelector('th[scope="row"]')
+        );
+        const description = header.querySelector(
+            '.metric-distribution--description'
+        );
+
+        expect(header.getAttribute('tabindex')).toBe('0');
+        header.focus();
+        expect(document.activeElement).toBe(header);
+        expect(description.style.position).toBe('');
+        expect(description.style.clip).toBe('');
+        expect(description.style.width).toBe('');
+        other.focus();
+        expect(description.style.position).toBe('absolute');
+        expect(description.style.clip).toBe('rect(0px, 0px, 0px, 0px)');
+        el.remove();
     });
 
     test('marks each row with its kind and carries the tooltip', () => {

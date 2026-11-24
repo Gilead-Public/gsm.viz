@@ -88,8 +88,9 @@ string (as in `Reporting_Results` exports, e.g. `"412"`), or unavailable:
 `null`, absent, `''`, or `'NA'`. An unavailable value is displayed as "—", never
 as 0. `Metric` is displayed as the header percent; it isn't recalculated.
 
-When the row carries `MetricID`, `GroupLevel` and `GroupID`, `StudyID`, or
-`SnapshotDate`, each must match the `distributions` rows.
+Each of `MetricID`, `GroupLevel`, `GroupID`, `StudyID`, and `SnapshotDate`
+that the row carries must match the `distributions` rows; an absent field isn't
+compared.
 
 ---
 
@@ -242,13 +243,15 @@ Invalid inputs throw a descriptive error before anything is rendered:
 
 ## Accessibility
 
-The widget root is a named group. Each section is a table named by its title,
-with the category as row header and the values under their labelled column
-headers, so screen readers read each value with its label. Each row header
-also carries the bar's hover text ("n of N", and the collapsed categories for
-"+ k more") as visually hidden text, since a hover title can't be reached from
-the keyboard. Bars are hidden from assistive technology; the table carries the
-same values. Labels and values are text, never colour alone.
+The widget root is a named group. Each section is a table named by its title
+(or by its variable when the title is blank), with the category as row header
+and the values under their labelled column headers, so screen readers read each
+value with its label. A hover title can't be reached from the keyboard, so each
+row header also carries the bar's hover text ("n of N", and the collapsed
+categories for "+ k more"): hidden from view for screen readers, and shown
+while the row header has keyboard focus. Bars are hidden from assistive
+technology; the table carries the same values. Labels and values are text,
+never colour alone.
 
 ## Qualification
 

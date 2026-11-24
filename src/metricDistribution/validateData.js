@@ -64,7 +64,8 @@ function validateRows(rows) {
 
     const totals = new Map();
     const categories = new Set();
-    const groups = new Set();
+    const levels = new Set();
+    const groupIds = new Set();
     const metrics = new Set();
     const studies = new Set();
     const snapshots = new Set();
@@ -88,15 +89,14 @@ function validateRows(rows) {
         }
         totals.set(section, row.Total);
 
-        if (row.GroupLevel !== undefined || row.GroupID !== undefined) {
-            groups.add(`${row.GroupLevel} ${row.GroupID}`);
-        }
+        if (isSet(row.GroupLevel)) levels.add(String(row.GroupLevel));
+        if (isSet(row.GroupID)) groupIds.add(String(row.GroupID));
         if (row.MetricID !== undefined) metrics.add(row.MetricID);
         if (isSet(row.StudyID)) studies.add(String(row.StudyID));
         if (isSet(row.SnapshotDate)) snapshots.add(String(row.SnapshotDate));
     });
 
-    if (groups.size > 1) {
+    if (levels.size > 1 || groupIds.size > 1) {
         throw new Error('data.distributions must contain rows for one group');
     }
     if (metrics.size > 1) {
@@ -113,7 +113,8 @@ function validateRows(rows) {
     }
 
     return {
-        group: [...groups][0],
+        groupLevel: [...levels][0],
+        groupId: [...groupIds][0],
         metricId: [...metrics][0],
         studyId: [...studies][0],
         snapshotDate: [...snapshots][0],
@@ -133,7 +134,6 @@ function validateResultScope(result, field, name, expected) {
 }
 
 function validateResult(result, metricId, rowScope) {
-    const { group } = rowScope;
     if (!isPlainObject(result)) {
         throw new Error('data.result must be a plain object');
     }
@@ -154,16 +154,13 @@ function validateResult(result, metricId, rowScope) {
             `data.result is for ${result.MetricID} but data.metric is ${metricId}`
         );
     }
-    const resultGroup = `${result.GroupLevel} ${result.GroupID}`;
-    if (
-        group !== undefined &&
-        result.GroupID !== undefined &&
-        resultGroup !== group
-    ) {
-        throw new Error(
-            `data.result is for ${resultGroup} but the rows are for ${group}`
-        );
-    }
+    validateResultScope(
+        result,
+        'GroupLevel',
+        'group level',
+        rowScope.groupLevel
+    );
+    validateResultScope(result, 'GroupID', 'group', rowScope.groupId);
     validateResultScope(result, 'MetricID', 'metric', rowScope.metricId);
     validateResultScope(result, 'StudyID', 'study', rowScope.studyId);
     validateResultScope(

@@ -28189,7 +28189,8 @@ var gsmViz = (() => {
     }
     const totals = /* @__PURE__ */ new Map();
     const categories = /* @__PURE__ */ new Set();
-    const groups2 = /* @__PURE__ */ new Set();
+    const levels = /* @__PURE__ */ new Set();
+    const groupIds = /* @__PURE__ */ new Set();
     const metrics = /* @__PURE__ */ new Set();
     const studies = /* @__PURE__ */ new Set();
     const snapshots = /* @__PURE__ */ new Set();
@@ -28209,14 +28210,13 @@ var gsmViz = (() => {
         );
       }
       totals.set(section, row.Total);
-      if (row.GroupLevel !== void 0 || row.GroupID !== void 0) {
-        groups2.add(`${row.GroupLevel} ${row.GroupID}`);
-      }
+      if (isSet(row.GroupLevel)) levels.add(String(row.GroupLevel));
+      if (isSet(row.GroupID)) groupIds.add(String(row.GroupID));
       if (row.MetricID !== void 0) metrics.add(row.MetricID);
       if (isSet(row.StudyID)) studies.add(String(row.StudyID));
       if (isSet(row.SnapshotDate)) snapshots.add(String(row.SnapshotDate));
     });
-    if (groups2.size > 1) {
+    if (levels.size > 1 || groupIds.size > 1) {
       throw new Error("data.distributions must contain rows for one group");
     }
     if (metrics.size > 1) {
@@ -28231,7 +28231,8 @@ var gsmViz = (() => {
       );
     }
     return {
-      group: [...groups2][0],
+      groupLevel: [...levels][0],
+      groupId: [...groupIds][0],
       metricId: [...metrics][0],
       studyId: [...studies][0],
       snapshotDate: [...snapshots][0]
@@ -28245,7 +28246,6 @@ var gsmViz = (() => {
     }
   }
   function validateResult(result, metricId, rowScope) {
-    const { group: group2 } = rowScope;
     if (!isPlainObject(result)) {
       throw new Error("data.result must be a plain object");
     }
@@ -28262,12 +28262,13 @@ var gsmViz = (() => {
         `data.result is for ${result.MetricID} but data.metric is ${metricId}`
       );
     }
-    const resultGroup = `${result.GroupLevel} ${result.GroupID}`;
-    if (group2 !== void 0 && result.GroupID !== void 0 && resultGroup !== group2) {
-      throw new Error(
-        `data.result is for ${resultGroup} but the rows are for ${group2}`
-      );
-    }
+    validateResultScope(
+      result,
+      "GroupLevel",
+      "group level",
+      rowScope.groupLevel
+    );
+    validateResultScope(result, "GroupID", "group", rowScope.groupId);
     validateResultScope(result, "MetricID", "metric", rowScope.metricId);
     validateResultScope(result, "StudyID", "study", rowScope.studyId);
     validateResultScope(
@@ -29083,12 +29084,14 @@ var gsmViz = (() => {
   }
   function appendBarRow(tbody, bar2, columns) {
     const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", `${bar2.label}: ${bar2.description}`);
-    const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic");
+    const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic").attr("tabindex", 0);
     labelCell.append("span").classed("metric-distribution--label", true).text(bar2.label);
     const description = labelCell.append("span").classed("metric-distribution--description", true).text(`: ${bar2.description}`);
-    Object.entries(VISUALLY_HIDDEN2).forEach(
-      ([property, value]) => description.style(property, value)
+    const hide = (hidden) => Object.entries(VISUALLY_HIDDEN2).forEach(
+      ([property, value]) => description.style(property, hidden ? value : null)
     );
+    hide(true);
+    labelCell.on("focus", () => hide(false)).on("blur", () => hide(true));
     labelCell.append("div").classed("metric-distribution--track", true).attr("aria-hidden", "true").style("margin-top", "2px").style("background", "#f0f0f0").style("border-radius", "0 4px 4px 0").append("div").classed("metric-distribution--bar", true).style("width", `${Number((bar2.width * 100).toFixed(2))}%`).style("height", BAR_HEIGHT).style("border-radius", "0 4px 4px 0").style("background-color", bar2.color);
     columns.forEach(({ value }) => {
       row.append("td").attr("data-value", value).style("padding", "3px 0 3px 12px").style("vertical-align", "top").style("text-align", "right").style("white-space", "nowrap").style("font-variant-numeric", "tabular-nums").text(FORMATTERS[value](bar2[value]));
@@ -29101,7 +29104,10 @@ var gsmViz = (() => {
       appendMessage(container, MESSAGES.emptySection);
       return container;
     }
-    const table = container.append("table").attr("aria-label", section.title).style("width", "100%").style("border-collapse", "collapse").style("color", TEXT_COLORS.primary);
+    const table = container.append("table").attr(
+      "aria-label",
+      section.title.trim() === "" ? section.variable : section.title
+    ).style("width", "100%").style("border-collapse", "collapse").style("color", TEXT_COLORS.primary);
     appendHeaderRow(table, section.columns);
     const tbody = table.append("tbody");
     section.bars.forEach((bar2) => appendBarRow(tbody, bar2, section.columns));

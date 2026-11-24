@@ -320,7 +320,42 @@ describe('validateData', () => {
                 result: { ...result, GroupLevel: 'Site', GroupID: '001' },
             })
         ).toThrow(
-            'data.result is for Site 001 but the rows are for Study AA-AA-000-0000'
+            'data.result is for group level Site but the rows are for Study'
         );
+    });
+
+    test('compares the result’s group level and group ID separately, each only when given', () => {
+        const { GroupID, ...levelOnly } = result;
+        const { GroupLevel, ...idOnly } = result;
+        const check = (partial) => () =>
+            validateData({ distributions: [row()], metric, result: partial });
+
+        expect(check({ ...levelOnly, GroupLevel: 'Site' })).toThrow(
+            'data.result is for group level Site but the rows are for Study'
+        );
+        expect(check({ ...idOnly, GroupID: '001' })).toThrow(
+            'data.result is for group 001 but the rows are for AA-AA-000-0000'
+        );
+        expect(check(levelOnly)).not.toThrow();
+        expect(check(idOnly)).not.toThrow();
+    });
+
+    test('compares the rows’ group level and group ID separately, each only when given', () => {
+        const { GroupLevel, ...idOnly } = row({ Category: 'Death' });
+        expect(() =>
+            validateData({ distributions: [row(), idOnly], metric, result })
+        ).not.toThrow();
+        expect(() =>
+            validateData({
+                distributions: [row(), { ...idOnly, GroupID: '001' }],
+                metric,
+            })
+        ).toThrow('data.distributions must contain rows for one group');
+        expect(() =>
+            validateData({
+                distributions: [row(), { ...idOnly, GroupLevel: 'Site' }],
+                metric,
+            })
+        ).toThrow('data.distributions must contain rows for one group');
     });
 });
