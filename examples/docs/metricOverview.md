@@ -156,7 +156,9 @@ A description list of `fields`: one label (`dt`) and value (`dd`) per column.
 
 The bar-chart header from the design review: metric name, percent, and
 numerator / denominator, on one line. `fields` does not apply. The numerator
-and denominator labels are shown as tooltips and in the accessible label.
+and denominator labels are in the accessible label, in tooltips, and in a
+`__labels` element that is visually hidden until the header has keyboard or
+touch focus.
 
 ```js
 gsmViz.default.metricOverview(
@@ -167,6 +169,7 @@ gsmViz.default.metricOverview(
     }
 );
 // Study Discontinuation Rate 2.5% 1 / 40
+// With focus: … 1 / 40 Subjects Discontinued - Study / Total Subjects
 ```
 
 Other gsm.viz widgets can build the same header directly from
@@ -187,7 +190,9 @@ element.append(renderHeader(header));
 
 ## Markup and styling
 
-The module adds no styles. Text is set as text, never as markup. Suggested
+The module adds no styles, apart from the inline ones that hide the header's
+`__labels` element until the header has focus. Text is set as text, never as
+markup. Suggested
 styles are in [`examples/metricOverview/style.css`](https://github.com/Gilead-Public/gsm.viz/blob/dev/examples/metricOverview/style.css).
 
 | Element                                                          | Notes                                                         |
@@ -200,6 +205,7 @@ styles are in [`examples/metricOverview/style.css`](https://github.com/Gilead-Pu
 | `div.gsm-metric-header`                                          | Header layout. `data-state`                                   |
 | `span.gsm-metric-header__name`, `__value`, `__fraction`          | Name, value, and numerator / denominator                      |
 | `span.gsm-metric-header__numerator`, `__denominator`             | Inside the fraction. `data-state="unavailable"` if so         |
+| `span.gsm-metric-header__labels`                                 | Numerator / denominator labels, shown while focused           |
 | `span.gsm-metric-header__empty`                                  | Empty state in the header layout                              |
 
 ### Accessibility
@@ -207,7 +213,9 @@ styles are in [`examples/metricOverview/style.css`](https://github.com/Gilead-Pu
 The list layout is a `role="group"` named after the metric, with a native
 description list inside. The header is a `role="img"` whose accessible label
 reads, for example, "Study Discontinuation Rate: 2.5%; Subjects Discontinued -
-Study: 1; Total Subjects: 40". Unavailable values use the `unavailable.value`
+Study: 1; Total Subjects: 40". A header with a value takes keyboard focus
+(`tabindex="0"`) and shows the numerator and denominator labels while focused,
+so they do not depend on a mouse tooltip. Unavailable values use the `unavailable.value`
 text; set it to words, such as `'Not available'`, if the dash should be read
 aloud.
 

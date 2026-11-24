@@ -3,6 +3,18 @@ import makeElement from './makeElement.js';
 
 const block = 'gsm-metric-header';
 
+const VISUALLY_HIDDEN = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    margin: '-1px',
+    padding: '0',
+    border: '0',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+};
+
 /**
  * The bar-chart header: metric name, percent, and numerator / denominator.
  * Exported separately so other widgets can reuse it.
@@ -48,6 +60,16 @@ function part(element, described, title) {
     return el;
 }
 
+// A title is reachable only by mouse, so the labels are repeated as text that
+// shows while the header has keyboard or touch focus.
+function revealOnFocus(el, labels) {
+    const hide = () => Object.assign(labels.style, VISUALLY_HIDDEN);
+    hide();
+    el.tabIndex = 0;
+    el.addEventListener('focus', () => labels.removeAttribute('style'));
+    el.addEventListener('blur', hide);
+}
+
 /**
  * Render a header model. Text is set as text content, never as markup.
  *
@@ -72,7 +94,13 @@ export function renderHeader(header) {
         ' / ',
         part('denominator', header.denominator, header.denominator.label)
     );
-    el.append(part('value', header.value), ' ', fraction);
+    const labels = makeElement(
+        'span',
+        `${block}__labels`,
+        `${header.numerator.label} / ${header.denominator.label}`
+    );
+    revealOnFocus(el, labels);
+    el.append(part('value', header.value), ' ', fraction, ' ', labels);
 
     return el;
 }

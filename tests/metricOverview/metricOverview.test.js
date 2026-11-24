@@ -125,7 +125,7 @@ describe('metricOverview entry point', () => {
         expect(root.hasAttribute('role')).toBe(false);
         expect(root.children).toHaveLength(1);
         expect(header.textContent).toBe(
-            'Study Discontinuation Rate 2.5% 1 / 40'
+            'Study Discontinuation Rate 2.5% 1 / 40 Subjects Discontinued - Study / Total Subjects'
         );
     });
 
@@ -195,7 +195,9 @@ describe('metricOverview entry point', () => {
         );
         expect(container.firstChild).toBe(note);
         expect(container.lastChild).toBe(root);
-        expect(root.textContent).toBe('Study Discontinuation Rate 5.3% 1 / 19');
+        expect(root.textContent).toBe(
+            'Study Discontinuation Rate 5.3% 1 / 19 Subjects Discontinued - Study / Total Subjects'
+        );
     });
 
     test('does not change its inputs', () => {

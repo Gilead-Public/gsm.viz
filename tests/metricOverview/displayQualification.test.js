@@ -134,7 +134,7 @@ function expectedHeader(row, metric) {
     }));
 
     return {
-        text: `${value.label} ${value.text} ${numerator.text} / ${denominator.text}`,
+        text: `${value.label} ${value.text} ${numerator.text} / ${denominator.text} ${numerator.label} / ${denominator.label}`,
         ariaLabel: [value, numerator, denominator]
             .map(({ label, text }) => `${label}: ${text}`)
             .join('; '),

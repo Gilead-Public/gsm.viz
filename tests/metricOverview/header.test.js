@@ -119,7 +119,7 @@ describe('metricOverview renderHeader', () => {
         expect(el.className).toBe('gsm-metric-header');
         expect(el.dataset.state).toBe('ok');
         expect(el.textContent).toBe(
-            'Study Discontinuation Rate 0.2% 3 / 1,250'
+            'Study Discontinuation Rate 0.2% 3 / 1,250 Subjects Discontinued - Study / Enrolled Subjects'
         );
         expect(el.querySelector('.gsm-metric-header__name').textContent).toBe(
             'Study Discontinuation Rate'
@@ -147,6 +147,25 @@ describe('metricOverview renderHeader', () => {
         );
     });
 
+    test('shows the numerator and denominator labels while the header has focus', () => {
+        const el = renderHeader(structureHeader(row, metric, mergeSpec({})));
+        const labels = el.querySelector('.gsm-metric-header__labels');
+
+        expect(el.getAttribute('tabindex')).toBe('0');
+        expect(labels.textContent).toBe(
+            'Subjects Discontinued - Study / Enrolled Subjects'
+        );
+        expect(labels.style.position).toBe('absolute');
+        expect(labels.style.clip).toBe('rect(0px, 0px, 0px, 0px)');
+
+        el.dispatchEvent(new FocusEvent('focus'));
+        expect(labels.getAttribute('style') || '').toBe('');
+
+        el.dispatchEvent(new FocusEvent('blur'));
+        expect(labels.style.position).toBe('absolute');
+        expect(labels.style.clip).toBe('rect(0px, 0px, 0px, 0px)');
+    });
+
     test('flags unavailable parts for styling', () => {
         const el = renderHeader(
             structureHeader({ ...row, Numerator: 'NA' }, metric, mergeSpec({}))
@@ -169,6 +188,8 @@ describe('metricOverview renderHeader', () => {
             'No data'
         );
         expect(el.querySelector('.gsm-metric-header__value')).toBeNull();
+        expect(el.querySelector('.gsm-metric-header__labels')).toBeNull();
+        expect(el.hasAttribute('tabindex')).toBe(false);
         expect(el.getAttribute('aria-label')).toBe(
             'Study Discontinuation Rate: No data'
         );

@@ -28362,6 +28362,17 @@ var gsmViz = (() => {
 
   // src/metricOverview/header.js
   var block = "gsm-metric-header";
+  var VISUALLY_HIDDEN = {
+    position: "absolute",
+    width: "1px",
+    height: "1px",
+    margin: "-1px",
+    padding: "0",
+    border: "0",
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    whiteSpace: "nowrap"
+  };
   function structureHeader(row, metric, spec) {
     const value = describeField("Metric", row ?? {}, metric, spec);
     const name = value.label;
@@ -28391,6 +28402,13 @@ var gsmViz = (() => {
     if (!described.available) el.dataset.state = "unavailable";
     return el;
   }
+  function revealOnFocus(el, labels) {
+    const hide = () => Object.assign(labels.style, VISUALLY_HIDDEN);
+    hide();
+    el.tabIndex = 0;
+    el.addEventListener("focus", () => labels.removeAttribute("style"));
+    el.addEventListener("blur", hide);
+  }
   function renderHeader(header) {
     const el = makeElement("div", block);
     el.dataset.state = header.state;
@@ -28407,7 +28425,13 @@ var gsmViz = (() => {
       " / ",
       part("denominator", header.denominator, header.denominator.label)
     );
-    el.append(part("value", header.value), " ", fraction);
+    const labels = makeElement(
+      "span",
+      `${block}__labels`,
+      `${header.numerator.label} / ${header.denominator.label}`
+    );
+    revealOnFocus(el, labels);
+    el.append(part("value", header.value), " ", fraction, " ", labels);
     return el;
   }
 
