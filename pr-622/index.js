@@ -28124,6 +28124,8 @@ var gsmViz = (() => {
   // src/metricOverview/validateSpec.js
   var supportedFields = {
     spec: [
+      "studyId",
+      "groupLevel",
       "groupId",
       "snapshotDate",
       "layout",
@@ -28252,6 +28254,8 @@ var gsmViz = (() => {
     validateData(data);
     validatePlainObject(spec, "spec");
     validateSupportedFields(spec, supportedFields.spec, "spec");
+    validateSelector(spec.studyId, "spec.studyId");
+    validateSelector(spec.groupLevel, "spec.groupLevel");
     validateSelector(spec.groupId, "spec.groupId");
     validateSelector(spec.snapshotDate, "spec.snapshotDate");
     if (spec.layout !== void 0 && !layouts2.includes(spec.layout)) {
@@ -28288,6 +28292,8 @@ var gsmViz = (() => {
   // src/metricOverview/mergeSpec.js
   function mergeSpec3(spec) {
     return {
+      studyId: spec.studyId,
+      groupLevel: spec.groupLevel,
       groupId: spec.groupId,
       snapshotDate: spec.snapshotDate,
       layout: spec.layout ?? defaults_default3.layout,
@@ -28300,13 +28306,13 @@ var gsmViz = (() => {
 
   // src/metricOverview/selectRow.js
   var matches = (value, selector) => selector === void 0 || String(value) === String(selector);
-  function selectRow(results, { groupId, snapshotDate }) {
+  function selectRow(results, { studyId, groupLevel, groupId, snapshotDate }) {
     const matching = results.filter(
-      (row) => matches(row.GroupID, groupId) && matches(row.SnapshotDate, snapshotDate)
+      (row) => matches(row.StudyID, studyId) && matches(row.GroupLevel, groupLevel) && matches(row.GroupID, groupId) && matches(row.SnapshotDate, snapshotDate)
     );
     if (matching.length > 1) {
       throw new Error(
-        `${matching.length} results rows match; set spec.groupId and/or spec.snapshotDate to choose one`
+        `${matching.length} results rows match; set spec.studyId, spec.groupLevel, spec.groupId and/or spec.snapshotDate to choose one`
       );
     }
     return matching[0] ?? null;

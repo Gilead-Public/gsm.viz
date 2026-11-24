@@ -26,7 +26,7 @@ replaces the previous overview and leaves other content alone.
 
 | Key       | Type     | Description                                                  |
 | --------- | -------- | ------------------------------------------------------------ |
-| `results` | `Array`  | One metric's `Reporting_Results` rows at the requested level |
+| `results` | `Array`  | One metric's `Reporting_Results` rows                        |
 | `metric`  | `Object` | The metric's `Reporting_Metrics` row (names and unit labels) |
 
 Every row must belong to one metric: a second `MetricID` among the rows and the
@@ -70,6 +70,8 @@ gsmViz.default.metricOverview(element, { results, metric });
 
 | Key            | Default                                  | Description                                                      |
 | -------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `studyId`      | `undefined`                              | `StudyID` of the row to show                                     |
+| `groupLevel`   | `undefined`                              | `GroupLevel` of the row to show                                  |
 | `groupId`      | `undefined`                              | `GroupID` of the row to show                                     |
 | `snapshotDate` | `undefined`                              | `SnapshotDate` of the row to show                                |
 | `layout`       | `'list'`                                 | `'list'` or `'header'`                                           |
@@ -83,16 +85,21 @@ before anything is rendered.
 
 ### Choosing the row
 
-The overview shows exactly one row. `groupId` and `snapshotDate` keep the rows
-whose `GroupID` and `SnapshotDate` match (compared as text, so `101` matches
-`'101'`). If more than one row is left, the overview throws rather than choose
-one; if none is left, it shows the empty state.
+The overview shows exactly one row. `studyId`, `groupLevel`, `groupId` and
+`snapshotDate` keep the rows whose `StudyID`, `GroupLevel`, `GroupID` and
+`SnapshotDate` match (compared as text, so `101` matches `'101'`). A `GroupID`
+can repeat across group levels or studies, so set `studyId` and `groupLevel`
+whenever the rows could span more than one. If more than one row is left, the
+overview throws rather than choose one; if none is left, it shows the empty
+state.
 
 ```js
 gsmViz.default.metricOverview(
     element,
     { results: siteRows, metric },
     {
+        studyId: 'AA-AA-000-0000',
+        groupLevel: 'Site',
         groupId: '61',
         snapshotDate: '2019-12-01',
     }
@@ -133,7 +140,7 @@ value that rounds to zero has no sign.
 | ----------- | ------------------------------------------------------------------------------ | ------------------- |
 | Unavailable | A formatted column is absent, `null`, blank, `'NA'` or not a finite number     | `unavailable.value` |
 | Unavailable | A text column is absent, `null` or blank (`'NA'` is kept: it can be a real ID) | `unavailable.value` |
-| Empty       | `results` is empty, or no row matches `groupId` and `snapshotDate`             | `unavailable.empty` |
+| Empty       | `results` is empty, or no row matches the row selectors                        | `unavailable.empty` |
 
 Zero is a value, not an unavailable one.
 
