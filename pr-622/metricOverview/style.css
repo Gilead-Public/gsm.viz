@@ -55,8 +55,13 @@
     font-weight: 600;
 }
 
-.gsm-metric-header__fraction {
+.gsm-metric-header__fraction,
+.gsm-metric-header__labels {
     color: #59636e;
+}
+
+.gsm-metric-header__labels {
+    font-size: 12px;
 }
 
 /* Example page layout */
