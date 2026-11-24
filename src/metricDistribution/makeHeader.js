@@ -1,14 +1,11 @@
 import metricOverview from '../metricOverview.js';
+import isNamed from './isNamed.js';
 import isPlainObject from './isPlainObject.js';
 
 // Stand-ins for a metric row without business labels, so the header never
 // falls back to the column names "Numerator" and "Denominator". They match
 // the bars' "n of N" hover text.
 const FALLBACK_LABELS = { Numerator: 'n', Denominator: 'N' };
-
-function isNamed(label) {
-    return typeof label === 'string' && label.trim() !== '' && label !== 'NA';
-}
 
 function fallbackLabels(metric) {
     return Object.fromEntries(

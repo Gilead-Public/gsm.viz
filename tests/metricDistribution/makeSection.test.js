@@ -25,7 +25,7 @@ function model(overrides = {}) {
                 percentOfDenominator: 0.045,
                 color: '#4e79a7',
                 width: 1,
-                tooltip: 'Withdrawal by Participant: 1,800 of 4,000',
+                description: '1,800 of 4,000',
             },
             {
                 kind: 'more',
@@ -35,7 +35,7 @@ function model(overrides = {}) {
                 percentOfDenominator: null,
                 color: '#bab0ac',
                 width: 0.5,
-                tooltip: '+ 2 more: 900 of 4,000 (Death: 600, Other: 300)',
+                description: '900 of 4,000 (Death: 600, Other: 300)',
             },
             {
                 kind: 'notRecorded',
@@ -45,7 +45,7 @@ function model(overrides = {}) {
                 percentOfDenominator: 0.001,
                 color: '#bab0ac',
                 width: 0.0222,
-                tooltip: 'Not recorded: 40 of 4,000',
+                description: '40 of 4,000',
             },
         ],
         footnotes: ['Not recorded: the source value was blank.'],
@@ -87,7 +87,9 @@ describe('makeSection', () => {
 
     test('draws one row per bar, in model order, with the label as row header', () => {
         const labels = rows(render(model())).map(
-            (tr) => tr.querySelector('th[scope="row"]').textContent
+            (tr) =>
+                tr.querySelector('th[scope="row"] .metric-distribution--label')
+                    .textContent
         );
         expect(labels).toEqual([
             'Withdrawal by Participant',
@@ -152,6 +154,34 @@ describe('makeSection', () => {
         tracks.forEach((track) =>
             expect(track.getAttribute('aria-hidden')).toBe('true')
         );
+    });
+
+    test('reads each bar’s "n of N" to screen readers in its row header, hidden from view', () => {
+        rows(render(model())).forEach((tr) => {
+            const header = tr.querySelector('th[scope="row"]');
+            const description = header.querySelector(
+                '.metric-distribution--description'
+            );
+            expect(header.textContent).toBe(tr.getAttribute('title'));
+            expect(description.closest('[aria-hidden]')).toBeNull();
+            expect(description.style).toMatchObject({
+                position: 'absolute',
+                width: '1px',
+                height: '1px',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                clip: 'rect(0px, 0px, 0px, 0px)',
+            });
+        });
+        expect(
+            rows(render(model())).map(
+                (tr) => tr.querySelector('th[scope="row"]').textContent
+            )
+        ).toEqual([
+            'Withdrawal by Participant: 1,800 of 4,000',
+            '+ 2 more: 900 of 4,000 (Death: 600, Other: 300)',
+            'Not recorded: 40 of 4,000',
+        ]);
     });
 
     test('marks each row with its kind and carries the tooltip', () => {

@@ -36,6 +36,12 @@ function row(Source, Variable, Category, Count, Total) {
     };
 }
 
+// The label and values a sighted reader sees in one bar's row.
+const shownRow = (tr) => [
+    tr.querySelector('.metric-distribution--label').textContent,
+    ...[...tr.querySelectorAll('td')].map((td) => td.textContent),
+];
+
 const distributions = [
     row('Denominator', 'disposition', 'Ongoing', 30, 40),
     row('Denominator', 'disposition', 'Discontinued', 10, 40),
@@ -156,9 +162,7 @@ describe('metricDistribution', () => {
             )
         ).toEqual(['', '% Discontinued', '% Enrolled']);
         expect(
-            [...sections[0].querySelectorAll('tbody tr')].map((tr) =>
-                [...tr.children].map((cell) => cell.textContent)
-            )
+            [...sections[0].querySelectorAll('tbody tr')].map(shownRow)
         ).toEqual([
             ['Lost to Follow-Up', '60.0%', '15.0%'],
             ['Death', '40.0%', '10.0%'],
@@ -177,9 +181,7 @@ describe('metricDistribution', () => {
             head: [...section.querySelectorAll('thead th')].map(
                 (th) => th.textContent
             ),
-            rows: [...section.querySelectorAll('tbody tr')].map((tr) =>
-                [...tr.children].map((cell) => cell.textContent)
-            ),
+            rows: [...section.querySelectorAll('tbody tr')].map(shownRow),
         }));
         expect(shown).toEqual([
             {

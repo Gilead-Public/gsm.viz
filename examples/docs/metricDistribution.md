@@ -146,7 +146,8 @@ a population of participants.
 
 Labels are business terms (e.g. "Participants", "% Enrolled"). The widget
 never shows the words "Numerator" or "Denominator"; set labels in the spec if
-the metric's own labels are absent (the default label is then "%").
+the metric's own labels are absent (the default label is then "%"). A blank
+or `'NA'` label counts as absent.
 
 ---
 
@@ -161,7 +162,8 @@ the metric's own labels are absent (the default label is then "%").
 -   "Not recorded" (a blank `Category`) is always last, never collapsed, and
     is left out when its count is 0. Categories with a count of 0 are shown.
 -   Bar length is the count relative to the section's longest bar.
--   Hovering a bar shows its count out of the section's total ("n of N").
+-   Hovering a bar shows its count out of the section's total ("n of N");
+    for "+ k more" it also lists the collapsed categories and their counts.
 -   There is no total row; the header carries the metric's value.
 
 ## Colours
@@ -242,9 +244,11 @@ Invalid inputs throw a descriptive error before anything is rendered:
 
 The widget root is a named group. Each section is a table named by its title,
 with the category as row header and the values under their labelled column
-headers, so screen readers read each value with its label. Bars are hidden from
-assistive technology; the table carries the same values. Labels and values are
-text, never colour alone.
+headers, so screen readers read each value with its label. Each row header
+also carries the bar's hover text ("n of N", and the collapsed categories for
+"+ k more") as visually hidden text, since a hover title can't be reached from
+the keyboard. Bars are hidden from assistive technology; the table carries the
+same values. Labels and values are text, never colour alone.
 
 ## Qualification
 

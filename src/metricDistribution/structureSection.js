@@ -1,5 +1,6 @@
 import { NOT_RECORDED } from './defaults.js';
 import { formatCount } from './format.js';
+import isNamed from './isNamed.js';
 import orderCategories from './orderCategories.js';
 
 const FOOTNOTES = {
@@ -11,7 +12,7 @@ const FOOTNOTES = {
 };
 
 function populationLabel(population) {
-    return population ? `% of ${population}` : '%';
+    return isNamed(population) ? `% of ${population}` : '%';
 }
 
 function defaultLabel(value, source, metric) {
@@ -69,16 +70,15 @@ export default function structureSection(
     const total = rows.length ? rows[0].Total : null;
     const denominator = result?.Denominator > 0 ? result.Denominator : null;
 
-    const bar = (kind, label, count, percent, color, tooltip) => ({
+    const ofTotal = (count) => `${formatCount(count)} of ${formatCount(total)}`;
+    const bar = (kind, label, count, percent, color, description) => ({
         kind,
         label,
         count,
         percent,
         percentOfDenominator: denominator === null ? null : count / denominator,
         color,
-        tooltip:
-            tooltip ??
-            `${label}: ${formatCount(count)} of ${formatCount(total)}`,
+        description: description ?? ofTotal(count),
     });
 
     const { shown, collapsed, notRecorded } = orderCategories(
@@ -108,9 +108,7 @@ export default function structureSection(
                 count,
                 sumPercent(collapsed),
                 spec.theme.neutralColor,
-                `${label}: ${formatCount(count)} of ${formatCount(
-                    total
-                )} (${detail})`
+                `${ofTotal(count)} (${detail})`
             )
         );
     }

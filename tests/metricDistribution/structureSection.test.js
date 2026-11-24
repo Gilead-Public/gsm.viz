@@ -160,8 +160,8 @@ describe('structureSection', () => {
         expect(more.count).toBe(18);
         expect(more.percent).toBeCloseTo(0.45, 12);
         expect(more.percentOfDenominator).toBeCloseTo(18 / 400, 12);
-        expect(more.tooltip).toBe(
-            '+ 2 more: 18 of 40 (Lost to Follow-Up: 12, Death: 6)'
+        expect(more.description).toBe(
+            '18 of 40 (Lost to Follow-Up: 12, Death: 6)'
         );
     });
 
@@ -181,10 +181,11 @@ describe('structureSection', () => {
         expect(bars[1].percent).toBeNull();
     });
 
-    test('gives each bar an "n of N" tooltip', () => {
+    test('describes each bar as "n of N"', () => {
         const { bars } = build(reasonRows(), reason);
-        expect(bars[0].tooltip).toBe('Withdrawal by Participant: 18 of 40');
-        expect(bars[3].tooltip).toBe('Not recorded: 4 of 40');
+        expect(bars[0].description).toBe('18 of 40');
+        expect(bars[3].description).toBe('4 of 40');
+        expect(bars.some((bar) => 'tooltip' in bar)).toBe(false);
     });
 
     test('shows counts alone for a reason section by default', () => {
@@ -229,6 +230,27 @@ describe('structureSection', () => {
             }
         );
         expect(columns.map((column) => column.label)).toEqual(['%', '%']);
+    });
+
+    test('treats blank and NA metric labels as missing, so no column reads "% of NA"', () => {
+        ['', '   ', 'NA'].forEach((label) => {
+            const { columns } = build(
+                reasonRows(),
+                reason,
+                { values: ['percent', 'percentOfDenominator'] },
+                {
+                    metric: { ...metric, Numerator: label, Denominator: label },
+                    result,
+                }
+            );
+            expect(columns.map((column) => column.label)).toEqual(['%', '%']);
+        });
+        expect(
+            build(statusRows(), status, undefined, {
+                metric: { ...metric, Denominator: 'NA' },
+                result,
+            }).columns
+        ).toEqual([{ value: 'percent', label: '%' }]);
     });
 
     test('labels the section share "%" for a source other than the numerator or denominator', () => {

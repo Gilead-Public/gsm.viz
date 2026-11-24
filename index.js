@@ -28457,6 +28457,11 @@ var gsmViz = (() => {
     return isAvailable(proportion) ? `${(proportion * 100).toFixed(1)}%` : UNAVAILABLE2;
   }
 
+  // src/metricDistribution/isNamed.js
+  function isNamed(label) {
+    return typeof label === "string" && label.trim() !== "" && label !== "NA";
+  }
+
   // src/metricDistribution/orderCategories.js
   function isBlank(row) {
     return row.Category === null || row.Category === void 0;
@@ -28479,7 +28484,7 @@ var gsmViz = (() => {
     notRecorded: () => `${NOT_RECORDED}: the source value was blank.`
   };
   function populationLabel(population) {
-    return population ? `% of ${population}` : "%";
+    return isNamed(population) ? `% of ${population}` : "%";
   }
   function defaultLabel(value, source, metric) {
     if (value === "count") return "n";
@@ -28508,14 +28513,15 @@ var gsmViz = (() => {
     }));
     const total = rows.length ? rows[0].Total : null;
     const denominator = result?.Denominator > 0 ? result.Denominator : null;
-    const bar2 = (kind, label, count, percent, color3, tooltip5) => ({
+    const ofTotal = (count) => `${formatCount(count)} of ${formatCount(total)}`;
+    const bar2 = (kind, label, count, percent, color3, description) => ({
       kind,
       label,
       count,
       percent,
       percentOfDenominator: denominator === null ? null : count / denominator,
       color: color3,
-      tooltip: tooltip5 ?? `${label}: ${formatCount(count)} of ${formatCount(total)}`
+      description: description ?? ofTotal(count)
     });
     const { shown, collapsed, notRecorded } = orderCategories(
       rows,
@@ -28541,9 +28547,7 @@ var gsmViz = (() => {
           count,
           sumPercent(collapsed),
           spec.theme.neutralColor,
-          `${label}: ${formatCount(count)} of ${formatCount(
-            total
-          )} (${detail})`
+          `${ofTotal(count)} (${detail})`
         )
       );
     }
@@ -29020,9 +29024,6 @@ var gsmViz = (() => {
 
   // src/metricDistribution/makeHeader.js
   var FALLBACK_LABELS = { Numerator: "n", Denominator: "N" };
-  function isNamed(label) {
-    return typeof label === "string" && label.trim() !== "" && label !== "NA";
-  }
   function fallbackLabels(metric) {
     return Object.fromEntries(
       Object.entries(FALLBACK_LABELS).filter(
@@ -29059,6 +29060,17 @@ var gsmViz = (() => {
     percentOfDenominator: formatPercent
   };
   var BAR_HEIGHT = "8px";
+  var VISUALLY_HIDDEN2 = {
+    position: "absolute",
+    width: "1px",
+    height: "1px",
+    margin: "-1px",
+    padding: "0",
+    border: "0",
+    overflow: "hidden",
+    clip: "rect(0, 0, 0, 0)",
+    "white-space": "nowrap"
+  };
   function appendMessage(parent, text) {
     return parent.append("p").classed("metric-distribution--message", true).style("margin", "0").style("color", TEXT_COLORS.muted).text(text);
   }
@@ -29070,9 +29082,13 @@ var gsmViz = (() => {
     });
   }
   function appendBarRow(tbody, bar2, columns) {
-    const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", bar2.tooltip);
+    const row = tbody.append("tr").attr("data-kind", bar2.kind).attr("title", `${bar2.label}: ${bar2.description}`);
     const labelCell = row.append("th").attr("scope", "row").style("width", "100%").style("padding", "3px 0").style("text-align", "left").style("font-weight", "normal").style("font-style", bar2.kind === "category" ? null : "italic");
-    labelCell.append("span").text(bar2.label);
+    labelCell.append("span").classed("metric-distribution--label", true).text(bar2.label);
+    const description = labelCell.append("span").classed("metric-distribution--description", true).text(`: ${bar2.description}`);
+    Object.entries(VISUALLY_HIDDEN2).forEach(
+      ([property, value]) => description.style(property, value)
+    );
     labelCell.append("div").classed("metric-distribution--track", true).attr("aria-hidden", "true").style("margin-top", "2px").style("background", "#f0f0f0").style("border-radius", "0 4px 4px 0").append("div").classed("metric-distribution--bar", true).style("width", `${Number((bar2.width * 100).toFixed(2))}%`).style("height", BAR_HEIGHT).style("border-radius", "0 4px 4px 0").style("background-color", bar2.color);
     columns.forEach(({ value }) => {
       row.append("td").attr("data-value", value).style("padding", "3px 0 3px 12px").style("vertical-align", "top").style("text-align", "right").style("white-space", "nowrap").style("font-variant-numeric", "tabular-nums").text(FORMATTERS[value](bar2[value]));

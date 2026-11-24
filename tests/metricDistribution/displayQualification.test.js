@@ -102,9 +102,11 @@ function expectedSection(data, spec, section) {
     const rest = recorded.slice(limit);
     const blank = mine.find((row) => row.Category === null);
 
+    const ofTotal = (count) => `${showCount(count)} of ${showCount(total)}`;
     const lines = top.map((row) => ({
         label: row.Category,
         count: row.Count,
+        spoken: `${row.Category}: ${ofTotal(row.Count)}`,
         color: section.status
             ? (spec.colors || {})[row.Category] || NEUTRAL
             : BAR,
@@ -117,6 +119,9 @@ function expectedSection(data, spec, section) {
         lines.push({
             label: `+ ${rest.length} more`,
             count: restCount,
+            spoken: `+ ${rest.length} more: ${ofTotal(restCount)} (${rest
+                .map((row) => `${row.Category}: ${showCount(row.Count)}`)
+                .join(', ')})`,
             color: NEUTRAL,
         });
     }
@@ -124,6 +129,7 @@ function expectedSection(data, spec, section) {
         lines.push({
             label: 'Not recorded',
             count: blank.Count,
+            spoken: `Not recorded: ${ofTotal(blank.Count)}`,
             color: NEUTRAL,
         });
     }
@@ -153,6 +159,7 @@ function expectedSection(data, spec, section) {
         columns,
         bars: lines.map((line) => ({
             label: line.label,
+            spoken: line.spoken,
             values: values.map((value) => show(line.count)[value]),
             color: rgb(line.color),
             width: biggest > 0 ? (100 * line.count) / biggest : 0,
@@ -172,7 +179,9 @@ function readSection(el) {
         bars: [...el.querySelectorAll('tbody tr')].map((tr) => {
             const bar = tr.querySelector('.metric-distribution--bar');
             return {
-                label: tr.querySelector('th').textContent,
+                label: tr.querySelector('.metric-distribution--label')
+                    .textContent,
+                spoken: tr.querySelector('th').textContent,
                 values: [...tr.querySelectorAll('td')].map(
                     (td) => td.textContent
                 ),

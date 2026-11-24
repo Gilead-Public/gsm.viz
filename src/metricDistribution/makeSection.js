@@ -11,6 +11,18 @@ const FORMATTERS = {
 
 const BAR_HEIGHT = '8px';
 
+const VISUALLY_HIDDEN = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    margin: '-1px',
+    padding: '0',
+    border: '0',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    'white-space': 'nowrap',
+};
+
 export function appendMessage(parent, text) {
     return parent
         .append('p')
@@ -39,7 +51,7 @@ function appendBarRow(tbody, bar, columns) {
     const row = tbody
         .append('tr')
         .attr('data-kind', bar.kind)
-        .attr('title', bar.tooltip);
+        .attr('title', `${bar.label}: ${bar.description}`);
 
     const labelCell = row
         .append('th')
@@ -49,7 +61,18 @@ function appendBarRow(tbody, bar, columns) {
         .style('text-align', 'left')
         .style('font-weight', 'normal')
         .style('font-style', bar.kind === 'category' ? null : 'italic');
-    labelCell.append('span').text(bar.label);
+    labelCell
+        .append('span')
+        .classed('metric-distribution--label', true)
+        .text(bar.label);
+    // A title is reachable only by mouse, so the row header repeats it.
+    const description = labelCell
+        .append('span')
+        .classed('metric-distribution--description', true)
+        .text(`: ${bar.description}`);
+    Object.entries(VISUALLY_HIDDEN).forEach(([property, value]) =>
+        description.style(property, value)
+    );
     labelCell
         .append('div')
         .classed('metric-distribution--track', true)
