@@ -16,20 +16,31 @@
         <main class="gsm-viz--example">
             <div id="controls">
                 <fieldset>
-                    <legend>Metric</legend>
-                    <select id="metric"></select>
+                    <legend id="metric-legend">Metric</legend>
+                    <select
+                        id="metric"
+                        aria-labelledby="metric-legend"
+                    ></select>
                 </fieldset>
                 <fieldset>
-                    <legend>Group</legend>
-                    <select id="group"></select>
+                    <legend id="group-legend">Group</legend>
+                    <select id="group" aria-labelledby="group-legend"></select>
                 </fieldset>
                 <fieldset>
-                    <legend>Snapshot</legend>
-                    <select id="snapshot"></select>
+                    <legend id="snapshot-legend">Snapshot</legend>
+                    <select
+                        id="snapshot"
+                        aria-labelledby="snapshot-legend"
+                    ></select>
                 </fieldset>
                 <fieldset>
-                    <legend>Metric format</legend>
-                    <input id="metric-format" type="text" value=",.1%" />
+                    <legend id="metric-format-legend">Metric format</legend>
+                    <input
+                        id="metric-format"
+                        aria-labelledby="metric-format-legend"
+                        type="text"
+                        value=",.1%"
+                    />
                 </fieldset>
             </div>
 
