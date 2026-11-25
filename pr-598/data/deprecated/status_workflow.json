@@ -1,0 +1,236 @@
+[
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0001",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0002",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0003",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0004",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0005",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0006",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0007",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0008",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0009",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0010",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0011",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "kri0012",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0001",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0002",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0003",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0004",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0005",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0006",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0007",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0008",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0009",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0010",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0011",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "cou0012",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "qtl0004",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    },
+    {
+        "StudyID": "AA-AA-000-0000",
+        "MetricID": "qtl0006",
+        "gsm_version": "1.4.1",
+        "Active": "TRUE",
+        "Status": "TRUE",
+        "Notes": "NA",
+        "SnapshotDate": "2023-01-05"
+    }
+]
