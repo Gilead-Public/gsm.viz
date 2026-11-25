@@ -27,11 +27,16 @@ function mergePartial(existing, partial) {
  * @param {Object} spec - Partial public points specification.
  * @returns {Object} The updated chart instance.
  */
-export default function updateSpec(chart, spec) {
+export function getUpdateSpec(chart, spec) {
     if (!isPlainObject(spec)) {
         throw new Error('points updateSpec spec must be a plain object');
     }
 
     const stored = getStoredInputs(chart);
-    return rebuildChart(chart, stored.data, mergePartial(stored.spec, spec));
+    return { data: stored.data, spec: mergePartial(stored.spec, spec) };
+}
+
+export default function updateSpec(chart, spec) {
+    const update = getUpdateSpec(chart, spec);
+    return rebuildChart(chart, update.data, update.spec);
 }

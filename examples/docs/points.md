@@ -207,9 +207,11 @@ const chart = gsmViz.default.points(element, data, {
         },
         size: {
             range: [3, 12],   // positive minimum and maximum radius
+            domain: undefined, // optional [min, max] input values to map onto range
         },
         opacity: {
             range: [0.25, 1], // minimum and maximum alpha
+            domain: undefined, // optional [min, max] input values to map onto range
         },
         shape: {
             values: {},       // level-to-point-style map
@@ -280,6 +282,8 @@ Set `mapping.color` to create one dataset and legend entry per categorical level
 Levels use first-seen order unless `scales.color.order` is provided. Ordered
 levels with no matching rows remain as empty datasets so legend identity and
 palette positions stay stable as data changes; new observed levels are appended.
+Numeric and string levels remain distinct even when their string representations
+match, so `1` and `'1'` may both appear in an explicit order.
 
 `scales.color.colors` maps level names to CSS colors. Levels without a named
 color use the default palette, or the non-empty `scales.color.palette` supplied by
@@ -301,6 +305,13 @@ is always two pixels larger than the rendered radius.
 applied to each point's resolved color, including color-mapped datasets. Numeric
 strings, missing values, infinities, and negative size values throw rather than
 being coerced or dropped.
+
+By default each scale's input domain is the minimum and maximum of the rendered
+points. An optional two-number `scales.size.domain` or `scales.opacity.domain`
+(non-decreasing; non-negative for size) fixes that input domain instead, so the
+same value always maps to the same radius or alpha. Values outside the domain
+are clamped to the range ends. `facetPoints` sets these automatically.
+Both domain endpoints must be present and finite; sparse arrays are rejected.
 
 ## Discrete shape
 
@@ -650,3 +661,6 @@ application, adds the documented controls to its text alternative, and reports
 changes through a polite live status element.
 `theme.maintainAspectRatio` controls whether Chart.js preserves its aspect ratio
 as the container resizes.
+
+For ordered small multiples with fixed/free numeric domains and linked
+interaction, use [`facetPoints`](facetPoints.md).

@@ -49,9 +49,11 @@ const defaults = {
         },
         size: {
             range: [3, 12],
+            domain: undefined,
         },
         opacity: {
             range: [0.25, 1],
+            domain: undefined,
         },
         shape: {
             values: {},
