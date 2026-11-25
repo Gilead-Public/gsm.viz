@@ -46,6 +46,53 @@ describe('facetPoints/globalStyles', () => {
         expect(styles.shapeOrder).toEqual(['Circle', 'Triangle']);
     });
 
+    test('resolves fallback shape order from first source occurrence', () => {
+        const data = [
+            { x: 1, y: 1, facet: 'A', color: 'Red', shape: 'Circle' },
+            { x: 2, y: 2, facet: 'B', color: 'Blue', shape: 'Triangle' },
+            { x: 3, y: 3, facet: 'C', color: 'Red', shape: 'Square' },
+        ];
+        const { merged, facets } = prepare(data);
+
+        const styles = getGlobalStyles(facets, merged);
+
+        expect(styles.shapeOrder).toEqual(['Circle', 'Triangle', 'Square']);
+        const charts = [...facets.values()].map((facetData) => {
+            const datasets = structureData({
+                ...merged,
+                data: facetData,
+                scales: {
+                    ...merged.scales,
+                    color: {
+                        ...merged.scales.color,
+                        order: styles.colorOrder,
+                    },
+                    shape: {
+                        ...merged.scales.shape,
+                        order: styles.shapeOrder,
+                    },
+                },
+            }).datasets;
+            const chart = {
+                data: { datasets, _spec_: merged },
+                setDatasetVisibility: jest.fn(),
+                update: jest.fn(),
+            };
+
+            applyGlobalStyles(chart, styles.templates);
+            return chart;
+        });
+
+        const styledDatasets = charts.map((chart) =>
+            chart.data.datasets.map(({ _shape, pointStyle }) => [
+                _shape,
+                pointStyle,
+            ])
+        );
+        expect(styledDatasets[0]).toEqual(styledDatasets[1]);
+        expect(styledDatasets[1]).toEqual(styledDatasets[2]);
+    });
+
     test('retains explicit, typed, literal, and missing levels', () => {
         const data = [
             { x: 1, y: 1, facet: 'A', color: 1, shape: '(Missing)' },

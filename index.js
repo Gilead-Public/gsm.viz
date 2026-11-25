@@ -35,9 +35,9 @@ var gsmViz = (() => {
   ));
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // node_modules/hammerjs/hammer.js
+  // ../../../../../dev/gsm.viz/node_modules/hammerjs/hammer.js
   var require_hammer = __commonJS({
-    "node_modules/hammerjs/hammer.js"(exports, module) {
+    "../../../../../dev/gsm.viz/node_modules/hammerjs/hammer.js"(exports, module) {
       (function(window2, document2, exportName, undefined2) {
         "use strict";
         var VENDOR_PREFIXES = ["", "webkit", "Moz", "MS", "ms", "o"];
@@ -1837,7 +1837,7 @@ var gsmViz = (() => {
     default: () => main_default
   });
 
-  // node_modules/chart.js/dist/chunks/helpers.segment.mjs
+  // ../../../../../dev/gsm.viz/node_modules/chart.js/dist/chunks/helpers.segment.mjs
   function noop() {
   }
   var uid = /* @__PURE__ */ (function() {
@@ -4372,7 +4372,7 @@ var gsmViz = (() => {
     return prevStyle && JSON.stringify(style) !== JSON.stringify(prevStyle);
   }
 
-  // node_modules/chart.js/dist/chart.mjs
+  // ../../../../../dev/gsm.viz/node_modules/chart.js/dist/chart.mjs
   var Animator = class {
     constructor() {
       this._request = null;
@@ -14999,7 +14999,7 @@ var gsmViz = (() => {
     scales
   ];
 
-  // node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.esm.js
+  // ../../../../../dev/gsm.viz/node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.esm.js
   var interaction = {
     modes: {
       /**
@@ -17166,7 +17166,7 @@ var gsmViz = (() => {
     }
   }
 
-  // node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.esm.js
+  // ../../../../../dev/gsm.viz/node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.esm.js
   var import_hammerjs = __toESM(require_hammer());
   var getModifierKey = (opts) => opts && opts.enabled && opts.modifierKey;
   var keyPressed = (key, event) => key && event[key + "Key"];
@@ -18116,7 +18116,7 @@ var gsmViz = (() => {
     zoomRectFunctions
   };
 
-  // node_modules/@sgratzl/boxplots/build/index.js
+  // ../../../../../dev/gsm.viz/node_modules/@sgratzl/boxplots/build/index.js
   var HELPER = Math.sqrt(2 * Math.PI);
   function gaussian(u) {
     return Math.exp(-0.5 * u * u) / HELPER;
@@ -18348,7 +18348,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/@sgratzl/chartjs-chart-boxplot/build/index.js
+  // ../../../../../dev/gsm.viz/node_modules/@sgratzl/chartjs-chart-boxplot/build/index.js
   function whiskers(boxplot3, arr, coef = 1.5) {
     const iqr = boxplot3.q3 - boxplot3.q1;
     const coefValid = typeof coef === "number" && coef > 0;
@@ -19215,17 +19215,17 @@ var gsmViz = (() => {
   };
   ViolinChart.id = ViolinController.id;
 
-  // node_modules/d3-array/src/ascending.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/ascending.js
   function ascending(a, b) {
     return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  // node_modules/d3-array/src/descending.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/descending.js
   function descending(a, b) {
     return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
   }
 
-  // node_modules/internmap/src/index.js
+  // ../../../../../dev/gsm.viz/node_modules/internmap/src/index.js
   var InternMap = class extends Map {
     constructor(entries, key = keyof) {
       super();
@@ -19267,12 +19267,12 @@ var gsmViz = (() => {
     return value !== null && typeof value === "object" ? value.valueOf() : value;
   }
 
-  // node_modules/d3-array/src/identity.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/identity.js
   function identity(x) {
     return x;
   }
 
-  // node_modules/d3-array/src/group.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/group.js
   function group(values, ...keys) {
     return nest(values, identity, identity, keys);
   }
@@ -19301,7 +19301,7 @@ var gsmViz = (() => {
     })(values, 0);
   }
 
-  // node_modules/d3-array/src/max.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/max.js
   function max(values, valueof) {
     let max3;
     if (valueof === void 0) {
@@ -19321,7 +19321,7 @@ var gsmViz = (() => {
     return max3;
   }
 
-  // node_modules/d3-array/src/min.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/min.js
   function min(values, valueof) {
     let min3;
     if (valueof === void 0) {
@@ -19341,7 +19341,7 @@ var gsmViz = (() => {
     return min3;
   }
 
-  // node_modules/d3-array/src/mean.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-array/src/mean.js
   function mean(values, valueof) {
     let count = 0;
     let sum = 0;
@@ -19362,7 +19362,7 @@ var gsmViz = (() => {
     if (count) return sum / count;
   }
 
-  // node_modules/d3-dispatch/src/dispatch.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-dispatch/src/dispatch.js
   var noop2 = { value: () => {
   } };
   function dispatch() {
@@ -19432,7 +19432,7 @@ var gsmViz = (() => {
   }
   var dispatch_default = dispatch;
 
-  // node_modules/d3-selection/src/namespaces.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/namespaces.js
   var xhtml = "http://www.w3.org/1999/xhtml";
   var namespaces_default = {
     svg: "http://www.w3.org/2000/svg",
@@ -19442,14 +19442,14 @@ var gsmViz = (() => {
     xmlns: "http://www.w3.org/2000/xmlns/"
   };
 
-  // node_modules/d3-selection/src/namespace.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/namespace.js
   function namespace_default(name) {
     var prefix = name += "", i = prefix.indexOf(":");
     if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
     return namespaces_default.hasOwnProperty(prefix) ? { space: namespaces_default[prefix], local: name } : name;
   }
 
-  // node_modules/d3-selection/src/creator.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/creator.js
   function creatorInherit(name) {
     return function() {
       var document2 = this.ownerDocument, uri = this.namespaceURI;
@@ -19466,7 +19466,7 @@ var gsmViz = (() => {
     return (fullname.local ? creatorFixed : creatorInherit)(fullname);
   }
 
-  // node_modules/d3-selection/src/selector.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selector.js
   function none() {
   }
   function selector_default(selector) {
@@ -19475,7 +19475,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-selection/src/selection/select.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/select.js
   function select_default(select) {
     if (typeof select !== "function") select = selector_default(select);
     for (var groups2 = this._groups, m = groups2.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -19489,12 +19489,12 @@ var gsmViz = (() => {
     return new Selection(subgroups, this._parents);
   }
 
-  // node_modules/d3-selection/src/array.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/array.js
   function array(x) {
     return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
   }
 
-  // node_modules/d3-selection/src/selectorAll.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selectorAll.js
   function empty() {
     return [];
   }
@@ -19504,7 +19504,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-selection/src/selection/selectAll.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/selectAll.js
   function arrayAll(select) {
     return function() {
       return array(select.apply(this, arguments));
@@ -19524,7 +19524,7 @@ var gsmViz = (() => {
     return new Selection(subgroups, parents);
   }
 
-  // node_modules/d3-selection/src/matcher.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/matcher.js
   function matcher_default(selector) {
     return function() {
       return this.matches(selector);
@@ -19536,7 +19536,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-selection/src/selection/selectChild.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/selectChild.js
   var find = Array.prototype.find;
   function childFind(match) {
     return function() {
@@ -19550,7 +19550,7 @@ var gsmViz = (() => {
     return this.select(match == null ? childFirst : childFind(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // node_modules/d3-selection/src/selection/selectChildren.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/selectChildren.js
   var filter = Array.prototype.filter;
   function children() {
     return Array.from(this.children);
@@ -19564,7 +19564,7 @@ var gsmViz = (() => {
     return this.selectAll(match == null ? children : childrenFilter(typeof match === "function" ? match : childMatcher(match)));
   }
 
-  // node_modules/d3-selection/src/selection/filter.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/filter.js
   function filter_default(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups2 = this._groups, m = groups2.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -19577,12 +19577,12 @@ var gsmViz = (() => {
     return new Selection(subgroups, this._parents);
   }
 
-  // node_modules/d3-selection/src/selection/sparse.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/sparse.js
   function sparse_default(update) {
     return new Array(update.length);
   }
 
-  // node_modules/d3-selection/src/selection/enter.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/enter.js
   function enter_default() {
     return new Selection(this._enter || this._groups.map(sparse_default), this._parents);
   }
@@ -19609,14 +19609,14 @@ var gsmViz = (() => {
     }
   };
 
-  // node_modules/d3-selection/src/constant.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/constant.js
   function constant_default(x) {
     return function() {
       return x;
     };
   }
 
-  // node_modules/d3-selection/src/selection/data.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/data.js
   function bindIndex(parent, group2, enter, update, exit, data) {
     var i = 0, node, groupLength = group2.length, dataLength = data.length;
     for (; i < dataLength; ++i) {
@@ -19688,12 +19688,12 @@ var gsmViz = (() => {
     return typeof data === "object" && "length" in data ? data : Array.from(data);
   }
 
-  // node_modules/d3-selection/src/selection/exit.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/exit.js
   function exit_default() {
     return new Selection(this._exit || this._groups.map(sparse_default), this._parents);
   }
 
-  // node_modules/d3-selection/src/selection/join.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/join.js
   function join_default(onenter, onupdate, onexit) {
     var enter = this.enter(), update = this, exit = this.exit();
     if (typeof onenter === "function") {
@@ -19711,7 +19711,7 @@ var gsmViz = (() => {
     return enter && update ? enter.merge(update).order() : update;
   }
 
-  // node_modules/d3-selection/src/selection/merge.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/merge.js
   function merge_default(context) {
     var selection2 = context.selection ? context.selection() : context;
     for (var groups0 = this._groups, groups1 = selection2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -19727,7 +19727,7 @@ var gsmViz = (() => {
     return new Selection(merges, this._parents);
   }
 
-  // node_modules/d3-selection/src/selection/order.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/order.js
   function order_default() {
     for (var groups2 = this._groups, j = -1, m = groups2.length; ++j < m; ) {
       for (var group2 = groups2[j], i = group2.length - 1, next = group2[i], node; --i >= 0; ) {
@@ -19740,7 +19740,7 @@ var gsmViz = (() => {
     return this;
   }
 
-  // node_modules/d3-selection/src/selection/sort.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/sort.js
   function sort_default(compare) {
     if (!compare) compare = ascending2;
     function compareNode(a, b) {
@@ -19760,7 +19760,7 @@ var gsmViz = (() => {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
-  // node_modules/d3-selection/src/selection/call.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/call.js
   function call_default() {
     var callback2 = arguments[0];
     arguments[0] = this;
@@ -19768,12 +19768,12 @@ var gsmViz = (() => {
     return this;
   }
 
-  // node_modules/d3-selection/src/selection/nodes.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/nodes.js
   function nodes_default() {
     return Array.from(this);
   }
 
-  // node_modules/d3-selection/src/selection/node.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/node.js
   function node_default() {
     for (var groups2 = this._groups, j = 0, m = groups2.length; j < m; ++j) {
       for (var group2 = groups2[j], i = 0, n = group2.length; i < n; ++i) {
@@ -19784,19 +19784,19 @@ var gsmViz = (() => {
     return null;
   }
 
-  // node_modules/d3-selection/src/selection/size.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/size.js
   function size_default() {
     let size = 0;
     for (const node of this) ++size;
     return size;
   }
 
-  // node_modules/d3-selection/src/selection/empty.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/empty.js
   function empty_default() {
     return !this.node();
   }
 
-  // node_modules/d3-selection/src/selection/each.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/each.js
   function each_default(callback2) {
     for (var groups2 = this._groups, j = 0, m = groups2.length; j < m; ++j) {
       for (var group2 = groups2[j], i = 0, n = group2.length, node; i < n; ++i) {
@@ -19806,7 +19806,7 @@ var gsmViz = (() => {
     return this;
   }
 
-  // node_modules/d3-selection/src/selection/attr.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/attr.js
   function attrRemove(name) {
     return function() {
       this.removeAttribute(name);
@@ -19850,12 +19850,12 @@ var gsmViz = (() => {
     return this.each((value == null ? fullname.local ? attrRemoveNS : attrRemove : typeof value === "function" ? fullname.local ? attrFunctionNS : attrFunction : fullname.local ? attrConstantNS : attrConstant)(fullname, value));
   }
 
-  // node_modules/d3-selection/src/window.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/window.js
   function window_default(node) {
     return node.ownerDocument && node.ownerDocument.defaultView || node.document && node || node.defaultView;
   }
 
-  // node_modules/d3-selection/src/selection/style.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/style.js
   function styleRemove(name) {
     return function() {
       this.style.removeProperty(name);
@@ -19880,7 +19880,7 @@ var gsmViz = (() => {
     return node.style.getPropertyValue(name) || window_default(node).getComputedStyle(node, null).getPropertyValue(name);
   }
 
-  // node_modules/d3-selection/src/selection/property.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/property.js
   function propertyRemove(name) {
     return function() {
       delete this[name];
@@ -19902,7 +19902,7 @@ var gsmViz = (() => {
     return arguments.length > 1 ? this.each((value == null ? propertyRemove : typeof value === "function" ? propertyFunction : propertyConstant)(name, value)) : this.node()[name];
   }
 
-  // node_modules/d3-selection/src/selection/classed.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/classed.js
   function classArray(string) {
     return string.trim().split(/^|\s+/);
   }
@@ -19965,7 +19965,7 @@ var gsmViz = (() => {
     return this.each((typeof value === "function" ? classedFunction : value ? classedTrue : classedFalse)(names2, value));
   }
 
-  // node_modules/d3-selection/src/selection/text.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/text.js
   function textRemove() {
     this.textContent = "";
   }
@@ -19984,7 +19984,7 @@ var gsmViz = (() => {
     return arguments.length ? this.each(value == null ? textRemove : (typeof value === "function" ? textFunction : textConstant)(value)) : this.node().textContent;
   }
 
-  // node_modules/d3-selection/src/selection/html.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/html.js
   function htmlRemove() {
     this.innerHTML = "";
   }
@@ -20003,7 +20003,7 @@ var gsmViz = (() => {
     return arguments.length ? this.each(value == null ? htmlRemove : (typeof value === "function" ? htmlFunction : htmlConstant)(value)) : this.node().innerHTML;
   }
 
-  // node_modules/d3-selection/src/selection/raise.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/raise.js
   function raise() {
     if (this.nextSibling) this.parentNode.appendChild(this);
   }
@@ -20011,7 +20011,7 @@ var gsmViz = (() => {
     return this.each(raise);
   }
 
-  // node_modules/d3-selection/src/selection/lower.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/lower.js
   function lower() {
     if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
   }
@@ -20019,7 +20019,7 @@ var gsmViz = (() => {
     return this.each(lower);
   }
 
-  // node_modules/d3-selection/src/selection/append.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/append.js
   function append_default(name) {
     var create2 = typeof name === "function" ? name : creator_default(name);
     return this.select(function() {
@@ -20027,7 +20027,7 @@ var gsmViz = (() => {
     });
   }
 
-  // node_modules/d3-selection/src/selection/insert.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/insert.js
   function constantNull() {
     return null;
   }
@@ -20038,7 +20038,7 @@ var gsmViz = (() => {
     });
   }
 
-  // node_modules/d3-selection/src/selection/remove.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/remove.js
   function remove() {
     var parent = this.parentNode;
     if (parent) parent.removeChild(this);
@@ -20047,7 +20047,7 @@ var gsmViz = (() => {
     return this.each(remove);
   }
 
-  // node_modules/d3-selection/src/selection/clone.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/clone.js
   function selection_cloneShallow() {
     var clone2 = this.cloneNode(false), parent = this.parentNode;
     return parent ? parent.insertBefore(clone2, this.nextSibling) : clone2;
@@ -20060,12 +20060,12 @@ var gsmViz = (() => {
     return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
   }
 
-  // node_modules/d3-selection/src/selection/datum.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/datum.js
   function datum_default(value) {
     return arguments.length ? this.property("__data__", value) : this.node().__data__;
   }
 
-  // node_modules/d3-selection/src/selection/on.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/on.js
   function contextListener(listener) {
     return function(event) {
       listener.call(this, event, this.__data__);
@@ -20128,7 +20128,7 @@ var gsmViz = (() => {
     return this;
   }
 
-  // node_modules/d3-selection/src/selection/dispatch.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/dispatch.js
   function dispatchEvent2(node, type2, params) {
     var window2 = window_default(node), event = window2.CustomEvent;
     if (typeof event === "function") {
@@ -20154,7 +20154,7 @@ var gsmViz = (() => {
     return this.each((typeof params === "function" ? dispatchFunction : dispatchConstant)(type2, params));
   }
 
-  // node_modules/d3-selection/src/selection/iterator.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/iterator.js
   function* iterator_default() {
     for (var groups2 = this._groups, j = 0, m = groups2.length; j < m; ++j) {
       for (var group2 = groups2[j], i = 0, n = group2.length, node; i < n; ++i) {
@@ -20163,7 +20163,7 @@ var gsmViz = (() => {
     }
   }
 
-  // node_modules/d3-selection/src/selection/index.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/selection/index.js
   var root = [null];
   function Selection(groups2, parents) {
     this._groups = groups2;
@@ -20215,12 +20215,12 @@ var gsmViz = (() => {
   };
   var selection_default = selection;
 
-  // node_modules/d3-selection/src/select.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-selection/src/select.js
   function select_default2(selector) {
     return typeof selector === "string" ? new Selection([[document.querySelector(selector)]], [document.documentElement]) : new Selection([[selector]], root);
   }
 
-  // node_modules/d3-color/src/define.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-color/src/define.js
   function define_default(constructor, factory, prototype) {
     constructor.prototype = factory.prototype = prototype;
     prototype.constructor = constructor;
@@ -20231,7 +20231,7 @@ var gsmViz = (() => {
     return prototype;
   }
 
-  // node_modules/d3-color/src/color.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-color/src/color.js
   function Color2() {
   }
   var darker = 0.7;
@@ -20568,7 +20568,7 @@ var gsmViz = (() => {
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
 
-  // node_modules/d3-interpolate/src/basis.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/basis.js
   function basis(t1, v0, v1, v2, v3) {
     var t2 = t1 * t1, t3 = t2 * t1;
     return ((1 - 3 * t1 + 3 * t2 - t3) * v0 + (4 - 6 * t2 + 3 * t3) * v1 + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2 + t3 * v3) / 6;
@@ -20581,7 +20581,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-interpolate/src/basisClosed.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/basisClosed.js
   function basisClosed_default(values) {
     var n = values.length;
     return function(t) {
@@ -20590,10 +20590,10 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-interpolate/src/constant.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/constant.js
   var constant_default2 = (x) => () => x;
 
-  // node_modules/d3-interpolate/src/color.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/color.js
   function linear(a, d) {
     return function(t) {
       return a + t * d;
@@ -20614,7 +20614,7 @@ var gsmViz = (() => {
     return d ? linear(a, d) : constant_default2(isNaN(a) ? b : a);
   }
 
-  // node_modules/d3-interpolate/src/rgb.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/rgb.js
   var rgb_default = (function rgbGamma(y) {
     var color3 = gamma(y);
     function rgb2(start2, end) {
@@ -20654,14 +20654,14 @@ var gsmViz = (() => {
   var rgbBasis = rgbSpline(basis_default);
   var rgbBasisClosed = rgbSpline(basisClosed_default);
 
-  // node_modules/d3-interpolate/src/number.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/number.js
   function number_default(a, b) {
     return a = +a, b = +b, function(t) {
       return a * (1 - t) + b * t;
     };
   }
 
-  // node_modules/d3-interpolate/src/string.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/string.js
   var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
   var reB = new RegExp(reA.source, "g");
   function zero(b) {
@@ -20703,7 +20703,7 @@ var gsmViz = (() => {
     });
   }
 
-  // node_modules/d3-interpolate/src/transform/decompose.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/transform/decompose.js
   var degrees = 180 / Math.PI;
   var identity2 = {
     translateX: 0,
@@ -20729,7 +20729,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-interpolate/src/transform/parse.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/transform/parse.js
   var svgNode;
   function parseCss(value) {
     const m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
@@ -20744,7 +20744,7 @@ var gsmViz = (() => {
     return decompose_default(value.a, value.b, value.c, value.d, value.e, value.f);
   }
 
-  // node_modules/d3-interpolate/src/transform/index.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-interpolate/src/transform/index.js
   function interpolateTransform(parse2, pxComma, pxParen, degParen) {
     function pop(s) {
       return s.length ? s.pop() + " " : "";
@@ -20799,7 +20799,7 @@ var gsmViz = (() => {
   var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
   var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-  // node_modules/d3-timer/src/timer.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-timer/src/timer.js
   var frame = 0;
   var timeout = 0;
   var interval = 0;
@@ -20901,7 +20901,7 @@ var gsmViz = (() => {
     }
   }
 
-  // node_modules/d3-timer/src/timeout.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-timer/src/timeout.js
   function timeout_default(callback2, delay, time) {
     var t = new Timer();
     delay = delay == null ? 0 : +delay;
@@ -20912,7 +20912,7 @@ var gsmViz = (() => {
     return t;
   }
 
-  // node_modules/d3-transition/src/transition/schedule.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/schedule.js
   var emptyOn = dispatch_default("start", "end", "cancel", "interrupt");
   var emptyTween = [];
   var CREATED = 0;
@@ -21023,7 +21023,7 @@ var gsmViz = (() => {
     }
   }
 
-  // node_modules/d3-transition/src/interrupt.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/interrupt.js
   function interrupt_default(node, name) {
     var schedules = node.__transition, schedule, active, empty2 = true, i;
     if (!schedules) return;
@@ -21042,14 +21042,14 @@ var gsmViz = (() => {
     if (empty2) delete node.__transition;
   }
 
-  // node_modules/d3-transition/src/selection/interrupt.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/selection/interrupt.js
   function interrupt_default2(name) {
     return this.each(function() {
       interrupt_default(this, name);
     });
   }
 
-  // node_modules/d3-transition/src/transition/tween.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/tween.js
   function tweenRemove(id2, name) {
     var tween0, tween1;
     return function() {
@@ -21110,13 +21110,13 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-transition/src/transition/interpolate.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/interpolate.js
   function interpolate_default(a, b) {
     var c;
     return (typeof b === "number" ? number_default : b instanceof color2 ? rgb_default : (c = color2(b)) ? (b = c, rgb_default) : string_default)(a, b);
   }
 
-  // node_modules/d3-transition/src/transition/attr.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/attr.js
   function attrRemove2(name) {
     return function() {
       this.removeAttribute(name);
@@ -21166,7 +21166,7 @@ var gsmViz = (() => {
     return this.attrTween(name, typeof value === "function" ? (fullname.local ? attrFunctionNS2 : attrFunction2)(fullname, i, tweenValue(this, "attr." + name, value)) : value == null ? (fullname.local ? attrRemoveNS2 : attrRemove2)(fullname) : (fullname.local ? attrConstantNS2 : attrConstant2)(fullname, i, value));
   }
 
-  // node_modules/d3-transition/src/transition/attrTween.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/attrTween.js
   function attrInterpolate(name, i) {
     return function(t) {
       this.setAttribute(name, i.call(this, t));
@@ -21206,7 +21206,7 @@ var gsmViz = (() => {
     return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value));
   }
 
-  // node_modules/d3-transition/src/transition/delay.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/delay.js
   function delayFunction(id2, value) {
     return function() {
       init(this, id2).delay = +value.apply(this, arguments);
@@ -21222,7 +21222,7 @@ var gsmViz = (() => {
     return arguments.length ? this.each((typeof value === "function" ? delayFunction : delayConstant)(id2, value)) : get2(this.node(), id2).delay;
   }
 
-  // node_modules/d3-transition/src/transition/duration.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/duration.js
   function durationFunction(id2, value) {
     return function() {
       set3(this, id2).duration = +value.apply(this, arguments);
@@ -21238,7 +21238,7 @@ var gsmViz = (() => {
     return arguments.length ? this.each((typeof value === "function" ? durationFunction : durationConstant)(id2, value)) : get2(this.node(), id2).duration;
   }
 
-  // node_modules/d3-transition/src/transition/ease.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/ease.js
   function easeConstant(id2, value) {
     if (typeof value !== "function") throw new Error();
     return function() {
@@ -21250,7 +21250,7 @@ var gsmViz = (() => {
     return arguments.length ? this.each(easeConstant(id2, value)) : get2(this.node(), id2).ease;
   }
 
-  // node_modules/d3-transition/src/transition/easeVarying.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/easeVarying.js
   function easeVarying(id2, value) {
     return function() {
       var v = value.apply(this, arguments);
@@ -21263,7 +21263,7 @@ var gsmViz = (() => {
     return this.each(easeVarying(this._id, value));
   }
 
-  // node_modules/d3-transition/src/transition/filter.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/filter.js
   function filter_default2(match) {
     if (typeof match !== "function") match = matcher_default(match);
     for (var groups2 = this._groups, m = groups2.length, subgroups = new Array(m), j = 0; j < m; ++j) {
@@ -21276,7 +21276,7 @@ var gsmViz = (() => {
     return new Transition(subgroups, this._parents, this._name, this._id);
   }
 
-  // node_modules/d3-transition/src/transition/merge.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/merge.js
   function merge_default2(transition2) {
     if (transition2._id !== this._id) throw new Error();
     for (var groups0 = this._groups, groups1 = transition2._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -21292,7 +21292,7 @@ var gsmViz = (() => {
     return new Transition(merges, this._parents, this._name, this._id);
   }
 
-  // node_modules/d3-transition/src/transition/on.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/on.js
   function start(name) {
     return (name + "").trim().split(/^|\s+/).every(function(t) {
       var i = t.indexOf(".");
@@ -21313,7 +21313,7 @@ var gsmViz = (() => {
     return arguments.length < 2 ? get2(this.node(), id2).on.on(name) : this.each(onFunction(id2, name, listener));
   }
 
-  // node_modules/d3-transition/src/transition/remove.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/remove.js
   function removeFunction(id2) {
     return function() {
       var parent = this.parentNode;
@@ -21325,7 +21325,7 @@ var gsmViz = (() => {
     return this.on("end.remove", removeFunction(this._id));
   }
 
-  // node_modules/d3-transition/src/transition/select.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/select.js
   function select_default3(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selector_default(select);
@@ -21341,7 +21341,7 @@ var gsmViz = (() => {
     return new Transition(subgroups, this._parents, name, id2);
   }
 
-  // node_modules/d3-transition/src/transition/selectAll.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/selectAll.js
   function selectAll_default2(select) {
     var name = this._name, id2 = this._id;
     if (typeof select !== "function") select = selectorAll_default(select);
@@ -21361,13 +21361,13 @@ var gsmViz = (() => {
     return new Transition(subgroups, parents, name, id2);
   }
 
-  // node_modules/d3-transition/src/transition/selection.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/selection.js
   var Selection2 = selection_default.prototype.constructor;
   function selection_default2() {
     return new Selection2(this._groups, this._parents);
   }
 
-  // node_modules/d3-transition/src/transition/style.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/style.js
   function styleNull(name, interpolate3) {
     var string00, string10, interpolate0;
     return function() {
@@ -21408,7 +21408,7 @@ var gsmViz = (() => {
     return value == null ? this.styleTween(name, styleNull(name, i)).on("end.style." + name, styleRemove2(name)) : typeof value === "function" ? this.styleTween(name, styleFunction2(name, i, tweenValue(this, "style." + name, value))).each(styleMaybeRemove(this._id, name)) : this.styleTween(name, styleConstant2(name, i, value), priority).on("end.style." + name, null);
   }
 
-  // node_modules/d3-transition/src/transition/styleTween.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/styleTween.js
   function styleInterpolate(name, i, priority) {
     return function(t) {
       this.style.setProperty(name, i.call(this, t), priority);
@@ -21432,7 +21432,7 @@ var gsmViz = (() => {
     return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
   }
 
-  // node_modules/d3-transition/src/transition/text.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/text.js
   function textConstant2(value) {
     return function() {
       this.textContent = value;
@@ -21448,7 +21448,7 @@ var gsmViz = (() => {
     return this.tween("text", typeof value === "function" ? textFunction2(tweenValue(this, "text", value)) : textConstant2(value == null ? "" : value + ""));
   }
 
-  // node_modules/d3-transition/src/transition/textTween.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/textTween.js
   function textInterpolate(i) {
     return function(t) {
       this.textContent = i.call(this, t);
@@ -21472,7 +21472,7 @@ var gsmViz = (() => {
     return this.tween(key, textTween(value));
   }
 
-  // node_modules/d3-transition/src/transition/transition.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/transition.js
   function transition_default() {
     var name = this._name, id0 = this._id, id1 = newId();
     for (var groups2 = this._groups, m = groups2.length, j = 0; j < m; ++j) {
@@ -21491,7 +21491,7 @@ var gsmViz = (() => {
     return new Transition(groups2, this._parents, name, id1);
   }
 
-  // node_modules/d3-transition/src/transition/end.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/end.js
   function end_default() {
     var on0, on1, that = this, id2 = that._id, size = that.size();
     return new Promise(function(resolve3, reject) {
@@ -21512,7 +21512,7 @@ var gsmViz = (() => {
     });
   }
 
-  // node_modules/d3-transition/src/transition/index.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/transition/index.js
   var id = 0;
   function Transition(groups2, parents, name, id2) {
     this._groups = groups2;
@@ -21560,12 +21560,12 @@ var gsmViz = (() => {
     [Symbol.iterator]: selection_prototype[Symbol.iterator]
   };
 
-  // node_modules/d3-ease/src/cubic.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-ease/src/cubic.js
   function cubicInOut(t) {
     return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
   }
 
-  // node_modules/d3-transition/src/selection/transition.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/selection/transition.js
   var defaultTiming = {
     time: null,
     // Set on use.
@@ -21599,11 +21599,11 @@ var gsmViz = (() => {
     return new Transition(groups2, this._parents, name, id2);
   }
 
-  // node_modules/d3-transition/src/selection/index.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-transition/src/selection/index.js
   selection_default.prototype.interrupt = interrupt_default2;
   selection_default.prototype.transition = transition_default2;
 
-  // node_modules/d3-brush/src/brush.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-brush/src/brush.js
   var { abs, max: max2, min: min2 } = Math;
   function number1(e) {
     return [+e[0], +e[1]];
@@ -21645,7 +21645,7 @@ var gsmViz = (() => {
     return { type: t };
   }
 
-  // node_modules/d3-format/src/formatDecimal.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatDecimal.js
   function formatDecimal_default(x) {
     return Math.abs(x = Math.round(x)) >= 1e21 ? x.toLocaleString("en").replace(/,/g, "") : x.toString(10);
   }
@@ -21658,12 +21658,12 @@ var gsmViz = (() => {
     ];
   }
 
-  // node_modules/d3-format/src/exponent.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/exponent.js
   function exponent_default(x) {
     return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
   }
 
-  // node_modules/d3-format/src/formatGroup.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatGroup.js
   function formatGroup_default(grouping, thousands) {
     return function(value, width) {
       var i = value.length, t = [], j = 0, g = grouping[0], length = 0;
@@ -21677,7 +21677,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-format/src/formatNumerals.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatNumerals.js
   function formatNumerals_default(numerals) {
     return function(value) {
       return value.replace(/[0-9]/g, function(i) {
@@ -21686,7 +21686,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-format/src/formatSpecifier.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatSpecifier.js
   var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
   function formatSpecifier(specifier) {
     if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
@@ -21721,7 +21721,7 @@ var gsmViz = (() => {
     return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === void 0 ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === void 0 ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
   };
 
-  // node_modules/d3-format/src/formatTrim.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatTrim.js
   function formatTrim_default(s) {
     out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
       switch (s[i]) {
@@ -21741,7 +21741,7 @@ var gsmViz = (() => {
     return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
   }
 
-  // node_modules/d3-format/src/formatPrefixAuto.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatPrefixAuto.js
   var prefixExponent;
   function formatPrefixAuto_default(x, p) {
     var d = formatDecimalParts(x, p);
@@ -21750,7 +21750,7 @@ var gsmViz = (() => {
     return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0];
   }
 
-  // node_modules/d3-format/src/formatRounded.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatRounded.js
   function formatRounded_default(x, p) {
     var d = formatDecimalParts(x, p);
     if (!d) return x + "";
@@ -21758,7 +21758,7 @@ var gsmViz = (() => {
     return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
   }
 
-  // node_modules/d3-format/src/formatTypes.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/formatTypes.js
   var formatTypes_default = {
     "%": (x, p) => (x * 100).toFixed(p),
     "b": (x) => Math.round(x).toString(2),
@@ -21775,12 +21775,12 @@ var gsmViz = (() => {
     "x": (x) => Math.round(x).toString(16)
   };
 
-  // node_modules/d3-format/src/identity.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/identity.js
   function identity_default(x) {
     return x;
   }
 
-  // node_modules/d3-format/src/locale.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/locale.js
   var map3 = Array.prototype.map;
   var prefixes = ["y", "z", "a", "f", "p", "n", "\xB5", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
   function locale_default(locale2) {
@@ -21854,7 +21854,7 @@ var gsmViz = (() => {
     };
   }
 
-  // node_modules/d3-format/src/defaultLocale.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-format/src/defaultLocale.js
   var locale;
   var format;
   var formatPrefix;
@@ -21870,7 +21870,7 @@ var gsmViz = (() => {
     return locale;
   }
 
-  // node_modules/d3-zoom/src/transform.js
+  // ../../../../../dev/gsm.viz/node_modules/d3-zoom/src/transform.js
   function Transform(k, x, y) {
     this.k = k;
     this.x = x;
@@ -21919,11 +21919,11 @@ var gsmViz = (() => {
     return node.__zoom;
   }
 
-  // node_modules/chart.js/auto/auto.mjs
+  // ../../../../../dev/gsm.viz/node_modules/chart.js/auto/auto.mjs
   Chart.register(...registerables);
   var auto_default = Chart;
 
-  // node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js
+  // ../../../../../dev/gsm.viz/node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.esm.js
   var devicePixelRatio = (function() {
     if (typeof window !== "undefined") {
       if (window.devicePixelRatio) {
@@ -29510,7 +29510,7 @@ var gsmViz = (() => {
     const palette = line.palette || defaultPalette;
     return level ? palette[index3 % palette.length] : line.color ?? DEFAULT_COLOR;
   }
-  function makeDataset(line, data, color3, label) {
+  function makeDataset(line, data, color3, label, layerIndex) {
     return {
       type: "line",
       label,
@@ -29528,6 +29528,7 @@ var gsmViz = (() => {
       pointStyle: "line",
       order: 1,
       _annotation: true,
+      _annotationLayer: layerIndex,
       _showInLegend: line.showInLegend ?? false
     };
   }
@@ -29560,7 +29561,8 @@ var gsmViz = (() => {
           line,
           records.map(({ point }) => point),
           line.color ?? line.palette?.[0] ?? DEFAULT_COLOR,
-          line.label ?? ""
+          line.label ?? "",
+          layerIndex
         )
       ];
     }
@@ -29577,7 +29579,8 @@ var gsmViz = (() => {
         line,
         groups2.get(getLevelKey2(level)) || [],
         getColor2(level, index3, line, spec.scales.color.palette),
-        label
+        label,
+        layerIndex
       );
       dataset._annotationGroup = level.value;
       dataset._annotationGroupMissing = level.missing;
@@ -32525,6 +32528,130 @@ var gsmViz = (() => {
     return chart;
   }
 
+  // src/facetPoints/splitData.js
+  var MISSING_LABEL2 = "(Missing)";
+  function normalizeFacetValue(value) {
+    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
+  }
+  function formatFacetValue(value) {
+    if (value === null) return MISSING_LABEL2;
+    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
+  }
+  function splitData2(data, field, order) {
+    const facets = /* @__PURE__ */ new Map();
+    const ordered = order !== void 0;
+    if (ordered) {
+      order.forEach((value) => {
+        facets.set(normalizeFacetValue(value), []);
+      });
+    }
+    data.forEach((row) => {
+      const value = normalizeFacetValue(row?.[field]);
+      if (ordered && !facets.has(value)) return;
+      if (!facets.has(value)) facets.set(value, []);
+      facets.get(value).push(row);
+    });
+    return facets;
+  }
+
+  // src/facetPoints/accessibility.js
+  function applyFacetContext(chart, state) {
+    const currentLabel = chart.canvas.getAttribute("aria-label") || "";
+    const baseLabel = currentLabel === state.label ? state.baseLabel : currentLabel;
+    const formattedFacetValue = typeof state.value === "string" ? JSON.stringify(state.value) : formatFacetValue(state.value);
+    const facetLabel = `Facet ${state.field}: ${formattedFacetValue}.`;
+    const label = baseLabel ? `${facetLabel} ${baseLabel}` : facetLabel;
+    setAccessibleLabel(chart.canvas, label);
+    chart._facetPointsAccessibility = {
+      ...state,
+      baseLabel,
+      label
+    };
+  }
+  function setFacetAccessibleLabel(chart, field, value) {
+    applyFacetContext(chart, { field, value });
+  }
+  function refreshFacetAccessibleLabel(chart) {
+    if (chart._facetPointsAccessibility) {
+      applyFacetContext(chart, chart._facetPointsAccessibility);
+    }
+  }
+
+  // src/facetPoints/facetLines.js
+  function isMissingGroup(value) {
+    return value === null || value === void 0 || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value);
+  }
+  function isFacetAware(line, facetField) {
+    return line.data.some(
+      (row) => row !== null && row !== void 0 && Object.prototype.hasOwnProperty.call(row, facetField)
+    );
+  }
+  function validateFacetLines(lines, facetField) {
+    lines.forEach((line, lineIndex) => {
+      if (!isFacetAware(line, facetField)) return;
+      line.data.forEach((row, rowIndex) => {
+        const value = normalizeFacetValue(row?.[facetField]);
+        if (value !== null && typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) {
+          throw new Error(
+            `spec.annotations.lines[${lineIndex}].data[${rowIndex}].${facetField} mapped by spec.facet.field must be a string, finite number, or missing`
+          );
+        }
+      });
+    });
+  }
+  function addGroup(order, seen, value) {
+    const normalized = isMissingGroup(value) ? null : value;
+    const key = getGroupKey(normalized);
+    if (!seen.has(key)) {
+      seen.add(key);
+      order.push(normalized);
+    }
+  }
+  function getGroupKey(value) {
+    return value === null ? "missing" : JSON.stringify([typeof value, value]);
+  }
+  function prepareFacetLines(spec, facetValues) {
+    const { lines } = spec.annotations;
+    const { field } = spec.facet;
+    validateFacetLines(lines, field);
+    structureLines(spec);
+    const byFacet = new Map(facetValues.map((value) => [value, []]));
+    const facetAwareByFacet = new Map(facetValues.map((value) => [value, []]));
+    const common = [];
+    lines.forEach((line) => {
+      const facetAware = isFacetAware(line, field);
+      const partitions = facetAware ? new Map(facetValues.map((value) => [value, []])) : void 0;
+      const order = line.mapping.group ? [...line.order || []] : void 0;
+      const seenGroups = order ? new Set((line.order || []).map((value) => getGroupKey(value))) : void 0;
+      line.data.forEach((row) => {
+        if (order) addGroup(order, seenGroups, row?.[line.mapping.group]);
+        if (facetAware) {
+          const facetValue = normalizeFacetValue(row?.[field]);
+          partitions.get(facetValue)?.push(row);
+        }
+      });
+      const makeLine = (data) => ({
+        ...line,
+        ...order ? { order } : {},
+        data
+      });
+      if (facetAware) {
+        facetValues.forEach((facetValue) => {
+          const prepared = makeLine(partitions.get(facetValue));
+          byFacet.get(facetValue).push(prepared);
+          facetAwareByFacet.get(facetValue).push(prepared);
+        });
+      } else {
+        const prepared = makeLine([...line.data]);
+        common.push(prepared);
+        facetValues.forEach(
+          (facetValue) => byFacet.get(facetValue).push(prepared)
+        );
+      }
+    });
+    return { byFacet, facetAwareByFacet, common };
+  }
+
   // src/facetPoints/buildSubSpec.js
   function getScale(scale) {
     return {
@@ -32547,7 +32674,13 @@ var gsmViz = (() => {
     wrappedCallbacks.add(wrapped);
     return wrapped;
   }
-  function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles) {
+  function getAnnotations(annotations5, preparedLines, facetValue) {
+    return {
+      ...annotations5,
+      lines: preparedLines.byFacet.get(facetValue)
+    };
+  }
+  function buildSubSpec2(facetValue, mergedSpec, globalScales, globalStyles, preparedLines = prepareFacetLines(mergedSpec, [facetValue])) {
     const { data, facet, callbacks, ...pointsSpec } = mergedSpec;
     const scales2 = Object.fromEntries(
       Object.entries(mergedSpec.scales).map(([name, scale]) => [
@@ -32571,6 +32704,11 @@ var gsmViz = (() => {
     }
     return {
       ...pointsSpec,
+      annotations: getAnnotations(
+        pointsSpec.annotations,
+        preparedLines,
+        facetValue
+      ),
       scales: scales2,
       callbacks: {
         onClick: wrapCallback(callbacks.onClick, facetValue),
@@ -32650,19 +32788,39 @@ var gsmViz = (() => {
   }
   function addDomain(result, axis, values, spec) {
     if (spec.facet.scales[axis].free) return;
-    const domain = getDomain2(values, spec.scales[axis]);
+    const scale = spec.scales[axis];
+    const domain = getDomain2([...values, ...scale.breaks], scale);
     if (domain !== void 0) {
       result[`${axis}Min`] = domain[0];
       result[`${axis}Max`] = domain[1];
     }
   }
-  function computeGlobalScales2(facetDataMap, spec) {
+  function computeGlobalScales2(facetDataMap, spec, preparedLines = prepareFacetLines(spec, [...facetDataMap.keys()])) {
     const domains = { x: [], y: [] };
-    facetDataMap.forEach((facetData) => {
+    facetDataMap.forEach((facetData, facetValue) => {
       const pointData = structureData4({ ...spec, data: facetData });
       collectDatasetValues(domains, pointData.datasets);
+      const lines = preparedLines.facetAwareByFacet.get(facetValue);
+      collectDatasetValues(
+        domains,
+        structureLines({
+          ...spec,
+          annotations: { ...spec.annotations, lines }
+        })
+      );
     });
-    collectDatasetValues(domains, structureLines(spec));
+    if (facetDataMap.size > 0) {
+      collectDatasetValues(
+        domains,
+        structureLines({
+          ...spec,
+          annotations: {
+            ...spec.annotations,
+            lines: preparedLines.common
+          }
+        })
+      );
+    }
     collectReferenceValues(domains, spec);
     const result = {};
     addDomain(result, "x", domains.x, spec);
@@ -32674,39 +32832,24 @@ var gsmViz = (() => {
   function getAnnotationOrdinal(datasets, index3) {
     return datasets.slice(0, index3 + 1).filter((dataset) => dataset._annotation).length;
   }
+  function getAnnotationIdentity(dataset, datasets, index3) {
+    if (!Number.isInteger(dataset._annotationLayer)) {
+      return JSON.stringify([
+        "annotation",
+        getAnnotationOrdinal(datasets, index3)
+      ]);
+    }
+    const hasGroup = Object.prototype.hasOwnProperty.call(
+      dataset,
+      "_annotationGroup"
+    );
+    const group2 = !hasGroup ? ["ungrouped"] : dataset._annotationGroupMissing ? ["group", "missing"] : ["group", typeof dataset._annotationGroup, dataset._annotationGroup];
+    return JSON.stringify(["annotation", dataset._annotationLayer, group2]);
+  }
   function getLegendIdentity(chart, index3) {
     const dataset = chart.data.datasets[index3];
     const pointIdentity = getDatasetIdentity(dataset, chart.data._spec_);
-    return pointIdentity === void 0 ? JSON.stringify([
-      "annotation",
-      getAnnotationOrdinal(chart.data.datasets, index3)
-    ]) : pointIdentity;
-  }
-
-  // src/facetPoints/splitData.js
-  var MISSING_LABEL2 = "(Missing)";
-  function normalizeFacetValue(value) {
-    return value === void 0 || value === null || value === "" || typeof value === "string" && value.trim().length === 0 || typeof value === "number" && Number.isNaN(value) ? null : value;
-  }
-  function formatFacetValue(value) {
-    if (value === null) return MISSING_LABEL2;
-    return value === MISSING_LABEL2 ? JSON.stringify(value) : String(value);
-  }
-  function splitData2(data, field, order) {
-    const facets = /* @__PURE__ */ new Map();
-    const ordered = order !== void 0;
-    if (ordered) {
-      order.forEach((value) => {
-        facets.set(normalizeFacetValue(value), []);
-      });
-    }
-    data.forEach((row) => {
-      const value = normalizeFacetValue(row?.[field]);
-      if (ordered && !facets.has(value)) return;
-      if (!facets.has(value)) facets.set(value, []);
-      facets.get(value).push(row);
-    });
-    return facets;
+    return pointIdentity === void 0 ? getAnnotationIdentity(dataset, chart.data.datasets, index3) : pointIdentity;
   }
 
   // src/facetPoints/globalStyles.js
@@ -33189,6 +33332,7 @@ var gsmViz = (() => {
   function decorateChart(chart, charts, templates, legend5, hidden) {
     chart.options.plugins.legend.display = legend5.display && chart.options.plugins.legend.display;
     applyGlobalStyles(chart, templates, hidden);
+    refreshFacetAccessibleLabel(chart);
     const activeCharts = charts.filter((sibling) => sibling.canvas);
     syncHover(activeCharts);
     syncSelection2(activeCharts);
@@ -33519,9 +33663,10 @@ var gsmViz = (() => {
     }
     const merged = mergeSpec4(data, spec);
     const facets = splitData2(data, merged.facet.field, merged.facet.order);
-    const globalScales = computeGlobalScales2(facets, merged);
-    const globalStyles = getGlobalStyles(facets, merged);
     const facetValues = [...facets.keys()];
+    const preparedLines = prepareFacetLines(merged, facetValues);
+    const globalScales = computeGlobalScales2(facets, merged, preparedLines);
+    const globalStyles = getGlobalStyles(facets, merged);
     const { containers, labels, grid } = renderGrid2(
       parent,
       facetValues,
@@ -33533,7 +33678,13 @@ var gsmViz = (() => {
         const chart = points(
           containers.get(facetValue),
           facets.get(facetValue),
-          buildSubSpec2(facetValue, merged, globalScales, globalStyles)
+          buildSubSpec2(
+            facetValue,
+            merged,
+            globalScales,
+            globalStyles,
+            preparedLines
+          )
         );
         charts.push(chart);
         chart.canvas.setAttribute(
@@ -33542,6 +33693,7 @@ var gsmViz = (() => {
         );
         chart.options.plugins.legend.display = merged.facet.legend.display && chart.options.plugins.legend.display;
         applyGlobalStyles(chart, globalStyles.templates);
+        setFacetAccessibleLabel(chart, merged.facet.field, facetValue);
       });
       syncHover(charts);
       syncSelection2(charts);
